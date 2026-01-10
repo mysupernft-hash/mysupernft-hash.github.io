@@ -1,85 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
   margin:0;
-  font-family:Segoe UI;
+  font-family:Arial, sans-serif;
   background:#0b1220;
-  color:white;
+  color:#fff;
 }
-.nav{
+
+.topbar{
+  background:#111a33;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.menu{
   display:flex;
-  gap:16px;
-  padding:14px;
-  background:#11182d;
-  overflow-x:auto;
+  justify-content:space-around;
+  background:#0d6efd;
+  padding:10px 0;
+  font-size:14px;
 }
-.nav span{
-  white-space:nowrap;
+
+.menu div{
   cursor:pointer;
 }
-.cards{
-  padding:16px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:14px;
+
+.section{
+  display:none;
+  padding:20px;
 }
+
+.section.active{
+  display:block;
+}
+
 .card{
-  background:#121a2f;
-  padding:18px;
+  background:#111a33;
+  padding:20px;
   border-radius:12px;
-}
-button{
-  margin:16px;
-  padding:10px 16px;
-  border:none;
-  border-radius:6px;
-  background:#00c6ff;
-  font-weight:bold;
+  margin-bottom:15px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- TOP MENU -->
-<div class="nav">
-  <span>🎁 Get Airdrop</span>
-  <span>⚡ NFT Power by NOVA</span>
-  <span>🖼 Bid NFTs</span>
-  <span>💰 Stake | Earn</span>
-  <span>🏦 Reserve</span>
-  <span>📊 Assets</span>
-  <span>👤 My</span>
+<div class="topbar">SuperNFT Dashboard</div>
+
+<div class="menu">
+  <div onclick="show('airdrop')">Get Airdrop</div>
+  <div onclick="show('power')">NFT Power</div>
+  <div onclick="show('stake')">Stake | Earn</div>
+  <div onclick="show('assets')">Assets</div>
+  <div onclick="show('profile')">My</div>
 </div>
 
-<!-- DASHBOARD -->
-<div class="cards">
+<div id="airdrop" class="section active">
   <div class="card">
-    <h3>Total Balance</h3>
-    <p>$18,420</p>
-  </div>
-  <div class="card">
-    <h3>Daily Earnings</h3>
-    <p>+ $320</p>
-  </div>
-  <div class="card">
-    <h3>NFTs Owned</h3>
-    <p>27</p>
-  </div>
-  <div class="card">
-    <h3>Reserve</h3>
-    <p>$5,900</p>
+    <h3>🎁 Get Airdrop</h3>
+    <p>Complete tasks & earn free NFT rewards.</p>
+    <button>Claim Now</button>
   </div>
 </div>
 
-<button onclick="logout()">Logout</button>
+<div id="power" class="section">
+  <div class="card">
+    <h3>⚡ NFT Power</h3>
+    <p>Your NFT power boosts earnings.</p>
+  </div>
+</div>
+
+<div id="stake" class="section">
+  <div class="card">
+    <h3>💰 Stake & Earn</h3>
+    <p>Stake NFTs and earn daily rewards.</p>
+  </div>
+</div>
+
+<div id="assets" class="section">
+  <div class="card">
+    <h3>📦 My Assets</h3>
+    <p>No NFTs found yet.</p>
+  </div>
+</div>
+
+<div id="profile" class="section">
+  <div class="card">
+    <h3>👤 My Account</h3>
+    <p>Email: user@example.com</p>
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
 
 <script>
+function show(id){
+  document.querySelectorAll('.section').forEach(s=>{
+    s.classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+}
+
 function logout(){
   window.location.href = "index.html";
 }
