@@ -7,58 +7,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword
-  } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCvDN2vIcI_2gp3cNjDQ95PtG76VbOjkxk",
-    authDomain: "supernft-790f7.firebaseapp.com",
-    projectId: "supernft-790f7",
-    storageBucket: "supernft-790f7.firebasestorage.app",
-    messagingSenderId: "38361916626",
-    appId: "1:38361916626:web:ec747e27def5de982ef90b"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  // REGISTER FUNCTION
-  window.registerUser = function () {
-    const email = document.getElementById("regEmail").value;
-    const pass = document.getElementById("regPass").value;
-
-    createUserWithEmailAndPassword(auth, email, pass)
-      .then(() => alert("Account created successfully"))
-      .catch(err => alert(err.message));
-  };
-
-  // LOGIN FUNCTION
-  window.loginUser = function () {
-    const email = document.getElementById("loginEmail").value;
-    const pass = document.getElementById("loginPass").value;
-
-    signInWithEmailAndPassword(auth, email, pass)
-      .then(() => alert("Login successful"))
-      .catch(err => alert(err.message));
-  };
-</script>
-</style>
-
-<script>
-function show(id){
-  document.getElementById("home").classList.add("hide");
-  document.getElementById("login").classList.add("hide");
-  document.getElementById("register").classList.add("hide");
-  document.getElementById("admin").classList.add("hide");
-  document.getElementById("earning").classList.add("hide");
-  document.getElementById(id).classList.remove("hide");
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:linear-gradient(135deg,#0b5ed7,#000);
+  color:white;
+  text-align:center;
 }
-</script>
+
+header{
+  padding:25px;
+  font-size:30px;
+  font-weight:bold;
+}
+
+nav a{
+  color:white;
+  margin:0 10px;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+.section{
+  background:white;
+  color:black;
+  margin:25px 15px;
+  padding:25px;
+  border-radius:12px;
+}
+
+input{
+  width:90%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+
+button{
+  width:95%;
+  padding:12px;
+  background:#0b5ed7;
+  color:white;
+  border:none;
+  border-radius:5px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.hide{ display:none; }
+
+footer{
+  padding:20px;
+  font-size:14px;
+  opacity:0.7;
+}
+</style>
 </head>
 
 <body>
@@ -74,37 +78,26 @@ SuperNFT<br>
 </nav>
 </header>
 
-<!-- HOME -->
 <div id="home" class="section">
 <h2>Welcome to SuperNFT</h2>
-<p>Modern NFT Community & Digital Asset Platform</p>
+<p>Modern NFT Community Platform</p>
 <p>✔ Secure • ✔ Fast • ✔ Mobile Friendly</p>
 </div>
 
-<!-- LOGIN -->
-  <!-- LOGIN -->
 <div id="login" class="section hide">
-  <h2>Login</h2>
-
+<h2>Login</h2>
 <input id="loginEmail" type="email" placeholder="Email">
 <input id="loginPass" type="password" placeholder="Password">
 <button onclick="loginUser()">Login</button>
-<h2>Login</h2>
-<input type="email" placeholder="Email">
-<input type="password" placeholder="Password">
-<button>Login</button>
 </div>
 
-<!-- REGISTER -->
 <div id="register" class="section hide">
 <h2>Register</h2>
-<input type="text" placeholder="Full Name">
-<input type="email" placeholder="Email">
-<input type="password" placeholder="Password">
-<button>Create Account</button>
+<input id="regEmail" type="email" placeholder="Email">
+<input id="regPass" type="password" placeholder="Password">
+<button onclick="registerUser()">Create Account</button>
 </div>
 
-<!-- EARNING -->
 <div id="earning" class="section hide">
 <h2>Earning & Referral</h2>
 <p>Your Referral Code:</p>
@@ -112,17 +105,64 @@ SuperNFT<br>
 <p>Invite friends & earn rewards</p>
 </div>
 
-<!-- ADMIN -->
 <div id="admin" class="section hide">
 <h2>Admin Panel</h2>
-<p>Admin access only</p>
 <input type="password" placeholder="Admin Password">
-<button>Login as Admin</button>
+<button>Admin Login</button>
 </div>
 
 <footer>
 © 2026 SuperNFT • All Rights Reserved
 </footer>
+
+<script>
+function show(id){
+  document.getElementById("home").classList.add("hide");
+  document.getElementById("login").classList.add("hide");
+  document.getElementById("register").classList.add("hide");
+  document.getElementById("earning").classList.add("hide");
+  document.getElementById("admin").classList.add("hide");
+  document.getElementById(id).classList.remove("hide");
+}
+</script>
+
+<!-- FIREBASE AUTH -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCvDN2vIcI_2gp3cNjDQ95PtG76VbOjkxk",
+  authDomain: "supernft-790f7.firebaseapp.com",
+  projectId: "supernft-790f7",
+  storageBucket: "supernft-790f7.firebasestorage.app",
+  messagingSenderId: "38361916626",
+  appId: "1:38361916626:web:ec747e27def5de982ef90b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.registerUser = function(){
+  const email = document.getElementById("regEmail").value;
+  const pass = document.getElementById("regPass").value;
+  createUserWithEmailAndPassword(auth,email,pass)
+    .then(()=>alert("Account Created"))
+    .catch(e=>alert(e.message));
+}
+
+window.loginUser = function(){
+  const email = document.getElementById("loginEmail").value;
+  const pass = document.getElementById("loginPass").value;
+  signInWithEmailAndPassword(auth,email,pass)
+    .then(()=>alert("Login Successful"))
+    .catch(e=>alert(e.message));
+}
+</script>
 
 </body>
 </html>
