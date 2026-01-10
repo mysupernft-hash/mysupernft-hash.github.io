@@ -3,202 +3,84 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT | Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
-  font-family:Segoe UI, Arial;
-  background:#0b1220;
-  color:#fff;
-}
-
-/* COMMON */
-.page{display:none}
-.show{display:block}
-button{
-  padding:10px 16px;
-  border:none;
-  border-radius:6px;
-  background:linear-gradient(45deg,#00c6ff,#0072ff);
-  color:#fff;
-  font-weight:600;
-}
-input{
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border:none;
-  border-radius:6px;
-}
-
-/* LOGIN */
-#login{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-.login-box{
-  width:90%;
-  max-width:360px;
-  background:#121a2f;
-  padding:30px;
-  border-radius:14px;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#0b1220,#0d6efd);
+  color:white;
   text-align:center;
 }
 
-/* NAVBAR */
-.nav{
-  display:flex;
-  overflow-x:auto;
-  background:#11182d;
-  padding:12px;
-  gap:16px;
-  border-bottom:1px solid #1f2a44;
-}
-.nav span{
-  white-space:nowrap;
-  font-size:14px;
-  opacity:.85;
-  cursor:pointer;
-}
-.nav span:hover{opacity:1}
-
-/* DASHBOARD */
-#dashboard{
-  padding-bottom:40px;
-}
 .header{
-  padding:16px;
+  padding:40px 20px;
+}
+
+.logo{
+  font-size:32px;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+.tagline{
+  margin-top:10px;
+  opacity:0.9;
+}
+
+.btn{
+  margin-top:30px;
+  padding:14px 30px;
+  font-size:16px;
+  background:#00d4ff;
+  border:none;
+  border-radius:30px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn:hover{
+  background:#00b3d6;
+}
+
+.features{
   display:flex;
-  justify-content:space-between;
-  align-items:center;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:20px;
+  margin:50px 20px;
 }
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:14px;
-  padding:16px;
-}
+
 .card{
-  background:#121a2f;
-  padding:18px;
+  background:rgba(255,255,255,0.08);
+  padding:20px;
+  width:260px;
   border-radius:12px;
 }
-.card h3{
-  margin:0;
-  font-size:13px;
-  opacity:.7;
-}
-.card p{
-  margin-top:8px;
-  font-size:20px;
-}
-.green{color:#4cff8f}
-.section-title{
-  padding:0 16px;
-  margin-top:20px;
-  opacity:.7;
-}
-.list{
-  margin:10px 16px;
-  background:#121a2f;
-  border-radius:12px;
-}
-.row{
-  display:flex;
-  justify-content:space-between;
-  padding:14px;
-  border-bottom:1px solid #1f2a44;
-}
-.row:last-child{border:none}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div id="login" class="page show">
-  <div class="login-box">
-    <h2>SuperNFT</h2>
-    <p style="opacity:.6">Login to continue</p>
-    <input id="email" placeholder="Email">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </div>
+<div class="header">
+  <div class="logo">SuperNFT</div>
+  <div class="tagline">NFT Power • Earn • Stake • Grow</div>
+
+  <button class="btn" onclick="goDashboard()">Enter Dashboard</button>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="page">
-
-  <!-- TOP MENU -->
-  <div class="nav">
-    <span>🎁 Get Airdrop</span>
-    <span>⚡ NFT Power by NOVA</span>
-    <span>🖼 Bid NFTs</span>
-    <span>💰 Stake | Earn</span>
-    <span>🏦 Reserve</span>
-    <span>📊 Assets</span>
-    <span>👤 My</span>
-  </div>
-
-  <div class="header">
-    <h3>Dashboard</h3>
-    <button onclick="logout()">Logout</button>
-  </div>
-
-  <!-- STATS -->
-  <div class="cards">
-    <div class="card">
-      <h3>Total Power</h3>
-      <p>12,480</p>
-    </div>
-    <div class="card">
-      <h3>Daily Earnings</h3>
-      <p class="green">+ 320</p>
-    </div>
-    <div class="card">
-      <h3>NFTs Owned</h3>
-      <p>27</p>
-    </div>
-    <div class="card">
-      <h3>Reserve</h3>
-      <p>5,900</p>
-    </div>
-  </div>
-
-  <!-- ACTIVITY -->
-  <div class="section-title">Recent Activity</div>
-  <div class="list">
-    <div class="row">
-      <span>Staked NFT #219</span>
-      <span class="green">+120</span>
-    </div>
-    <div class="row">
-      <span>Airdrop Reward</span>
-      <span class="green">+80</span>
-    </div>
-    <div class="row">
-      <span>Bid Fee</span>
-      <span>-20</span>
-    </div>
-  </div>
-
+<div class="features">
+  <div class="card">🚀 Get Airdrop</div>
+  <div class="card">🎨 Bid NFTs</div>
+  <div class="card">💰 Stake & Earn</div>
+  <div class="card">📦 My Assets</div>
 </div>
 
 <script>
-function login(){
-  if(email.value && pass.value){
-    document.getElementById("login").classList.remove("show");
-    document.getElementById("dashboard").classList.add("show");
-  }else{
-    alert("Enter email & password");
-  }
-}
-function logout(){
-  location.reload();
+function goDashboard(){
+  window.location.href = "dashboard.html";
 }
 </script>
 
