@@ -14,20 +14,17 @@ body{
   color:white;
   text-align:center;
 }
-
 header{
   padding:25px;
   font-size:30px;
   font-weight:bold;
 }
-
 nav a{
   color:white;
   margin:0 10px;
   text-decoration:none;
   font-weight:bold;
 }
-
 .section{
   background:white;
   color:black;
@@ -35,7 +32,6 @@ nav a{
   padding:25px;
   border-radius:12px;
 }
-
 input{
   width:90%;
   padding:12px;
@@ -43,7 +39,6 @@ input{
   border-radius:5px;
   border:1px solid #ccc;
 }
-
 button{
   width:95%;
   padding:12px;
@@ -54,9 +49,7 @@ button{
   font-size:16px;
   cursor:pointer;
 }
-
-.hide{ display:none; }
-
+.hide{display:none;}
 footer{
   padding:20px;
   font-size:14px;
@@ -73,17 +66,17 @@ SuperNFT<br>
 <a href="#" onclick="show('home')">Home</a>
 <a href="#" onclick="show('login')">Login</a>
 <a href="#" onclick="show('register')">Register</a>
-<a href="#" onclick="show('earning')">Earning</a>
-<a href="#" onclick="show('admin')">Admin</a>
+<a href="#" onclick="logout()">Logout</a>
 </nav>
 </header>
 
+<!-- HOME -->
 <div id="home" class="section">
 <h2>Welcome to SuperNFT</h2>
-<p>Modern NFT Community Platform</p>
-<p>✔ Secure • ✔ Fast • ✔ Mobile Friendly</p>
+<p>NFT Community & Digital Asset Platform</p>
 </div>
 
+<!-- LOGIN -->
 <div id="login" class="section hide">
 <h2>Login</h2>
 <input id="loginEmail" type="email" placeholder="Email">
@@ -91,6 +84,7 @@ SuperNFT<br>
 <button onclick="loginUser()">Login</button>
 </div>
 
+<!-- REGISTER -->
 <div id="register" class="section hide">
 <h2>Register</h2>
 <input id="regEmail" type="email" placeholder="Email">
@@ -98,17 +92,17 @@ SuperNFT<br>
 <button onclick="registerUser()">Create Account</button>
 </div>
 
-<div id="earning" class="section hide">
-<h2>Earning & Referral</h2>
-<p>Your Referral Code:</p>
-<b>SUPERNFT123</b>
-<p>Invite friends & earn rewards</p>
+<!-- DASHBOARD -->
+<div id="dashboard" class="section hide">
+<h2>User Dashboard</h2>
+<p id="userEmail"></p>
+<p>Welcome to your dashboard</p>
 </div>
 
+<!-- ADMIN -->
 <div id="admin" class="section hide">
 <h2>Admin Panel</h2>
-<input type="password" placeholder="Admin Password">
-<button>Admin Login</button>
+<p>Only Admin can see this</p>
 </div>
 
 <footer>
@@ -117,22 +111,22 @@ SuperNFT<br>
 
 <script>
 function show(id){
-  document.getElementById("home").classList.add("hide");
-  document.getElementById("login").classList.add("hide");
-  document.getElementById("register").classList.add("hide");
-  document.getElementById("earning").classList.add("hide");
-  document.getElementById("admin").classList.add("hide");
+  ["home","login","register","dashboard","admin"].forEach(x=>{
+    document.getElementById(x).classList.add("hide");
+  });
   document.getElementById(id).classList.remove("hide");
 }
 </script>
 
-<!-- FIREBASE AUTH -->
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import {
+import { 
   getAuth,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -147,21 +141,41 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// CHANGE THIS TO YOUR ADMIN EMAIL
+const adminEmail = "shivatrainer001@gmail.com";
+
 window.registerUser = function(){
-  const email = document.getElementById("regEmail").value;
-  const pass = document.getElementById("regPass").value;
-  createUserWithEmailAndPassword(auth,email,pass)
-    .then(()=>alert("Account Created"))
-    .catch(e=>alert(e.message));
+  createUserWithEmailAndPassword(
+    auth,
+    regEmail.value,
+    regPass.value
+  ).then(()=>alert("Account Created"))
+   .catch(e=>alert(e.message));
 }
 
 window.loginUser = function(){
-  const email = document.getElementById("loginEmail").value;
-  const pass = document.getElementById("loginPass").value;
-  signInWithEmailAndPassword(auth,email,pass)
-    .then(()=>alert("Login Successful"))
-    .catch(e=>alert(e.message));
+  signInWithEmailAndPassword(
+    auth,
+    loginEmail.value,
+    loginPass.value
+  ).catch(e=>alert(e.message));
 }
+
+window.logout = function(){
+  signOut(auth);
+}
+
+onAuthStateChanged(auth,(user)=>{
+  if(user){
+    document.getElementById("userEmail").innerText = user.email;
+    show("dashboard");
+    if(user.email === adminEmail){
+      document.getElementById("admin").classList.remove("hide");
+    }
+  }else{
+    show("home");
+  }
+});
 </script>
 
 </body>
