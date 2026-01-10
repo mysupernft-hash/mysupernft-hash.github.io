@@ -11,25 +11,21 @@ body{
   font-family:Arial, sans-serif;
   background:radial-gradient(circle at top,#0d6efd,#050a1a);
   color:#fff;
-}
-
-header{
-  padding:60px 20px;
   text-align:center;
 }
-
+header{
+  padding:60px 20px;
+}
 .logo{
   font-size:38px;
   font-weight:800;
   letter-spacing:1px;
 }
-
 .subtitle{
   margin-top:10px;
   font-size:16px;
   opacity:0.85;
 }
-
 .hero-btn{
   margin-top:30px;
   padding:15px 40px;
@@ -41,11 +37,9 @@ header{
   font-weight:bold;
   cursor:pointer;
 }
-
 .hero-btn:hover{
   background:#00c4db;
 }
-
 .stats{
   display:flex;
   justify-content:center;
@@ -53,42 +47,35 @@ header{
   margin-top:40px;
   flex-wrap:wrap;
 }
-
 .stat-box{
   background:rgba(255,255,255,0.08);
   padding:20px;
   border-radius:14px;
   width:160px;
 }
-
 .stat-box h2{
   margin:0;
   color:#00e5ff;
 }
-
 .section{
   padding:50px 20px;
   text-align:center;
 }
-
 .cards{
   display:flex;
   justify-content:center;
   gap:20px;
   flex-wrap:wrap;
 }
-
 .card{
   background:rgba(255,255,255,0.07);
   padding:25px;
   width:260px;
   border-radius:16px;
 }
-
 .card h3{
   margin-top:10px;
 }
-
 footer{
   padding:20px;
   text-align:center;
@@ -106,8 +93,8 @@ footer{
     NFT Power • Earn Rewards • Stake & Grow
   </div>
 
-  <button class="hero-btn" onclick="openDashboard()">
-    Enter Dashboard
+  <button class="hero-btn" onclick="openLogin()">
+    Login / Dashboard
   </button>
 
   <div class="stats">
@@ -152,8 +139,8 @@ footer{
 </footer>
 
 <script>
-function openDashboard(){
-  window.location.href = "dashboard.html";
+function openLogin(){
+  window.location.href = "login.html";
 }
 </script>
 
