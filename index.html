@@ -9,125 +9,75 @@
 <style>
 body{
   margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:linear-gradient(135deg,#0b5ed7,#000);
+  font-family:Arial, sans-serif;
+  background:#0b5ed7;
   color:white;
   text-align:center;
 }
-header{
-  padding:25px;
-  font-size:30px;
-  font-weight:bold;
-}
-nav a{
-  color:white;
-  margin:0 10px;
-  text-decoration:none;
-  font-weight:bold;
-}
-.section{
-  background:white;
-  color:black;
-  margin:25px 15px;
-  padding:25px;
-  border-radius:12px;
-}
-input{
+.section{display:none;padding:30px;}
+.show{display:block;}
+input,button{
   width:90%;
-  padding:12px;
-  margin:10px 0;
-  border-radius:5px;
-  border:1px solid #ccc;
-}
-button{
-  width:95%;
-  padding:12px;
-  background:#0b5ed7;
-  color:white;
+  max-width:300px;
+  padding:10px;
+  margin:10px auto;
   border:none;
   border-radius:5px;
-  font-size:16px;
+}
+button{
+  background:#ffc107;
+  font-weight:bold;
   cursor:pointer;
 }
-.hide{display:none;}
-footer{
-  padding:20px;
-  font-size:14px;
-  opacity:0.7;
-}
+button:hover{opacity:.9}
 </style>
 </head>
 
 <body>
 
-<header>
-SuperNFT<br>
-<nav>
-<a href="#" onclick="show('home')">Home</a>
-<a href="#" onclick="show('login')">Login</a>
-<a href="#" onclick="show('register')">Register</a>
-<a href="#" onclick="logout()">Logout</a>
-</nav>
-</header>
-
 <!-- HOME -->
-<div id="home" class="section">
-<h2>Welcome to SuperNFT</h2>
-<p>NFT Community & Digital Asset Platform</p>
+<div id="home" class="section show">
+  <h1>SuperNFT</h1>
+  <p>Making Money Zone</p>
+  <button onclick="show('login')">Login</button>
+  <button onclick="show('register')">Register</button>
 </div>
 
 <!-- LOGIN -->
-<div id="login" class="section hide">
-<h2>Login</h2>
-<input id="loginEmail" type="email" placeholder="Email">
-<input id="loginPass" type="password" placeholder="Password">
-<button onclick="loginUser()">Login</button>
+<div id="login" class="section">
+  <h2>Login</h2>
+  <input id="loginEmail" type="email" placeholder="Email">
+  <input id="loginPass" type="password" placeholder="Password">
+  <button type="button" onclick="loginUser()">Login</button>
+  <br><br>
+  <button onclick="show('home')">Back</button>
 </div>
 
 <!-- REGISTER -->
-<div id="register" class="section hide">
-<h2>Register</h2>
-<input id="regEmail" type="email" placeholder="Email">
-<input id="regPass" type="password" placeholder="Password">
-<button onclick="registerUser()">Create Account</button>
+<div id="register" class="section">
+  <h2>Create Account</h2>
+  <input id="regEmail" type="email" placeholder="Email">
+  <input id="regPass" type="password" placeholder="Password">
+  <button type="button" onclick="registerUser()">Register</button>
+  <br><br>
+  <button onclick="show('home')">Back</button>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard" class="section hide">
-<h2>User Dashboard</h2>
-<p id="userEmail"></p>
-<p>Welcome to your dashboard</p>
+<div id="dashboard" class="section">
+  <h2>Dashboard</h2>
+  <p>Welcome: <b id="userEmail"></b></p>
+  <button onclick="logoutUser()">Logout</button>
 </div>
-
-<!-- ADMIN -->
-<div id="admin" class="section hide">
-<h2>Admin Panel</h2>
-<p>Only Admin can see this</p>
-</div>
-
-<footer>
-© 2026 SuperNFT • All Rights Reserved
-</footer>
-
-<script>
-function show(id){
-  ["home","login","register","dashboard","admin"].forEach(x=>{
-    document.getElementById(x).classList.add("hide");
-  });
-  document.getElementById(id).classList.remove("hide");
-}
-</script>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { 
-  getAuth,
+import { getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+  onAuthStateChanged,
+  signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCvDN2vIcI_2gp3cNjDQ95PtG76VbOjkxk",
@@ -141,18 +91,25 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// CHANGE THIS TO YOUR ADMIN EMAIL
-const adminEmail = "shivatrainer001@gmail.com";
+/* UI CONTROL */
+window.show = function(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
 
+/* REGISTER */
 window.registerUser = function(){
   createUserWithEmailAndPassword(
     auth,
     regEmail.value,
     regPass.value
-  ).then(()=>alert("Account Created"))
-   .catch(e=>alert(e.message));
+  ).then(()=>{
+    alert("Account created. Login now.");
+    show('login');
+  }).catch(e=>alert(e.message));
 }
 
+/* LOGIN */
 window.loginUser = function(){
   signInWithEmailAndPassword(
     auth,
@@ -161,19 +118,18 @@ window.loginUser = function(){
   ).catch(e=>alert(e.message));
 }
 
-window.logout = function(){
+/* LOGOUT */
+window.logoutUser = function(){
   signOut(auth);
 }
 
+/* 🔥 AUTO DASHBOARD AFTER LOGIN */
 onAuthStateChanged(auth,(user)=>{
   if(user){
-    document.getElementById("userEmail").innerText = user.email;
-    show("dashboard");
-    if(user.email === adminEmail){
-      document.getElementById("admin").classList.remove("hide");
-    }
+    userEmail.innerText = user.email;
+    show('dashboard');
   }else{
-    show("home");
+    show('home');
   }
 });
 </script>
