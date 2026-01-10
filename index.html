@@ -3,135 +3,203 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT | Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:#0b5ed7;
-  color:white;
+  font-family:Segoe UI, Arial;
+  background:#0b1220;
+  color:#fff;
+}
+
+/* COMMON */
+.page{display:none}
+.show{display:block}
+button{
+  padding:10px 16px;
+  border:none;
+  border-radius:6px;
+  background:linear-gradient(45deg,#00c6ff,#0072ff);
+  color:#fff;
+  font-weight:600;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border:none;
+  border-radius:6px;
+}
+
+/* LOGIN */
+#login{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.login-box{
+  width:90%;
+  max-width:360px;
+  background:#121a2f;
+  padding:30px;
+  border-radius:14px;
   text-align:center;
 }
-.section{display:none;padding:30px;}
-.show{display:block;}
-input,button{
-  width:90%;
-  max-width:300px;
-  padding:10px;
-  margin:10px auto;
-  border:none;
-  border-radius:5px;
+
+/* NAVBAR */
+.nav{
+  display:flex;
+  overflow-x:auto;
+  background:#11182d;
+  padding:12px;
+  gap:16px;
+  border-bottom:1px solid #1f2a44;
 }
-button{
-  background:#ffc107;
-  font-weight:bold;
+.nav span{
+  white-space:nowrap;
+  font-size:14px;
+  opacity:.85;
   cursor:pointer;
 }
-button:hover{opacity:.9}
+.nav span:hover{opacity:1}
+
+/* DASHBOARD */
+#dashboard{
+  padding-bottom:40px;
+}
+.header{
+  padding:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:14px;
+  padding:16px;
+}
+.card{
+  background:#121a2f;
+  padding:18px;
+  border-radius:12px;
+}
+.card h3{
+  margin:0;
+  font-size:13px;
+  opacity:.7;
+}
+.card p{
+  margin-top:8px;
+  font-size:20px;
+}
+.green{color:#4cff8f}
+.section-title{
+  padding:0 16px;
+  margin-top:20px;
+  opacity:.7;
+}
+.list{
+  margin:10px 16px;
+  background:#121a2f;
+  border-radius:12px;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  padding:14px;
+  border-bottom:1px solid #1f2a44;
+}
+.row:last-child{border:none}
 </style>
 </head>
 
 <body>
 
-<!-- HOME -->
-<div id="home" class="section show">
-  <h1>SuperNFT</h1>
-  <p>Making Money Zone</p>
-  <button onclick="show('login')">Login</button>
-  <button onclick="show('register')">Register</button>
-</div>
-
 <!-- LOGIN -->
-<div id="login" class="section">
-  <h2>Login</h2>
-  <input id="loginEmail" type="email" placeholder="Email">
-  <input id="loginPass" type="password" placeholder="Password">
-  <button type="button" onclick="loginUser()">Login</button>
-  <br><br>
-  <button onclick="show('home')">Back</button>
-</div>
-
-<!-- REGISTER -->
-<div id="register" class="section">
-  <h2>Create Account</h2>
-  <input id="regEmail" type="email" placeholder="Email">
-  <input id="regPass" type="password" placeholder="Password">
-  <button type="button" onclick="registerUser()">Register</button>
-  <br><br>
-  <button onclick="show('home')">Back</button>
+<div id="login" class="page show">
+  <div class="login-box">
+    <h2>SuperNFT</h2>
+    <p style="opacity:.6">Login to continue</p>
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard" class="section">
-  <h2>Dashboard</h2>
-  <p>Welcome: <b id="userEmail"></b></p>
-  <button onclick="logoutUser()">Logout</button>
+<div id="dashboard" class="page">
+
+  <!-- TOP MENU -->
+  <div class="nav">
+    <span>🎁 Get Airdrop</span>
+    <span>⚡ NFT Power by NOVA</span>
+    <span>🖼 Bid NFTs</span>
+    <span>💰 Stake | Earn</span>
+    <span>🏦 Reserve</span>
+    <span>📊 Assets</span>
+    <span>👤 My</span>
+  </div>
+
+  <div class="header">
+    <h3>Dashboard</h3>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="cards">
+    <div class="card">
+      <h3>Total Power</h3>
+      <p>12,480</p>
+    </div>
+    <div class="card">
+      <h3>Daily Earnings</h3>
+      <p class="green">+ 320</p>
+    </div>
+    <div class="card">
+      <h3>NFTs Owned</h3>
+      <p>27</p>
+    </div>
+    <div class="card">
+      <h3>Reserve</h3>
+      <p>5,900</p>
+    </div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="section-title">Recent Activity</div>
+  <div class="list">
+    <div class="row">
+      <span>Staked NFT #219</span>
+      <span class="green">+120</span>
+    </div>
+    <div class="row">
+      <span>Airdrop Reward</span>
+      <span class="green">+80</span>
+    </div>
+    <div class="row">
+      <span>Bid Fee</span>
+      <span>-20</span>
+    </div>
+  </div>
+
 </div>
 
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCvDN2vIcI_2gp3cNjDQ95PtG76VbOjkxk",
-  authDomain: "supernft-790f7.firebaseapp.com",
-  projectId: "supernft-790f7",
-  storageBucket: "supernft-790f7.firebasestorage.app",
-  messagingSenderId: "38361916626",
-  appId: "1:38361916626:web:ec747e27def5de982ef90b"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-/* UI CONTROL */
-window.show = function(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('show'));
-  document.getElementById(id).classList.add('show');
-}
-
-/* REGISTER */
-window.registerUser = function(){
-  createUserWithEmailAndPassword(
-    auth,
-    regEmail.value,
-    regPass.value
-  ).then(()=>{
-    alert("Account created. Login now.");
-    show('login');
-  }).catch(e=>alert(e.message));
-}
-
-/* LOGIN */
-window.loginUser = function(){
-  signInWithEmailAndPassword(
-    auth,
-    loginEmail.value,
-    loginPass.value
-  ).catch(e=>alert(e.message));
-}
-
-/* LOGOUT */
-window.logoutUser = function(){
-  signOut(auth);
-}
-
-/* 🔥 AUTO DASHBOARD AFTER LOGIN */
-onAuthStateChanged(auth,(user)=>{
-  if(user){
-    userEmail.innerText = user.email;
-    show('dashboard');
+<script>
+function login(){
+  if(email.value && pass.value){
+    document.getElementById("login").classList.remove("show");
+    document.getElementById("dashboard").classList.add("show");
   }else{
-    show('home');
+    alert("Enter email & password");
   }
-});
+}
+function logout(){
+  location.reload();
+}
 </script>
 
 </body>
