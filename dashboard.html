@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>SuperNFT Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  margin:0;
+  font-family:Segoe UI;
+  background:#0b1220;
+  color:white;
+}
+.nav{
+  display:flex;
+  gap:16px;
+  padding:14px;
+  background:#11182d;
+  overflow-x:auto;
+}
+.nav span{
+  white-space:nowrap;
+  cursor:pointer;
+}
+.cards{
+  padding:16px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:14px;
+}
+.card{
+  background:#121a2f;
+  padding:18px;
+  border-radius:12px;
+}
+button{
+  margin:16px;
+  padding:10px 16px;
+  border:none;
+  border-radius:6px;
+  background:#00c6ff;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP MENU -->
+<div class="nav">
+  <span>🎁 Get Airdrop</span>
+  <span>⚡ NFT Power by NOVA</span>
+  <span>🖼 Bid NFTs</span>
+  <span>💰 Stake | Earn</span>
+  <span>🏦 Reserve</span>
+  <span>📊 Assets</span>
+  <span>👤 My</span>
+</div>
+
+<!-- DASHBOARD -->
+<div class="cards">
+  <div class="card">
+    <h3>Total Balance</h3>
+    <p>$18,420</p>
+  </div>
+  <div class="card">
+    <h3>Daily Earnings</h3>
+    <p>+ $320</p>
+  </div>
+  <div class="card">
+    <h3>NFTs Owned</h3>
+    <p>27</p>
+  </div>
+  <div class="card">
+    <h3>Reserve</h3>
+    <p>$5,900</p>
+  </div>
+</div>
+
+<button onclick="logout()">Logout</button>
+
+<script>
+function logout(){
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
