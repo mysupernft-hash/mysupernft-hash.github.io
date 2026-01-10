@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#050a1a,#0d6efd);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.box{
+  background:rgba(255,255,255,0.08);
+  padding:30px;
+  width:320px;
+  border-radius:16px;
+  text-align:center;
+}
+
+h2{
+  margin-bottom:20px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border:none;
+  border-radius:8px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:30px;
+  background:#00e5ff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#00c4db;
+}
+
+.link{
+  margin-top:15px;
+  font-size:14px;
+  cursor:pointer;
+  color:#00e5ff;
+}
+
+.hidden{
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <!-- LOGIN -->
+  <div id="loginBox">
+    <h2>Login</h2>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginPass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div class="link" onclick="showRegister()">Create Account</div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="registerBox" class="hidden">
+    <h2>Register</h2>
+    <input id="regEmail" type="email" placeholder="Email">
+    <input id="regPass" type="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <div class="link" onclick="showLogin()">Back to Login</div>
+  </div>
+
+  <p id="msg"></p>
+
+</div>
+
+<script>
+function showRegister(){
+  loginBox.classList.add("hidden");
+  registerBox.classList.remove("hidden");
+}
+
+function showLogin(){
+  registerBox.classList.add("hidden");
+  loginBox.classList.remove("hidden");
+}
+
+function login(){
+  document.getElementById("msg").innerText="Login successful...";
+  setTimeout(()=>{
+    window.location.href="dashboard.html";
+  },1000);
+}
+
+function register(){
+  document.getElementById("msg").innerText="Account created successfully!";
+}
+</script>
+
+</body>
+</html>
