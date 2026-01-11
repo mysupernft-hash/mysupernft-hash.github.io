@@ -21,32 +21,62 @@ body{
   font-weight:bold;
 }
 
-.menu{
-  display:flex;
-  justify-content:space-around;
-  background:#0d6efd;
-  padding:10px 0;
-  font-size:14px;
-}
-
-.menu div{
-  cursor:pointer;
-}
-
-.section{
-  display:none;
+.container{
   padding:20px;
 }
 
-.section.active{
-  display:block;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:18px;
 }
 
 .card{
   background:#111a33;
-  padding:20px;
+  border-radius:14px;
+  padding:15px;
+  text-align:center;
+}
+
+.nft-img{
+  height:120px;
   border-radius:12px;
-  margin-bottom:15px;
+  background:linear-gradient(135deg,#00e5ff,#0d6efd);
+  margin-bottom:12px;
+}
+
+/* 👇 PRICE IMAGE KE NICHE */
+.price{
+  font-size:22px;
+  font-weight:bold;
+  color:#00e5ff;
+  margin-bottom:10px;
+}
+
+.buy{
+  padding:10px;
+  width:100%;
+  border:none;
+  border-radius:20px;
+  background:#00e5ff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.buy:hover{
+  background:#00c4db;
+}
+
+.logout{
+  margin-top:25px;
+  padding:10px;
+  width:100%;
+  background:#ff4d4d;
+  border:none;
+  border-radius:20px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -55,61 +85,61 @@ body{
 
 <div class="topbar">SuperNFT Dashboard</div>
 
-<div class="menu">
-  <div onclick="show('airdrop')">Get Airdrop</div>
-  <div onclick="show('power')">NFT Power</div>
-  <div onclick="show('stake')">Stake | Earn</div>
-  <div onclick="show('assets')">Assets</div>
-  <div onclick="show('profile')">My</div>
-</div>
+<div class="container">
+  <h3>🔥 Available NFTs</h3>
 
-<div id="airdrop" class="section active">
-  <div class="card">
-    <h3>🎁 Get Airdrop</h3>
-    <p>Complete tasks & earn free NFT rewards.</p>
-    <button>Claim Now</button>
-  </div>
-</div>
+  <div class="grid">
 
-<div id="power" class="section">
-  <div class="card">
-    <h3>⚡ NFT Power</h3>
-    <p>Your NFT power boosts earnings.</p>
-  </div>
-</div>
+    <div class="card">
+      <div class="nft-img"></div>
+      <div class="price">$10</div>
+      <button class="buy">Buy NFT</button>
+    </div>
 
-<div id="stake" class="section">
-  <div class="card">
-    <h3>💰 Stake & Earn</h3>
-    <p>Stake NFTs and earn daily rewards.</p>
-  </div>
-</div>
+    <div class="card">
+      <div class="nft-img"></div>
+      <div class="price">$15</div>
+      <button class="buy">Buy NFT</button>
+    </div>
 
-<div id="assets" class="section">
-  <div class="card">
-    <h3>📦 My Assets</h3>
-    <p>No NFTs found yet.</p>
-  </div>
-</div>
+    <div class="card">
+      <div class="nft-img"></div>
+      <div class="price">$20</div>
+      <button class="buy">Buy NFT</button>
+    </div>
 
-<div id="profile" class="section">
-  <div class="card">
-    <h3>👤 My Account</h3>
-    <p>Email: user@example.com</p>
-    <button onclick="logout()">Logout</button>
+    <div class="card">
+      <div class="nft-img"></div>
+      <div class="price">$30</div>
+      <button class="buy">Buy NFT</button>
+    </div>
+
+    <div class="card">
+      <div class="nft-img"></div>
+      <div class="price">$50</div>
+      <button class="buy">Buy NFT</button>
+    </div>
+
+    <div class="card">
+      <div class="nft-img"></div>
+      <div class="price">$75</div>
+      <button class="buy">Buy NFT</button>
+    </div>
+
+    <div class="card">
+      <div class="nft-img"></div>
+      <div class="price">$100</div>
+      <button class="buy">Buy NFT</button>
+    </div>
+
   </div>
+
+  <button class="logout" onclick="logout()">Logout</button>
 </div>
 
 <script>
-function show(id){
-  document.querySelectorAll('.section').forEach(s=>{
-    s.classList.remove('active');
-  });
-  document.getElementById(id).classList.add('active');
-}
-
 function logout(){
-  window.location.href = "index.html";
+  window.location.href="login.html";
 }
 </script>
 
