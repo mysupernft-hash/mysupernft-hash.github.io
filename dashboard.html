@@ -9,139 +9,123 @@
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:#0b1220;
+  background:#0b1d3a;
   color:#fff;
 }
-
-.topbar{
-  background:#111a33;
+header{
+  background:#08162e;
   padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
+header h1{
+  margin:0;
+  color:#4da3ff;
+}
+nav a{
+  color:#fff;
+  margin:0 10px;
+  text-decoration:none;
+  font-size:14px;
+}
+nav a:hover{color:#4da3ff;}
 
 .container{
   padding:20px;
 }
-
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:18px;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:20px;
 }
 
 .card{
-  background:#111a33;
-  border-radius:14px;
+  background:#102a52;
+  border-radius:12px;
   padding:15px;
   text-align:center;
+  box-shadow:0 0 10px rgba(0,0,0,.5);
 }
-
-.nft-img{
-  height:120px;
-  border-radius:12px;
-  background:linear-gradient(135deg,#00e5ff,#0d6efd);
-  margin-bottom:12px;
+.card img{
+  width:100%;
+  border-radius:10px;
 }
-
-/* 👇 PRICE IMAGE KE NICHE */
 .price{
-  font-size:22px;
-  font-weight:bold;
-  color:#00e5ff;
-  margin-bottom:10px;
+  margin:10px 0;
+  font-size:18px;
+  color:#00ffcc;
 }
-
-.buy{
-  padding:10px;
-  width:100%;
+button{
+  background:#4da3ff;
   border:none;
+  padding:10px 15px;
   border-radius:20px;
-  background:#00e5ff;
-  font-weight:bold;
+  color:#000;
   cursor:pointer;
-}
-
-.buy:hover{
-  background:#00c4db;
-}
-
-.logout{
-  margin-top:25px;
-  padding:10px;
-  width:100%;
-  background:#ff4d4d;
-  border:none;
-  border-radius:20px;
-  color:white;
   font-weight:bold;
-  cursor:pointer;
 }
+button:hover{background:#00ffcc;}
 </style>
 </head>
 
 <body>
 
-<div class="topbar">SuperNFT Dashboard</div>
+<header>
+  <h1>SuperNFT</h1>
+  <nav>
+    <a href="#">Get Airdrop</a>
+    <a href="#">NFT Power</a>
+    <a href="#">Stake | Earn</a>
+    <a href="#">Assets</a>
+    <a href="#">My NFTs</a>
+  </nav>
+</header>
 
 <div class="container">
-  <h3>🔥 Available NFTs</h3>
+  <h2>🔥 NFT Marketplace</h2>
 
   <div class="grid">
 
+    <!-- NFT CARD -->
     <div class="card">
-      <div class="nft-img"></div>
+      <img src="https://via.placeholder.com/300x300?text=NFT+$10">
       <div class="price">$10</div>
-      <button class="buy">Buy NFT</button>
+      <button>Buy NFT</button>
     </div>
 
     <div class="card">
-      <div class="nft-img"></div>
-      <div class="price">$15</div>
-      <button class="buy">Buy NFT</button>
+      <img src="https://via.placeholder.com/300x300?text=NFT+$25">
+      <div class="price">$25</div>
+      <button>Buy NFT</button>
     </div>
 
     <div class="card">
-      <div class="nft-img"></div>
-      <div class="price">$20</div>
-      <button class="buy">Buy NFT</button>
-    </div>
-
-    <div class="card">
-      <div class="nft-img"></div>
-      <div class="price">$30</div>
-      <button class="buy">Buy NFT</button>
-    </div>
-
-    <div class="card">
-      <div class="nft-img"></div>
+      <img src="https://via.placeholder.com/300x300?text=NFT+$50">
       <div class="price">$50</div>
-      <button class="buy">Buy NFT</button>
+      <button>Buy NFT</button>
     </div>
 
     <div class="card">
-      <div class="nft-img"></div>
-      <div class="price">$75</div>
-      <button class="buy">Buy NFT</button>
-    </div>
-
-    <div class="card">
-      <div class="nft-img"></div>
+      <img src="https://via.placeholder.com/300x300?text=NFT+$100">
       <div class="price">$100</div>
-      <button class="buy">Buy NFT</button>
+      <button>Buy NFT</button>
+    </div>
+
+    <div class="card">
+      <img src="https://via.placeholder.com/300x300?text=NFT+$250">
+      <div class="price">$250</div>
+      <button>Buy NFT</button>
+    </div>
+
+    <div class="card">
+      <img src="https://via.placeholder.com/300x300?text=NFT+$999">
+      <div class="price">$999</div>
+      <button>Buy NFT</button>
     </div>
 
   </div>
-
-  <button class="logout" onclick="logout()">Logout</button>
 </div>
-
-<script>
-function logout(){
-  window.location.href="login.html";
-}
-</script>
 
 </body>
 </html>
