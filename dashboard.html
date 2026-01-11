@@ -3,111 +3,108 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:#0b5ed7;
-  color:white;
+  font-family: Arial, sans-serif;
+  background:#0b1d3a;
+  color:#fff;
 }
-
 header{
+  background:#08162e;
   padding:15px;
+  text-align:center;
   font-size:22px;
   font-weight:bold;
-  background:#084298;
-  text-align:center;
 }
-
+.menu{
+  display:flex;
+  justify-content:space-around;
+  background:#0f2a52;
+  padding:10px 0;
+  font-size:14px;
+}
+.menu div{color:#9fd3ff}
 .grid{
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
-  gap:15px;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:16px;
   padding:15px;
 }
-
 .card{
-  background:#111;
-  border-radius:10px;
+  background:#111a33;
+  border-radius:12px;
   overflow:hidden;
-  box-shadow:0 4px 10px rgba(0,0,0,.4);
+  text-align:center;
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
 }
-
 .card img{
   width:100%;
   height:160px;
   object-fit:cover;
 }
-
 .price{
-  padding:10px;
+  margin:8px 0;
   font-size:18px;
   font-weight:bold;
-  text-align:center;
+  color:#00ffcc;
 }
-
 button{
-  width:100%;
-  padding:10px;
+  margin-bottom:12px;
+  padding:10px 20px;
   border:none;
-  background:#ffc107;
-  font-size:16px;
+  border-radius:20px;
+  background:#4da3ff;
+  color:#000;
   font-weight:bold;
-  cursor:pointer;
 }
-
-button:hover{
-  background:#ffca2c;
+.premium{
+  border:2px solid gold;
 }
 </style>
 </head>
 
 <body>
 
-<header>SuperNFT – Making Money Zone</header>
+<header>SuperNFT – Dashboard</header>
+
+<div class="menu">
+  <div>Get Airdrop</div>
+  <div>Bid NFTs</div>
+  <div>Stake | Earn</div>
+  <div>Assets</div>
+  <div>My</div>
+</div>
 
 <div class="grid">
 
-<!-- NFT LIST START -->
+<!-- 🔴 YAHAN SIRF IMAGE URL CHANGE KARNA HAI -->
 
-<div class="card"><img src="images/IMG_0458.png"><div class="price">$10</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0459.png"><div class="price">$15</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0460.png"><div class="price">$20</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0461.png"><div class="price">$25</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0462.png"><div class="price">$30</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0463.png"><div class="price">$40</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0464.png"><div class="price">$45</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0465.png"><div class="price">$50</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0466.png"><div class="price">$55</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0467.png"><div class="price">$60</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0468.png"><div class="price">$65</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0469.png"><div class="price">$70</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0470.png"><div class="price">$75</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0471.png"><div class="price">$80</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0472.png"><div class="price">$85</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0473.png"><div class="price">$90</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0474.png"><div class="price">$95</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0475.png"><div class="price">$100</div><button>Buy NFT</button></div>
+<div class="card">
+  <img src="PASTE_BLOGGER_IMAGE_URL_HERE">
+  <div class="price">$10</div>
+  <button>Buy NFT</button>
+</div>
 
-<div class="card"><img src="images/IMG_0476.png"><div class="price">$150</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0477.png"><div class="price">$200</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0478.png"><div class="price">$250</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0479.png"><div class="price">$300</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0480.png"><div class="price">$350</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0481.png"><div class="price">$400</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0482.png"><div class="price">$450</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0483.png"><div class="price">$499</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0497.png"><div class="price">$599</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0498.png"><div class="price">$699</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0499.png"><div class="price">$799</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0500.png"><div class="price">$899</div><button>Buy NFT</button></div>
+<div class="card">
+  <img src="PASTE_BLOGGER_IMAGE_URL_HERE">
+  <div class="price">$50</div>
+  <button>Buy NFT</button>
+</div>
 
-<!-- 🔥 PREMIUM NFT -->
-<div class="card"><img src="images/IMG_0503.png"><div class="price">$999</div><button>Buy NFT</button></div>
+<div class="card">
+  <img src="PASTE_BLOGGER_IMAGE_URL_HERE">
+  <div class="price">$100</div>
+  <button>Buy NFT</button>
+</div>
 
-<!-- NFT LIST END -->
+<div class="card premium">
+  <img src="PASTE_BLOGGER_IMAGE_URL_HERE">
+  <div class="price">$999</div>
+  <button>Premium NFT</button>
+</div>
 
 </div>
 
