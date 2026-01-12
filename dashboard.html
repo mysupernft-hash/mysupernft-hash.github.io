@@ -14,9 +14,25 @@ body{
 }
 header{
   text-align:center;
-  padding:15px;
+  padding:16px;
   font-size:22px;
   color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:12px;
+  overflow-x:auto;
+}
+.tabs div{
+  padding:8px 14px;
+  background:#0f172a;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  color:#38bdf8;
+  white-space:nowrap;
+  font-size:14px;
 }
 .grid{
   display:grid;
@@ -39,7 +55,7 @@ header{
   color:#38bdf8;
   font-weight:bold;
 }
-button{
+.card button{
   width:100%;
   padding:8px;
   border:none;
@@ -47,6 +63,7 @@ button{
   background:#38bdf8;
   color:#020617;
   font-weight:bold;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -55,27 +72,51 @@ button{
 
 <header>SuperNFT Dashboard</header>
 
+<div class="tabs">
+  <div>Starter NFTs</div>
+  <div>Rising NFTs</div>
+  <div>Elite NFTs</div>
+  <div>Legendary Vault</div>
+  <div>Airdrops</div>
+</div>
+
 <div class="grid">
 
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiboNkiNsLXIv4Ct6iSoaBGOZ4mxy3kPOd5n4XkiX6JiDkSlnIy_A8lUMpmYWjuGswRWbnT98B6Iq9fBK5LB1EFElBm_nWorH5NnFJrOnv0XzyOOh_oT2r5jRzCTyibyiHVBC9x90Yhu68Fg3ePHTREF1FPpjTRYov0O-a3DUcvsI1yhw5OppnOw-N6HSM/s320/IMG_0458.png"><div class="price">$10</div><button>Buy NFT</button></div>
+<!-- LIST START -->
 
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgN2Br0HRYgai60JKkhcD1YvolmmyZlJCNF2qGyVLTvPmPm045EYxIHgtV7SorM-hP4JRIWmPK5mHiFGGIlwlj7ydYyH5ad0c0RTvY0i7zxtfZmoczekjNiksKtHEyxW_I0PuZf4-BJo0Uk17WMUsa47rgP6VFc7tIQCwQx15fiLYQe_t5S_MsfaaW-PDc/s320/IMG_0459.png"><div class="price">$20</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0458.png"><div class="price">$10</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0459.png"><div class="price">$15</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0460.png"><div class="price">$20</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0461.png"><div class="price">$25</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0462.png"><div class="price">$30</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0463.png"><div class="price">$40</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0464.png"><div class="price">$45</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0465.png"><div class="price">$50</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0466.png"><div class="price">$55</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0467.png"><div class="price">$60</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0468.png"><div class="price">$65</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0469.png"><div class="price">$70</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0470.png"><div class="price">$75</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0471.png"><div class="price">$80</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0472.png"><div class="price">$85</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0473.png"><div class="price">$90</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0474.png"><div class="price">$95</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0475.png"><div class="price">$100</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0476.png"><div class="price">$150</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0477.png"><div class="price">$200</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0478.png"><div class="price">$250</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0479.png"><div class="price">$300</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0480.png"><div class="price">$350</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0481.png"><div class="price">$400</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0482.png"><div class="price">$450</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0483.png"><div class="price">$499</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0497.png"><div class="price">$599</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0498.png"><div class="price">$699</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0499.png"><div class="price">$799</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0500.png"><div class="price">$899</div><button>Buy NFT</button></div>
+<div class="card"><img src="images/IMG_0503.png"><div class="price">$999</div><button>Buy NFT</button></div>
 
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj_p9DrXo1dh4LGkMdvU8B4xajJCt2vEmg2lTgB7m6HunFWbQVP92zZd1v4x9phAyGrkYtjHQRpVdiBRv34cckTJk5xAeA-Tm1DKQbAyzpNluXTbzOvubob_QYQtVv7NhU6kg4bMIFStgwSai_hutIoYNast4JU3u-NBK3h4SdQvghyt2DLmhimuaAh1k0/s320/IMG_0461.png"><div class="price">$30</div><button>Buy NFT</button></div>
-
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEifKGMObRZhdKULoj0i5i8TCa3zcKN8Dd5zBrQxMINAm6N2rHseprYEgXXXzaf8Fa64Xwhn6CkLGN_eqbO-rE2eFq3DWTceS9QXI-uvqCucoM2-hRqXBE8gpGKRkXtaOsPso_1X6jHp17smONNOBjK9odjyAsWVG9aDbi2JutJJ6JrBYWzvC-xK9eocZio/s320/IMG_0462.png"><div class="price">$40</div><button>Buy NFT</button></div>
-
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh-7rragc_3OSfRqk5cSPtifOd_GnIiyQGhyphenhyphenVkonPQn1IH0ReqyYXX2VLYsZdkKAaqYBvjkOEivfHRnIjOCrYru1T-jg88FMWzFsN9zpz2XuqcIFWqtIB3XlqnNkCnJiMj3ADsA2vX9IeuP1HhHjqMoqRUvAt2ByGWLvGDVImV7sDknbU8cPoUR3gol-VY/s320/IMG_0460.png"><div class="price">$50</div><button>Buy NFT</button></div>
-
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiW6JKibUpa5jRymYtGdP5RaU4PdzxZWbaPGzTRAKfGH1NqzTqMm-C0i47514FVaagu-0dlKt2f-EhwVHSLl4bXi6aA_eKejmAalBG6XbmY_9wckYJhGxxivlX0LXygHlsbcMHsKfuwRhAiRiSfoMkDuqZMClzSxAbBwNd38mY5vOTr4m6Pf0WaBYCKV4U/s320/IMG_0466.png"><div class="price">$60</div><button>Buy NFT</button></div>
-
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0-nlsS0vQ80k_oxpzHcvdK_8BgmKAq989Gw1ehpoFLM66xPZaV41-gx3XkHdJrQNLdl8GlwWvF90j8PmK8tNrk0lL8Ysw6zf6SGg2E0Mz-d76Pk4XeBsPi9n6JyYwFbKWzdrwTs1Ag5zF2Mcnd72X1a4DnalRvUuh-BITTOIB55gN5-_yJzLQNWewKoA/s320/IMG_0465.png"><div class="price">$70</div><button>Buy NFT</button></div>
-
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgCI-FxBygEFRSQRccbJPboN-J8i55K0Y_VSjRDu771KhWTsUWOl3TrH5Ily40WKmyiyx5SIg6Y3RuIuhwo7Io0UGOYQUsxNfytGX_CQeIrNTbp00i5a59gT3NslKZSffCHDQi-Wz4Ko6sHLrPoaLno0UIeXp_CKIH69z69M3I3cduXOmScmt5k4ZgIA6c/s320/IMG_0467.png"><div class="price">$80</div><button>Buy NFT</button></div>
-
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkeZzEQReDJb4afHSTsNKF78GuK61qfj0IhxqUvCAH6NUh3QU6PcFU12Qgm1YY9hhdnz_K0nZKsLCHAKLMWbhZK8GoBTNU1nO4enwtB71gy5uXVWU4461eVK9aSd2oMOrriVEFTYAYWGKmA4xBqe_gp4iR-B2KbdDXtANyMtTFu1fOZ2XAp8aXvYxH_14/s320/IMG_0478.png"><div class="price">$100</div><button>Buy NFT</button></div>
-
-<div class="card"><img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj2zphwIJ-erovCS70nS4tgiWSqMKOf7mcLIWMgiwU-dtVwCQpLEax2ccywuoGMg8qPY7OjlAcjq_9nyU3ZNxCgdJXhY4L5BotTYEaPdnlayBZU1X_s9CrvEiUvEs2yBPvnK3sJNC4AcDvToSgLoaMhK3BR0ib8rPbo-NAYcCZ-e3tjdrFL6gu6aufvXvQ/s320/IMG_0503.png"><div class="price">$999</div><button>Buy NFT</button></div>
+<!-- LIST END -->
 
 </div>
 
