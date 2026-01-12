@@ -10,11 +10,11 @@ body{
   margin:0;
   font-family:Arial, sans-serif;
   background:#020617;
-  color:#fff;
+  color:white;
 }
 header{
   text-align:center;
-  padding:16px;
+  padding:15px;
   font-size:22px;
   color:#38bdf8;
   border-bottom:1px solid #1e293b;
@@ -22,17 +22,21 @@ header{
 .tabs{
   display:flex;
   gap:10px;
-  padding:12px;
+  padding:10px;
   overflow-x:auto;
 }
-.tabs div{
+.tabs button{
   padding:8px 14px;
   background:#0f172a;
   border-radius:20px;
   border:1px solid #38bdf8;
   color:#38bdf8;
+  cursor:pointer;
   white-space:nowrap;
-  font-size:14px;
+}
+.tabs button.active{
+  background:#38bdf8;
+  color:#020617;
 }
 .grid{
   display:grid;
@@ -63,7 +67,6 @@ header{
   background:#38bdf8;
   color:#020617;
   font-weight:bold;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -73,52 +76,67 @@ header{
 <header>SuperNFT Dashboard</header>
 
 <div class="tabs">
-  <div>Starter NFTs</div>
-  <div>Rising NFTs</div>
-  <div>Elite NFTs</div>
-  <div>Legendary Vault</div>
-  <div>Airdrops</div>
+  <button class="active" onclick="filterNFT('all',this)">All</button>
+  <button onclick="filterNFT('starter',this)">Starter NFTs</button>
+  <button onclick="filterNFT('rising',this)">Rising NFTs</button>
+  <button onclick="filterNFT('elite',this)">Elite NFTs</button>
+  <button onclick="filterNFT('legendary',this)">Legendary Vault</button>
 </div>
 
 <div class="grid">
 
-<!-- LIST START -->
+<!-- STARTER -->
+<div class="card starter"><img src="images/IMG_0458.png"><div class="price">$10</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0459.png"><div class="price">$15</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0460.png"><div class="price">$20</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0461.png"><div class="price">$25</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0462.png"><div class="price">$30</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0463.png"><div class="price">$35</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0464.png"><div class="price">$40</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0465.png"><div class="price">$45</div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0466.png"><div class="price">$50</div><button>Buy NFT</button></div>
 
-<div class="card"><img src="images/IMG_0458.png"><div class="price">$10</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0459.png"><div class="price">$15</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0460.png"><div class="price">$20</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0461.png"><div class="price">$25</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0462.png"><div class="price">$30</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0463.png"><div class="price">$40</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0464.png"><div class="price">$45</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0465.png"><div class="price">$50</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0466.png"><div class="price">$55</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0467.png"><div class="price">$60</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0468.png"><div class="price">$65</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0469.png"><div class="price">$70</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0470.png"><div class="price">$75</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0471.png"><div class="price">$80</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0472.png"><div class="price">$85</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0473.png"><div class="price">$90</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0474.png"><div class="price">$95</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0475.png"><div class="price">$100</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0476.png"><div class="price">$150</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0477.png"><div class="price">$200</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0478.png"><div class="price">$250</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0479.png"><div class="price">$300</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0480.png"><div class="price">$350</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0481.png"><div class="price">$400</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0482.png"><div class="price">$450</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0483.png"><div class="price">$499</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0497.png"><div class="price">$599</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0498.png"><div class="price">$699</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0499.png"><div class="price">$799</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0500.png"><div class="price">$899</div><button>Buy NFT</button></div>
-<div class="card"><img src="images/IMG_0503.png"><div class="price">$999</div><button>Buy NFT</button></div>
+<!-- RISING -->
+<div class="card rising"><img src="images/IMG_0467.png"><div class="price">$55</div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0468.png"><div class="price">$60</div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0469.png"><div class="price">$65</div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0470.png"><div class="price">$70</div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0471.png"><div class="price">$75</div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0472.png"><div class="price">$80</div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0473.png"><div class="price">$90</div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0474.png"><div class="price">$100</div><button>Buy NFT</button></div>
 
-<!-- LIST END -->
+<!-- ELITE -->
+<div class="card elite"><img src="images/IMG_0475.png"><div class="price">$150</div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0476.png"><div class="price">$200</div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0477.png"><div class="price">$250</div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0478.png"><div class="price">$300</div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0479.png"><div class="price">$350</div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0480.png"><div class="price">$400</div><button>Buy NFT</button></div>
+
+<!-- LEGENDARY -->
+<div class="card legendary"><img src="images/IMG_0481.png"><div class="price">$450</div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0482.png"><div class="price">$499</div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0483.png"><div class="price">$599</div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0497.png"><div class="price">$699</div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0503.png"><div class="price">$999</div><button>Buy NFT</button></div>
 
 </div>
+
+<script>
+function filterNFT(type,btn){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.card').forEach(card=>{
+    if(type==="all" || card.classList.contains(type)){
+      card.style.display="block";
+    }else{
+      card.style.display="none";
+    }
+  });
+}
+</script>
 
 </body>
 </html>
