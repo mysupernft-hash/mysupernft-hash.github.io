@@ -3,96 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#020617;
-  color:white;
-}
-header{
-  text-align:center;
-  padding:15px;
-  font-size:22px;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b;
-}
-.tabs{
-  display:flex;
-  gap:10px;
-  padding:10px;
-  overflow-x:auto;
-}
-.tabs button{
-  padding:8px 14px;
-  background:#0f172a;
-  border-radius:20px;
-  border:1px solid #38bdf8;
-  color:#38bdf8;
-  white-space:nowrap;
-}
-.tabs button.active{
-  background:#38bdf8;
-  color:#020617;
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:15px;
-  padding:15px;
-}
-.card{
-  background:#0f172a;
-  border-radius:14px;
-  padding:10px;
-  text-align:center;
-}
-.card img{
-  width:100%;
-  border-radius:10px;
-}
-.price{
-  margin:6px 0;
-  color:#38bdf8;
-  font-weight:bold;
-}
-.meta{
-  font-size:12px;
-  color:#cbd5e1;
-  line-height:1.4;
-}
-.card button{
-  width:100%;
-  margin-top:8px;
-  padding:8px;
-  border:none;
-  border-radius:8px;
-  background:#38bdf8;
-  color:#020617;
-  font-weight:bold;
-}
-.section{display:none;}
-.section.active{display:grid;}
+body{margin:0;font-family:Arial;background:#020617;color:white}
+header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
+.tabs{display:flex;gap:10px;padding:10px;overflow-x:auto}
+.tabs button{padding:8px 14px;border:1px solid #38bdf8;border-radius:20px;color:#38bdf8;background:#0f172a;cursor:pointer}
+.tabs button.active{background:#38bdf8;color:#020617}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;padding:15px}
+.card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
+.card img{width:100%;border-radius:10px}
+.price{color:#38bdf8;font-weight:bold;margin:6px 0}
+.meta{font-size:12px;color:#cbd5f5;line-height:1.4}
+button{width:100%;padding:8px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer}
+.section{display:none}
+.section.active{display:grid}
 </style>
 </head>
-
 <body>
 
 <header>SuperNFT Dashboard</header>
 
 <div class="tabs">
-  <button class="active" onclick="showTab('starter')">Starter NFTs</button>
-  <button onclick="showTab('rising')">Rising NFTs</button>
-  <button onclick="showTab('elite')">Elite NFTs</button>
-  <button onclick="showTab('legendary')">Legendary Vault</button>
+  <button class="active" onclick="showTab('starter',this)">Starter NFTs</button>
+  <button onclick="showTab('rising',this)">Rising NFTs</button>
+  <button onclick="showTab('elite',this)">Elite NFTs</button>
+  <button onclick="showTab('legendary',this)">Legendary Vault</button>
 </div>
 
-<!-- STARTER -->
-<div id="starter" class="grid section active">
+<!-- Starter -->
+<div id="starter" class="grid section active"></div>
+
+<!-- Rising -->
+<div id="rising" class="grid section"></div>
+
+<!-- Elite -->
+<div id="elite" class="grid section"></div>
+
+<!-- Legendary -->
+<div id="legendary" class="grid section"></div>
 
 <script>
+// Data
 const starter = [
  [10,"IMG_0458.png",2,0.2],
  [15,"IMG_0459.png",2,0.3],
@@ -104,13 +57,7 @@ const starter = [
  [45,"IMG_0465.png",2,0.9],
  [50,"IMG_0466.png",2,1.0]
 ];
-</script>
 
-</div>
-
-<!-- RISING -->
-<div id="rising" class="grid section">
-<script>
 const rising = [
  [55,"IMG_0467.png",2.5,1.3],
  [60,"IMG_0468.png",2.5,1.5],
@@ -121,12 +68,7 @@ const rising = [
  [90,"IMG_0473.png",2.5,2.25],
  [100,"IMG_0474.png",2.5,2.5]
 ];
-</script>
-</div>
 
-<!-- ELITE -->
-<div id="elite" class="grid section">
-<script>
 const elite = [
  [150,"IMG_0475.png",3.3,5],
  [200,"IMG_0476.png",3.3,6.6],
@@ -136,26 +78,21 @@ const elite = [
  [400,"IMG_0480.png",3.3,13.3],
  [450,"IMG_0481.png",3.3,15]
 ];
-</script>
-</div>
 
-<!-- LEGENDARY -->
-<div id="legendary" class="grid section">
-<script>
 const legendary = [
  [499,"IMG_0482.png",5,25],
  [599,"IMG_0483.png",5,30],
  [699,"IMG_0497.png",5,40],
  [799,"IMG_0498.png",5,30],
+ [899,"IMG_0499.png",5,45],
+ [949,"IMG_0500.png",8,75],
  [999,"IMG_0503.png",10,100]
 ];
-</script>
-</div>
 
-<script>
+// Render
 function render(list, id){
   const box = document.getElementById(id);
-  list.forEach(n=>{
+  list.forEach(n=> {
     box.innerHTML += `
     <div class="card">
       <img src="images/${n[1]}">
@@ -171,17 +108,17 @@ function render(list, id){
     </div>`;
   });
 }
-
 render(starter,"starter");
 render(rising,"rising");
 render(elite,"elite");
 render(legendary,"legendary");
 
-function showTab(tab){
+// Tabs
+function showTab(id, btn){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  document.getElementById(tab).classList.add("active");
-  event.target.classList.add("active");
+  document.getElementById(id).classList.add("active");
+  btn.classList.add("active");
 }
 </script>
 
