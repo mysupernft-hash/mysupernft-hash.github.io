@@ -14,7 +14,7 @@ body{
 }
 header{
   text-align:center;
-  padding:15px;
+  padding:16px;
   font-size:22px;
   color:#38bdf8;
   border-bottom:1px solid #1e293b;
@@ -27,20 +27,20 @@ header{
 }
 .tabs button{
   padding:8px 16px;
-  border-radius:20px;
-  border:1px solid #38bdf8;
   background:#0f172a;
+  border:1px solid #38bdf8;
   color:#38bdf8;
+  border-radius:20px;
   cursor:pointer;
+  white-space:nowrap;
 }
 .tabs button.active{
   background:#38bdf8;
   color:#020617;
-  font-weight:bold;
 }
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
   gap:15px;
   padding:15px;
 }
@@ -49,29 +49,26 @@ header{
   border-radius:14px;
   padding:10px;
   text-align:center;
+  border:1px solid #1e293b;
 }
 .card img{
   width:100%;
   border-radius:10px;
 }
 .price{
-  margin:6px 0;
+  margin-top:8px;
+  font-size:18px;
   color:#38bdf8;
   font-weight:bold;
-  font-size:16px;
 }
 .details{
   font-size:13px;
   line-height:1.5;
+  margin:6px 0;
   color:#cbd5f5;
-  margin:4px 0;
 }
-.details span{
-  color:#38bdf8;
-  font-weight:bold;
-}
+.details span{color:#38bdf8;}
 .card button{
-  margin-top:8px;
   width:100%;
   padding:8px;
   border:none;
@@ -90,98 +87,64 @@ header{
 <header>SuperNFT Dashboard</header>
 
 <div class="tabs">
-  <button class="active" onclick="filterNFT('starter', this)">Starter</button>
-  <button onclick="filterNFT('rising', this)">Rising</button>
-  <button onclick="filterNFT('elite', this)">Elite</button>
-  <button onclick="filterNFT('legendary', this)">Legendary</button>
+  <button class="active" onclick="showTab('starter')">Starter NFTs</button>
+  <button onclick="showTab('rising')">Rising NFTs</button>
+  <button onclick="showTab('elite')">Elite NFTs</button>
+  <button onclick="showTab('legendary')">Legendary Vault</button>
 </div>
 
 <div class="grid">
 
 <!-- STARTER -->
-<div class="card starter">
-<img src="images/IMG_0458.png">
-<div class="price">$10</div>
-<div class="details">Daily: <span>2%</span><br>Income: <span>$0.2</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
-
-<div class="card starter">
-<img src="images/IMG_0459.png">
-<div class="price">$15</div>
-<div class="details">Daily: <span>2%</span><br>Income: <span>$0.3</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
-
-<div class="card starter">
-<img src="images/IMG_0460.png">
-<div class="price">$20</div>
-<div class="details">Daily: <span>2%</span><br>Income: <span>$0.4</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
+<div class="card starter"><img src="images/IMG_0458.png"><div class="price">$10</div><div class="details">Daily <span>2%</span><br>Income <span>$0.2</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0459.png"><div class="price">$15</div><div class="details">Daily <span>2%</span><br>Income <span>$0.3</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0460.png"><div class="price">$20</div><div class="details">Daily <span>2%</span><br>Income <span>$0.4</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0461.png"><div class="price">$25</div><div class="details">Daily <span>2%</span><br>Income <span>$0.5</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0462.png"><div class="price">$30</div><div class="details">Daily <span>2%</span><br>Income <span>$0.6</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0463.png"><div class="price">$35</div><div class="details">Daily <span>2%</span><br>Income <span>$0.7</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0464.png"><div class="price">$40</div><div class="details">Daily <span>2%</span><br>Income <span>$0.8</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0465.png"><div class="price">$45</div><div class="details">Daily <span>2%</span><br>Income <span>$0.9</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card starter"><img src="images/IMG_0466.png"><div class="price">$50</div><div class="details">Daily <span>2%</span><br>Income <span>$1.0</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
 
 <!-- RISING -->
-<div class="card rising">
-<img src="images/IMG_0461.png">
-<div class="price">$25</div>
-<div class="details">Daily: <span>2%</span><br>Income: <span>$0.5</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
-
-<div class="card rising">
-<img src="images/IMG_0462.png">
-<div class="price">$30</div>
-<div class="details">Daily: <span>2%</span><br>Income: <span>$0.6</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
-
-<div class="card rising">
-<img src="images/IMG_0463.png">
-<div class="price">$35</div>
-<div class="details">Daily: <span>2%</span><br>Income: <span>$0.7</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
+<div class="card rising"><img src="images/IMG_0467.png"><div class="price">$55</div><div class="details">Daily <span>2.5%</span><br>Income <span>$1.3</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0468.png"><div class="price">$60</div><div class="details">Daily <span>2.5%</span><br>Income <span>$1.5</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0469.png"><div class="price">$65</div><div class="details">Daily <span>2.5%</span><br>Income <span>$1.63</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0470.png"><div class="price">$70</div><div class="details">Daily <span>2.5%</span><br>Income <span>$1.75</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0471.png"><div class="price">$75</div><div class="details">Daily <span>2.5%</span><br>Income <span>$1.88</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0472.png"><div class="price">$80</div><div class="details">Daily <span>2.5%</span><br>Income <span>$2.0</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card rising"><img src="images/IMG_0473.png"><div class="price">$90</div><div class="details">Daily <span>2.5%</span><br>Income <span>$2.25</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
 
 <!-- ELITE -->
-<div class="card elite">
-<img src="images/IMG_0470.png">
-<div class="price">$100</div>
-<div class="details">Daily: <span>2.5%</span><br>Income: <span>$2.5</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
-
-<div class="card elite">
-<img src="images/IMG_0471.png">
-<div class="price">$150</div>
-<div class="details">Daily: <span>3.3%</span><br>Income: <span>$5</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
+<div class="card elite"><img src="images/IMG_0474.png"><div class="price">$100</div><div class="details">Daily <span>2.5%</span><br>Income <span>$2.5</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0475.png"><div class="price">$150</div><div class="details">Daily <span>3.3%</span><br>Income <span>$5</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0476.png"><div class="price">$200</div><div class="details">Daily <span>3.3%</span><br>Income <span>$6.6</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0477.png"><div class="price">$250</div><div class="details">Daily <span>3.3%</span><br>Income <span>$8.25</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card elite"><img src="images/IMG_0478.png"><div class="price">$300</div><div class="details">Daily <span>3.3%</span><br>Income <span>$10</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
 
 <!-- LEGENDARY -->
-<div class="card legendary">
-<img src="images/IMG_0500.png">
-<div class="price">$450</div>
-<div class="details">Daily: <span>3.3%</span><br>Income: <span>$15</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
-
-<div class="card legendary">
-<img src="images/IMG_0503.png">
-<div class="price">$999</div>
-<div class="details">Daily: <span>10%</span><br>Income: <span>$100</span><br>Validity: <span>365 Days</span></div>
-<button>Buy NFT</button>
-</div>
+<div class="card legendary"><img src="images/IMG_0479.png"><div class="price">$350</div><div class="details">Daily <span>3.3%</span><br>Income <span>$11.6</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0480.png"><div class="price">$400</div><div class="details">Daily <span>3.3%</span><br>Income <span>$13.3</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0481.png"><div class="price">$450</div><div class="details">Daily <span>3.3%</span><br>Income <span>$15</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0482.png"><div class="price">$499</div><div class="details">Daily <span>5%</span><br>Income <span>$25</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0483.png"><div class="price">$599</div><div class="details">Daily <span>5%</span><br>Income <span>$30</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0497.png"><div class="price">$699</div><div class="details">Daily <span>5%</span><br>Income <span>$40</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0498.png"><div class="price">$799</div><div class="details">Daily <span>5%</span><br>Income <span>$30</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0499.png"><div class="price">$899</div><div class="details">Daily <span>5%</span><br>Income <span>$45</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
+<div class="card legendary"><img src="images/IMG_0500.png"><div class="price">$999</div><div class="details">Daily <span>10%</span><br>Income <span>$100</span><br>Validity <span>365 Days</span></div><button>Buy NFT</button></div>
 
 </div>
 
 <script>
-function filterNFT(type, btn){
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.card').forEach(card => {
-    card.style.display = card.classList.contains(type) ? 'block' : 'none';
+function showTab(type){
+  document.querySelectorAll('.card').forEach(c=>{
+    c.classList.add('hidden');
+    if(c.classList.contains(type)) c.classList.remove('hidden');
   });
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
 }
+showTab('starter');
 </script>
 
 </body>
