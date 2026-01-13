@@ -1,97 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Login | SuperNFT</title>
+<title>SuperNFT Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
-  margin:0;
-  background:linear-gradient(135deg,#0b1220,#0d6efd);
-  font-family:Arial,sans-serif;
-  color:white;
-  text-align:center;
+  background:#020617;
+  color:#fff;
+  font-family:Arial;
 }
-
-.container{
-  margin-top:100px;
-  width:90%;
-  max-width:380px;
-  background:rgba(255,255,255,0.08);
-  padding:30px;
-  border-radius:16px;
-  margin-left:auto;
-  margin-right:auto;
-  backdrop-filter:blur(10px);
+.box{
+  max-width:420px;
+  margin:60px auto;
+  padding:20px;
+  background:#0f172a;
+  border-radius:12px;
 }
-
-h2{
-  margin-bottom:20px;
-}
-
-input{
+h2{text-align:center;color:#38bdf8;}
+input,button{
   width:100%;
   padding:12px;
   margin:10px 0;
-  border:none;
   border-radius:8px;
-}
-
-button{
-  width:100%;
-  padding:12px;
-  background:#00e5ff;
   border:none;
-  border-radius:30px;
-  font-weight:bold;
-  cursor:pointer;
-  color:#000;
-  margin-top:10px;
 }
-
-button:hover{
-  background:#00c4db;
-}
-
-.link{
-  margin-top:15px;
-  font-size:14px;
-  color:#9bdcff;
-  cursor:pointer;
-}
+input{background:#020617;color:white;border:1px solid #38bdf8;}
+button{background:#38bdf8;color:#020617;font-weight:bold;}
+a{color:#38bdf8;text-decoration:none;}
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
-  <h2>Welcome Back!</h2>
-
-  <input id="email" type="email" placeholder="Enter your email">
-  <input id="pass" type="password" placeholder="Enter your password">
-
-  <button onclick="loginUser()">Login</button>
-
-  <div class="link" onclick="openRegister()">
-    Don’t have an account? Register
-  </div>
-
+<div class="box" id="registerBox">
+  <h2>Create Account</h2>
+  <input id="regEmail" type="email" placeholder="Email">
+  <input id="regPass" type="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <p align="center">
+    <a href="#" onclick="showLogin()">Already have account?</a>
+  </p>
 </div>
 
-<script>
-function loginUser(){
-  if(email.value=="" || pass.value==""){
-    alert("Please fill both fields");
-    return;
-  }
-  // For now, demo login only
-  window.location.href = "dashboard.html";
+<div class="box hidden" id="loginBox">
+  <h2>Login</h2>
+  <input id="loginEmail" type="email" placeholder="Email">
+  <input id="loginPass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { 
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification
+} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCvDN2vIcI_2gp3cNjDQ95PtG76VbOjkxk",
+  authDomain: "supernft-790f7.firebaseapp.com",
+  projectId: "supernft-790f7",
+  storageBucket: "supernft-790f7.appspot.com",
+  messagingSenderId: "38361916626",
+  appId: "1:38361916626:web:ec747e27def5de982ef90b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// REGISTER
+window.register = function(){
+  const email = regEmail.value;
+  const pass = regPass.value;
+
+  createUserWithEmailAndPassword(auth, email, pass)
+  .then((userCred)=>{
+    sendEmailVerification(userCred.user);
+    alert("OTP / Verification email sent. Verify first!");
+  })
+  .catch(err=>alert(err.message));
 }
 
-function openRegister(){
-  window.location.href = "login.html#register";
+// LOGIN
+window.login = function(){
+  signInWithEmailAndPassword(auth, loginEmail.value, loginPass.value)
+  .then((userCred)=>{
+    if(userCred.user.emailVerified){
+      location.href="dashboard.html";
+    }else{
+      alert("Verify email first!");
+    }
+  })
+  .catch(err=>alert(err.message));
+}
+
+window.showLogin=function(){
+  registerBox.classList.add("hidden");
+  loginBox.classList.remove("hidden");
 }
 </script>
 
