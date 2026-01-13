@@ -8,9 +8,9 @@
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
   background:#020617;
-  color:white;
+  color:#fff;
 }
 header{
   text-align:center;
@@ -27,15 +27,16 @@ header{
 }
 .tabs button{
   padding:8px 16px;
-  background:#0f172a;
   border-radius:20px;
   border:1px solid #38bdf8;
+  background:#0f172a;
   color:#38bdf8;
   cursor:pointer;
 }
 .tabs button.active{
   background:#38bdf8;
   color:#020617;
+  font-weight:bold;
 }
 .grid{
   display:grid;
@@ -54,18 +55,20 @@ header{
   border-radius:10px;
 }
 .price{
-  margin:8px 0;
+  margin:6px 0;
   color:#38bdf8;
   font-weight:bold;
   font-size:16px;
 }
 .details{
   font-size:13px;
+  line-height:1.5;
   color:#cbd5f5;
-  line-height:1.4;
+  margin:4px 0;
 }
-.details p{
-  margin:2px 0;
+.details span{
+  color:#38bdf8;
+  font-weight:bold;
 }
 .card button{
   margin-top:8px;
@@ -78,6 +81,7 @@ header{
   font-weight:bold;
   cursor:pointer;
 }
+.hidden{display:none;}
 </style>
 </head>
 
@@ -86,78 +90,124 @@ header{
 <header>SuperNFT Dashboard</header>
 
 <div class="tabs">
-  <button class="active" onclick="filterNFT('Starter')">Starter</button>
-  <button onclick="filterNFT('Rising')">Rising</button>
-  <button onclick="filterNFT('Elite')">Elite</button>
-  <button onclick="filterNFT('Legendary')">Legendary</button>
+  <button class="active" onclick="filterNFT('Starter', this)">Starter NFTs</button>
+  <button onclick="filterNFT('Rising', this)">Rising NFTs</button>
+  <button onclick="filterNFT('Elite', this)">Elite NFTs</button>
+  <button onclick="filterNFT('Legendary', this)">Legendary Vault</button>
 </div>
 
-<div class="grid" id="nftGrid"></div>
+<div class="grid">
 
-<script>
-const nfts = [
-  {img:"IMG_0458.png", price:10, daily:2, cat:"Starter"},
-  {img:"IMG_0459.png", price:15, daily:2, cat:"Starter"},
-  {img:"IMG_0460.png", price:20, daily:2, cat:"Starter"},
-  {img:"IMG_0461.png", price:25, daily:2, cat:"Starter"},
-  {img:"IMG_0462.png", price:30, daily:2, cat:"Starter"},
-  {img:"IMG_0463.png", price:35, daily:2, cat:"Starter"},
-  {img:"IMG_0464.png", price:40, daily:2, cat:"Starter"},
-  {img:"IMG_0465.png", price:45, daily:2, cat:"Starter"},
-  {img:"IMG_0466.png", price:50, daily:2, cat:"Starter"},
+<!-- STARTER -->
+<div class="card Starter">
+<img src="images/IMG_0458.png">
+<div class="price">$10</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.2</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
 
-  {img:"IMG_0467.png", price:55, daily:2.5, cat:"Rising"},
-  {img:"IMG_0468.png", price:60, daily:2.5, cat:"Rising"},
-  {img:"IMG_0469.png", price:65, daily:2.5, cat:"Rising"},
-  {img:"IMG_0470.png", price:70, daily:2.5, cat:"Rising"},
-  {img:"IMG_0471.png", price:75, daily:2.5, cat:"Rising"},
-  {img:"IMG_0472.png", price:80, daily:2.5, cat:"Rising"},
-  {img:"IMG_0473.png", price:90, daily:2.5, cat:"Rising"},
-  {img:"IMG_0474.png", price:100, daily:2.5, cat:"Rising"},
+<div class="card Starter">
+<img src="images/IMG_0459.png">
+<div class="price">$15</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.3</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
 
-  {img:"IMG_0475.png", price:150, daily:3.3, cat:"Elite"},
-  {img:"IMG_0476.png", price:200, daily:3.3, cat:"Elite"},
-  {img:"IMG_0477.png", price:250, daily:3.3, cat:"Elite"},
-  {img:"IMG_0478.png", price:300, daily:3.3, cat:"Elite"},
-  {img:"IMG_0479.png", price:350, daily:3.3, cat:"Elite"},
-  {img:"IMG_0480.png", price:400, daily:3.3, cat:"Elite"},
-  {img:"IMG_0481.png", price:450, daily:3.3, cat:"Elite"},
+<div class="card Starter">
+<img src="images/IMG_0460.png">
+<div class="price">$20</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.4</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
 
-  {img:"IMG_0482.png", price:499, daily:5, cat:"Legendary"},
-  {img:"IMG_0483.png", price:599, daily:5, cat:"Legendary"},
-  {img:"IMG_0497.png", price:699, daily:5, cat:"Legendary"},
-  {img:"IMG_0498.png", price:799, daily:5, cat:"Legendary"},
-  {img:"IMG_0503.png", price:999, daily:10, cat:"Legendary"}
-];
+<div class="card Starter">
+<img src="images/IMG_0461.png">
+<div class="price">$25</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.5</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
 
-function renderNFT(category){
-  const grid = document.getElementById("nftGrid");
-  grid.innerHTML = "";
-  nfts.filter(n => n.cat === category).forEach(n => {
-    const income = (n.price * n.daily / 100).toFixed(2);
-    grid.innerHTML += `
-      <div class="card">
-        <img src="images/${n.img}">
-        <div class="price">$${n.price}</div>
-        <div class="details">
-          <p>Daily: <b>${n.daily}%</b></p>
-          <p>Income: <b>$${income}</b></p>
-          <p>Validity: <b>365 Days</b></p>
-        </div>
-        <button>Buy NFT</button>
-      </div>
-    `;
-  });
-}
+<div class="card Starter">
+<img src="images/IMG_0462.png">
+<div class="price">$30</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.6</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
 
-function filterNFT(cat){
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  event.target.classList.add("active");
-  renderNFT(cat);
-}
+<div class="card Starter">
+<img src="images/IMG_0463.png">
+<div class="price">$35</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.7</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
 
-renderNFT("Starter");
-</script>
+<div class="card Starter">
+<img src="images/IMG_0464.png">
+<div class="price">$40</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.8</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
 
-</body>
-</html>
+<div class="card Starter">
+<img src="images/IMG_0465.png">
+<div class="price">$45</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$0.9</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<!-- RISING -->
+<div class="card Rising">
+<img src="images/IMG_0466.png">
+<div class="price">$50</div>
+<div class="details">Daily: <span>2%</span><br>Income: <span>$1.0</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<div class="card Rising">
+<img src="images/IMG_0467.png">
+<div class="price">$55</div>
+<div class="details">Daily: <span>2.5%</span><br>Income: <span>$1.3</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<div class="card Rising">
+<img src="images/IMG_0468.png">
+<div class="price">$60</div>
+<div class="details">Daily: <span>2.5%</span><br>Income: <span>$1.5</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<div class="card Rising">
+<img src="images/IMG_0469.png">
+<div class="price">$65</div>
+<div class="details">Daily: <span>2.5%</span><br>Income: <span>$1.63</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<div class="card Rising">
+<img src="images/IMG_0470.png">
+<div class="price">$70</div>
+<div class="details">Daily: <span>2.5%</span><br>Income: <span>$1.75</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<div class="card Rising">
+<img src="images/IMG_0471.png">
+<div class="price">$75</div>
+<div class="details">Daily: <span>2.5%</span><br>Income: <span>$1.88</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<div class="card Rising">
+<img src="images/IMG_0472.png">
+<div class="price">$80</div>
+<div class="details">Daily: <span>2.5%</span><br>Income: <span>$2.0</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
+
+<div class="card Rising">
+<img src="images/IMG_0473.png">
+<div class="price">$90</div>
+<div class="details">Daily: <span>2.5%</span><br>Income: <span>$2.25</span><br>Validity: <span>365 Days</span></div>
+<button>Buy NFT</button>
+</div>
