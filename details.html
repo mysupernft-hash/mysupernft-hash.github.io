@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NFT Details</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:#fff;
+}
+.container{
+  max-width:420px;
+  margin:20px auto;
+  padding:15px;
+}
+img{
+  width:100%;
+  border-radius:16px;
+}
+.box{
+  background:#0f172a;
+  margin-top:15px;
+  padding:15px;
+  border-radius:16px;
+}
+h2{color:#38bdf8}
+.back{
+  color:#38bdf8;
+  text-decoration:none;
+  display:inline-block;
+  margin-bottom:10px;
+}
+.highlight{
+  color:#22c55e;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<a href="dashboard.html" class="back">← Back to Dashboard</a>
+
+<img id="img">
+
+<div class="box">
+<h2 id="price"></h2>
+<p id="info"></p>
+<hr>
+<p id="calc"></p>
+</div>
+</div>
+
+<script>
+const p = new URLSearchParams(window.location.search);
+
+const img = p.get("img");
+const price = Number(p.get("price"));
+const daily = Number(p.get("daily"));
+const income = Number(p.get("income"));
+
+const total = (income * 365).toFixed(2);
+const profit = (total - price).toFixed(2);
+
+document.getElementById("img").src = "images/" + img;
+document.getElementById("price").innerHTML = `NFT Price: $${price}`;
+
+document.getElementById("info").innerHTML = `
+Daily Return: ${daily}%<br>
+Daily Income: $${income}<br>
+Validity: 365 Days
+`;
+
+document.getElementById("calc").innerHTML = `
+<b>Total Income (365 Days):</b> 
+<span class="highlight">$${total}</span><br><br>
+
+<b>Net Profit:</b> 
+<span class="highlight">$${profit}</span>
+`;
+</script>
+
+</body>
+</html>
