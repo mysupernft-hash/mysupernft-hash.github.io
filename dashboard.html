@@ -6,22 +6,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:#fff}
-header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
-.tabs{display:flex;gap:10px;padding:10px;overflow-x:auto}
-.tabs div{padding:8px 14px;border:1px solid #38bdf8;border-radius:20px;color:#38bdf8;white-space:nowrap}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px}
-.card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
-.card img{width:100%;border-radius:10px}
-.price{color:#38bdf8;font-weight:bold;margin:6px 0}
-.details{font-size:12px;color:#cbd5f5;line-height:1.4}
-button{width:100%;padding:8px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold}
-
-/* MODAL */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);justify-content:center;align-items:center}
-.modal-content{background:#020617;padding:20px;width:92%;max-width:420px;border-radius:16px;border:1px solid #38bdf8}
-.modal-content img{width:100%;border-radius:12px}
-.close{text-align:right;font-size:22px;cursor:pointer;color:#38bdf8}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#020617;
+  color:white;
+}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  overflow-x:auto;
+}
+.tabs button{
+  padding:8px 14px;
+  background:#0f172a;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  color:#38bdf8;
+  white-space:nowrap;
+}
+.tabs button.active{
+  background:#38bdf8;
+  color:#020617;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:15px;
+  padding:15px;
+}
+.card{
+  background:#0f172a;
+  border-radius:14px;
+  padding:10px;
+  text-align:center;
+}
+.card img{
+  width:100%;
+  border-radius:10px;
+}
+.price{
+  margin:6px 0;
+  color:#38bdf8;
+  font-weight:bold;
+}
+.meta{
+  font-size:12px;
+  color:#cbd5e1;
+  line-height:1.4;
+}
+.card button{
+  width:100%;
+  margin-top:8px;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+}
+.section{display:none;}
+.section.active{display:grid;}
 </style>
 </head>
 
@@ -30,96 +83,105 @@ button{width:100%;padding:8px;border:none;border-radius:8px;background:#38bdf8;c
 <header>SuperNFT Dashboard</header>
 
 <div class="tabs">
-  <div>Starter NFTs</div>
-  <div>Rising NFTs</div>
-  <div>Elite NFTs</div>
-  <div>Legendary Vault</div>
+  <button class="active" onclick="showTab('starter')">Starter NFTs</button>
+  <button onclick="showTab('rising')">Rising NFTs</button>
+  <button onclick="showTab('elite')">Elite NFTs</button>
+  <button onclick="showTab('legendary')">Legendary Vault</button>
 </div>
 
-<div class="grid" id="grid"></div>
+<!-- STARTER -->
+<div id="starter" class="grid section active">
 
-<!-- MODAL -->
-<div class="modal" id="modal">
-  <div class="modal-content">
-    <div class="close" onclick="closeNFT()">✕</div>
-    <img id="mImg">
-    <h3 id="mTitle"></h3>
-    <div id="mDetails"></div>
-  </div>
+<script>
+const starter = [
+ [10,"IMG_0458.png",2,0.2],
+ [15,"IMG_0459.png",2,0.3],
+ [20,"IMG_0460.png",2,0.4],
+ [25,"IMG_0461.png",2,0.5],
+ [30,"IMG_0462.png",2,0.6],
+ [35,"IMG_0463.png",2,0.7],
+ [40,"IMG_0464.png",2,0.8],
+ [45,"IMG_0465.png",2,0.9],
+ [50,"IMG_0466.png",2,1.0]
+];
+</script>
+
+</div>
+
+<!-- RISING -->
+<div id="rising" class="grid section">
+<script>
+const rising = [
+ [55,"IMG_0467.png",2.5,1.3],
+ [60,"IMG_0468.png",2.5,1.5],
+ [65,"IMG_0469.png",2.5,1.63],
+ [70,"IMG_0470.png",2.5,1.75],
+ [75,"IMG_0471.png",2.5,1.88],
+ [80,"IMG_0472.png",2.5,2.0],
+ [90,"IMG_0473.png",2.5,2.25],
+ [100,"IMG_0474.png",2.5,2.5]
+];
+</script>
+</div>
+
+<!-- ELITE -->
+<div id="elite" class="grid section">
+<script>
+const elite = [
+ [150,"IMG_0475.png",3.3,5],
+ [200,"IMG_0476.png",3.3,6.6],
+ [250,"IMG_0477.png",3.3,8.25],
+ [300,"IMG_0478.png",3.3,10],
+ [350,"IMG_0479.png",3.3,11.6],
+ [400,"IMG_0480.png",3.3,13.3],
+ [450,"IMG_0481.png",3.3,15]
+];
+</script>
+</div>
+
+<!-- LEGENDARY -->
+<div id="legendary" class="grid section">
+<script>
+const legendary = [
+ [499,"IMG_0482.png",5,25],
+ [599,"IMG_0483.png",5,30],
+ [699,"IMG_0497.png",5,40],
+ [799,"IMG_0498.png",5,30],
+ [999,"IMG_0503.png",10,100]
+];
+</script>
 </div>
 
 <script>
-/* ======================
-   🔥 ALL 31 NFTs DATA
-   ====================== */
-const NFTs = [
-{img:"IMG_0458.png",price:10,daily:2,income:0.2},
-{img:"IMG_0459.png",price:15,daily:2,income:0.3},
-{img:"IMG_0460.png",price:20,daily:2,income:0.4},
-{img:"IMG_0461.png",price:25,daily:2,income:0.5},
-{img:"IMG_0462.png",price:30,daily:2,income:0.6},
-{img:"IMG_0463.png",price:35,daily:2,income:0.7},
-{img:"IMG_0464.png",price:40,daily:2,income:0.8},
-{img:"IMG_0465.png",price:45,daily:2,income:0.9},
-{img:"IMG_0466.png",price:50,daily:2,income:1.0},
-{img:"IMG_0467.png",price:55,daily:2.5,income:1.3},
-{img:"IMG_0468.png",price:60,daily:2.5,income:1.5},
-{img:"IMG_0469.png",price:65,daily:2.5,income:1.63},
-{img:"IMG_0470.png",price:70,daily:2.5,income:1.75},
-{img:"IMG_0471.png",price:75,daily:2.5,income:1.88},
-{img:"IMG_0472.png",price:80,daily:2.5,income:2.0},
-{img:"IMG_0473.png",price:90,daily:2.5,income:2.25},
-{img:"IMG_0474.png",price:100,daily:2.5,income:2.5},
-{img:"IMG_0475.png",price:150,daily:3.3,income:5},
-{img:"IMG_0476.png",price:200,daily:3.3,income:6.6},
-{img:"IMG_0477.png",price:250,daily:3.3,income:8.3},
-{img:"IMG_0478.png",price:300,daily:3.3,income:10},
-{img:"IMG_0479.png",price:350,daily:3.3,income:11.6},
-{img:"IMG_0480.png",price:400,daily:3.3,income:13.3},
-{img:"IMG_0481.png",price:450,daily:3.3,income:15},
-{img:"IMG_0482.png",price:499,daily:5,income:25},
-{img:"IMG_0483.png",price:599,daily:5,income:30},
-{img:"IMG_0497.png",price:699,daily:5,income:40},
-{img:"IMG_0498.png",price:799,daily:5,income:30},
-{img:"IMG_0499.png",price:899,daily:5,income:45},
-{img:"IMG_0500.png",price:949,daily:8,income:75},
-{img:"IMG_0503.png",price:999,daily:10,income:100}
-];
-
-const grid = document.getElementById("grid");
-
-NFTs.forEach(n=>{
-grid.innerHTML += `
-<div class="card">
-<img src="images/${n.img}">
-<div class="price">$${n.price}</div>
-<div class="details">
-Daily ${n.daily}%<br>
-Income $${n.income}<br>
-Validity 365 Days
-</div>
-<button onclick="openNFT('${n.img}',${n.price},${n.daily},${n.income})">
-Buy NFT
-</button>
-</div>`;
-});
-
-function openNFT(img,p,d,i){
-const total=(i*365).toFixed(2);
-const profit=(total-p).toFixed(2);
-document.getElementById("mImg").src="images/"+img;
-document.getElementById("mTitle").innerHTML="NFT Price: $"+p;
-document.getElementById("mDetails").innerHTML=`
-Daily Return: ${d}%<br>
-Daily Income: $${i}<br>
-Validity: 365 Days<hr>
-<b>Total Income (365 Days):</b> $${total}<br>
-<b>Net Profit:</b> $${profit}
-`;
-document.getElementById("modal").style.display="flex";
+function render(list, id){
+  const box = document.getElementById(id);
+  list.forEach(n=>{
+    box.innerHTML += `
+    <div class="card">
+      <img src="images/${n[1]}">
+      <div class="price">$${n[0]}</div>
+      <div class="meta">
+        Daily ${n[2]}%<br>
+        Income $${n[3]}<br>
+        Validity 365 Days
+      </div>
+      <button onclick="location.href='details.html?price=${n[0]}&img=images/${n[1]}'">
+        Buy NFT
+      </button>
+    </div>`;
+  });
 }
-function closeNFT(){
-document.getElementById("modal").style.display="none";
+
+render(starter,"starter");
+render(rising,"rising");
+render(elite,"elite");
+render(legendary,"legendary");
+
+function showTab(tab){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(tab).classList.add("active");
+  event.target.classList.add("active");
 }
 </script>
 
