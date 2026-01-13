@@ -6,12 +6,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:#fff}
-.header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
-.container{max-width:420px;margin:20px auto;padding:15px}
-img{width:100%;border-radius:14px}
-.box{background:#0f172a;padding:15px;border-radius:12px;margin-top:12px}
-.back{color:#9bdcff;text-decoration:none;display:block;margin-bottom:10px}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #020617;
+  color: #fff;
+}
+.header {
+  text-align: center;
+  padding: 15px;
+  font-size: 22px;
+  color: #38bdf8;
+  border-bottom: 1px solid #1e293b;
+}
+.container {
+  max-width: 420px;
+  margin: 20px auto;
+  padding: 15px;
+}
+img {
+  width: 100%;
+  border-radius: 14px;
+}
+.box {
+  background: #0f172a;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+.price {
+  font-size: 20px;
+  color: #38bdf8;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.back {
+  color: #9bdcff;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 10px;
+}
 </style>
 </head>
 
@@ -20,43 +54,81 @@ img{width:100%;border-radius:14px}
 <div class="header">NFT Details</div>
 
 <div class="container">
-
-<a class="back" href="dashboard.html">← Back to Dashboard</a>
-
-<img id="img">
-
-<div class="box">
-<h2 id="price"></h2>
-<p id="info"></p>
-<hr>
-<p id="calc"></p>
-</div>
-
+  <a class="back" href="dashboard.html">← Back to Dashboard</a>
+  <img id="nftImg" src="">
+  <div class="box">
+    <div class="price" id="priceText">$0</div>
+    <div id="infoText"></div>
+    <hr style="border-color: #1e293b;">
+    <div id="calcText"></div>
+  </div>
 </div>
 
 <script>
-const p = new URLSearchParams(window.location.search);
-const imgPath = p.get("img");
-const price = Number(p.get("price"));
-const params = new URLSearchParams("?"+location.search.split("?")[1]);
+// Get data from URL
+const params = new URLSearchParams(window.location.search);
+const price = params.get("price");
+const imgPath = params.get("img");
 
-const daily = Number(params.get("daily")) || 0;
-const income = Number(params.get("income")) || 0;
+// Map profit / daily data
+const data = {
+  "10": {daily: "2", income: 0.2},
+  "15": {daily: "2", income: 0.3},
+  "20": {daily: "2", income: 0.4},
+  "25": {daily: "2", income: 0.5},
+  "30": {daily: "2", income: 0.6},
+  "35": {daily: "2", income: 0.7},
+  "40": {daily: "2", income: 0.8},
+  "45": {daily: "2", income: 0.9},
+  "50": {daily: "2", income: 1.0},
+  "55": {daily: "2.5", income: 1.3},
+  "60": {daily: "2.5", income: 1.5},
+  "65": {daily: "2.5", income: 1.63},
+  "70": {daily: "2.5", income: 1.75},
+  "75": {daily: "2.5", income: 1.88},
+  "80": {daily: "2.5", income: 2.0},
+  "90": {daily: "2.5", income: 2.25},
+  "100": {daily: "2.5", income: 2.5},
+  "150": {daily: "3.3", income: 5.0},
+  "200": {daily: "3.3", income: 6.6},
+  "250": {daily: "3.3", income: 8.25},
+  "300": {daily: "3.3", income: 10},
+  "350": {daily: "3.3", income: 11.6},
+  "400": {daily: "3.3", income: 13.3},
+  "450": {daily: "3.3", income: 15},
+  "499": {daily: "5", income: 25},
+  "599": {daily: "5", income: 30},
+  "699": {daily: "5", income: 40},
+  "799": {daily: "5", income: 30},
+  "899": {daily: "5", income: 45},
+  "949": {daily: "8", income: 75},
+  "999": {daily: "10", income: 100}
+};
 
-const total = (income * 365).toFixed(2);
-const profit = (total - price).toFixed(2);
+// If price exists in data
+if(price && data[price]){
+  document.getElementById("nftImg").src = imgPath;
+  document.getElementById("priceText").innerText = `Price: $${price}`;
 
-document.getElementById("img").src = imgPath;
-document.getElementById("price").innerHTML = `Price: $${price}`;
-document.getElementById("info").innerHTML = `
-Daily Return: ${daily}%<br>
-Daily Income: $${income}<br>
-Validity: 365 Days
-`;
-document.getElementById("calc").innerHTML = `
-<b>Total Income (365 Days):</b> $${total}<br><br>
-<b>Net Profit:</b> $${profit}
-`;
+  const d = data[price].daily;
+  const i = data[price].income;
+
+  document.getElementById("infoText").innerHTML = `
+    Daily Return: ${d}%<br>
+    Daily Income: $${i}<br>
+    Validity: 365 Days
+  `;
+
+  const total = (i * 365).toFixed(2);
+  const profit = (total - price).toFixed(2);
+
+  document.getElementById("calcText").innerHTML = `
+    <b>Total Income (365 Days):</b> $${total}<br><br>
+    <b>Net Profit:</b> $${profit}
+  `;
+} else {
+  document.getElementById("infoText").innerHTML = "Invalid NFT data!";
+}
 </script>
 
 </body>
