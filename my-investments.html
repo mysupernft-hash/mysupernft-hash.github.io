@@ -20,6 +20,38 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
 
 <header>📁 My Investments</header>
 
+<script>
+function calc(){
+  const amt=document.getElementById("amount").value;
+  const daily=document.getElementById("daily").value;
+
+  if(!amt || !daily){
+    alert("Fill all fields");
+    return;
+  }
+
+  const yearly=(daily*365).toFixed(2);
+  document.getElementById("result").innerHTML=
+    `Total after 365 days: <b>$${yearly}</b>`;
+}
+</script>
+
+  <script>
+function calc(){
+  const amt=document.getElementById("amount").value;
+  const daily=document.getElementById("daily").value;
+
+  if(!amt || !daily){
+    alert("Fill all fields");
+    return;
+  }
+
+  const yearly=(daily*365).toFixed(2);
+  document.getElementById("result").innerHTML=
+    `Total after 365 days: <b>$${yearly}</b>`;
+}
+</script>
+  
 <div class="total">
   Live Earnings: $<span id="total">0.00</span>
 </div>
