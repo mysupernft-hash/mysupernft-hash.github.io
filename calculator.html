@@ -73,6 +73,25 @@ button{
 
 <header>NFT Income Calculator</header>
 
+<!-- Calculator -->
+<div style="background:#0f172a;margin:15px;padding:15px;border-radius:12px;">
+  <h3 style="color:#38bdf8;text-align:center;">💰 Earnings Calculator</h3>
+
+  <input id="amount" type="number" placeholder="Investment Amount ($)"
+    style="width:100%;padding:10px;margin:8px 0;border-radius:8px;border:none">
+
+  <input id="daily" type="number" placeholder="Daily Income ($)"
+    style="width:100%;padding:10px;margin:8px 0;border-radius:8px;border:none">
+
+  <button onclick="calc()"
+    style="width:100%;padding:10px;border:none;border-radius:8px;
+    background:#38bdf8;font-weight:bold;">
+    Calculate 365 Days
+  </button>
+
+  <p id="result" style="text-align:center;margin-top:10px;color:#22c55e;"></p>
+</div>
+  
 <div class="box">
 
 <label>NFT Price ($)</label>
