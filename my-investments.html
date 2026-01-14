@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>My Investments</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
@@ -19,17 +19,14 @@ header{
   color:#38bdf8;
   border-bottom:1px solid #1e293b;
 }
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:15px;
+.container{
   padding:15px;
 }
 .card{
   background:#0f172a;
   border-radius:14px;
-  padding:10px;
-  text-align:center;
+  padding:12px;
+  margin-bottom:15px;
 }
 .card img{
   width:100%;
@@ -38,47 +35,52 @@ header{
 .price{
   color:#38bdf8;
   font-weight:bold;
-  margin:6px 0;
+  margin:8px 0;
 }
 .meta{
-  font-size:12px;
+  font-size:13px;
   color:#cbd5f5;
   line-height:1.5;
 }
-
-/* Calculator */
-.calc{
-  background:#020617;
-  border:1px solid #38bdf8;
-  border-radius:12px;
-  padding:12px;
-  margin:15px;
+.earn{
+  margin-top:8px;
+  font-size:14px;
+  color:#22c55e;
 }
-.calc h3{
-  margin-top:0;
-  color:#38bdf8;
-  text-align:center;
+.calculator{
+  background:#0f172a;
+  border-radius:14px;
+  padding:15px;
+  margin-top:20px;
 }
-.calc input{
+.calculator input{
   width:100%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:8px;
+  padding:8px;
+  border-radius:6px;
   border:none;
+  margin-top:8px;
 }
-.calc button{
+.calculator button{
   width:100%;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#38bdf8;
-  font-weight:bold;
-}
-.calc .result{
   margin-top:10px;
-  color:#38bdf8;
-  text-align:center;
+  padding:10px;
+  background:#38bdf8;
+  border:none;
+  border-radius:8px;
   font-weight:bold;
+  cursor:pointer;
+}
+.result{
+  margin-top:10px;
+  color:#22c55e;
+  font-weight:bold;
+}
+.back{
+  display:block;
+  text-align:center;
+  margin:20px 0;
+  color:#38bdf8;
+  text-decoration:none;
 }
 </style>
 </head>
@@ -87,69 +89,65 @@ header{
 
 <header>📁 My Investments</header>
 
-<!-- LIVE EARNINGS -->
-<div class="calc">
-  <h3>📈 Live Earnings</h3>
-  <div id="liveEarning" class="result">$0.00</div>
+<div class="container" id="list"></div>
+
+<!-- Calculator -->
+<div class="container">
+  <div class="calculator">
+    <h3>📊 Earnings Calculator</h3>
+    <label>Investment Amount ($)</label>
+    <input type="number" id="amount" placeholder="Enter amount">
+
+    <label>Daily %</label>
+    <input type="number" id="daily" placeholder="Daily percentage">
+
+    <button onclick="calc()">Calculate 365 Days</button>
+    <div class="result" id="calcResult"></div>
+  </div>
 </div>
 
-<!-- CALCULATOR -->
-<div class="calc">
-  <h3>🧮 Earnings Calculator (365 Days)</h3>
-  <input type="number" id="amount" placeholder="Investment Amount ($)">
-  <input type="number" id="daily" placeholder="Daily Income ($)">
-  <button onclick="calc()">Calculate</button>
-  <div id="calcResult" class="result"></div>
-</div>
-
-<!-- NFT GRID -->
-<div class="grid" id="investments"></div>
+<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 <script>
+const box = document.getElementById("list");
 const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-const box = document.getElementById("investments");
 
-/* SHOW NFTs */
 if(data.length === 0){
-  box.innerHTML = "<p style='grid-column:1/-1;text-align:center;'>No investments yet</p>";
+  box.innerHTML = "<p>No NFTs purchased yet.</p>";
 }
 
-data.forEach(n=>{
+data.forEach(n => {
+  const dailyIncome = (n.price * n.daily / 100).toFixed(2);
+  const yearly = (dailyIncome * 365).toFixed(2);
+
   box.innerHTML += `
-  <div class="card">
-    <img src="${n.img}">
-    <div class="price">$${n.price}</div>
-    <div class="meta">
-      Daily Income: $${n.daily}<br>
-      Validity: 365 Days<br>
-      Bought: ${n.date}
+    <div class="card">
+      <img src="images/${n.img}">
+      <div class="price">$${n.price}</div>
+      <div class="meta">
+        Daily ${n.daily}%<br>
+        Daily Income $${dailyIncome}<br>
+        Validity 365 Days
+      </div>
+      <div class="earn">
+        💰 365 Days Income: $${yearly}
+      </div>
     </div>
-  </div>`;
+  `;
 });
 
-/* CALCULATOR */
 function calc(){
-  const a = Number(document.getElementById("amount").value);
-  const d = Number(document.getElementById("daily").value);
-  if(!a || !d){
-    alert("Fill all fields");
+  const amt = document.getElementById("amount").value;
+  const d = document.getElementById("daily").value;
+  if(!amt || !d){
+    document.getElementById("calcResult").innerText = "Enter values";
     return;
   }
-  const yearly = d * 365;
-  document.getElementById("calcResult").innerHTML =
-    `365 Days Earnings: $${yearly.toFixed(2)}`;
+  const daily = amt * d / 100;
+  const yearly = daily * 365;
+  document.getElementById("calcResult").innerText =
+    "365 Days Income: $" + yearly.toFixed(2);
 }
-
-/* LIVE EARNINGS */
-let totalDaily = 0;
-data.forEach(n=> totalDaily += Number(n.daily));
-
-let live = 0;
-setInterval(()=>{
-  live += totalDaily / 86400; // per second
-  document.getElementById("liveEarning").innerHTML =
-    "$" + live.toFixed(4);
-},1000);
 </script>
 
 </body>
