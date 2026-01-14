@@ -6,55 +6,117 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:white}
-header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
-.tabs{display:flex;gap:10px;padding:10px;overflow-x:auto}
-.tabs button{padding:8px 14px;border:1px solid #38bdf8;border-radius:20px;color:#38bdf8;background:#0f172a;cursor:pointer}
-.tabs button.active{background:#38bdf8;color:#020617}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;padding:15px}
-.card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
-.card img{width:100%;border-radius:10px}
-.price{color:#38bdf8;font-weight:bold;margin:6px 0}
-.meta{font-size:12px;color:#cbd5f5;line-height:1.4}
-.card button{margin-top:6px;width:100%;padding:8px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:white;
+}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.top-actions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:10px;
+}
+.top-actions button{
+  padding:8px 14px;
+  border-radius:8px;
+  border:none;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  overflow-x:auto;
+}
+.tabs button{
+  padding:8px 14px;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  background:#0f172a;
+  color:#38bdf8;
+  cursor:pointer;
+}
+.tabs button.active{
+  background:#38bdf8;
+  color:#020617;
+}
 .section{display:none}
 .section.active{display:grid}
-.top-btn{display:flex;justify-content:center;gap:10px;margin:10px}
-.top-btn a{padding:8px 14px;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;text-decoration:none}
+.grid{
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:15px;
+  padding:15px;
+}
+.card{
+  background:#0f172a;
+  border-radius:14px;
+  padding:10px;
+  text-align:center;
+}
+.card img{
+  width:100%;
+  border-radius:10px;
+}
+.price{
+  color:#38bdf8;
+  font-weight:bold;
+  margin:6px 0;
+}
+.meta{
+  font-size:12px;
+  color:#cbd5f5;
+  line-height:1.4;
+}
+.card button{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<header>SuperNFT Dashboard</header>
+<header>🚀 SuperNFT Dashboard</header>
 
-<div class="top-btn">
-  <a href="my-investments.html">📁 My Investments</a>
-  <a href="calculator.html">🧮 Calculator</a>
+<div class="top-actions">
+  <button onclick="location.href='my-investments.html'">📁 My Investments</button>
+  <button onclick="location.href='calculator.html'">🧮 Calculator</button>
 </div>
 
-<div style="text-align:center;margin:15px 0;">
-  <button onclick="location.href='my-investments.html'"
-    style="padding:10px 20px;border-radius:8px;border:none;
-    background:#38bdf8;font-weight:bold;color:#00263a;">
-    📁 My Investments
-  </button>
-</div>
-  
 <div class="tabs">
-  <button class="active" onclick="showTab('starter',this)">Starter</button>
-  <button onclick="showTab('rising',this)">Rising</button>
-  <button onclick="showTab('elite',this)">Elite</button>
-  <button onclick="showTab('legendary',this)">Legendary</button>
+  <button class="active" onclick="showTab('starter',this)">Starter NFTs</button>
+  <button onclick="showTab('rising',this)">Rising NFTs</button>
+  <button onclick="showTab('elite',this)">Elite NFTs</button>
+  <button onclick="showTab('legendary',this)">Legendary Vault</button>
 </div>
 
+<!-- Sections -->
 <div id="starter" class="grid section active"></div>
 <div id="rising" class="grid section"></div>
 <div id="elite" class="grid section"></div>
 <div id="legendary" class="grid section"></div>
 
 <script>
-// ================= DATA =================
+// ================= NFT DATA =================
 const starter = [
  [10,"IMG_0458.png",2,0.2],
  [15,"IMG_0459.png",2,0.3],
@@ -98,24 +160,24 @@ const legendary = [
  [999,"IMG_0503.png",10,100]
 ];
 
-// ================= RENDER =================
-function render(list, id){
-  const box = document.getElementById(id);
-  box.innerHTML = "";
+// ================ RENDER =================
+function render(list,id){
+  const box=document.getElementById(id);
   list.forEach(n=>{
-    box.innerHTML += `
-    <div class="card">
-      <img src="images/${n[1]}">
-      <div class="price">$${n[0]}</div>
-      <div class="meta">
-        Daily ${n[2]}%<br>
-        Income $${n[3]}<br>
-        Validity 365 Days
+    box.innerHTML+=`
+      <div class="card">
+        <img src="images/${n[1]}">
+        <div class="price">$${n[0]}</div>
+        <div class="meta">
+          Daily ${n[2]}%<br>
+          Income $${n[3]}<br>
+          Validity 365 Days
+        </div>
+        <button onclick="buyNFT(${n[0]},'${n[1]}',${n[2]},${n[3]})">
+          Buy NFT
+        </button>
       </div>
-      <button onclick="buyNFT(${n[0]},'${n[1]}',${n[3]})">
-        Buy NFT
-      </button>
-    </div>`;
+    `;
   });
 }
 
@@ -124,20 +186,20 @@ render(rising,"rising");
 render(elite,"elite");
 render(legendary,"legendary");
 
-// ================= BUY =================
-function buyNFT(price,img,daily){
-  let data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-  data.push({
-    price: price,
-    img: img,      // ✅ ONLY filename
-    daily: daily,
-    date: new Date().toLocaleDateString()
-  });
-  localStorage.setItem("myNFTs", JSON.stringify(data));
+// ================ BUY =================
+function buyNFT(price,img,daily,income){
+  const nft={
+    price, img, daily, income,
+    days:365,
+    boughtAt:Date.now()
+  };
+  let list=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  list.push(nft);
+  localStorage.setItem("myNFTs",JSON.stringify(list));
   location.href="my-investments.html";
 }
 
-// ================= TABS =================
+// ================ TABS =================
 function showTab(id,btn){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
