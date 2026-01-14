@@ -15,6 +15,7 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 .meta{font-size:12px;color:#cbd5f5;line-height:1.4}
 .calc{background:#020617;border:1px solid #38bdf8;border-radius:8px;padding:6px;color:white;width:100%;margin-top:6px}
 .back{display:block;text-align:center;color:#38bdf8;text-decoration:none;margin:15px}
+.live{margin:15px;padding:15px;background:#0f172a;border-radius:12px;text-align:center}
 </style>
 </head>
 
@@ -22,23 +23,21 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <header>📁 My Investments</header>
 
-<!-- LIVE EARNINGS -->
-<div style="margin:15px;padding:15px;background:#0f172a;border-radius:12px;text-align:center">
+<div class="live">
   <h3 style="margin:0;color:#38bdf8;">📈 Live Earnings</h3>
-  <div id="liveEarnings" style="font-size:22px;margin-top:8px">$0.00</div>
+  <div id="liveEarnings" style="font-size:22px;margin-top:8px">$0.0000</div>
 </div>
 
-<!-- NFT GRID -->
-<div id="investmentGrid" class="grid"></div>
+<div id="grid" class="grid"></div>
 
 <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 <script>
-const nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
-const grid = document.getElementById("investmentGrid");
+const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+const grid = document.getElementById("grid");
 const liveBox = document.getElementById("liveEarnings");
 
-if(nfts.length === 0){
+if(data.length === 0){
   grid.innerHTML = "<p style='padding:15px'>No NFTs purchased yet.</p>";
 }
 
@@ -47,33 +46,29 @@ function render(){
   let totalLive = 0;
   const now = Date.now();
 
-  nfts.forEach(nft=>{
-    const price = Number(nft.price);
-    const daily = Number(nft.dailyIncome);
-    const start = Number(nft.startTime);
-
+  data.forEach(nft=>{
     const daysPassed = Math.min(
-      (now - start) / (1000*60*60*24),
-      365
+      (now - nft.boughtAt) / (1000*60*60*24),
+      nft.validity
     );
 
-    const earned = daily * daysPassed;
+    const earned = nft.dailyIncome * daysPassed;
     totalLive += earned;
 
     grid.innerHTML += `
       <div class="card">
         <img src="${nft.img}">
-        <div class="price">$${price}</div>
+        <div class="price">$${nft.price}</div>
         <div class="meta">
-          Daily $${daily}<br>
-          Validity 365 Days<br>
-          365 Days: $${(daily*365).toFixed(2)}<br>
+          Daily $${nft.dailyIncome}<br>
+          Validity ${nft.validity} Days<br>
+          365 Days: $${(nft.dailyIncome*365).toFixed(2)}<br>
           Earned: $${earned.toFixed(2)}
         </div>
 
         <input class="calc" type="number" placeholder="Enter days"
           oninput="this.nextElementSibling.innerText=
-          'Earning: $'+(this.value*${daily}).toFixed(2)">
+          'Earning: $'+(this.value*${nft.dailyIncome}).toFixed(2)">
         <div class="meta">Earning: $0</div>
       </div>
     `;
@@ -83,7 +78,7 @@ function render(){
 }
 
 render();
-setInterval(render, 1000);
+setInterval(render,1000);
 </script>
 
 </body>
