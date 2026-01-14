@@ -80,5 +80,32 @@ data.forEach(n=>{
 });
 </script>
 
+  <script>
+function startLiveEarnings(){
+  const nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  if(nfts.length === 0) return;
+
+  function calculate(){
+    let total = 0;
+    const now = Date.now();
+
+    nfts.forEach(nft=>{
+      const secondsPassed = (now - nft.boughtAt) / 1000;
+      const dailyIncome = nft.income;
+      const perSecond = dailyIncome / 86400;
+      total += secondsPassed * perSecond;
+    });
+
+    document.getElementById("liveEarnings").innerText =
+      "$" + total.toFixed(4);
+  }
+
+  calculate();
+  setInterval(calculate,1000);
+}
+
+startLiveEarnings();
+</script>
+
 </body>
 </html>
