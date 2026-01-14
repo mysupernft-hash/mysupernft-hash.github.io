@@ -166,8 +166,9 @@ function render(list,id){
         Validity: 365 Days<br>
         365 Days: $${(n.dailyIncome*365).toFixed(2)}
       </div>
-      <button class="buy" onclick='buyNFT(${JSON.stringify(n)})'>Buy NFT</button>
-    </div>`;
+      <button onclick="selectNFT(${n[0]}, ${n[3]})">
+  Buy NFT
+</button>
   });
 }
 
