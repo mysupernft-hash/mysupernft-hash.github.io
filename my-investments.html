@@ -25,6 +25,14 @@ a{color:#38bdf8;text-decoration:none;display:block;text-align:center;margin:15px
 <div class="live">
   <h3>📈 Live Earnings</h3>
   <div id="live">$0.0000</div>
+  <!-- LIVE EARNINGS GRAPH -->
+<div style="margin:15px;background:#0f172a;border-radius:12px;padding:10px">
+  <h3 style="margin:0 0 10px;color:#38bdf8;text-align:center">
+    📈 Live Earnings Graph
+  </h3>
+  <canvas id="earningsGraph" height="120"></canvas>
+</div>
+  
 </div>
 
 <div id="grid" class="grid"></div>
@@ -78,6 +86,36 @@ setInterval(()=>{
 
   liveBox.innerText = "$" + total.toFixed(4);
 },1000);
+</script>
+
+  <script>
+const canvas = document.getElementById("earningsGraph");
+const ctx = canvas.getContext("2d");
+
+let points = [];
+
+function drawGraph(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+
+  points.forEach((p,i)=>{
+    const x = (canvas.width / (points.length-1 || 1)) * i;
+    const y = canvas.height - (p / Math.max(...points,1)) * (canvas.height-10);
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
+
+  ctx.stroke();
+}
+
+function updateGraph(totalEarning){
+  points.push(totalEarning);
+  if(points.length > 30) points.shift(); // last 30 seconds
+  drawGraph();
+}
 </script>
 
 </body>
