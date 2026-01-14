@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NFT Details</title>
+<title>NFT Details | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -12,68 +12,77 @@ body{
   background:#020617;
   color:white;
 }
+header{
+  padding:15px;
+  text-align:center;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
 .container{
   max-width:420px;
-  margin:20px auto;
+  margin:auto;
   padding:15px;
 }
 .card{
   background:#0f172a;
   border-radius:14px;
   padding:15px;
-  border:1px solid #38bdf8;
 }
 .card img{
   width:100%;
   border-radius:12px;
 }
-h2{
-  text-align:center;
-  color:#38bdf8;
-}
-.info p{
-  margin:6px 0;
-  font-size:15px;
-}
-.info span{
+.price{
+  font-size:20px;
   color:#38bdf8;
   font-weight:bold;
+  margin:10px 0;
+}
+.info{
+  font-size:14px;
+  line-height:1.7;
+  color:#e5e7eb;
 }
 .calc{
   margin-top:20px;
   padding:15px;
   background:#020617;
   border-radius:12px;
-  border:1px solid #38bdf8;
+  border:1px solid #1e293b;
+}
+.calc h3{
+  margin-top:0;
+  color:#38bdf8;
+  text-align:center;
 }
 .calc input{
   width:100%;
   padding:10px;
-  margin:6px 0;
+  margin:8px 0;
   border-radius:8px;
-  border:none;
-  background:#0f172a;
+  border:1px solid #38bdf8;
+  background:#020617;
   color:white;
 }
-.calc button{
-  width:100%;
-  padding:12px;
+.result{
   margin-top:10px;
-  border:none;
-  border-radius:8px;
+  font-size:14px;
+}
+button{
+  width:100%;
+  margin-top:15px;
+  padding:12px;
   background:#38bdf8;
   color:#020617;
+  border:none;
+  border-radius:10px;
   font-weight:bold;
-}
-.result{
-  margin-top:12px;
-  text-align:center;
-  color:#22c55e;
-  font-size:18px;
+  font-size:16px;
 }
 .back{
-  text-align:center;
   margin-top:15px;
+  text-align:center;
 }
 .back a{
   color:#38bdf8;
@@ -84,60 +93,91 @@ h2{
 
 <body>
 
+<header>SuperNFT Details</header>
+
 <div class="container">
 
-<h2>NFT Details</h2>
+  <div class="card">
+    <img id="nftImg" src="">
+    
+    <div class="price" id="priceText">$0</div>
 
-<div class="card">
-  <img id="nftImg">
+    <div class="info">
+      🔹 Daily Income: <b id="dailyText">$0</b><br>
+      🔹 Daily Percentage: <b id="percentText">0%</b><br>
+      🔹 Validity: <b>365 Days</b>
+    </div>
 
-  <div class="info">
-    <p>Price: <span>$<span id="price"></span></span></p>
-    <p>Daily Percentage: <span><span id="daily"></span>%</span></p>
-    <p>Daily Income: <span>$<span id="income"></span></span></p>
-    <p>Validity: <span>365 Days</span></p>
+    <!-- CALCULATOR -->
+    <div class="calc">
+      <h3>Profit Calculator</h3>
+
+      <input id="priceInput" type="number" placeholder="NFT Price">
+      <input id="percentInput" type="number" placeholder="Daily %">
+
+      <div class="result">
+        📅 Daily Income: <b id="dailyIncome">$0</b><br>
+        📆 Yearly Income (365 days): <b id="yearlyIncome">$0</b>
+      </div>
+    </div>
+
+    <button>Buy NFT</button>
   </div>
-</div>
 
-<!-- CALCULATOR -->
-<div class="calc">
-  <h3 style="text-align:center;color:#38bdf8;">Earnings Calculator</h3>
-
-  <input id="inv" readonly placeholder="Investment Amount">
-  <input id="dailyInc" readonly placeholder="Daily Income">
-
-  <button onclick="calculate()">Calculate 365 Days Income</button>
-
-  <div class="result" id="result"></div>
-</div>
-
-<div class="back">
-  <a href="dashboard.html">⬅ Back to Dashboard</a>
-</div>
+  <div class="back">
+    <a href="dashboard.html">← Back to Dashboard</a>
+  </div>
 
 </div>
 
 <script>
+/* GET URL DATA */
 const params = new URLSearchParams(window.location.search);
-
-const img = params.get("img");
 const price = parseFloat(params.get("price")) || 0;
-const daily = parseFloat(params.get("daily")) || 0;
-const income = parseFloat(params.get("income")) || 0;
+const img = params.get("img") || "";
 
+/* PERCENT LOGIC */
+let percent = 2;
+if(price >= 55 && price < 150) percent = 2.5;
+if(price >= 150 && price < 499) percent = 3.3;
+if(price >= 499 && price < 999) percent = 5;
+if(price >= 999) percent = 10;
+
+/* SET DATA */
 document.getElementById("nftImg").src = img;
-document.getElementById("price").innerText = price;
-document.getElementById("daily").innerText = daily;
-document.getElementById("income").innerText = income;
+document.getElementById("priceText").innerText = "$" + price;
+document.getElementById("percentText").innerText = percent + "%";
 
-document.getElementById("inv").value = "$" + price;
-document.getElementById("dailyInc").value = "$" + income;
+const daily = (price * percent) / 100;
 
+document.getElementById("dailyText").innerText = "$" + daily.toFixed(2);
+
+/* CALCULATOR DEFAULT */
+document.getElementById("priceInput").value = price;
+document.getElementById("percentInput").value = percent;
+
+/* CALCULATE FUNCTION */
 function calculate(){
-  const total = income * 365;
-  document.getElementById("result").innerHTML =
-    "Total Income after 365 days:<br><b>$" + total.toFixed(2) + "</b>";
+  const p = parseFloat(document.getElementById("priceInput").value);
+  const d = parseFloat(document.getElementById("percentInput").value);
+
+  if(isNaN(p) || isNaN(d)){
+    document.getElementById("dailyIncome").innerText="$0";
+    document.getElementById("yearlyIncome").innerText="$0";
+    return;
+  }
+
+  const dailyInc = (p * d) / 100;
+  const yearlyInc = dailyInc * 365;
+
+  document.getElementById("dailyIncome").innerText="$"+dailyInc.toFixed(2);
+  document.getElementById("yearlyIncome").innerText="$"+yearlyInc.toFixed(2);
 }
+
+document.getElementById("priceInput").oninput = calculate;
+document.getElementById("percentInput").oninput = calculate;
+
+calculate();
 </script>
 
 </body>
