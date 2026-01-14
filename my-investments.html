@@ -35,36 +35,48 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
 <script>
 const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
 const grid = document.getElementById("grid");
-const live = document.getElementById("live");
+const liveBox = document.getElementById("live");
 
 function render(){
   grid.innerHTML = "";
-  let total = 0;
+  let totalLive = 0;
   const now = Date.now();
 
-  data.forEach(n=>{
-    const days = Math.min((now - n.boughtAt)/(1000*60*60*24),365);
-    const earned = n.dailyIncome * days;
-    total += earned;
+  if(data.length === 0){
+    grid.innerHTML = "<p style='padding:15px'>No NFTs purchased yet.</p>";
+    liveBox.innerText = "$0.0000";
+    return;
+  }
+
+  data.forEach(nft=>{
+    const daysPassed = Math.min(
+      (now - nft.boughtAt) / (1000*60*60*24),
+      nft.validity
+    );
+
+    const earned = nft.dailyIncome * daysPassed;
+    totalLive += earned;
 
     grid.innerHTML += `
-    <div class="card">
-      <img src="${n.img}">
-      <div class="price">$${n.price}</div>
-      <div class="meta">
-        Daily $${n.dailyIncome}<br>
-        Validity 365 Days<br>
-        365 Days: $${(n.dailyIncome*365).toFixed(2)}<br>
-        Earned: $${earned.toFixed(2)}
+      <div class="card">
+        <img src="${nft.img}">
+        <div class="price">$${nft.price}</div>
+        <div class="meta">
+          Daily $${nft.dailyIncome}<br>
+          Validity ${nft.validity} Days<br>
+          365 Days: $${(nft.dailyIncome*365).toFixed(2)}<br>
+          Earned: $${earned.toFixed(2)}
+        </div>
+
+        <input class="calc" type="number" placeholder="Enter days"
+          oninput="this.nextElementSibling.innerText =
+          'Earning: $'+(this.value*${nft.dailyIncome}).toFixed(2)">
+        <div class="meta">Earning: $0</div>
       </div>
-      <input class="calc" type="number" placeholder="Enter days"
-        oninput="this.nextElementSibling.innerText=
-        'Earning: $'+(this.value*${n.dailyIncome}).toFixed(2)">
-      <div class="meta">Earning: $0</div>
-    </div>`;
+    `;
   });
 
-  live.innerText = "$"+total.toFixed(4);
+  liveBox.innerText = "$" + totalLive.toFixed(4);
 }
 
 render();
