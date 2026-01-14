@@ -24,6 +24,11 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <body>
 
+  <h2>Live Earnings</h2>
+<div id="liveEarnings">$0.00</div>
+
+<div id="investmentGrid" class="grid"></div>
+
 <header>My Investments</header>
 
 <!-- ✅ YAHAN ADD KARNA HAI -->
@@ -105,6 +110,41 @@ function startLiveEarnings(){
 }
 
 startLiveEarnings();
+</script>
+
+  <script>
+const list = JSON.parse(localStorage.getItem("myNFTs")) || [];
+const box = document.getElementById("investmentGrid");
+let totalLive = 0;
+
+list.forEach(nft => {
+  const price = Number(nft.price);
+  const daily = Number(nft.dailyIncome);
+
+  const days = Math.min(
+    (Date.now() - nft.startTime) / (1000*60*60*24),
+    365
+  );
+
+  const earned = daily * days;
+  totalLive += earned;
+
+  box.innerHTML += `
+  <div class="card">
+    <img src="${nft.img}">
+    <div class="price">$${price}</div>
+    <div class="meta">
+      Daily $${daily}<br>
+      Validity 365 Days<br>
+      365 Days: $${(daily*365).toFixed(2)}<br>
+      Earned: $${earned.toFixed(2)}
+    </div>
+  </div>
+  `;
+});
+
+document.getElementById("liveEarnings").innerText =
+  "$" + totalLive.toFixed(2);
 </script>
 
 </body>
