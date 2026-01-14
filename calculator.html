@@ -1,1 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SuperNFT Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#020617;
+  color:white;
+}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.box{
+  max-width:420px;
+  margin:30px auto;
+  background:#0f172a;
+  padding:20px;
+  border-radius:16px;
+}
+label{
+  display:block;
+  margin-top:12px;
+  color:#cbd5f5;
+}
+input,select{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border-radius:8px;
+  border:1px solid #38bdf8;
+  background:#020617;
+  color:white;
+}
+button{
+  width:100%;
+  margin-top:18px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  font-size:16px;
+}
+.result{
+  margin-top:20px;
+  background:#020617;
+  padding:15px;
+  border-radius:12px;
+  border:1px solid #1e293b;
+}
+.result div{
+  margin:6px 0;
+  color:#e5e7eb;
+}
+.highlight{
+  color:#38bdf8;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>NFT Income Calculator</header>
+
+<div class="box">
+
+<label>NFT Price ($)</label>
+<select id="price">
+  <option value="10|2">10$ (2%)</option>
+  <option value="15|2">15$ (2%)</option>
+  <option value="20|2">20$ (2%)</option>
+  <option value="25|2">25$ (2%)</option>
+  <option value="30|2">30$ (2%)</option>
+  <option value="50|2">50$ (2%)</option>
+  <option value="100|2.5">100$ (2.5%)</option>
+  <option value="150|3.3">150$ (3.3%)</option>
+  <option value="200|3.3">200$ (3.3%)</option>
+  <option value="300|3.3">300$ (3.3%)</option>
+  <option value="499|5">499$ (5%)</option>
+  <option value="599|5">599$ (5%)</option>
+  <option value="699|5">699$ (5%)</option>
+  <option value="999|10">999$ (10%)</option>
+</select>
+
+<label>Validity (Days)</label>
+<input type="number" id="days" value="365">
+
+<button onclick="calculate()">Calculate Income</button>
+
+<div class="result" id="result" style="display:none;">
+  <div>Daily Income: <span class="highlight" id="daily"></span></div>
+  <div>Monthly Income: <span class="highlight" id="monthly"></span></div>
+  <div>Total Income (365 days): <span class="highlight" id="total"></span></div>
+</div>
+
+</div>
+
+<script>
+function calculate(){
+  const priceData = document.getElementById("price").value.split("|");
+  const price = parseFloat(priceData[0]);
+  const percent = parseFloat(priceData[1]);
+  const days = parseInt(document.getElementById("days").value);
+
+  const daily = (price * percent / 100);
+  const monthly = daily * 30;
+  const total = daily * days;
+
+  document.getElementById("daily").innerText = "$" + daily.toFixed(2);
+  document.getElementById("monthly").innerText = "$" + monthly.toFixed(2);
+  document.getElementById("total").innerText = "$" + total.toFixed(2);
+
+  document.getElementById("result").style.display = "block";
+}
+</script>
+
+</body>
+</html>
