@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Investments</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:white;
+}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:15px;
+  padding:15px;
+}
+.card{
+  background:#0f172a;
+  border-radius:14px;
+  padding:10px;
+}
+.card img{
+  width:100%;
+  border-radius:10px;
+}
+.info{
+  font-size:13px;
+  margin-top:6px;
+  line-height:1.4;
+}
+.highlight{
+  color:#38bdf8;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>My Investments</header>
+
+<div class="grid" id="investmentGrid"></div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("investments")) || [];
+let grid = document.getElementById("investmentGrid");
+
+if(data.length === 0){
+  grid.innerHTML = "<p style='padding:15px'>No investments yet</p>";
+}
+
+data.forEach(nft => {
+  let daysPassed = Math.floor((Date.now() - nft.startDate) / (1000*60*60*24));
+  let remaining = Math.max(0, nft.days - daysPassed);
+  let totalEarned = (nft.dailyIncome * daysPassed).toFixed(2);
+
+  grid.innerHTML += `
+    <div class="card">
+      <img src="${nft.img}">
+      <div class="info">
+        Price: <span class="highlight">$${nft.price}</span><br>
+        Daily: ${nft.dailyPercent}% ($${nft.dailyIncome})<br>
+        Earned: <span class="highlight">$${totalEarned}</span><br>
+        Days Left: ${remaining}
+      </div>
+    </div>
+  `;
+});
+</script>
+
+</body>
+</html>
