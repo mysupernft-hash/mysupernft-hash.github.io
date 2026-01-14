@@ -97,6 +97,38 @@ function render(list,id){
       <img src="${n.img}">
       <div class="price">$${n.price}</div>
       <div class="meta">
+      <div style="
+  margin-top:8px;
+  background:#020617;
+  border:1px solid #38bdf8;
+  border-radius:8px;
+  padding:8px;
+  font-size:12px;
+">
+
+  <div><b>Calculator</b></div>
+
+  <input type="number"
+    placeholder="Enter days"
+    style="
+      width:100%;
+      margin-top:6px;
+      padding:6px;
+      border-radius:6px;
+      border:none;
+      outline:none;
+    "
+    oninput="calcEarning(this, ${n[3]})">
+
+  <div style="margin-top:6px" class="calcResult">
+    Earning: $0
+  </div>
+
+  <div style="margin-top:4px;color:#cbd5f5">
+    365 Days: $${(n[3]*365).toFixed(2)}
+  </div>
+
+</div>
         Daily Income: $${n.dailyIncome}<br>
         Validity: 365 Days<br>
         365 Days: $${(n.dailyIncome*365).toFixed(2)}
@@ -131,6 +163,14 @@ function showTab(id,btn){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
   document.getElementById(id).classList.add("active");
   btn.classList.add("active");
+}
+</script>
+
+  <script>
+function calcEarning(input, daily){
+  const days = Number(input.value) || 0;
+  const result = input.parentElement.querySelector(".calcResult");
+  result.innerText = "Earning: $" + (days * daily).toFixed(2);
 }
 </script>
 
