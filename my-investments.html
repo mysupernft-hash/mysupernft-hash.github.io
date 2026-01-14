@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>My Investments</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 body{
@@ -19,64 +19,88 @@ header{
   color:#38bdf8;
   border-bottom:1px solid #1e293b;
 }
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:15px;
-  padding:15px;
-}
 .card{
   background:#0f172a;
+  margin:15px;
+  padding:15px;
   border-radius:14px;
-  padding:10px;
 }
 .card img{
   width:100%;
   border-radius:10px;
 }
-.info{
-  font-size:13px;
-  margin-top:6px;
-  line-height:1.4;
-}
-.highlight{
+.price{
   color:#38bdf8;
   font-weight:bold;
+  margin:8px 0;
+}
+.meta{
+  font-size:14px;
+  line-height:1.6;
+  color:#cbd5f5;
+}
+.total{
+  text-align:center;
+  font-size:18px;
+  margin:20px;
+  color:#38bdf8;
 }
 </style>
 </head>
 
 <body>
 
-<header>My Investments</header>
+<header>📁 My Investments</header>
 
-<div class="grid" id="investmentGrid"></div>
+<div id="list"></div>
+
+<div class="total" id="totalEarnings">Total Earnings: $0</div>
 
 <script>
-let data = JSON.parse(localStorage.getItem("investments")) || [];
-let grid = document.getElementById("investmentGrid");
-
-if(data.length === 0){
-  grid.innerHTML = "<p style='padding:15px'>No investments yet</p>";
+// Demo data (abhi test ke liye)
+// baad me dashboard se real data aayega
+if(!localStorage.getItem("investments")){
+  const demo = [
+    {
+      price:15,
+      daily:0.3,
+      img:"images/IMG_0459.png",
+      date: Date.now() - (5 * 86400000) // 5 days ago
+    },
+    {
+      price:50,
+      daily:1,
+      img:"images/IMG_0466.png",
+      date: Date.now() - (12 * 86400000)
+    }
+  ];
+  localStorage.setItem("investments",JSON.stringify(demo));
 }
 
-data.forEach(nft => {
-  let daysPassed = Math.floor((Date.now() - nft.startDate) / (1000*60*60*24));
-  let remaining = Math.max(0, nft.days - daysPassed);
-  let totalEarned = (nft.dailyIncome * daysPassed).toFixed(2);
+const investments = JSON.parse(localStorage.getItem("investments")) || [];
+const box = document.getElementById("list");
+let total = 0;
 
-  grid.innerHTML += `
+investments.forEach(n=>{
+  const days = Math.floor((Date.now() - n.date) / 86400000);
+  const earned = (days * n.daily).toFixed(2);
+  total += parseFloat(earned);
+
+  box.innerHTML += `
     <div class="card">
-      <img src="${nft.img}">
-      <div class="info">
-        Price: <span class="highlight">$${nft.price}</span><br>
-        Daily: ${nft.dailyPercent}% ($${nft.dailyIncome})<br>
-        Earned: <span class="highlight">$${totalEarned}</span><br>
-        Days Left: ${remaining}
+      <img src="${n.img}">
+      <div class="price">NFT Price: $${n.price}</div>
+      <div class="meta">
+        Daily Income: $${n.daily}<br>
+        Days Passed: ${days}<br>
+        Earned: <b>$${earned}</b>
       </div>
     </div>
   `;
 });
+
+document.getElementById("totalEarnings").innerHTML =
+  "Total Earnings: $" + total.toFixed(2);
 </script>
 
 </body>
