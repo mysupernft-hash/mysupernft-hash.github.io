@@ -28,6 +28,39 @@ button.buy{width:100%;padding:8px;border:none;border-radius:8px;background:#38bd
 
 <header>🚀 SuperNFT Dashboard</header>
 
+<div id="topCalculator" style="
+  margin:15px;
+  padding:15px;
+  background:#0f172a;
+  border-radius:12px;
+  border:1px solid #38bdf8;
+">
+
+  <h3 style="margin:0;color:#38bdf8;text-align:center;">
+    🧮 Earnings Calculator
+  </h3>
+
+  <div style="margin-top:10px;font-size:14px;text-align:center">
+    Selected NFT Price: <b id="calcPrice">$0</b><br>
+    Daily Income: <b id="calcDaily">$0</b>
+  </div>
+
+  <input id="calcDays" type="number" placeholder="Enter Days"
+    style="
+      width:100%;
+      margin-top:10px;
+      padding:8px;
+      border-radius:8px;
+      border:none;
+    ">
+
+  <div style="margin-top:8px;text-align:center;font-weight:bold">
+    Earning: <span id="calcResult">$0</span><br>
+    365 Days: <span id="calcYear">$0</span>
+  </div>
+
+</div>
+  
 <div class="top-btn">
   <a href="my-investments.html">📁 My Investments</a>
 </div>
