@@ -1,19 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>My Investments</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;font-family:Arial;background:#020617;color:white}
 header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;padding:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px}
 .card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
 .card img{width:100%;border-radius:10px}
 .price{color:#38bdf8;font-weight:bold;margin:6px 0}
-.meta{font-size:12px;color:#cbd5f5}
-.summary{text-align:center;padding:15px;border-top:1px solid #1e293b}
+.meta{font-size:13px;color:#cbd5f5}
+.total{padding:15px;text-align:center;font-size:18px;color:#22c55e}
 </style>
 </head>
 
@@ -21,44 +20,51 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
 
 <header>📁 My Investments</header>
 
-<div id="investmentList" class="grid"></div>
+<div class="total">
+  Live Earnings: $<span id="total">0.00</span>
+</div>
 
-<div class="summary" id="summary"></div>
+<div id="box" class="grid"></div>
 
 <script>
-const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-const box=document.getElementById("investmentList");
+const box=document.getElementById("box");
+const totalEl=document.getElementById("total");
+let myNFTs=JSON.parse(localStorage.getItem("myNFTs"))||[];
 
-let totalInvest=0,totalDaily=0,totalYear=0;
+// Agar pehle time save nahi hai
+myNFTs.forEach(n=>{
+  if(!n.time){
+    n.time=Date.now();
+  }
+});
+localStorage.setItem("myNFTs",JSON.stringify(myNFTs));
 
-if(data.length===0){
-  box.innerHTML="<p style='text-align:center'>No NFTs Purchased</p>";
-}else{
-  data.forEach(n=>{
-    let year=n.daily*365;
-    totalInvest+=n.price;
-    totalDaily+=n.daily;
-    totalYear+=year;
+function calculate(){
+  let total=0;
+  box.innerHTML="";
+
+  myNFTs.forEach(n=>{
+    const seconds=(Date.now()-n.time)/1000;
+    const perSecond=n.daily/86400;
+    const earned=(perSecond*seconds);
+
+    total+=earned;
 
     box.innerHTML+=`
-    <div class="card">
-      <img src="images/${n.img}">
-      <div class="price">$${n.price}</div>
-      <div class="meta">
-        Daily: $${n.daily}<br>
-        Monthly: $${(n.daily*30).toFixed(2)}<br>
-        Yearly: $${year.toFixed(2)}<br>
-        Bought: ${n.date}
-      </div>
-    </div>`;
+      <div class="card">
+        <img src="images/${n.img}">
+        <div class="price">$${n.price}</div>
+        <div class="meta">
+          Daily: $${n.daily}<br>
+          Earned: $${earned.toFixed(4)}
+        </div>
+      </div>`;
   });
+
+  totalEl.innerText=total.toFixed(4);
 }
 
-document.getElementById("summary").innerHTML=`
-💰 Total Invested: <b>$${totalInvest}</b><br>
-📈 Daily Income: <b>$${totalDaily.toFixed(2)}</b><br>
-🗓 Yearly Income: <b>$${totalYear.toFixed(2)}</b>
-`;
+setInterval(calculate,1000);
 </script>
 
 </body>
