@@ -75,15 +75,49 @@ button{
 <header>📁 My Investments</header>
 
 <!-- 🔥 CALCULATOR (100% VISIBLE) -->
-<div class="calc-box">
-  <h3 style="text-align:center;color:#38bdf8;">💰 Earnings Calculator</h3>
+<!-- NFT CALCULATOR -->
+<div style="background:#0f172a;padding:15px;border-radius:12px;margin:20px;">
+  <h3 style="text-align:center;color:#38bdf8;">📊 NFT Earnings Calculator</h3>
 
-  <input id="dailyIncome" type="number" placeholder="Daily Income ($)">
-  <button onclick="calculate()">Calculate 365 Days</button>
+  <input id="price" type="number" placeholder="NFT Price ($)"
+    style="width:100%;padding:10px;border-radius:8px;margin:8px 0;
+    background:#020617;border:1px solid #38bdf8;color:white;">
+
+  <input id="percent" type="number" placeholder="Daily % (2, 2.5, 5)"
+    style="width:100%;padding:10px;border-radius:8px;margin:8px 0;
+    background:#020617;border:1px solid #38bdf8;color:white;">
+
+  <button onclick="calculate()"
+    style="width:100%;padding:10px;border:none;border-radius:8px;
+    background:#38bdf8;color:#020617;font-weight:bold;">
+    Calculate
+  </button>
 
   <p id="calcResult"
-     style="text-align:center;margin-top:10px;color:#22c55e;"></p>
+     style="text-align:center;margin-top:12px;color:#22c55e;line-height:1.6;">
+  </p>
 </div>
+
+<script>
+function calculate(){
+  var price = document.getElementById("price").value;
+  var percent = document.getElementById("percent").value;
+
+  if(price=="" || percent==""){
+    alert("Price aur % dono dalo");
+    return;
+  }
+
+  var daily = (price * percent / 100).toFixed(2);
+  var monthly = (daily * 30).toFixed(2);
+  var yearly = (daily * 365).toFixed(2);
+
+  document.getElementById("calcResult").innerHTML =
+    "Daily Income: $" + daily + "<br>" +
+    "Monthly Income: $" + monthly + "<br>" +
+    "365 Days Income: $" + yearly;
+}
+</script>
 
 <!-- INVESTMENTS -->
 <div id="investments" class="grid"></div>
