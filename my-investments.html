@@ -4,15 +4,69 @@
 <meta charset="UTF-8">
 <title>My Investments</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:white}
-header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px}
-.card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
-.card img{width:100%;border-radius:10px}
-.price{color:#38bdf8;font-weight:bold;margin:6px 0}
-.meta{font-size:13px;color:#cbd5f5}
-.total{padding:15px;text-align:center;font-size:18px;color:#22c55e}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:white;
+}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:15px;
+  padding:15px;
+}
+.card{
+  background:#0f172a;
+  border-radius:14px;
+  padding:10px;
+  text-align:center;
+}
+.card img{
+  width:100%;
+  border-radius:10px;
+}
+.price{
+  color:#38bdf8;
+  font-weight:bold;
+  margin:6px 0;
+}
+.meta{
+  font-size:12px;
+  color:#cbd5f5;
+  line-height:1.4;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:none;
+}
+button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  font-weight:bold;
+  cursor:pointer;
+}
+.calc-box{
+  background:#0f172a;
+  margin:15px;
+  padding:15px;
+  border-radius:12px;
+}
 </style>
 </head>
 
@@ -20,83 +74,51 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
 
 <header>📁 My Investments</header>
 
-<script>
-function calc(){
-  const amt=document.getElementById("amount").value;
-  const daily=document.getElementById("daily").value;
+<!-- 🔥 CALCULATOR (100% VISIBLE) -->
+<div class="calc-box">
+  <h3 style="text-align:center;color:#38bdf8;">💰 Earnings Calculator</h3>
 
-  if(!amt || !daily){
-    alert("Fill all fields");
-    return;
-  }
+  <input id="dailyIncome" type="number" placeholder="Daily Income ($)">
+  <button onclick="calculate()">Calculate 365 Days</button>
 
-  const yearly=(daily*365).toFixed(2);
-  document.getElementById("result").innerHTML=
-    `Total after 365 days: <b>$${yearly}</b>`;
-}
-</script>
-
-  <script>
-function calc(){
-  const amt=document.getElementById("amount").value;
-  const daily=document.getElementById("daily").value;
-
-  if(!amt || !daily){
-    alert("Fill all fields");
-    return;
-  }
-
-  const yearly=(daily*365).toFixed(2);
-  document.getElementById("result").innerHTML=
-    `Total after 365 days: <b>$${yearly}</b>`;
-}
-</script>
-  
-<div class="total">
-  Live Earnings: $<span id="total">0.00</span>
+  <p id="calcResult"
+     style="text-align:center;margin-top:10px;color:#22c55e;"></p>
 </div>
 
-<div id="box" class="grid"></div>
+<!-- INVESTMENTS -->
+<div id="investments" class="grid"></div>
 
 <script>
-const box=document.getElementById("box");
-const totalEl=document.getElementById("total");
-let myNFTs=JSON.parse(localStorage.getItem("myNFTs"))||[];
+/* LOAD BOUGHT NFTS */
+const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+const box = document.getElementById("investments");
 
-// Agar pehle time save nahi hai
-myNFTs.forEach(n=>{
-  if(!n.time){
-    n.time=Date.now();
-  }
-});
-localStorage.setItem("myNFTs",JSON.stringify(myNFTs));
-
-function calculate(){
-  let total=0;
-  box.innerHTML="";
-
-  myNFTs.forEach(n=>{
-    const seconds=(Date.now()-n.time)/1000;
-    const perSecond=n.daily/86400;
-    const earned=(perSecond*seconds);
-
-    total+=earned;
-
-    box.innerHTML+=`
-      <div class="card">
-        <img src="images/${n.img}">
-        <div class="price">$${n.price}</div>
-        <div class="meta">
-          Daily: $${n.daily}<br>
-          Earned: $${earned.toFixed(4)}
-        </div>
-      </div>`;
-  });
-
-  totalEl.innerText=total.toFixed(4);
+if(data.length===0){
+  box.innerHTML="<p style='padding:15px;'>No NFTs purchased yet.</p>";
 }
 
-setInterval(calculate,1000);
+data.forEach(n=>{
+  box.innerHTML+=`
+    <div class="card">
+      <img src="${n.img}">
+      <div class="price">$${n.price}</div>
+      <div class="meta">
+        Daily $${n.daily}<br>
+        Validity 365 Days
+      </div>
+    </div>
+  `;
+});
+
+/* CALCULATOR */
+function calculate(){
+  const daily = document.getElementById("dailyIncome").value;
+  if(!daily){ alert("Enter daily income"); return; }
+
+  const total = (daily * 365).toFixed(2);
+  document.getElementById("calcResult").innerHTML =
+    `Total after 365 days: <b>$${total}</b>`;
+}
 </script>
 
 </body>
