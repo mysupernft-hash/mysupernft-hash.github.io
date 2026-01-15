@@ -144,5 +144,17 @@ function openLogin(){
 }
 </script>
 
+<script>
+  // 🔗 REFERRAL CAPTURE (INDEX PAGE)
+
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get("ref");
+
+  if(ref && !localStorage.getItem("refBy")){
+    localStorage.setItem("refBy", ref);
+    console.log("Referral saved:", ref);
+  }
+</script>
+  
 </body>
 </html>
