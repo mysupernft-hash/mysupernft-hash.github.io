@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Account – SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:white
+}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b
+}
+
+.nav{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  padding:10px;
+  flex-wrap:wrap
+}
+.nav a{
+  padding:8px 18px;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  color:#38bdf8;
+  text-decoration:none;
+  font-weight:bold
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:15px;
+  padding:15px
+}
+.box{
+  background:#0f172a;
+  padding:15px;
+  border-radius:14px;
+  text-align:center
+}
+.box h3{
+  margin:0;
+  font-size:14px;
+  color:#cbd5f5
+}
+.box b{
+  display:block;
+  margin-top:6px;
+  font-size:18px;
+  color:#38bdf8
+}
+
+.section-title{
+  padding:10px 15px;
+  font-weight:bold;
+  color:#38bdf8
+}
+
+.team{
+  padding:15px
+}
+.team div{
+  background:#0f172a;
+  padding:10px;
+  border-radius:12px;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  font-size:15px;
+  margin:15px
+}
+</style>
+</head>
+
+<body>
+
+<header>👤 My Account</header>
+
+<div class="nav">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="withdraw.html">💸 Withdraw</a>
+</div>
+
+<!-- WALLET SUMMARY -->
+<div class="grid">
+  <div class="box">
+    <h3>Wallet Balance</h3>
+    <b id="wallet">$0.0000</b>
+  </div>
+
+  <div class="box">
+    <h3>Daily Income</h3>
+    <b id="daily">$0.00</b>
+  </div>
+
+  <div class="box">
+    <h3>Total Income</h3>
+    <b id="total">$0.0000</b>
+  </div>
+
+  <div class="box">
+    <h3>Active NFTs</h3>
+    <b id="nfts">0</b>
+  </div>
+</div>
+
+<!-- TEAM -->
+<div class="section-title">👥 My Team</div>
+<div class="team">
+  <div><span>Total Members</span><b id="teamTotal">0</b></div>
+  <div><span>Valid Members</span><b id="teamValid">0</b></div>
+  <div><span>Community Rewards</span><b>$0</b></div>
+</div>
+
+<!-- ORDERS -->
+<div class="section-title">📦 My Orders</div>
+<div class="team">
+  <div><span>Total Orders</span><b id="orders">0</b></div>
+  <div><span>Active</span><b id="activeOrders">0</b></div>
+</div>
+
+<button onclick="goWithdraw()">Withdraw Funds</button>
+
+<script>
+/* ===== LOAD DATA ===== */
+function loadAccount(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+
+  let daily = 0;
+  let total = 0;
+  let wallet = 0;
+
+  data.forEach(n=>{
+    daily += n.daily;
+    const seconds = (Date.now() - n.boughtAt) / 1000;
+    const earned = seconds * (n.daily / 86400);
+    wallet += earned;
+    total += earned;
+  });
+
+  document.getElementById("daily").innerText =
+    "$" + daily.toFixed(2);
+
+  document.getElementById("wallet").innerText =
+    "$" + wallet.toFixed(4);
+
+  document.getElementById("total").innerText =
+    "$" + total.toFixed(4);
+
+  document.getElementById("nfts").innerText =
+    data.length;
+
+  document.getElementById("orders").innerText =
+    data.length;
+
+  document.getElementById("activeOrders").innerText =
+    data.length;
+
+  /* TEAM (demo for now) */
+  document.getElementById("teamTotal").innerText =
+    localStorage.getItem("teamTotal") || 0;
+
+  document.getElementById("teamValid").innerText =
+    localStorage.getItem("teamValid") || 0;
+}
+
+setInterval(loadAccount,1000);
+loadAccount();
+
+function goWithdraw(){
+  window.location.href="withdraw.html";
+}
+</script>
+
+</body>
+</html>
