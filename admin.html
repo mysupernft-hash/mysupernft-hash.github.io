@@ -21,17 +21,18 @@ header{
   border-bottom:1px solid #1e293b;
 }
 .container{
-  max-width:420px;
-  margin:40px auto;
+  max-width:480px;
+  margin:30px auto;
   background:#0f172a;
-  padding:22px;
+  padding:20px;
   border-radius:16px;
   box-shadow:0 0 30px rgba(0,0,0,.5);
 }
+h3{margin-top:0}
 input,button{
   width:100%;
   padding:12px;
-  margin-top:12px;
+  margin-top:10px;
   border-radius:10px;
   border:none;
   font-size:15px;
@@ -54,21 +55,23 @@ button:hover{opacity:.9}
   margin-top:14px;
   padding:14px;
   border-radius:12px;
-  text-align:center;
 }
 .box b{
   font-size:18px;
   color:#38bdf8;
 }
-.danger{
-  background:#ef4444;
-  color:#000;
+.row{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
 }
 .small{
   font-size:13px;
   opacity:.8;
-  margin-top:8px;
 }
+.approve{background:#22c55e;margin-top:6px}
+.reject{background:#ef4444;margin-top:6px}
+.danger{background:#ef4444;margin-top:16px}
 </style>
 </head>
 
@@ -80,54 +83,53 @@ button:hover{opacity:.9}
 <div id="loginBox" class="container">
   <h3>Admin Security Lock</h3>
   <input type="password" id="adminPin" placeholder="Enter Admin PIN">
-  <button onclick="unlockAdmin()">Unlock Admin Panel</button>
+  <button onclick="unlockAdmin()">Unlock</button>
   <p class="small">Authorized access only</p>
 </div>
 
-<!-- 🧠 ADMIN DASHBOARD -->
+<!-- 🧠 PANEL -->
 <div id="panel" class="container" style="display:none">
 
   <div class="box">
-    👥 Total NFT Purchases<br>
-    <b id="totalUsers">0</b>
+    <div class="row">
+      <span>👥 Total NFTs Bought</span>
+      <b id="totalUsers">0</b>
+    </div>
   </div>
 
   <div class="box">
-    💰 Total Invested Amount<br>
-    <b id="totalInvested">$0</b>
+    <div class="row">
+      <span>💰 Total Invested</span>
+      <b id="totalInvested">$0</b>
+    </div>
   </div>
 
   <div class="box">
-    📈 Total Daily Payout<br>
-    <b id="totalDaily">$0</b>
+    <div class="row">
+      <span>📈 Total Daily Income</span>
+      <b id="totalDaily">$0</b>
+    </div>
+  </div>
+
+  <!-- WITHDRAW REQUESTS -->
+  <div class="box">
+    <h3>💸 Withdraw Requests</h3>
+    <div id="withdrawList" class="small">No requests</div>
   </div>
 
   <button class="danger" onclick="resetSystem()">
-    ⚠ Reset All User Data
+    ⚠ Reset All Data
   </button>
 
-  <p class="small">
-    Reset will remove all NFTs, earnings & users.
-  </p>
 </div>
 
 <script>
-/* ===============================
-   ADMIN CONFIG
-================================ */
-const ADMIN_PIN = "7860";
+/* ================= CONFIG ================= */
+const ADMIN_PIN = "1008";
 
-/* ===============================
-   BLOCK DIRECT ACCESS
-================================ */
-sessionStorage.removeItem("adminSession");
-
-/* ===============================
-   UNLOCK ADMIN
-================================ */
+/* ================= UNLOCK ================= */
 function unlockAdmin(){
   const pin = document.getElementById("adminPin").value;
-
   if(pin === ADMIN_PIN){
     sessionStorage.setItem("adminSession","active");
     openPanel();
@@ -136,22 +138,18 @@ function unlockAdmin(){
   }
 }
 
-/* ===============================
-   OPEN PANEL
-================================ */
+/* ================= OPEN PANEL ================= */
 function openPanel(){
   document.getElementById("loginBox").style.display="none";
   document.getElementById("panel").style.display="block";
   loadStats();
+  loadWithdraws();
 }
 
-/* ===============================
-   LOAD STATS
-================================ */
+/* ================= STATS ================= */
 function loadStats(){
   const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-  let invested = 0;
-  let daily = 0;
+  let invested = 0, daily = 0;
 
   data.forEach(n=>{
     invested += Number(n.price);
@@ -159,18 +157,55 @@ function loadStats(){
   });
 
   document.getElementById("totalUsers").innerText = data.length;
-  document.getElementById("totalInvested").innerText = "$" + invested.toFixed(2);
-  document.getElementById("totalDaily").innerText = "$" + daily.toFixed(2);
+  document.getElementById("totalInvested").innerText = "$"+invested.toFixed(2);
+  document.getElementById("totalDaily").innerText = "$"+daily.toFixed(2);
 }
 
-/* ===============================
-   RESET SYSTEM
-================================ */
+/* ================= WITHDRAW ================= */
+function loadWithdraws(){
+  const list = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+  const box = document.getElementById("withdrawList");
+  box.innerHTML = "";
+
+  if(list.length===0){
+    box.innerHTML = "No requests";
+    return;
+  }
+
+  list.forEach((w,i)=>{
+    box.innerHTML += `
+      <div style="border-bottom:1px solid #1e293b;padding:8px 0">
+        <b>$${w.amount}</b> → ${w.wallet}<br>
+        Status: <b>${w.status}</b><br>
+        <button class="approve" onclick="approve(${i})">Approve</button>
+        <button class="reject" onclick="reject(${i})">Reject</button>
+      </div>
+    `;
+  });
+}
+
+function approve(i){
+  const list = JSON.parse(localStorage.getItem("withdrawRequests"));
+  list[i].status="Approved";
+  localStorage.setItem("withdrawRequests",JSON.stringify(list));
+  loadWithdraws();
+}
+
+function reject(i){
+  const list = JSON.parse(localStorage.getItem("withdrawRequests"));
+  list[i].status="Rejected";
+  localStorage.setItem("withdrawRequests",JSON.stringify(list));
+  loadWithdraws();
+}
+
+/* ================= RESET ================= */
 function resetSystem(){
-  if(confirm("Are you sure? This will delete ALL user data.")){
+  if(confirm("Delete ALL user data?")){
     localStorage.removeItem("myNFTs");
-    alert("✅ System reset successfully");
+    localStorage.removeItem("withdrawRequests");
+    alert("System reset successful");
     loadStats();
+    loadWithdraws();
   }
 }
 </script>
