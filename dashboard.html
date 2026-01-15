@@ -1,218 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:white}
-header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
-
-.nav{
-  display:flex;justify-content:center;gap:10px;
-  padding:10px;flex-wrap:wrap
+body{margin:0;font-family:Arial;background:#020617;color:#fff}
+header{text-align:center;padding:15px;color:#38bdf8;font-size:22px}
+.nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.nav a,.nav button{
+  padding:8px 14px;border-radius:20px;
+  border:1px solid #38bdf8;
+  background:#0f172a;color:#38bdf8;
+  text-decoration:none;font-weight:bold;cursor:pointer
 }
-.nav a{
-  padding:8px 18px;border-radius:20px;
-  border:1px solid #38bdf8;color:#38bdf8;
-  text-decoration:none;font-weight:bold
+.box{background:#0f172a;margin:10px;padding:12px;border-radius:12px;text-align:center}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:15px;padding:15px
 }
-.nav a.active{background:#38bdf8;color:#020617}
-
-.summary{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:15px}
-.box{background:#0f172a;padding:12px 18px;border-radius:12px;text-align:center;min-width:120px}
-
-.tabs{display:flex;gap:10px;padding:10px;overflow-x:auto}
-.tabs button{
-  padding:8px 14px;border:1px solid #38bdf8;
-  border-radius:20px;background:#0f172a;color:#38bdf8
-}
-.tabs button.active{background:#38bdf8;color:#020617}
-
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px}
 .card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
 .card img{width:100%;border-radius:10px}
-.price{color:#38bdf8;font-weight:bold}
-.meta{font-size:12px;color:#cbd5f5}
-.card button{
-  margin-top:8px;width:100%;padding:8px;
-  border:none;border-radius:8px;
-  background:#38bdf8;font-weight:bold
-}
-
-.section{display:none}
-.section.active{display:grid}
-
-input{width:100%;padding:6px;border-radius:6px;border:none}
-button{cursor:pointer}
-
-.admin-nav{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  padding:12px;
-  background:#020617;
-}
-
-.admin-nav a{
-  padding:8px 16px;
-  border-radius:20px;
-  border:1px solid #38bdf8;
-  color:#38bdf8;
-  text-decoration:none;
-  font-weight:bold;
-  font-size:14px;
-}
-
-.admin-btn{
-  background:#facc15;
-  color:#020617 !important;
-  border:none !important;
-}
-  </style>
+.buy{background:#38bdf8;color:#020617;border:none;margin-top:6px;padding:8px;width:100%;border-radius:8px}
+</style>
 </head>
 
 <body>
 
 <header>SuperNFT Dashboard</header>
 
-<!-- TOP NAV BUTTONS -->
-<div class="admin-nav">
-  <a href="dashboard.html">🏠 Dashboard</a>
-  <a href="account.html">👤 My Account</a>
-  <a href="withdraw.html">💸 Withdraw</a>
-  <a href="admin.html" class="admin-btn">🛠 Admin</a>
-</div> 
-
-<!-- TOP NAV -->
-  
 <div class="nav">
-  <a class="active">🏠 Dashboard</a>
-  <a href="account.html">👤 My Account</a>
   <a href="withdraw.html">💸 Withdraw</a>
+  <a href="admin.html" id="adminBtn" style="display:none">🛠 Admin</a>
+  <button onclick="adminLock()">🔐 Admin Login</button>
 </div>
 
-<!-- SUMMARY -->
-<div class="summary">
-  <div class="box">
-    💰 Total Invested<br>
-    <b id="totalInvested">$0.00</b>
-  </div>
-  <div class="box">
-    📈 Daily Income<br>
-    <b id="dailyIncome">$0.00</b>
-  </div>
-  <div class="box">
-    ⚡ Live Earnings<br>
-    <b id="liveEarnings">$0.0000</b>
-  </div>
-</div>
+<div class="box">💰 Total Invested<br><b id="invested">$0</b></div>
+<div class="box">📈 Daily Income<br><b id="daily">$0</b></div>
+<div class="box">⚡ Live Earnings<br><b id="live">$0</b></div>
 
-<!-- REFERRAL -->
-<div class="box" style="margin:0 15px">
-  👥 Referral Link<br>
-  <input id="refLink" readonly>
-  <button onclick="copyRef()" style="margin-top:6px">Copy</button>
-</div>
-
-<!-- TABS -->
-<div class="tabs">
-  <button class="active" onclick="showTab('starter',this)">Starter</button>
-  <button onclick="showTab('rising',this)">Rising</button>
-  <button onclick="showTab('elite',this)">Elite</button>
-  <button onclick="showTab('legendary',this)">Legendary</button>
-</div>
-
-<!-- NFT SECTIONS -->
-<div id="starter" class="grid section active"></div>
-<div id="rising" class="grid section"></div>
-<div id="elite" class="grid section"></div>
-<div id="legendary" class="grid section"></div>
+<h3 style="text-align:center">🔥 Available NFTs</h3>
+<div class="grid" id="nftGrid"></div>
 
 <script>
-/* ================= REFERRAL ================= */
-if(!localStorage.getItem("refCode")){
-  localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
+/* ---------- ADMIN LOCK ---------- */
+const ADMIN_PIN="7860";
+function adminLock(){
+  if(prompt("Enter Admin PIN")==ADMIN_PIN){
+    localStorage.setItem("isAdmin","true");
+    checkAdmin();
+    alert("Admin Access Granted");
+  }
 }
-document.getElementById("refLink").value =
-  location.origin + "/index.html?ref=" + localStorage.getItem("refCode");
-
-function copyRef(){
-  navigator.clipboard.writeText(refLink.value);
-  alert("Referral link copied");
+function checkAdmin(){
+  if(localStorage.getItem("isAdmin")==="true"){
+    adminBtn.style.display="inline-block";
+  }
 }
+checkAdmin();
 
-/* ================= NFT DATA ================= */
-const starter=[[10,"IMG_0458.png",0.2],[15,"IMG_0459.png",0.3],[20,"IMG_0460.png",0.4],[25,"IMG_0461.png",0.5],[30,"IMG_0462.png",0.6],[35,"IMG_0463.png",0.7],[40,"IMG_0464.png",0.8],[45,"IMG_0465.png",0.9],[50,"IMG_0466.png",1]];
-const rising=[[55,"IMG_0467.png",1.3],[60,"IMG_0468.png",1.5],[65,"IMG_0469.png",1.63],[70,"IMG_0470.png",1.75],[75,"IMG_0471.png",1.88],[80,"IMG_0472.png",2],[90,"IMG_0473.png",2.25],[100,"IMG_0474.png",2.5]];
-const elite=[[150,"IMG_0475.png",5],[200,"IMG_0476.png",6.6],[250,"IMG_0477.png",8.25],[300,"IMG_0478.png",10],[350,"IMG_0479.png",11.6],[400,"IMG_0480.png",13.3],[450,"IMG_0481.png",15]];
-const legendary=[[499,"IMG_0482.png",25],[599,"IMG_0483.png",30],[699,"IMG_0497.png",40],[799,"IMG_0498.png",30],[899,"IMG_0499.png",45],[999,"IMG_0503.png",100]];
+/* ---------- ALL NFT DATA (FULL LIST) ---------- */
+const ALL_NFTS = [
+  // Starter
+  [10,0.2],[15,0.3],[20,0.4],[25,0.5],[30,0.6],[35,0.7],[40,0.8],[45,0.9],[50,1],
+  // Rising
+  [55,1.3],[60,1.5],[65,1.63],[70,1.75],[75,1.88],[80,2],[90,2.25],[100,2.5],
+  // Elite
+  [150,5],[200,6.6],[250,8.25],[300,10],[350,11.6],[400,13.3],[450,15],
+  // Legendary
+  [499,25],[599,30],[699,40],[799,30],[899,45],[999,100]
+];
 
-/* ================= RENDER ================= */
-function render(list,id){
-  const box=document.getElementById(id);
-  box.innerHTML="";
-  list.forEach(n=>{
-    box.innerHTML+=`
+/* ---------- RENDER ALL NFTs ---------- */
+ALL_NFTS.forEach(n=>{
+  nftGrid.innerHTML+=`
     <div class="card">
-      <img src="images/${n[1]}">
-      <div class="price">$${n[0]}</div>
-      <div class="meta">Daily ${n[2]}%</div>
-      <button onclick="buyNFT(${n[0]},${n[2]})">Buy NFT</button>
-    </div>`;
-  });
-}
-render(starter,"starter");
-render(rising,"rising");
-render(elite,"elite");
-render(legendary,"legendary");
+      <img src="https://via.placeholder.com/200">
+      <b>$${n[0]}</b><br>
+      Daily: $${((n[0]*n[1])/100).toFixed(2)}
+      <button class="buy" onclick="buyNFT(${n[0]},${n[1]})">
+        Buy NFT
+      </button>
+    </div>
+  `;
+});
 
-/* ================= BUY NFT ================= */
+/* ---------- BUY NFT ---------- */
 function buyNFT(price,percent){
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  const daily=(price*percent)/100;
-  data.push({price,daily,boughtAt:Date.now()});
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  data.push({
+    price: price,
+    daily: (price*percent)/100,
+    boughtAt: Date.now()
+  });
   localStorage.setItem("myNFTs",JSON.stringify(data));
-  updateSummary();
   alert("NFT Purchased Successfully");
 }
 
-/* ================= SUMMARY ================= */
-function updateSummary(){
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let invested=0,daily=0;
+/* ---------- CALCULATIONS ---------- */
+function update(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let invested=0,daily=0,live=0;
+
   data.forEach(n=>{
-    invested+=Number(n.price);
-    daily+=Number(n.daily);
+    invested+=n.price;
+    daily+=n.daily;
+    live+=((Date.now()-n.boughtAt)/1000)*(n.daily/86400);
   });
-  totalInvested.innerText="$"+invested.toFixed(2);
-  dailyIncome.innerText="$"+daily.toFixed(2);
+
+  const withdrawn = Number(localStorage.getItem("withdrawedTotal")) || 0;
+  live = Math.max(live-withdrawn,0);
+
+  investedEl.innerText="$"+invested.toFixed(2);
+  dailyEl.innerText="$"+daily.toFixed(2);
+  liveEl.innerText="$"+live.toFixed(4);
 }
 
-/* ================= LIVE EARNINGS ================= */
-function updateLive(){
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let live=0;
-  data.forEach(n=>{
-    const seconds=(Date.now()-n.boughtAt)/1000;
-    live+=seconds*(n.daily/86400);
-  });
-  liveEarnings.innerText="$"+live.toFixed(4);
-}
+const investedEl=document.getElementById("invested");
+const dailyEl=document.getElementById("daily");
+const liveEl=document.getElementById("live");
 
-setInterval(()=>{
-  updateSummary();
-  updateLive();
-},1000);
-
-/* ================= TABS ================= */
-function showTab(id,btn){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  btn.classList.add("active");
-}
+setInterval(update,1000);
+update();
 </script>
 
 </body>
