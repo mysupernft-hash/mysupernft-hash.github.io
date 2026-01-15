@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel – SuperNFT</title>
+<title>SuperNFT Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -10,153 +10,245 @@ body{
   margin:0;
   font-family:Arial;
   background:#020617;
-  color:white
+  color:#fff;
 }
 header{
   text-align:center;
-  padding:15px;
+  padding:16px;
   font-size:22px;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b
+  color:#facc15;
+  border-bottom:1px solid #1e293b;
 }
 .nav{
   display:flex;
   justify-content:center;
   gap:10px;
-  padding:10px
+  padding:12px;
+  flex-wrap:wrap;
 }
-.nav a{
-  padding:8px 18px;
+.nav a, .nav button{
+  padding:8px 16px;
   border-radius:20px;
   border:1px solid #38bdf8;
+  background:#0f172a;
   color:#38bdf8;
   text-decoration:none;
-  font-weight:bold
+  font-weight:bold;
+  cursor:pointer;
 }
-
+.nav button{
+  background:#f87171;
+  color:#020617;
+  border:none;
+}
+.section{
+  padding:15px;
+}
 .box{
   background:#0f172a;
-  margin:15px;
-  padding:15px;
-  border-radius:14px
+  padding:14px;
+  border-radius:14px;
+  margin-bottom:15px;
 }
-
-.req{
-  background:#020617;
-  padding:12px;
-  border-radius:12px;
-  margin-bottom:12px;
-  font-size:14px
+.box h3{
+  margin:0 0 10px;
+  color:#38bdf8;
 }
-
-.req b{color:#38bdf8}
-
-.actions{
-  display:flex;
-  gap:10px;
-  margin-top:10px
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
 }
-.actions button{
-  flex:1;
-  padding:10px;
+th,td{
+  border-bottom:1px solid #1e293b;
+  padding:8px;
+  text-align:center;
+}
+th{
+  color:#facc15;
+}
+.approve{
+  background:#22c55e;
   border:none;
-  border-radius:10px;
-  font-weight:bold;
-  cursor:pointer
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
 }
-.approve{background:#22c55e;color:#020617}
-.reject{background:#ef4444;color:#020617}
+.reject{
+  background:#ef4444;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+.small{
+  font-size:12px;
+  opacity:0.8;
+}
 </style>
 </head>
 
 <body>
 
-<header>🛠 Admin – Withdraw Approval</header>
+<header>🛠 SuperNFT Admin Panel</header>
 
 <div class="nav">
   <a href="dashboard.html">🏠 Dashboard</a>
-  <a href="withdraw.html">💸 Withdraw</a>
+  <a href="account.html">👤 Account</a>
+  <button onclick="adminLogout()">🚪 Logout</button>
 </div>
 
-<div class="box">
-  <b>Pending Withdraw Requests</b>
-</div>
+<div class="section">
 
-<div id="requests" class="box"></div>
+  <!-- USERS SUMMARY -->
+  <div class="box">
+    <h3>👥 Users Summary</h3>
+    <div id="userStats" class="small"></div>
+  </div>
+
+  <!-- INVESTMENTS -->
+  <div class="box">
+    <h3>💰 All Investments</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Price</th>
+          <th>Daily</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="investTable"></tbody>
+    </table>
+  </div>
+
+  <!-- WITHDRAW REQUESTS -->
+  <div class="box">
+    <h3>💸 Withdraw Requests</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="withdrawTable"></tbody>
+    </table>
+  </div>
+
+  <!-- ADMIN CONTROLS -->
+  <div class="box">
+    <h3>⚠️ Admin Controls</h3>
+    <button onclick="resetWithdraws()">Reset Withdraw Requests</button>
+    <button onclick="resetAllData()" style="margin-left:10px">
+      Reset ALL User Data
+    </button>
+  </div>
+
+</div>
 
 <script>
-/* ===== LOAD REQUESTS ===== */
-function loadRequests(){
-  const list =
-    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
-  const box = document.getElementById("requests");
-  box.innerHTML="";
+/* 🔐 ADMIN PROTECTION */
+if(localStorage.getItem("isAdmin")!=="true"){
+  alert("Admin access required");
+  location.href="dashboard.html";
+}
 
-  if(list.length===0){
-    box.innerHTML="<div class='req'>No requests</div>";
-    return;
-  }
+/* LOGOUT */
+function adminLogout(){
+  localStorage.removeItem("isAdmin");
+  location.href="dashboard.html";
+}
 
-  list.forEach((w,i)=>{
-    box.innerHTML+=`
-      <div class="req">
-        <b>Amount:</b> $${w.amount}<br>
-        <b>Fee:</b> $${w.fee.toFixed(2)}<br>
-        <b>Receive:</b> $${w.finalAmount.toFixed(2)}<br>
-        <b>Method:</b> ${w.method}<br>
-        <b>Address:</b> ${w.address}<br>
-        <b>Status:</b> ${w.status}<br>
-        <b>Time:</b> ${w.time}
+/* USERS SUMMARY */
+function loadStats(){
+  const nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  const withdraws = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+  let invested=0, daily=0;
 
-        ${w.status==="Pending" ? `
-        <div class="actions">
-          <button class="approve" onclick="approve(${i})">Approve</button>
-          <button class="reject" onclick="rejectReq(${i})">Reject</button>
-        </div>` : ""}
-      </div>
-    `;
+  nfts.forEach(n=>{
+    invested+=Number(n.price);
+    daily+=Number(n.daily);
+  });
+
+  userStats.innerHTML = `
+    Total NFTs: ${nfts.length}<br>
+    Total Invested: $${invested.toFixed(2)}<br>
+    Daily Income: $${daily.toFixed(2)}<br>
+    Withdraw Requests: ${withdraws.length}
+  `;
+}
+
+/* INVESTMENT TABLE */
+function loadInvestments(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  investTable.innerHTML="";
+  data.forEach((n,i)=>{
+    investTable.innerHTML+=`
+      <tr>
+        <td>${i+1}</td>
+        <td>$${n.price}</td>
+        <td>$${n.daily.toFixed(2)}</td>
+        <td>${new Date(n.boughtAt).toLocaleDateString()}</td>
+      </tr>`;
   });
 }
 
-/* ===== APPROVE ===== */
-function approve(index){
-  const list =
-    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
-
-  if(!list[index] || list[index].status!=="Pending") return;
-
-  list[index].status="Approved";
-
-  const approved =
-    Number(localStorage.getItem("withdrawApproved")) || 0;
-
-  localStorage.setItem(
-    "withdrawApproved",
-    approved + list[index].amount
-  );
-
-  localStorage.setItem("withdrawRequests",JSON.stringify(list));
-
-  alert("Withdraw Approved");
-  loadRequests();
+/* WITHDRAW TABLE */
+function loadWithdraws(){
+  const data = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+  withdrawTable.innerHTML="";
+  data.forEach((w,i)=>{
+    withdrawTable.innerHTML+=`
+      <tr>
+        <td>${i+1}</td>
+        <td>$${w.amount}</td>
+        <td>${w.status}</td>
+        <td>
+          <button class="approve" onclick="approve(${i})">✔</button>
+          <button class="reject" onclick="reject(${i})">✖</button>
+        </td>
+      </tr>`;
+  });
 }
 
-/* ===== REJECT ===== */
-function rejectReq(index){
-  const list =
-    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
-
-  if(!list[index] || list[index].status!=="Pending") return;
-
-  list[index].status="Rejected";
-  localStorage.setItem("withdrawRequests",JSON.stringify(list));
-
-  alert("Withdraw Rejected");
-  loadRequests();
+function approve(i){
+  const data = JSON.parse(localStorage.getItem("withdrawRequests"));
+  data[i].status="Approved";
+  localStorage.setItem("withdrawRequests",JSON.stringify(data));
+  loadWithdraws();
 }
 
-/* ===== INIT ===== */
-loadRequests();
+function reject(i){
+  const data = JSON.parse(localStorage.getItem("withdrawRequests"));
+  data[i].status="Rejected";
+  localStorage.setItem("withdrawRequests",JSON.stringify(data));
+  loadWithdraws();
+}
+
+/* RESET OPTIONS */
+function resetWithdraws(){
+  if(confirm("Reset all withdraw requests?")){
+    localStorage.removeItem("withdrawRequests");
+    loadWithdraws();
+    loadStats();
+  }
+}
+
+function resetAllData(){
+  if(confirm("⚠️ DELETE ALL USER DATA?")){
+    localStorage.clear();
+    alert("All data cleared");
+    location.href="index.html";
+  }
+}
+
+/* INIT */
+loadStats();
+loadInvestments();
+loadWithdraws();
 </script>
 
 </body>
