@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel – SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:white
+}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b
+}
+.nav{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  padding:10px
+}
+.nav a{
+  padding:8px 18px;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  color:#38bdf8;
+  text-decoration:none;
+  font-weight:bold
+}
+
+.box{
+  background:#0f172a;
+  margin:15px;
+  padding:15px;
+  border-radius:14px
+}
+
+.req{
+  background:#020617;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:12px;
+  font-size:14px
+}
+
+.req b{color:#38bdf8}
+
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:10px
+}
+.actions button{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer
+}
+.approve{background:#22c55e;color:#020617}
+.reject{background:#ef4444;color:#020617}
+</style>
+</head>
+
+<body>
+
+<header>🛠 Admin – Withdraw Approval</header>
+
+<div class="nav">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="withdraw.html">💸 Withdraw</a>
+</div>
+
+<div class="box">
+  <b>Pending Withdraw Requests</b>
+</div>
+
+<div id="requests" class="box"></div>
+
+<script>
+/* ===== LOAD REQUESTS ===== */
+function loadRequests(){
+  const list =
+    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+  const box = document.getElementById("requests");
+  box.innerHTML="";
+
+  if(list.length===0){
+    box.innerHTML="<div class='req'>No requests</div>";
+    return;
+  }
+
+  list.forEach((w,i)=>{
+    box.innerHTML+=`
+      <div class="req">
+        <b>Amount:</b> $${w.amount}<br>
+        <b>Fee:</b> $${w.fee.toFixed(2)}<br>
+        <b>Receive:</b> $${w.finalAmount.toFixed(2)}<br>
+        <b>Method:</b> ${w.method}<br>
+        <b>Address:</b> ${w.address}<br>
+        <b>Status:</b> ${w.status}<br>
+        <b>Time:</b> ${w.time}
+
+        ${w.status==="Pending" ? `
+        <div class="actions">
+          <button class="approve" onclick="approve(${i})">Approve</button>
+          <button class="reject" onclick="rejectReq(${i})">Reject</button>
+        </div>` : ""}
+      </div>
+    `;
+  });
+}
+
+/* ===== APPROVE ===== */
+function approve(index){
+  const list =
+    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+
+  if(!list[index] || list[index].status!=="Pending") return;
+
+  list[index].status="Approved";
+
+  const approved =
+    Number(localStorage.getItem("withdrawApproved")) || 0;
+
+  localStorage.setItem(
+    "withdrawApproved",
+    approved + list[index].amount
+  );
+
+  localStorage.setItem("withdrawRequests",JSON.stringify(list));
+
+  alert("Withdraw Approved");
+  loadRequests();
+}
+
+/* ===== REJECT ===== */
+function rejectReq(index){
+  const list =
+    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+
+  if(!list[index] || list[index].status!=="Pending") return;
+
+  list[index].status="Rejected";
+  localStorage.setItem("withdrawRequests",JSON.stringify(list));
+
+  alert("Withdraw Rejected");
+  loadRequests();
+}
+
+/* ===== INIT ===== */
+loadRequests();
+</script>
+
+</body>
+</html>
