@@ -37,6 +37,11 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <header>SuperNFT Dashboard</header>
 
+  <div>
+  ⏱ Live Earnings<br>
+  <b id="liveEarnings">$0.0000</b>
+</div>
+
 <div id="summary">
   <div>💰 Total Invested<br><b id="totalInvested">$0</b></div>
   <div>📈 Daily Income<br><b id="dailyIncome">$0</b></div>
@@ -115,6 +120,23 @@ function updateDashboardSummary(){
 updateDashboardSummary();
 setInterval(updateDashboardSummary,1000);
 
+function updateLiveEarnings(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let live = 0;
+
+  data.forEach(n=>{
+    const seconds = (Date.now() - n.boughtAt)/1000;
+    const perSecond = n.daily / 86400;
+    live += seconds * perSecond;
+  });
+
+  document.getElementById("liveEarnings").innerText =
+    "$" + live.toFixed(4);
+}
+
+setInterval(updateLiveEarnings,1000);
+updateLiveEarnings();
+  
 // ===== TABS =====
 function showTab(id,btn){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
@@ -131,7 +153,7 @@ function closeCalc(){calcPopup.style.display="none"}
   const d=(n[0]*n[2])/100;
   calcList.innerHTML+=`<div>$${n[0]} → Daily $${d.toFixed(2)} → 365d $${(d*365).toFixed(2)}</div>`;
 });
-</script>
+<script>
 
 </body>
 </html>
