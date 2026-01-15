@@ -3,30 +3,134 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#020617;color:#fff;}
-header{padding:15px;text-align:center;font-size:22px;font-weight:bold;color:#38bdf8;border-bottom:1px solid #1e293b;position:relative;}
-.menu-btn{position:absolute;top:15px;left:15px;font-size:22px;cursor:pointer;}
-.side-menu{position:fixed;top:0;left:-220px;width:220px;height:100%;background:#0f172a;padding:15px;transition:0.3s;z-index:999;}
-.side-menu a{display:block;color:#38bdf8;text-decoration:none;padding:10px 8px;border-radius:8px;margin-bottom:5px;}
-.side-menu a:hover{background:#38bdf8;color:#020617;}
-.summary{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px;}
-.box{background:#0f172a;padding:10px 14px;border-radius:12px;text-align:center;min-width:120px;font-size:14px;}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:12px;}
-.card{background:#0f172a;border-radius:14px;padding:10px;text-align:center;transition:.2s;}
-.card img{width:100%;border-radius:10px;}
-.price{color:#38bdf8;font-weight:bold;margin-top:4px;}
-.meta{font-size:12px;opacity:.8;}
-.card button{width:100%;margin-top:6px;padding:6px;border:none;border-radius:8px;background:#38bdf8;font-weight:bold;color:#020617;cursor:pointer;}
-.ref-box{margin:10px;padding:10px;background:#0f172a;border-radius:12px;}
-.ref-box input{width:100%;padding:5px;border-radius:6px;border:none;background:#020617;color:#fff;}
-.tabs{display:flex;gap:8px;overflow-x:auto;padding:5px;}
-.tabs button{padding:6px 12px;border:1px solid #38bdf8;border-radius:18px;background:#0f172a;color:#38bdf8;cursor:pointer;font-size:13px;}
-.tabs button.active{background:#38bdf8;color:#020617;}
-#earningsChartContainer{background:#0f172a;padding:12px;border-radius:12px;margin:10px;}
-#refTree{background:#0f172a;padding:12px;border-radius:12px;margin:10px;font-size:13px;overflow:auto;max-height:250px;}
+body {
+  margin:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #020617;
+  color: #fff;
+}
+header{
+  padding:15px;
+  font-size:22px;
+  font-weight:bold;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.menu-btn{
+  font-size:26px;
+  cursor:pointer;
+  margin-right:10px;
+}
+.top-links{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.top-links a{
+  color:#38bdf8;
+  text-decoration:none;
+  border:1px solid #38bdf8;
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:14px;
+}
+.summary{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+  padding:10px;
+}
+.box{
+  background:#0f172a;
+  padding:10px 15px;
+  border-radius:12px;
+  text-align:center;
+  min-width:120px;
+}
+.ref-box{
+  margin:10px 15px;
+  background:#0f172a;
+  padding:10px;
+  border-radius:12px;
+}
+.ref-box input{
+  width:100%;
+  padding:6px;
+  margin-top:6px;
+}
+.tabs{
+  display:flex;
+  gap:10px;
+  padding:10px;
+  overflow-x:auto;
+}
+.tabs button{
+  padding:8px 14px;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  background:#0f172a;
+  color:#38bdf8;
+}
+.tabs button.active{
+  background:#38bdf8;
+  color:#020617;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:15px;
+  padding:10px;
+}
+.card{
+  background:#0f172a;
+  border-radius:14px;
+  padding:10px;
+  text-align:center;
+  transition:.2s;
+}
+.card:hover{transform:scale(1.03);}
+.card img{
+  width:100%;
+  border-radius:12px;
+}
+.card button{
+  width:100%;
+  margin-top:8px;
+  padding:8px;
+  border:none;
+  border-radius:10px;
+  background:#38bdf8;
+  font-weight:bold;
+}
+.admin-menu{
+  display:none;
+  flex-direction:column;
+  background:#0f172a;
+  position:absolute;
+  top:50px;
+  left:0;
+  padding:10px;
+  border-radius:0 0 12px 12px;
+  z-index:1000;
+}
+.admin-menu a{
+  padding:8px;
+  border-bottom:1px solid #1e293b;
+}
+canvas{
+  background:#0f172a;
+  border-radius:12px;
+  padding:10px;
+}
 </style>
 </head>
 <body>
@@ -34,29 +138,35 @@ header{padding:15px;text-align:center;font-size:22px;font-weight:bold;color:#38b
 <header>
   <span class="menu-btn" onclick="toggleMenu()">☰</span>
   SuperNFT Dashboard
+  <a href="#" id="adminBtn" style="display:none;color:#38bdf8;text-decoration:none;">🛡 Admin</a>
 </header>
 
-<div class="side-menu" id="sideMenu">
-  <a href="account.html">👤 My Account</a>
-  <a href="my-investments.html">📁 My Investments</a>
-  <a href="wallet.html">💳 Wallet</a>
-  <a href="#" onclick="openWithdraw()">💸 Withdraw</a>
-  <a href="#" id="adminBtn" style="display:none" onclick="openAdmin()">🛡 Admin Panel</a>
+<!-- Admin / Menu -->
+<div class="admin-menu" id="menu">
+  <a href="#" onclick="promptAdmin()">Admin</a>
+  <a href="#">My Team</a>
+  <a href="#">My Level</a>
+  <a href="#" onclick="openCalculator()">Calculator</a>
+  <a href="#">Settings</a>
+  <a href="#" onclick="logout()">Logout</a>
 </div>
 
+<!-- Summary Horizontal Line -->
 <div class="summary">
-  <div class="box">💰 Total Invested<br><b id="totalInvested">$0.00</b></div>
-  <div class="box">📈 Daily Income<br><b id="dailyIncome">$0.00</b></div>
+  <div class="box">💰 Total Invested<br><b id="totalInvested">$0</b></div>
+  <div class="box">📈 Daily Income<br><b id="dailyIncome">$0</b></div>
   <div class="box">⚡ Live Earnings<br><b id="liveEarnings">$0.0000</b></div>
-  <div class="box">💳 Wallet Balance<br><b id="walletBalance">$0.00</b></div>
+  <div class="box">💳 Wallet Balance<br><b id="walletBalance">$0</b></div>
 </div>
 
+<!-- Referral -->
 <div class="ref-box">
-👥 Referral Link<br>
-<input id="refLink" readonly>
-<button onclick="copyRef()">Copy</button>
+  👥 Referral Link
+  <input id="refLink" readonly>
+  <button onclick="copyRef()">Copy</button>
 </div>
 
+<!-- NFT Tabs -->
 <div class="tabs">
   <button class="active" onclick="filterNFT('all',this)">All</button>
   <button onclick="filterNFT('starter',this)">Starter</button>
@@ -65,31 +175,24 @@ header{padding:15px;text-align:center;font-size:22px;font-weight:bold;color:#38b
   <button onclick="filterNFT('legendary',this)">Legendary</button>
 </div>
 
+<!-- NFT Grid -->
 <div id="nftGrid" class="grid"></div>
 
-<div id="earningsChartContainer">
-  <canvas id="earningsChart"></canvas>
-</div>
+<!-- Earnings Graph -->
+<canvas id="earningsChart" height="150"></canvas>
 
-<div id="refTree">
-  <b>Team / Referral Tree:</b>
-  <div id="treeContent">No team yet</div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
-/* ---------- MENU TOGGLE ---------- */
-function toggleMenu(){
-  const menu=document.getElementById("sideMenu");
-  menu.style.left=menu.style.left==="0px"?"-220px":"0px";
+/* ------------------ REFERRAL ------------------ */
+if(!localStorage.getItem("refCode")){
+  localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
+}
+refLink.value = location.origin+"/dashboard.html?ref="+localStorage.getItem("refCode");
+function copyRef(){
+  navigator.clipboard.writeText(refLink.value);
+  alert("Referral copied");
 }
 
-/* ---------- REFERRAL ---------- */
-if(!localStorage.getItem("refCode")) localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
-refLink.value = location.origin + "/dashboard.html?ref=" + localStorage.getItem("refCode");
-function copyRef(){navigator.clipboard.writeText(refLink.value);alert("Referral copied");}
-
-/* ---------- NFT DATA ---------- */
+/* ------------------ NFTs ------------------ */
 const NFTS=[
 {cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
 {cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -122,84 +225,118 @@ const NFTS=[
 {cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
 ];
+
 const grid=document.getElementById("nftGrid");
 function renderNFT(cat="all"){
   grid.innerHTML="";
   NFTS.filter(n=>cat==="all"||n.cat===cat).forEach(n=>{
     const daily=(n.price*n.p)/100;
-    grid.innerHTML+=`<div class="card"><img src="${n.img}"><div class="price">$${n.price}</div><div class="meta">Daily $${daily.toFixed(2)}</div><button onclick="buyNFT(${n.price},${daily})">Buy NFT</button></div>`;
+    grid.innerHTML+=`
+    <div class="card">
+      <img src="${n.img}">
+      <div class="price">$${n.price}</div>
+      <div class="meta">Daily $${daily.toFixed(2)}</div>
+      <button onclick="buyNFT(${n.price},${daily})">Buy NFT</button>
+    </div>`;
   });
 }
 renderNFT();
-function filterNFT(cat,btn){document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderNFT(cat);}
 
-/* ---------- BUY + WALLET + LEVEL INCOME ---------- */
+/* ------------------ FILTER ------------------ */
+function filterNFT(cat,btn){
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  renderNFT(cat);
+}
+
+/* ------------------ BUY NFT ------------------ */
 function buyNFT(price,daily){
-  let data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let wallet=Number(localStorage.getItem("walletBalance")||0);
-  wallet+=price; // Auto credit for simplicity
-  localStorage.setItem("walletBalance",wallet);
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   data.push({price,daily,boughtAt:Date.now()});
   localStorage.setItem("myNFTs",JSON.stringify(data));
-  updateSummary();updateLive();updateWallet();updateChart();updateReferralTree();
   alert("NFT Purchased Successfully");
 }
 
-/* ---------- SUMMARY ---------- */
+/* ------------------ DASHBOARD SUMMARY ------------------ */
 function updateSummary(){
-  let data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   let invested=0,daily=0;
-  data.forEach(n=>{invested+=n.price;daily+=n.daily;});
+  data.forEach(n=>{
+    invested+=n.price;
+    daily+=n.daily;
+  });
   totalInvested.innerText="$"+invested.toFixed(2);
   dailyIncome.innerText="$"+daily.toFixed(2);
+  walletBalance.innerText="$"+(invested*0.5).toFixed(2); // sample wallet balance
 }
 setInterval(updateSummary,1000);
 
-/* ---------- LIVE EARNINGS ---------- */
+/* ------------------ LIVE EARNINGS ------------------ */
 function updateLive(){
-  let data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   let live=0;
-  data.forEach(n=>{live+=((Date.now()-n.boughtAt)/1000)*(n.daily/86400);});
+  data.forEach(n=>{
+    const sec=(Date.now()-n.boughtAt)/1000;
+    live+=sec*(n.daily/86400);
+  });
   liveEarnings.innerText="$"+live.toFixed(4);
 }
 setInterval(updateLive,1000);
 
-/* ---------- WALLET ---------- */
-function updateWallet(){walletBalance.innerText="$"+Number(localStorage.getItem("walletBalance")||0).toFixed(2);}
-updateWallet();
-
-/* ---------- ADMIN BUTTON ---------- */
-if(sessionStorage.getItem("adminSession")==="active"){document.getElementById("adminBtn").style.display="inline-block";}
-
-/* ---------- CHART ---------- */
-let ctx=document.getElementById("earningsChart").getContext("2d");
-let earningsChart=new Chart(ctx,{type:"line",data:{labels:[],datasets:[{label:"Daily Earnings",$:[],borderColor:"#38bdf8",backgroundColor:"#38bdf8",fill:false}]},options:{scales:{x:{title:{display:true,text:"NFT Purchase #"}},y:{title:{display:true,text:"$ Earnings"}}}}});
-function updateChart(){
-  let data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  earningsChart.data.labels=data.map((_,i)=>i+1);
-  earningsChart.data.datasets[0].data=data.map(n=>n.daily);
-  earningsChart.update();
+/* ------------------ ADMIN BUTTON ------------------ */
+function promptAdmin(){
+  const pin = prompt("Enter Admin PIN:");
+  if(pin==="1008"){
+    sessionStorage.setItem("adminSession","active");
+    alert("Admin Access Granted");
+    adminBtn.style.display="inline-block";
+  } else alert("Incorrect PIN");
 }
-setInterval(updateChart,2000);
-
-/* ---------- REFERRAL TREE ---------- */
-function updateReferralTree(){
-  let data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  treeContent.innerHTML="";
-  if(data.length===0){treeContent.innerHTML="No team yet";return;}
-  data.forEach((n,i)=>{treeContent.innerHTML+=`Level ${i+1}: NFT $${n.price} | Daily $${n.daily.toFixed(2)}<br>`;});
+if(sessionStorage.getItem("adminSession")==="active"){
+  adminBtn.style.display="inline-block";
 }
-updateReferralTree();
 
-/* ---------- SIMPLIFIED WITHDRAW ---------- */
-function openWithdraw(){alert("Withdraw Request Sent. Admin Approval Pending.");}
+/* ------------------ MENU ------------------ */
+function toggleMenu(){
+  const menu=document.getElementById("menu");
+  if(menu.style.display==="flex") menu.style.display="none";
+  else menu.style.display="flex";
+}
 
-/* ---------- ADMIN PANEL ---------- */
-function openAdmin(){
-  let pin=prompt("Enter Admin PIN:");
-  if(pin==="1008"){sessionStorage.setItem("adminSession","active");alert("Admin Access Granted");document.getElementById("adminBtn").style.display="inline-block";}
-  else alert("Incorrect PIN");}
+/* ------------------ LOGOUT ------------------ */
+function logout(){
+  sessionStorage.removeItem("adminSession");
+  alert("Logged Out");
+  location.reload();
+}
+
+/* ------------------ CALCULATOR ------------------ */
+function openCalculator(){
+  alert("NFT Calculator Placeholder");
+}
+
+/* ------------------ EARNINGS GRAPH ------------------ */
+const ctx=document.getElementById("earningsChart").getContext('2d');
+const earningsChart=new Chart(ctx,{
+  type:'line',
+  data:{
+    labels:["Day 1","Day 2","Day 3","Day 4","Day 5","Day 6","Day 7"],
+    datasets:[{
+      label:"Daily Earnings",
+      data:[0,0,0,0,0,0,0],
+      borderColor:"#00e5ff",
+      backgroundColor:"rgba(0,229,255,0.2)",
+      fill:true,
+      tension:0.3
+    }]
+  },
+  options:{
+    responsive:true,
+    scales:{
+      y:{beginAtZero:true}
+    }
+  }
+});
 </script>
-
 </body>
 </html>
