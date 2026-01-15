@@ -118,6 +118,10 @@ header{
 
 <header>SuperNFT Dashboard</header>
 
+<a href="admin.html" id="adminBtn" style="display:none">
+🛡 Admin
+</a>
+  
 <div class="top-links">
   <a href="account.html">👤 My Account</a>
   <a href="my-investments.html">📁 My Investments</a>
@@ -266,7 +270,13 @@ function updateLive(){
   });
   liveEarnings.innerText="$"+live.toFixed(4);
 }
+  <a href="admin.html" id="adminBtn" style="display:none">
+  🛡 Admin
+</a>
 setInterval(updateLive,1000);
+  if(sessionStorage.getItem("adminSession")==="active"){
+  document.getElementById("adminBtn").style.display="inline-block";
+}
 </script>
 
 </body>
