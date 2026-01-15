@@ -12,8 +12,8 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 #summary{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:12px}
 .box{background:#0f172a;padding:14px 20px;border-radius:14px;text-align:center}
 
-.link{text-align:center;margin:10px}
-.link a{color:#38bdf8;text-decoration:none;border:1px solid #38bdf8;padding:8px 16px;border-radius:20px}
+.link{text-align:center;margin:8px}
+.link a{color:#38bdf8;text-decoration:none;border:1px solid #38bdf8;padding:8px 16px;border-radius:20px;display:inline-block}
 
 .calcBtn{margin:10px auto;display:block;padding:12px 22px;border-radius:10px;border:none;background:#38bdf8;color:#00263a;font-weight:bold}
 
@@ -42,10 +42,14 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
   <div class="box">💰 Total Invested<br><b id="totalInvested">$0.00</b></div>
   <div class="box">📈 Daily Income<br><b id="dailyIncome">$0.0000</b></div>
   <div class="box">⏱ Live Earnings<br><b id="liveEarnings">$0.0000</b></div>
+  <div class="box">💸 Withdrawable<br><b id="withdrawable">$0.0000</b></div>
 </div>
 
 <div class="link">
   <a href="my-investments.html">📁 My Investment</a>
+</div>
+<div class="link">
+  <a href="withdraw.html">💸 Withdraw</a>
 </div>
 
 <button class="calcBtn" onclick="openCalc()">📊 Open NFT Calculator</button>
@@ -77,28 +81,10 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <script>
 /* ===== NFT DATA (3rd value = DAILY INCOME $) ===== */
-const starter=[
-[10,"IMG_0458.png",0.20],[15,"IMG_0459.png",0.30],[20,"IMG_0460.png",0.40],
-[25,"IMG_0461.png",0.50],[30,"IMG_0462.png",0.60],[35,"IMG_0463.png",0.70],
-[40,"IMG_0464.png",0.80],[45,"IMG_0465.png",0.90],[50,"IMG_0466.png",1.00]
-];
-
-const rising=[
-[55,"IMG_0467.png",1.30],[60,"IMG_0468.png",1.50],[65,"IMG_0469.png",1.63],
-[70,"IMG_0470.png",1.75],[75,"IMG_0471.png",1.88],[80,"IMG_0472.png",2.00],
-[90,"IMG_0473.png",2.25],[100,"IMG_0474.png",2.50]
-];
-
-const elite=[
-[150,"IMG_0475.png",5.00],[200,"IMG_0476.png",6.60],[250,"IMG_0477.png",8.25],
-[300,"IMG_0478.png",10.00],[350,"IMG_0479.png",11.60],
-[400,"IMG_0480.png",13.30],[450,"IMG_0481.png",15.00]
-];
-
-const legendary=[
-[499,"IMG_0482.png",25.00],[599,"IMG_0483.png",30.00],[699,"IMG_0497.png",40.00],
-[799,"IMG_0498.png",30.00],[899,"IMG_0499.png",45.00],[999,"IMG_0503.png",100.00]
-];
+const starter=[[10,"IMG_0458.png",0.20],[15,"IMG_0459.png",0.30],[20,"IMG_0460.png",0.40],[25,"IMG_0461.png",0.50],[30,"IMG_0462.png",0.60],[35,"IMG_0463.png",0.70],[40,"IMG_0464.png",0.80],[45,"IMG_0465.png",0.90],[50,"IMG_0466.png",1.00]];
+const rising=[[55,"IMG_0467.png",1.30],[60,"IMG_0468.png",1.50],[65,"IMG_0469.png",1.63],[70,"IMG_0470.png",1.75],[75,"IMG_0471.png",1.88],[80,"IMG_0472.png",2.00],[90,"IMG_0473.png",2.25],[100,"IMG_0474.png",2.50]];
+const elite=[[150,"IMG_0475.png",5.00],[200,"IMG_0476.png",6.60],[250,"IMG_0477.png",8.25],[300,"IMG_0478.png",10.00],[350,"IMG_0479.png",11.60],[400,"IMG_0480.png",13.30],[450,"IMG_0481.png",15.00]];
+const legendary=[[499,"IMG_0482.png",25.00],[599,"IMG_0483.png",30.00],[699,"IMG_0497.png",40.00],[799,"IMG_0498.png",30.00],[899,"IMG_0499.png",45.00],[999,"IMG_0503.png",100.00]];
 
 /* ===== RENDER ===== */
 function render(list,id){
@@ -109,56 +95,57 @@ function render(list,id){
     <div class="card">
       <img src="images/${n[1]}">
       <div class="price">$${n[0]}</div>
-      <div class="meta">
-        Daily Income $${n[2]}<br>
-        Validity 365 Days
-      </div>
-      <button onclick="buyNFT(${n[0]},'images/${n[1]}',${n[2]})">
-        Buy NFT
-      </button>
+      <div class="meta">Daily Income $${n[2]}<br>Validity 365 Days</div>
+      <button onclick="buyNFT(${n[0]},'images/${n[1]}',${n[2]})">Buy NFT</button>
     </div>`;
   });
 }
-
-render(starter,"starter");
-render(rising,"rising");
-render(elite,"elite");
-render(legendary,"legendary");
+render(starter,"starter");render(rising,"rising");render(elite,"elite");render(legendary,"legendary");
 
 /* ===== BUY NFT ===== */
 function buyNFT(price,img,dailyIncome){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-
-  data.push({
-    price: price,
-    img: img,
-    daily: dailyIncome,   // ✅ direct daily income
-    boughtAt: Date.now()
-  });
-
-  localStorage.setItem("myNFTs", JSON.stringify(data));
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  data.push({price, img, daily:dailyIncome, boughtAt:Date.now()});
+  localStorage.setItem("myNFTs",JSON.stringify(data));
   updateDashboard();
   alert("NFT Purchased Successfully");
 }
 
+/* ===== WITHDRAW HELPERS ===== */
+function getTotalEarned(){
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  let earned=0;
+  data.forEach(n=>{
+    const sec=(Date.now()-n.boughtAt)/1000;
+    earned+=sec*(n.daily/86400);
+  });
+  return earned;
+}
+function getWithdrawn(){
+  return Number(localStorage.getItem("withdrawnAmount"))||0;
+}
+function getWithdrawable(){
+  return Math.max(0,getTotalEarned()-getWithdrawn());
+}
+
 /* ===== DASHBOARD UPDATE ===== */
 function updateDashboard(){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-  let invested = 0;
-  let daily = 0;
-  let live = 0;
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  let invested=0,daily=0,live=0;
 
   data.forEach(n=>{
-    invested += n.price;
-    daily += n.daily;
-
-    const seconds = (Date.now() - n.boughtAt) / 1000;
-    live += seconds * (n.daily / 86400);
+    invested+=n.price;
+    daily+=n.daily;
+    const sec=(Date.now()-n.boughtAt)/1000;
+    live+=sec*(n.daily/86400);
   });
 
-  totalInvested.innerText = "$" + invested.toFixed(2);
-  dailyIncome.innerText = "$" + daily.toFixed(4);
-  liveEarnings.innerText = "$" + live.toFixed(4);
+  totalInvested.innerText="$"+invested.toFixed(2);
+  dailyIncome.innerText="$"+daily.toFixed(4);
+  liveEarnings.innerText="$"+live.toFixed(4);
+  withdrawable.innerText="$"+getWithdrawable().toFixed(4);
+
+  localStorage.setItem("totalEarnedCache",getTotalEarned());
 }
 
 /* ===== UI ===== */
@@ -168,16 +155,12 @@ function showTab(id,btn){
   document.getElementById(id).classList.add("active");
   btn.classList.add("active");
 }
-
 function openCalc(){calcPopup.style.display="block"}
 function closeCalc(){calcPopup.style.display="none"}
 
 /* ===== CALCULATOR ===== */
 [...starter,...rising,...elite,...legendary].forEach(n=>{
-  calcList.innerHTML += `
-    <div>
-      $${n[0]} → Daily $${n[2]} → 365 Days $${(n[2]*365).toFixed(2)}
-    </div>`;
+  calcList.innerHTML+=`<div>$${n[0]} → Daily $${n[2]} → 365d $${(n[2]*365).toFixed(2)}</div>`;
 });
 
 /* INIT */
