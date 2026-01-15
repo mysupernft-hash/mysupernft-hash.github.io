@@ -245,21 +245,6 @@ all.forEach(n=>{
 });
 </script>
 
-  function updateDashboardSummary(){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-  let invested = 0;
-  let daily = 0;
-
-  data.forEach(n=>{
-    invested += n.price;
-    daily += n.daily;
-  });
-
-  document.getElementById("totalInvested").innerText = "$" + invested.toFixed(2);
-  document.getElementById("dailyIncome").innerText = "$" + daily.toFixed(2);
-}
-
-updateDashboardSummary();
-
+  
 </body>
 </html>
