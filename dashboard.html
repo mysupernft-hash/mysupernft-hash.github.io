@@ -33,19 +33,54 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <div class="top">
 
-  <div style="text-align:center;margin:15px">
-  <button onclick="openCalculator()"
-    style="
-      padding:12px 22px;
-      border-radius:10px;
-      border:none;
-      background:#38bdf8;
-      color:#00263a;
-      font-weight:bold;
-      font-size:15px;
-    ">
-    📊 Open NFT Calculator
-  </button>
+  <button onclick="openCalc()"
+style="
+  margin:15px;
+  padding:12px 22px;
+  border-radius:10px;
+  border:none;
+  background:#38bdf8;
+  color:#00263a;
+  font-weight:bold;
+  font-size:15px;
+">
+📊 Open NFT Calculator
+</button>
+  <!-- Calculator Popup -->
+<div id="calcPopup" style="
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  z-index:9999;
+">
+
+  <div style="
+    background:#020617;
+    margin:60px auto;
+    width:90%;
+    max-width:420px;
+    border-radius:14px;
+    padding:15px;
+    color:white;
+    max-height:80%;
+    overflow-y:auto;
+  ">
+
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h3 style="color:#38bdf8;margin:0">📊 NFT Calculator</h3>
+      <button onclick="closeCalc()"
+        style="background:none;border:none;color:#38bdf8;font-size:22px">
+        ✖
+      </button>
+    </div>
+
+    <div id="calcList" style="margin-top:10px;font-size:13px;line-height:1.6"></div>
+
+  </div>
+</div>
 </div>
 <div class="tabs">
   <button class="active" onclick="showTab('starter',this)">Starter</button>
@@ -145,9 +180,11 @@ document.getElementById("calcAmount").oninput=function(){
 </script>
 
   <script>
-function openCalculator(){
-  const tab = document.getElementById("calculatorTab");
-  tab.style.display = tab.style.display === "none" ? "block" : "none";
+function openCalc(){
+  document.getElementById("calcPopup").style.display = "block";
+}
+function closeCalc(){
+  document.getElementById("calcPopup").style.display = "none";
 }
 
 const allNFTs = [
@@ -158,6 +195,7 @@ const allNFTs = [
 ];
 
 const list = document.getElementById("calcList");
+list.innerHTML = "";
 
 allNFTs.forEach(n => {
   const price = Number(n[0]);
