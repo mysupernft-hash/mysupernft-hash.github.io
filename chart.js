@@ -1,144 +1,17 @@
-
-/* ---------- GLOBAL ---------- */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #020617;
-  color: white;
-}
-
-/* ---------- HEADER ---------- */
-header {
-  padding: 15px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-  color: #38bdf8;
-  border-bottom: 1px solid #1e293b;
-}
-
-/* ---------- DASHBOARD SUMMARY ---------- */
-.summary-line {
-  display: flex;
-  gap: 15px;
-  justify-content: space-around;
-  padding: 10px;
-  background: #0f172a;
-  border-radius: 12px;
-  margin: 10px;
-  font-size: 14px;
-}
-
-.summary-line .box {
-  text-align: center;
-  flex: 1;
-}
-
-/* ---------- HAMBURGER MENU ---------- */
-.menu {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 250px;
-  height: 100vh;
-  background: #0f172a;
-  padding: 20px;
-  transition: 0.3s;
-  z-index: 200;
-}
-
-.menu a {
-  display: block;
-  padding: 10px 14px;
-  margin: 6px 0;
-  color: #38bdf8;
-  text-decoration: none;
-  border-radius: 8px;
-}
-
-.menu a:hover {
-  background: #1e293b;
-}
-
-/* ---------- DASHBOARD CONTENT ---------- */
-.dashboard {
-  padding: 15px;
-  transition: margin-left 0.3s;
-}
-
-/* ---------- NFT CARDS ---------- */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 15px;
-}
-
-.card {
-  background: #0f172a;
-  border-radius: 14px;
-  padding: 10px;
-  text-align: center;
-  transition: 0.2s;
-}
-
-.card:hover {
-  transform: scale(1.03);
-}
-
-.card img {
-  width: 100%;
-  border-radius: 10px;
-}
-
-.card .price {
-  color: #38bdf8;
-  font-weight: bold;
-  margin-top: 6px;
-}
-
-.card .meta {
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-.card button {
-  width: 100%;
-  margin-top: 8px;
-  padding: 8px;
-  border: none;
-  border-radius: 10px;
-  background: #38bdf8;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* ---------- REFERRAL ---------- */
-.ref-box {
-  margin: 10px;
-  background: #0f172a;
-  padding: 10px;
-  border-radius: 10px;
-}
-
-.ref-box input {
-  width: 100%;
-  padding: 6px;
-  margin-top: 6px;
-}
-
-/* ---------- CHART ---------- */
+/* Chart container styling */
 .chart-container {
-  background: #0f172a;
-  padding: 15px;
-  border-radius: 12px;
-  margin: 15px;
+    width: 100%;        /* Full width of parent */
+    max-width: 600px;   /* Optional max width */
+    height: 300px;      /* Fixed height */
+    background: #0f172a; /* Dashboard theme background */
+    padding: 15px;
+    border-radius: 12px;
+    margin: 15px auto;   /* Center horizontally */
+    box-sizing: border-box;
 }
 
-/* ---------- TEAM TREE ---------- */
-.team-tree {
-  background: #0f172a;
-  padding: 10px;
-  border-radius: 12px;
-  margin: 10px;
-  font-size: 13px;
+/* Optional: make canvas fill the container */
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
 }
