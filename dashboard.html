@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:white}
+body{margin:0;font-family:Arial;background:#020617;color:#fff}
 header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
 
-#summary{display:flex;gap:10px;justify-content:center;padding:12px;flex-wrap:wrap}
-#summary div{background:#0f172a;padding:12px 18px;border-radius:12px;text-align:center}
+#summary{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:12px}
+.box{background:#0f172a;padding:14px 20px;border-radius:14px;text-align:center}
 
 .link{text-align:center;margin:10px}
-.link a{color:#38bdf8;text-decoration:none;padding:8px 16px;border:1px solid #38bdf8;border-radius:20px}
+.link a{color:#38bdf8;text-decoration:none;border:1px solid #38bdf8;padding:8px 16px;border-radius:20px}
 
 .calcBtn{margin:10px auto;display:block;padding:12px 22px;border-radius:10px;border:none;background:#38bdf8;color:#00263a;font-weight:bold}
 
@@ -39,9 +39,9 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <!-- SUMMARY -->
 <div id="summary">
-  <div>💰 Total Invested<br><b id="totalInvested">$0</b></div>
-  <div>📈 Daily Income<br><b id="dailyIncome">$0</b></div>
-  <div>⏱ Live Earnings<br><b id="liveEarnings">$0.0000</b></div>
+  <div class="box">💰 Total Invested<br><b id="totalInvested">$0.00</b></div>
+  <div class="box">📈 Daily Income<br><b id="dailyIncome">$0.0000</b></div>
+  <div class="box">⏱ Live Earnings<br><b id="liveEarnings">$0.0000</b></div>
 </div>
 
 <div class="link">
@@ -64,7 +64,7 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 <div id="elite" class="grid section"></div>
 <div id="legendary" class="grid section"></div>
 
-<!-- CALCULATOR POPUP -->
+<!-- CALCULATOR -->
 <div id="calcPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7)">
   <div style="background:#020617;margin:60px auto;width:90%;max-width:420px;border-radius:14px;padding:15px">
     <div style="display:flex;justify-content:space-between">
@@ -76,13 +76,13 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 </div>
 
 <script>
-// ===== NFT DATA (30 NFTs) =====
+/* ================= NFT DATA ================= */
 const starter=[[10,"IMG_0458.png",0.2],[15,"IMG_0459.png",0.3],[20,"IMG_0460.png",0.4],[25,"IMG_0461.png",0.5],[30,"IMG_0462.png",0.6],[35,"IMG_0463.png",0.7],[40,"IMG_0464.png",0.8],[45,"IMG_0465.png",0.9],[50,"IMG_0466.png",1]];
 const rising=[[55,"IMG_0467.png",1.3],[60,"IMG_0468.png",1.5],[65,"IMG_0469.png",1.63],[70,"IMG_0470.png",1.75],[75,"IMG_0471.png",1.88],[80,"IMG_0472.png",2],[90,"IMG_0473.png",2.25],[100,"IMG_0474.png",2.5]];
 const elite=[[150,"IMG_0475.png",5],[200,"IMG_0476.png",6.6],[250,"IMG_0477.png",8.25],[300,"IMG_0478.png",10],[350,"IMG_0479.png",11.6],[400,"IMG_0480.png",13.3],[450,"IMG_0481.png",15]];
 const legendary=[[499,"IMG_0482.png",25],[599,"IMG_0483.png",30],[699,"IMG_0497.png",40],[799,"IMG_0498.png",30],[899,"IMG_0499.png",45],[999,"IMG_0503.png",100]];
 
-// ===== RENDER =====
+/* ================= RENDER ================= */
 function render(list,id){
   const box=document.getElementById(id);
   box.innerHTML="";
@@ -98,38 +98,35 @@ function render(list,id){
 }
 render(starter,"starter");render(rising,"rising");render(elite,"elite");render(legendary,"legendary");
 
-// ===== BUY NFT =====
+/* ================= BUY NFT ================= */
 function buyNFT(price,img,percent){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   const daily=(price*percent)/100;
-  data.push({price,img,daily,boughtAt:Date.now()});
+  data.push({price, img, daily, boughtAt:Date.now()});
   localStorage.setItem("myNFTs",JSON.stringify(data));
-  updateDashboardSummary();
-  updateLiveEarnings();
+  updateDashboard();
   alert("NFT Purchased Successfully");
 }
 
-// ===== SUMMARY =====
-function updateDashboardSummary(){
+/* ================= DASHBOARD ================= */
+function updateDashboard(){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let invested=0,daily=0;
-  data.forEach(n=>{invested+=n.price;daily+=n.daily});
-  totalInvested.innerText="$"+invested.toFixed(2);
-  dailyIncome.innerText="$"+daily.toFixed(4);
-}
+  let invested=0, daily=0, live=0;
 
-// ===== LIVE EARNINGS =====
-function updateLiveEarnings(){
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let live=0;
   data.forEach(n=>{
+    invested+=n.price;
+    daily+=n.daily;
+
     const seconds=(Date.now()-n.boughtAt)/1000;
     live+=seconds*(n.daily/86400);
   });
+
+  totalInvested.innerText="$"+invested.toFixed(2);
+  dailyIncome.innerText="$"+daily.toFixed(4);
   liveEarnings.innerText="$"+live.toFixed(4);
 }
 
-// ===== TABS =====
+/* ================= UI ================= */
 function showTab(id,btn){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
@@ -137,20 +134,18 @@ function showTab(id,btn){
   btn.classList.add("active");
 }
 
-// ===== CALCULATOR =====
 function openCalc(){calcPopup.style.display="block"}
 function closeCalc(){calcPopup.style.display="none"}
 
+/* ================= CALCULATOR ================= */
 [...starter,...rising,...elite,...legendary].forEach(n=>{
   const d=(n[0]*n[2])/100;
   calcList.innerHTML+=`<div>$${n[0]} → Daily $${d.toFixed(2)} → 365d $${(d*365).toFixed(2)}</div>`;
 });
 
-// INIT
-updateDashboardSummary();
-updateLiveEarnings();
-setInterval(updateDashboardSummary,1000);
-setInterval(updateLiveEarnings,1000);
+/* ================= INIT ================= */
+updateDashboard();
+setInterval(updateDashboard,1000);
 </script>
 
 </body>
