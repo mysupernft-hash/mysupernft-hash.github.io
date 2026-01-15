@@ -46,14 +46,47 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 input{width:100%;padding:6px;border-radius:6px;border:none}
 button{cursor:pointer}
-</style>
+
+.admin-nav{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  padding:12px;
+  background:#020617;
+}
+
+.admin-nav a{
+  padding:8px 16px;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  color:#38bdf8;
+  text-decoration:none;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.admin-btn{
+  background:#facc15;
+  color:#020617 !important;
+  border:none !important;
+}
+  </style>
 </head>
 
 <body>
 
 <header>SuperNFT Dashboard</header>
 
+<!-- TOP NAV BUTTONS -->
+<div class="admin-nav">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="account.html">👤 My Account</a>
+  <a href="withdraw.html">💸 Withdraw</a>
+  <a href="admin.html" class="admin-btn">🛠 Admin</a>
+</div> 
+
 <!-- TOP NAV -->
+  
 <div class="nav">
   <a class="active">🏠 Dashboard</a>
   <a href="account.html">👤 My Account</a>
