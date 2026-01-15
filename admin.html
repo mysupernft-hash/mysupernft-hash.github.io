@@ -3,210 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Admin Panel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:#fff;
-}
-header{
-  padding:16px;
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  color:#facc15;
-  border-bottom:1px solid #1e293b;
-}
-.container{
-  max-width:480px;
-  margin:30px auto;
-  background:#0f172a;
-  padding:20px;
-  border-radius:16px;
-  box-shadow:0 0 30px rgba(0,0,0,.5);
-}
-h3{margin-top:0}
-input,button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:10px;
-  border:none;
-  font-size:15px;
-}
-input{
-  background:#020617;
-  color:#fff;
-  border:1px solid #1e293b;
-}
-button{
-  background:#facc15;
-  color:#020617;
-  font-weight:bold;
-  cursor:pointer;
-}
-button:hover{opacity:.9}
-
-.box{
-  background:#020617;
-  margin-top:14px;
-  padding:14px;
-  border-radius:12px;
-}
-.box b{
-  font-size:18px;
-  color:#38bdf8;
-}
-.row{
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-}
-.small{
-  font-size:13px;
-  opacity:.8;
-}
-.approve{background:#22c55e;margin-top:6px}
-.reject{background:#ef4444;margin-top:6px}
-.danger{background:#ef4444;margin-top:16px}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
+header{padding:15px;text-align:center;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b;}
+.menu{display:flex;gap:10px;padding:10px;flex-wrap:wrap;justify-content:center;}
+.menu button{padding:10px 18px;border:none;border-radius:10px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
+.section{padding:15px;}
+h2{color:#00e5ff;}
+.card{background:#0f172a;padding:12px;margin:10px;border-radius:12px;}
+.card h3{margin:5px 0;}
+.card p{margin:2px 0;font-size:13px;color:#cbd5f5;}
+#withdrawList div{border-bottom:1px solid #1e293b;padding:8px 0;display:flex;justify-content:space-between;align-items:center;}
 </style>
 </head>
-
 <body>
 
-<header>🛡 SuperNFT Admin Panel</header>
+<header>SuperNFT Admin Panel</header>
 
-<!-- 🔐 LOGIN -->
-<div id="loginBox" class="container">
-  <h3>Admin Security Lock</h3>
-  <input type="password" id="adminPin" placeholder="Enter Admin PIN">
-  <button onclick="unlockAdmin()">Unlock</button>
-  <p class="small">Authorized access only</p>
+<div id="pinSection" class="section">
+  <h2>Enter Admin PIN</h2>
+  <input type="password" id="adminPin" placeholder="Enter PIN" style="padding:8px;border-radius:8px;border:none;margin-right:10px;">
+  <button onclick="checkPin()">Unlock Admin</button>
 </div>
 
-<!-- 🧠 PANEL -->
-<div id="panel" class="container" style="display:none">
-
-  <div class="box">
-    <div class="row">
-      <span>👥 Total NFTs Bought</span>
-      <b id="totalUsers">0</b>
-    </div>
+<div id="adminSection" class="section" style="display:none">
+  <div class="menu">
+    <button onclick="showSection('withdrawSection')">Withdrawals</button>
+    <button onclick="showSection('usersSection')">Users</button>
+    <button onclick="showSection('rankSection')">Rank Bonuses</button>
+    <button onclick="showSection('stakingSection')">Staking</button>
+    <button onclick="showSection('dailyCreditSection')">Daily Credit</button>
+    <button onclick="showSection('teamTreeSection')">Team Tree</button>
+    <button onclick="showSection('graphSection')">Earnings Graph</button>
+    <button onclick="logoutAdmin()">Logout</button>
   </div>
 
-  <div class="box">
-    <div class="row">
-      <span>💰 Total Invested</span>
-      <b id="totalInvested">$0</b>
-    </div>
+  <div id="withdrawSection" class="card" style="display:none">
+    <h3>Pending Withdrawals</h3>
+    <div id="withdrawList"></div>
   </div>
 
-  <div class="box">
-    <div class="row">
-      <span>📈 Total Daily Income</span>
-      <b id="totalDaily">$0</b>
-    </div>
+  <div id="usersSection" class="card" style="display:none">
+    <h3>All Users & NFTs</h3>
+    <div id="usersList"></div>
   </div>
 
-  <!-- WITHDRAW REQUESTS -->
-  <div class="box">
-    <h3>💸 Withdraw Requests</h3>
-    <div id="withdrawList" class="small">No requests</div>
+  <div id="rankSection" class="card" style="display:none">
+    <h3>Rank Bonuses</h3>
+    <p>Admin can view & assign rank bonuses here.</p>
   </div>
 
-  <button class="danger" onclick="resetSystem()">
-    ⚠ Reset All Data
-  </button>
+  <div id="stakingSection" class="card" style="display:none">
+    <h3>Staking Overview</h3>
+    <p>Show all staked NFTs and ROI expiry dates (365 days).</p>
+  </div>
 
+  <div id="dailyCreditSection" class="card" style="display:none">
+    <h3>Auto Daily Credit</h3>
+    <p>Process daily earnings automatically for all users.</p>
+  </div>
+
+  <div id="teamTreeSection" class="card" style="display:none">
+    <h3>Team Referral Tree</h3>
+    <p>Visualize user referrals in tree format.</p>
+  </div>
+
+  <div id="graphSection" class="card" style="display:none">
+    <h3>Earnings Graph</h3>
+    <canvas id="earningsChart" width="400" height="200"></canvas>
+  </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-/* ================= CONFIG ================= */
-const ADMIN_PIN = "1008";
-
-/* ================= UNLOCK ================= */
-function unlockAdmin(){
-  const pin = document.getElementById("adminPin").value;
-  if(pin === ADMIN_PIN){
+function checkPin(){
+  const pin=document.getElementById("adminPin").value;
+  if(pin==="1008"){
     sessionStorage.setItem("adminSession","active");
-    openPanel();
-  }else{
-    alert("❌ Wrong PIN");
+    document.getElementById("pinSection").style.display="none";
+    document.getElementById("adminSection").style.display="block";
+    loadWithdrawals();
+    loadUsers();
+    renderGraph();
+  } else {
+    alert("Incorrect PIN");
   }
 }
 
-/* ================= OPEN PANEL ================= */
-function openPanel(){
-  document.getElementById("loginBox").style.display="none";
-  document.getElementById("panel").style.display="block";
-  loadStats();
-  loadWithdraws();
+function logoutAdmin(){
+  sessionStorage.removeItem("adminSession");
+  location.reload();
 }
 
-/* ================= STATS ================= */
-function loadStats(){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-  let invested = 0, daily = 0;
-
-  data.forEach(n=>{
-    invested += Number(n.price);
-    daily += Number(n.daily);
-  });
-
-  document.getElementById("totalUsers").innerText = data.length;
-  document.getElementById("totalInvested").innerText = "$"+invested.toFixed(2);
-  document.getElementById("totalDaily").innerText = "$"+daily.toFixed(2);
+function showSection(id){
+  const sections=["withdrawSection","usersSection","rankSection","stakingSection","dailyCreditSection","teamTreeSection","graphSection"];
+  sections.forEach(s=>document.getElementById(s).style.display="none");
+  document.getElementById(id).style.display="block";
 }
 
-/* ================= WITHDRAW ================= */
-function loadWithdraws(){
-  const list = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
-  const box = document.getElementById("withdrawList");
-  box.innerHTML = "";
-
-  if(list.length===0){
-    box.innerHTML = "No requests";
-    return;
-  }
-
-  list.forEach((w,i)=>{
-    box.innerHTML += `
-      <div style="border-bottom:1px solid #1e293b;padding:8px 0">
-        <b>$${w.amount}</b> → ${w.wallet}<br>
-        Status: <b>${w.status}</b><br>
-        <button class="approve" onclick="approve(${i})">Approve</button>
-        <button class="reject" onclick="reject(${i})">Reject</button>
-      </div>
-    `;
+/* ---------- MOCK DATA ---------- */
+function loadWithdrawals(){
+  const list=document.getElementById("withdrawList");
+  list.innerHTML="";
+  let mock=[
+    {user:"Shivam",amount:100,status:"Pending"},
+    {user:"Ankit",amount:50,status:"Pending"},
+    {user:"Riya",amount:200,status:"Pending"}
+  ];
+  mock.forEach(w=>{
+    const div=document.createElement("div");
+    div.innerHTML=`<span>${w.user} - $${w.amount}</span>
+    <span>
+      <button onclick="approveWithdraw(this)">✅</button>
+      <button onclick="rejectWithdraw(this)">❌</button>
+    </span>`;
+    list.appendChild(div);
   });
 }
 
-function approve(i){
-  const list = JSON.parse(localStorage.getItem("withdrawRequests"));
-  list[i].status="Approved";
-  localStorage.setItem("withdrawRequests",JSON.stringify(list));
-  loadWithdraws();
+function approveWithdraw(btn){btn.parentElement.parentElement.remove();}
+function rejectWithdraw(btn){btn.parentElement.parentElement.remove();}
+
+function loadUsers(){
+  const list=document.getElementById("usersList");
+  list.innerHTML="";
+  let mockUsers=[
+    {name:"Shivam",nfts:3,dailyIncome:5.5},
+    {name:"Ankit",nfts:2,dailyIncome:3.2},
+    {name:"Riya",nfts:5,dailyIncome:8.1}
+  ];
+  mockUsers.forEach(u=>{
+    const div=document.createElement("div");
+    div.innerHTML=`<b>${u.name}</b> | NFTs: ${u.nfts} | Daily: $${u.dailyIncome.toFixed(2)}`;
+    list.appendChild(div);
+  });
 }
 
-function reject(i){
-  const list = JSON.parse(localStorage.getItem("withdrawRequests"));
-  list[i].status="Rejected";
-  localStorage.setItem("withdrawRequests",JSON.stringify(list));
-  loadWithdraws();
+/* ---------- CHART ---------- */
+function renderGraph(){
+  const ctx=document.getElementById("earningsChart").getContext("2d");
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets:[{label:'Daily Income',$backgroundColor:'rgba(0,229,255,0.2)',$borderColor:'#00e5ff',data:[5,10,7,12,9,15]}]
+    },
+    options:{responsive:true,plugins:{legend:{display:true}}}
+  });
 }
 
-/* ================= RESET ================= */
-function resetSystem(){
-  if(confirm("Delete ALL user data?")){
-    localStorage.removeItem("myNFTs");
-    localStorage.removeItem("withdrawRequests");
-    alert("System reset successful");
-    loadStats();
-    loadWithdraws();
-  }
+/* ---------- ADMIN SESSION ---------- */
+if(sessionStorage.getItem("adminSession")==="active"){
+  document.getElementById("pinSection").style.display="none";
+  document.getElementById("adminSection").style.display="block";
+  loadWithdrawals();
+  loadUsers();
+  renderGraph();
 }
 </script>
 
