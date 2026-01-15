@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>My Investments</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <style>
 body{margin:0;font-family:Arial;background:#020617;color:white}
-header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
-.live{margin:15px;padding:15px;background:#0f172a;border-radius:12px;text-align:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px}
-.card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
-.card img{width:100%;border-radius:10px}
-.price{color:#38bdf8;font-weight:bold;margin:6px 0}
-.meta{font-size:12px;color:#cbd5f5;line-height:1.4}
-.calc{margin-top:6px;width:100%;padding:6px;border-radius:6px;border:1px solid #38bdf8;background:#020617;color:white}
-.back{text-align:center;display:block;color:#38bdf8;margin:15px;text-decoration:none}
+header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
+.card{
+background:#0f172a;margin:12px;border-radius:14px;
+padding:10px;display:flex;gap:10px
+}
+.card img{width:80px;border-radius:10px}
+.meta{font-size:13px;color:#cbd5f5}
+.total{
+text-align:center;background:#020617;padding:12px;
+border-bottom:1px solid #1e293b
+}
 </style>
 </head>
 
@@ -23,53 +23,38 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <header>📁 My Investments</header>
 
-<div class="live">
-  <b>📈 Live Earnings</b>
-  <div id="live">$0.0000</div>
+<div class="total">
+💰 Total Earnings Today: <b id="today">$0</b>
 </div>
 
-<div id="grid" class="grid"></div>
-
-<a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
+<div id="list"></div>
 
 <script>
-const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-const grid=document.getElementById("grid");
-const liveBox=document.getElementById("live");
+const list = document.getElementById("list");
+const todayBox = document.getElementById("today");
 
-function render(){
-  grid.innerHTML="";
-  let total=0;
-  const now=Date.now();
+const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+let totalToday = 0;
 
-  data.forEach(n=>{
-    const days=Math.min((now-n.boughtAt)/86400000,n.validity);
-    const earned=n.dailyIncome*days;
-    total+=earned;
+data.forEach(n=>{
+  // days passed
+  const days = Math.floor((Date.now() - n.boughtAt)/(1000*60*60*24));
+  const earned = Math.min(days,365) * n.daily;
+  totalToday += n.daily;
 
-    grid.innerHTML+=`
-    <div class="card">
-      <img src="${n.img}">
-      <div class="price">$${n.price}</div>
-      <div class="meta">
-        Daily $${n.dailyIncome}<br>
-        Validity ${n.validity} Days<br>
-        365 Days: $${(n.dailyIncome*365).toFixed(2)}<br>
-        Earned: $${earned.toFixed(2)}
-      </div>
+  list.innerHTML += `
+  <div class="card">
+    <img src="${n.img}">
+    <div class="meta">
+      💵 Price: $${n.price}<br>
+      📈 Daily Income: $${n.daily.toFixed(2)}<br>
+      ⏳ Earned Till Now: $${earned.toFixed(2)}<br>
+      📆 Days Passed: ${days}/365
+    </div>
+  </div>`;
+});
 
-      <input class="calc" type="number" placeholder="Enter days"
-        oninput="this.nextElementSibling.innerText=
-        'Earning: $'+(this.value*${n.dailyIncome}).toFixed(2)">
-      <div class="meta">Earning: $0</div>
-    </div>`;
-  });
-
-  liveBox.innerText="$"+total.toFixed(4);
-}
-
-render();
-setInterval(render,1000);
+todayBox.innerText = "$" + totalToday.toFixed(2);
 </script>
 
 </body>
