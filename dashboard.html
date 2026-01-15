@@ -33,15 +33,31 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <div class="top">
 
-  <!-- CALCULATOR -->
-  <div class="calcBox">
-    <b>Investment Calculator</b><br><br>
-    <input type="number" id="calcAmount" placeholder="Enter Daily Income ($)">
-    <div id="calcResult" style="margin-top:8px">365 Days: $0</div>
-  </div>
+  <!-- INVESTMENT CALCULATOR -->
+<div style="
+  margin:15px;
+  padding:15px;
+  background:#0f172a;
+  border-radius:12px;
+">
+  <h3 style="margin-top:0;color:#38bdf8;text-align:center">
+    💰 Investment Calculator
+  </h3>
 
-  <div class="link">
-    <a href="my-investments.html">📁 My Investments</a>
+  <input id="invAmount" type="number" placeholder="Investment Amount ($)"
+    style="width:100%;padding:8px;margin-bottom:8px;
+    border-radius:6px;border:1px solid #38bdf8;
+    background:#020617;color:white">
+
+  <input id="invPercent" type="number" placeholder="Daily % (eg: 2)"
+    style="width:100%;padding:8px;margin-bottom:8px;
+    border-radius:6px;border:1px solid #38bdf8;
+    background:#020617;color:white">
+
+  <div id="calcOutput" style="font-size:14px;line-height:1.6;color:#cbd5f5">
+    Daily Income: $0<br>
+    Validity: 365 Days<br>
+    Total after 365 Days: $0
   </div>
 </div>
 
@@ -124,6 +140,38 @@ document.getElementById("calcAmount").oninput=function(){
   document.getElementById("calcResult").innerText=
   "365 Days: $"+(this.value*365).toFixed(2);
 };
+</script>
+
+  <script>
+const amt = document.getElementById("invAmount");
+const pct = document.getElementById("invPercent");
+const out = document.getElementById("calcOutput");
+
+function calculate(){
+  const amount = Number(amt.value);
+  const percent = Number(pct.value);
+
+  if(!amount || !percent){
+    out.innerHTML = `
+      Daily Income: $0<br>
+      Validity: 365 Days<br>
+      Total after 365 Days: $0
+    `;
+    return;
+  }
+
+  const dailyIncome = amount * percent / 100;
+  const total = dailyIncome * 365;
+
+  out.innerHTML = `
+    Daily Income: $${dailyIncome.toFixed(2)}<br>
+    Validity: 365 Days<br>
+    Total after 365 Days: $${total.toFixed(2)}
+  `;
+}
+
+amt.oninput = calculate;
+pct.oninput = calculate;
 </script>
 
 </body>
