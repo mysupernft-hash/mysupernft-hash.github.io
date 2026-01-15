@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Withdraw – SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#020617;color:white}
+header{text-align:center;padding:15px;color:#38bdf8;font-size:22px}
+.box{background:#0f172a;margin:15px;padding:15px;border-radius:14px}
+input,button{
+  width:100%;padding:10px;border-radius:8px;
+  border:none;margin-top:10px
+}
+button{background:#38bdf8;color:#020617;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<header>💸 Withdraw Earnings</header>
+
+<div class="box">
+  Available Balance:<br>
+  <b id="balance">$0.0000</b>
+</div>
+
+<div class="box">
+  <input type="number" id="amount" placeholder="Enter amount (min $10)">
+  <button onclick="withdraw()">Withdraw</button>
+</div>
+
+<div class="box">
+  <b>Withdrawal History</b>
+  <div id="history" style="font-size:13px;margin-top:10px"></div>
+</div>
+
+<script>
+function getWithdrawable(){
+  const earned = Number(localStorage.getItem("totalEarnedCache")) || 0;
+  const withdrawn = Number(localStorage.getItem("withdrawnAmount")) || 0;
+  return Math.max(0, earned - withdrawn);
+}
+
+function load(){
+  balance.innerText = "$" + getWithdrawable().toFixed(4);
+
+  const list = JSON.parse(localStorage.getItem("withdrawHistory")) || [];
+  history.innerHTML = "";
+  list.forEach(w=>{
+    history.innerHTML += `<div>💸 $${w.amount} – ${new Date(w.time).toLocaleString()}</div>`;
+  });
+}
+
+function withdraw(){
+  const amt = Number(amount.value);
+  if(amt < 10) return alert("Minimum withdrawal $10");
+
+  const available = getWithdrawable();
+  if(amt > available) return alert("Insufficient balance");
+
+  let withdrawn = Number(localStorage.getItem("withdrawnAmount")) || 0;
+  withdrawn += amt;
+  localStorage.setItem("withdrawnAmount", withdrawn);
+
+  const history = JSON.parse(localStorage.getItem("withdrawHistory")) || [];
+  history.unshift({amount:amt,time:Date.now()});
+  localStorage.setItem("withdrawHistory", JSON.stringify(history));
+
+  alert("Withdrawal request submitted");
+  amount.value="";
+  load();
+}
+
+load();
+setInterval(load,1000);
+</script>
+
+</body>
+</html>
