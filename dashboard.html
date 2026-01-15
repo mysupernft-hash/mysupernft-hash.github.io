@@ -117,11 +117,28 @@ background:rgba(0,0,0,0.7);z-index:9999;">
 
 <script>
 /* NFT DATA */
-const starter=[[10,"IMG_0458.png",0.2],[20,"IMG_0460.png",0.4],[50,"IMG_0466.png",1]];
-const rising=[[60,"IMG_0468.png",1.5],[100,"IMG_0474.png",2.5]];
-const elite=[[200,"IMG_0476.png",6.6],[400,"IMG_0480.png",13.3]];
-const legendary=[[499,"IMG_0482.png",25],[999,"IMG_0503.png",100]];
+const starter=[
+[10,"IMG_0458.png",0.2],[15,"IMG_0459.png",0.3],[20,"IMG_0460.png",0.4],
+[25,"IMG_0461.png",0.5],[30,"IMG_0462.png",0.6],[35,"IMG_0463.png",0.7],
+[40,"IMG_0464.png",0.8],[45,"IMG_0465.png",0.9],[50,"IMG_0466.png",1.0]
+];
 
+const rising=[
+[55,"IMG_0467.png",1.3],[60,"IMG_0468.png",1.5],[65,"IMG_0469.png",1.63],
+[70,"IMG_0470.png",1.75],[75,"IMG_0471.png",1.88],[80,"IMG_0472.png",2.0],
+[90,"IMG_0473.png",2.25],[100,"IMG_0474.png",2.5]
+];
+
+const elite=[
+[150,"IMG_0475.png",5],[200,"IMG_0476.png",6.6],[250,"IMG_0477.png",8.25],
+[300,"IMG_0478.png",10],[350,"IMG_0479.png",11.6],
+[400,"IMG_0480.png",13.3],[450,"IMG_0481.png",15]
+];
+
+const legendary=[
+[499,"IMG_0482.png",25],[599,"IMG_0483.png",30],[699,"IMG_0497.png",40],
+[799,"IMG_0498.png",30],[899,"IMG_0499.png",45],[999,"IMG_0503.png",100]
+];
 /* Render NFTs */
 function render(list,id){
   const box=document.getElementById(id);
