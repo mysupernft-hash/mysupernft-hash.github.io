@@ -124,35 +124,33 @@ document.getElementById("calcAmount").oninput=function(){
 </script>
 
   <script>
-const amt = document.getElementById("invAmount");
-const pct = document.getElementById("invPercent");
-const out = document.getElementById("calcOutput");
+const allNFTs = [
+  ...starter,
+  ...rising,
+  ...elite,
+  ...legendary
+];
 
-function calculate(){
-  const amount = Number(amt.value);
-  const percent = Number(pct.value);
+const calcBox = document.getElementById("autoCalculator");
 
-  if(!amount || !percent){
-    out.innerHTML = `
-      Daily Income: $0<br>
-      Validity: 365 Days<br>
-      Total after 365 Days: $0
-    `;
-    return;
-  }
+allNFTs.forEach(n => {
+  const price = n[0];
+  const dailyPercent = n[2];
+  const dailyIncome = n[3];
+  const total365 = dailyIncome * 365;
 
-  const dailyIncome = amount * percent / 100;
-  const total = dailyIncome * 365;
-
-  out.innerHTML = `
-    Daily Income: $${dailyIncome.toFixed(2)}<br>
-    Validity: 365 Days<br>
-    Total after 365 Days: $${total.toFixed(2)}
+  calcBox.innerHTML += `
+    <div style="
+      border-bottom:1px solid #1e293b;
+      padding:6px 0
+    ">
+      <b>$${price}</b> →
+      Daily ${dailyPercent}% |
+      Income <b>$${dailyIncome}</b> |
+      365 Days: <b>$${total365.toFixed(2)}</b>
+    </div>
   `;
-}
-
-amt.oninput = calculate;
-pct.oninput = calculate;
+});
 </script>
 
 </body>
