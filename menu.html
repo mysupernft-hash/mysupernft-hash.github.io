@@ -1,20 +1,34 @@
-<!-- SIDE MENU -->
-<div id="sideMenu" class="side-menu">
-  <!-- Close button -->
-  <button onclick="toggleMenu()" class="menu-close">✖</button>
+<!-- Hamburger Icon -->
+<div id="hamburger">&#9776;</div>
 
-  <!-- Menu buttons -->
-  <ul>
-    <li onclick="openPage('account')">👤 My Account</li>
-    <li onclick="openPage('investments')">📁 My Investments</li>
-    <li onclick="openPage('wallet')">💳 Wallet</li>
-    <li onclick="openPage('withdraw')">💸 Withdraw</li>
-    <li onclick="openPage('earnings')">💹 Live Earnings</li>
-    <li onclick="adminLogin()">🛡 Admin</li>
-    <li onclick="openPage('team')">👥 My Team</li>
-    <li onclick="openPage('level')">📊 My Level</li>
-    <li onclick="openSettings()">⚙️ Settings</li>
-    <li onclick="openPage('calculator')">📈 Calculator</li>
+<!-- SIDE MENU -->
+<ul id="menu">
+    <li onclick="openPopup('myAccount')">👤 My Account</li>
+    <li onclick="openPopup('myInvestments')">📁 My Investments</li>
+    <li onclick="openPopup('wallet')">💳 Wallet</li>
+    <li onclick="openPopup('withdraw')">💸 Withdraw</li>
+    <li onclick="openPopup('liveEarnings')">💹 Live Earnings</li>
+    <li onclick="openPopup('admin')">🛡 Admin</li>
+    <li onclick="openPopup('myTeam')">👥 My Team</li>
+    <li onclick="openPopup('myLevel')">📊 My Level</li>
+    <li onclick="openPopup('calculator')">📈 Calculator</li>
+    <li onclick="openPopup('settings')">⚙️ Settings</li>
     <li onclick="logout()">🔒 Logout</li>
-  </ul>
+</ul>
+
+<!-- DASHBOARD CONTENT -->
+<div id="dashboardContent">
+    <!-- Yahan dashboard ke saare NFTs, summary, earnings, charts, etc. aayenge -->
 </div>
+
+<!-- POPUPS (example) -->
+<div id="myAccount" class="popup">My Account Content</div>
+<div id="myInvestments" class="popup">My Investments Content</div>
+<div id="wallet" class="popup">Wallet Content</div>
+<div id="withdraw" class="popup">Withdraw Content</div>
+<div id="liveEarnings" class="popup">Live Earnings Content</div>
+<div id="admin" class="popup">Admin Content</div>
+<div id="myTeam" class="popup">My Team Content</div>
+<div id="myLevel" class="popup">My Level Content</div>
+<div id="calculator" class="popup">Calculator Content</div>
+<div id="settings" class="popup">Settings Content</div>
