@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Wallet – SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#020617;color:#fff;}
+header{padding:15px;text-align:center;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b;}
+.box{background:#0f172a;margin:15px;padding:15px;border-radius:12px;text-align:center;}
+button{padding:10px 20px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;margin-top:10px;}
+</style>
+</head>
+<body>
 
+<header>💳 Wallet – SuperNFT</header>
+
+<div class="box">
+  <h3>Wallet Balance</h3>
+  <b id="walletBalance">$0.00</b>
+</div>
+
+<div class="box">
+  <h3>Total Earnings</h3>
+  <b id="totalEarnings">$0.00</b>
+</div>
+
+<div class="box">
+  <button onclick="claimEarnings()">Claim Earnings</button>
+</div>
+
+<script>
+function updateWallet(){
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  let wallet=0,total=0;
+  data.forEach(n=>{wallet+=n.daily;total+=n.daily;});
+  document.getElementById("walletBalance").innerText="$"+wallet.toFixed(2);
+  document.getElementById("totalEarnings").innerText="$"+total.toFixed(2);
+}
+setInterval(updateWallet,1000);
+
+function claimEarnings(){
+  alert("Earnings claimed to your wallet!");
+  // Optionally, reset daily earnings after claim
+}
+</script>
+</body>
+</html>
