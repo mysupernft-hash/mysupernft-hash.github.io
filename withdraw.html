@@ -1,56 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Withdraw</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Withdraw – SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:#fff}
-header{text-align:center;padding:15px;color:#38bdf8}
-.box{background:#0f172a;margin:12px;padding:12px;border-radius:12px}
-input,button{width:100%;padding:8px;margin-top:6px}
-button{background:#38bdf8;border:none}
+body{margin:0;font-family:Arial;background:#020617;color:#fff;}
+header{padding:15px;text-align:center;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b;}
+.box{background:#0f172a;margin:15px;padding:15px;border-radius:12px;text-align:center;}
+input,button{padding:10px;border-radius:8px;border:none;margin-top:10px;}
+button{background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
-<header>Withdraw</header>
+<header>💸 Withdraw – SuperNFT</header>
 
 <div class="box">
-Balance: <b id="bal">$0</b>
+  <h3>Wallet Balance</h3>
+  <b id="walletBalance">$0.00</b>
 </div>
 
 <div class="box">
-<input id="amt" type="number" placeholder="Amount">
-<input id="wal" placeholder="Wallet Address">
-<button onclick="req()">Withdraw</button>
-<div id="msg"></div>
+  <h3>Enter Withdraw Amount</h3>
+  <input type="number" id="withdrawAmount" placeholder="$0.00">
+  <button onclick="requestWithdraw()">Request Withdraw</button>
 </div>
+
+<div class="box" id="withdrawStatus"></div>
 
 <script>
-function liveBal(){
-  const d=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let l=0;
-  d.forEach(n=>l+=((Date.now()-n.boughtAt)/1000)*(n.daily/86400));
-  return Math.max(l-(Number(localStorage.getItem("withdrawedTotal"))||0),0);
+function updateWallet(){
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  let wallet=0;
+  data.forEach(n=>{wallet+=n.daily;});
+  document.getElementById("walletBalance").innerText="$"+wallet.toFixed(2);
 }
-setInterval(()=>bal.innerText="$"+liveBal().toFixed(4),1000);
+setInterval(updateWallet,1000);
 
-function req(){
-  const a=Number(amt.value);
-  if(a<10||a>liveBal()) return msg.innerText="Invalid";
-  const r=JSON.parse(localStorage.getItem("withdrawRequests"))||[];
-  r.push({
-    amount:a,
-    fee:a*0.05,
-    final:a*0.95,
-    status:"Pending",
-    time:new Date().toLocaleString()
-  });
-  localStorage.setItem("withdrawRequests",JSON.stringify(r));
-  msg.innerText="Request Sent";
+function requestWithdraw(){
+  const amount=parseFloat(document.getElementById("withdrawAmount").value);
+  const wallet=parseFloat(document.getElementById("walletBalance").innerText.replace("$",""));
+  const status=document.getElementById("withdrawStatus");
+
+  if(amount>0 && amount<=wallet){
+    status.innerText="✅ Withdraw request for $"+amount.toFixed(2)+" submitted for approval!";
+    // Optionally: reduce wallet balance
+  } else{
+    status.innerText="❌ Invalid amount! Check wallet balance.";
+  }
 }
 </script>
+
 </body>
 </html>
