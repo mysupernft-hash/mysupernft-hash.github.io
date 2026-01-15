@@ -1,79 +1,227 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Withdraw – SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:white}
-header{text-align:center;padding:15px;color:#38bdf8;font-size:22px}
-.box{background:#0f172a;margin:15px;padding:15px;border-radius:14px}
-input,button{
-  width:100%;padding:10px;border-radius:8px;
-  border:none;margin-top:10px
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:white
 }
-button{background:#38bdf8;color:#020617;font-weight:bold}
+header{
+  text-align:center;
+  padding:15px;
+  font-size:22px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b
+}
+.nav{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  padding:10px
+}
+.nav a{
+  padding:8px 18px;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  color:#38bdf8;
+  text-decoration:none;
+  font-weight:bold
+}
+
+.box{
+  background:#0f172a;
+  margin:15px;
+  padding:15px;
+  border-radius:14px
+}
+label{font-size:14px;color:#cbd5f5}
+input,select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-top:6px;
+  margin-bottom:12px
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  font-size:16px
+}
+
+.note{
+  font-size:13px;
+  color:#94a3b8;
+  margin-top:10px
+}
+
+.status{
+  background:#020617;
+  padding:10px;
+  border-radius:10px;
+  margin-top:10px;
+  font-size:13px
+}
 </style>
 </head>
 
 <body>
 
-<header>💸 Withdraw Earnings</header>
+<header>💸 Withdraw</header>
 
-<div class="box">
-  Available Balance:<br>
-  <b id="balance">$0.0000</b>
+<div class="nav">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="account.html">👤 My Account</a>
 </div>
 
 <div class="box">
-  <input type="number" id="amount" placeholder="Enter amount (min $10)">
-  <button onclick="withdraw()">Withdraw</button>
+  <b>Wallet Balance:</b>
+  <div style="font-size:22px;color:#38bdf8" id="wallet">$0.0000</div>
 </div>
 
 <div class="box">
-  <b>Withdrawal History</b>
-  <div id="history" style="font-size:13px;margin-top:10px"></div>
+  <label>Withdraw Amount ($)</label>
+  <input type="number" id="amount" placeholder="Enter amount">
+
+  <label>Withdraw Method</label>
+  <select id="method">
+    <option value="USDT">USDT (TRC20)</option>
+    <option value="BTC">Bitcoin</option>
+    <option value="ETH">Ethereum</option>
+  </select>
+
+  <label>Wallet Address</label>
+  <input type="text" id="address" placeholder="Enter wallet address">
+
+  <button onclick="submitWithdraw()">Submit Withdraw</button>
+
+  <div class="note">
+    🔹 Minimum Withdraw: <b>$10</b><br>
+    🔹 Withdraw Fee: <b>5%</b><br>
+    🔹 Status: Pending (Admin approval)
+  </div>
+</div>
+
+<div class="box">
+  <b>Withdraw History</b>
+  <div id="history"></div>
 </div>
 
 <script>
-function getWithdrawable(){
-  const earned = Number(localStorage.getItem("totalEarnedCache")) || 0;
-  const withdrawn = Number(localStorage.getItem("withdrawnAmount")) || 0;
-  return Math.max(0, earned - withdrawn);
+/* ===== SETTINGS ===== */
+const MIN_WITHDRAW = 10;
+const FEE_PERCENT = 18;
+
+/* ===== CALCULATE WALLET ===== */
+function calculateWallet(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let wallet = 0;
+
+  data.forEach(n=>{
+    const seconds = (Date.now() - n.boughtAt)/1000;
+    wallet += seconds * (n.daily/86400);
+  });
+
+  const withdrawn = JSON.parse(localStorage.getItem("withdrawApproved")) || 0;
+  wallet -= withdrawn;
+
+  document.getElementById("wallet").innerText =
+    "$" + wallet.toFixed(4);
+
+  return wallet;
 }
 
-function load(){
-  balance.innerText = "$" + getWithdrawable().toFixed(4);
+/* ===== SUBMIT WITHDRAW ===== */
+function submitWithdraw(){
+  const amount = Number(document.getElementById("amount").value);
+  const method = document.getElementById("method").value;
+  const address = document.getElementById("address").value;
+  const wallet = calculateWallet();
 
-  const list = JSON.parse(localStorage.getItem("withdrawHistory")) || [];
-  history.innerHTML = "";
+  if(!amount || amount <= 0){
+    alert("Enter valid amount");
+    return;
+  }
+  if(amount < MIN_WITHDRAW){
+    alert("Minimum withdraw is $" + MIN_WITHDRAW);
+    return;
+  }
+  if(amount > wallet){
+    alert("Insufficient balance");
+    return;
+  }
+  if(address.length < 10){
+    alert("Enter valid wallet address");
+    return;
+  }
+
+  const fee = (amount * FEE_PERCENT) / 100;
+  const finalAmount = amount - fee;
+
+  const requests =
+    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+
+  requests.push({
+    amount,
+    fee,
+    finalAmount,
+    method,
+    address,
+    status:"Pending",
+    time: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("withdrawRequests",JSON.stringify(requests));
+
+  alert("Withdraw request submitted");
+
+  document.getElementById("amount").value="";
+  document.getElementById("address").value="";
+
+  loadHistory();
+}
+
+/* ===== HISTORY ===== */
+function loadHistory(){
+  const list =
+    JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+  const box = document.getElementById("history");
+  box.innerHTML="";
+
+  if(list.length===0){
+    box.innerHTML="<div class='status'>No withdraw requests</div>";
+    return;
+  }
+
   list.forEach(w=>{
-    history.innerHTML += `<div>💸 $${w.amount} – ${new Date(w.time).toLocaleString()}</div>`;
+    box.innerHTML+=`
+      <div class="status">
+        Amount: $${w.amount}<br>
+        Fee: $${w.fee.toFixed(2)}<br>
+        Receive: $${w.finalAmount.toFixed(2)}<br>
+        Method: ${w.method}<br>
+        Status: <b>${w.status}</b><br>
+        Time: ${w.time}
+      </div>
+    `;
   });
 }
 
-function withdraw(){
-  const amt = Number(amount.value);
-  if(amt < 10) return alert("Minimum withdrawal $10");
-
-  const available = getWithdrawable();
-  if(amt > available) return alert("Insufficient balance");
-
-  let withdrawn = Number(localStorage.getItem("withdrawnAmount")) || 0;
-  withdrawn += amt;
-  localStorage.setItem("withdrawnAmount", withdrawn);
-
-  const history = JSON.parse(localStorage.getItem("withdrawHistory")) || [];
-  history.unshift({amount:amt,time:Date.now()});
-  localStorage.setItem("withdrawHistory", JSON.stringify(history));
-
-  alert("Withdrawal request submitted");
-  amount.value="";
-  load();
-}
-
-load();
-setInterval(load,1000);
+/* ===== INIT ===== */
+calculateWallet();
+loadHistory();
+setInterval(calculateWallet,1000);
 </script>
 
 </body>
