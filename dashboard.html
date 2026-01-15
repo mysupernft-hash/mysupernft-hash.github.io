@@ -78,6 +78,22 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <header>SuperNFT Dashboard</header>
 
+  <div id="summary" style="
+display:flex;gap:10px;justify-content:center;
+padding:12px;flex-wrap:wrap">
+
+  <div style="background:#0f172a;padding:12px 18px;border-radius:12px">
+    💰 Total Invested<br>
+    <b id="totalInvested">$0</b>
+  </div>
+
+  <div style="background:#0f172a;padding:12px 18px;border-radius:12px">
+    📈 Daily Income<br>
+    <b id="dailyIncome">$0</b>
+  </div>
+
+</div>
+
 <!-- My Investment Link -->
 <div class="link">
   <a href="my-investments.html">📁 My Investment</a>
@@ -202,6 +218,22 @@ all.forEach(n=>{
   </div>`;
 });
 </script>
+
+  function updateDashboardSummary(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let invested = 0;
+  let daily = 0;
+
+  data.forEach(n=>{
+    invested += n.price;
+    daily += n.daily;
+  });
+
+  document.getElementById("totalInvested").innerText = "$" + invested.toFixed(2);
+  document.getElementById("dailyIncome").innerText = "$" + daily.toFixed(2);
+}
+
+updateDashboardSummary();
 
 </body>
 </html>
