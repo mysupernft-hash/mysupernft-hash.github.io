@@ -9,68 +9,27 @@
 body{margin:0;font-family:Arial;background:#020617;color:white}
 header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
 
-.link{text-align:center;margin:12px}
-.link a{
-  color:#38bdf8;
-  text-decoration:none;
-  padding:8px 16px;
-  border:1px solid #38bdf8;
-  border-radius:20px;
-  display:inline-block;
-}
+#summary{display:flex;gap:10px;justify-content:center;padding:12px;flex-wrap:wrap}
+#summary div{background:#0f172a;padding:12px 18px;border-radius:12px}
+
+.link{text-align:center;margin:10px}
+.link a{color:#38bdf8;text-decoration:none;padding:8px 16px;border:1px solid #38bdf8;border-radius:20px}
+
+.calcBtn{margin:10px auto;display:block;padding:12px 22px;border-radius:10px;border:none;background:#38bdf8;color:#00263a;font-weight:bold}
 
 .tabs{display:flex;gap:10px;padding:10px;overflow-x:auto}
-.tabs button{
-  padding:8px 14px;
-  border:1px solid #38bdf8;
-  border-radius:20px;
-  background:#0f172a;
-  color:#38bdf8;
-  cursor:pointer
-}
+.tabs button{padding:8px 14px;border:1px solid #38bdf8;border-radius:20px;background:#0f172a;color:#38bdf8}
 .tabs button.active{background:#38bdf8;color:#020617}
 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:15px;
-  padding:15px
-}
-.card{
-  background:#0f172a;
-  border-radius:14px;
-  padding:10px;
-  text-align:center
-}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px}
+.card{background:#0f172a;border-radius:14px;padding:10px;text-align:center}
 .card img{width:100%;border-radius:10px}
 .price{color:#38bdf8;font-weight:bold;margin:6px 0}
-.meta{font-size:12px;color:#cbd5f5;line-height:1.4}
-.card button{
-  margin-top:8px;
-  width:100%;
-  padding:8px;
-  border:none;
-  border-radius:8px;
-  background:#38bdf8;
-  color:#020617;
-  font-weight:bold
-}
+.meta{font-size:12px;color:#cbd5f5}
+.card button{margin-top:8px;width:100%;padding:8px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold}
 
 .section{display:none}
 .section.active{display:grid}
-
-/* Calculator */
-.calcBtn{
-  margin:10px auto;
-  display:block;
-  padding:12px 22px;
-  border-radius:10px;
-  border:none;
-  background:#38bdf8;
-  color:#00263a;
-  font-weight:bold;
-  font-size:15px;
-}
 </style>
 </head>
 
@@ -78,31 +37,17 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <header>SuperNFT Dashboard</header>
 
-  <div id="summary" style="
-display:flex;gap:10px;justify-content:center;
-padding:12px;flex-wrap:wrap">
-
-  <div style="background:#0f172a;padding:12px 18px;border-radius:12px">
-    💰 Total Invested<br>
-    <b id="totalInvested">$0</b>
-  </div>
-
-  <div style="background:#0f172a;padding:12px 18px;border-radius:12px">
-    📈 Daily Income<br>
-    <b id="dailyIncome">$0</b>
-  </div>
-
+<div id="summary">
+  <div>💰 Total Invested<br><b id="totalInvested">$0</b></div>
+  <div>📈 Daily Income<br><b id="dailyIncome">$0</b></div>
 </div>
 
-<!-- My Investment Link -->
 <div class="link">
   <a href="my-investments.html">📁 My Investment</a>
 </div>
 
-<!-- Calculator Button -->
 <button class="calcBtn" onclick="openCalc()">📊 Open NFT Calculator</button>
 
-<!-- Tabs -->
 <div class="tabs">
   <button class="active" onclick="showTab('starter',this)">Starter</button>
   <button onclick="showTab('rising',this)">Rising</button>
@@ -110,52 +55,30 @@ padding:12px;flex-wrap:wrap">
   <button onclick="showTab('legendary',this)">Legendary</button>
 </div>
 
-<!-- Sections -->
 <div id="starter" class="grid section active"></div>
 <div id="rising" class="grid section"></div>
 <div id="elite" class="grid section"></div>
 <div id="legendary" class="grid section"></div>
 
-<!-- Calculator Popup -->
-<div id="calcPopup" style="
-display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(0,0,0,0.7);z-index:9999;">
-  <div style="
-  background:#020617;margin:60px auto;width:90%;max-width:420px;
-  border-radius:14px;padding:15px;color:white;">
+<!-- Calculator -->
+<div id="calcPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7)">
+  <div style="background:#020617;margin:60px auto;width:90%;max-width:420px;border-radius:14px;padding:15px">
     <div style="display:flex;justify-content:space-between">
-      <h3 style="color:#38bdf8;margin:0">📊 NFT Calculator</h3>
-      <button onclick="closeCalc()" style="background:none;border:none;color:#38bdf8;font-size:22px">✖</button>
+      <h3 style="color:#38bdf8;margin:0">NFT Calculator</h3>
+      <button onclick="closeCalc()" style="background:none;border:none;color:#38bdf8;font-size:20px">✖</button>
     </div>
-    <div id="calcList" style="margin-top:10px;font-size:13px;line-height:1.6"></div>
+    <div id="calcList" style="margin-top:10px;font-size:13px"></div>
   </div>
 </div>
 
 <script>
-/* NFT DATA */
-const starter=[
-[10,"IMG_0458.png",0.2],[15,"IMG_0459.png",0.3],[20,"IMG_0460.png",0.4],
-[25,"IMG_0461.png",0.5],[30,"IMG_0462.png",0.6],[35,"IMG_0463.png",0.7],
-[40,"IMG_0464.png",0.8],[45,"IMG_0465.png",0.9],[50,"IMG_0466.png",1.0]
-];
+// ===== NFT DATA =====
+const starter=[[10,"IMG_0458.png",0.2],[15,"IMG_0459.png",0.3],[20,"IMG_0460.png",0.4],[25,"IMG_0461.png",0.5],[30,"IMG_0462.png",0.6],[35,"IMG_0463.png",0.7],[40,"IMG_0464.png",0.8],[45,"IMG_0465.png",0.9],[50,"IMG_0466.png",1]];
+const rising=[[55,"IMG_0467.png",1.3],[60,"IMG_0468.png",1.5],[65,"IMG_0469.png",1.63],[70,"IMG_0470.png",1.75],[75,"IMG_0471.png",1.88],[80,"IMG_0472.png",2],[90,"IMG_0473.png",2.25],[100,"IMG_0474.png",2.5]];
+const elite=[[150,"IMG_0475.png",5],[200,"IMG_0476.png",6.6],[250,"IMG_0477.png",8.25],[300,"IMG_0478.png",10],[350,"IMG_0479.png",11.6],[400,"IMG_0480.png",13.3],[450,"IMG_0481.png",15]];
+const legendary=[[499,"IMG_0482.png",25],[599,"IMG_0483.png",30],[699,"IMG_0497.png",40],[799,"IMG_0498.png",30],[899,"IMG_0499.png",45],[999,"IMG_0503.png",100]];
 
-const rising=[
-[55,"IMG_0467.png",1.3],[60,"IMG_0468.png",1.5],[65,"IMG_0469.png",1.63],
-[70,"IMG_0470.png",1.75],[75,"IMG_0471.png",1.88],[80,"IMG_0472.png",2.0],
-[90,"IMG_0473.png",2.25],[100,"IMG_0474.png",2.5]
-];
-
-const elite=[
-[150,"IMG_0475.png",5],[200,"IMG_0476.png",6.6],[250,"IMG_0477.png",8.25],
-[300,"IMG_0478.png",10],[350,"IMG_0479.png",11.6],
-[400,"IMG_0480.png",13.3],[450,"IMG_0481.png",15]
-];
-
-const legendary=[
-[499,"IMG_0482.png",25],[599,"IMG_0483.png",30],[699,"IMG_0497.png",40],
-[799,"IMG_0498.png",30],[899,"IMG_0499.png",45],[999,"IMG_0503.png",100]
-];
-/* Render NFTs */
+// ===== RENDER =====
 function render(list,id){
   const box=document.getElementById(id);
   box.innerHTML="";
@@ -164,61 +87,35 @@ function render(list,id){
     <div class="card">
       <img src="images/${n[1]}">
       <div class="price">$${n[0]}</div>
-      <div class="meta">
-        Daily Income ${n[2]}%<br>
-        Validity 365 Days
-      </div>
-      <button onclick="buyNFT(${n[0]},'images/${n[1]}',${n[2]})">
-        Buy NFT
-      </button>
+      <div class="meta">Daily ${n[2]}%<br>Validity 365 Days</div>
+      <button onclick="buyNFT(${n[0]},'images/${n[1]}',${n[2]})">Buy NFT</button>
     </div>`;
   });
 }
+render(starter,"starter");render(rising,"rising");render(elite,"elite");render(legendary,"legendary");
 
-render(starter,"starter");
-render(rising,"rising");
-render(elite,"elite");
-render(legendary,"legendary");
-
-/* Buy NFT */
+// ===== BUY NFT =====
 function buyNFT(price,img,percent){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-
-  const daily = (price * percent) / 100;
-
-  data.push({
-    price: price,
-    img: img,
-    daily: daily,
-    boughtAt: Date.now()
-  });
-
-  localStorage.setItem("myNFTs", JSON.stringify(data));
-
-  updateDashboardSummary(); // 🔥 IMPORTANT LINE
-
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  const daily=(price*percent)/100;
+  data.push({price,img,daily,boughtAt:Date.now()});
+  localStorage.setItem("myNFTs",JSON.stringify(data));
+  updateDashboardSummary();
   alert("NFT Purchased Successfully");
 }
-  function updateDashboardSummary(){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-  let invested = 0;
-  let daily = 0;
 
-  data.forEach(n=>{
-    invested += Number(n.price);
-    daily += Number(n.daily);
-  });
-
-  document.getElementById("totalInvested").innerText =
-    "$" + invested.toFixed(2);
-
-  document.getElementById("dailyIncome").innerText =
-    "$" + daily.toFixed(2);
+// ===== SUMMARY =====
+function updateDashboardSummary(){
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  let invested=0,daily=0;
+  data.forEach(n=>{invested+=n.price;daily+=n.daily;});
+  totalInvested.innerText="$"+invested.toFixed(2);
+  dailyIncome.innerText="$"+daily.toFixed(4);
 }
-
 updateDashboardSummary();
+setInterval(updateDashboardSummary,1000);
 
-/* Tabs */
+// ===== TABS =====
 function showTab(id,btn){
   document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
@@ -226,25 +123,15 @@ function showTab(id,btn){
   btn.classList.add("active");
 }
 
-/* Calculator */
-function openCalc(){
-  document.getElementById("calcPopup").style.display="block";
-}
-function closeCalc(){
-  document.getElementById("calcPopup").style.display="none";
-}
+// ===== CALCULATOR =====
+function openCalc(){calcPopup.style.display="block"}
+function closeCalc(){calcPopup.style.display="none"}
 
-const all=[...starter,...rising,...elite,...legendary];
-const list=document.getElementById("calcList");
-all.forEach(n=>{
-  const daily=(n[0]*n[2])/100;
-  list.innerHTML+=`
-  <div style="border-bottom:1px solid #1e293b;padding:6px 0">
-    $${n[0]} → Daily $${daily.toFixed(2)} → 365 Days $${(daily*365).toFixed(2)}
-  </div>`;
+[...starter,...rising,...elite,...legendary].forEach(n=>{
+  const d=(n[0]*n[2])/100;
+  calcList.innerHTML+=`<div>$${n[0]} → Daily $${d.toFixed(2)} → 365d $${(d*365).toFixed(2)}</div>`;
 });
 </script>
 
-  
 </body>
 </html>
