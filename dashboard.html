@@ -33,15 +33,20 @@ header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;border-bottom
 
 <div class="top">
 
-  <!-- AUTO NFT CALCULATOR -->
-<div style="margin:15px;padding:15px;background:#0f172a;border-radius:12px">
-  <h3 style="margin:0 0 10px 0;color:#38bdf8;text-align:center">
-    📊 NFT Income Calculator (Auto)
-  </h3>
-
-  <div id="autoCalculator" style="font-size:13px;color:#cbd5f5;line-height:1.6"></div>
+  <div style="text-align:center;margin:15px">
+  <button onclick="openCalculator()"
+    style="
+      padding:12px 22px;
+      border-radius:10px;
+      border:none;
+      background:#38bdf8;
+      color:#00263a;
+      font-weight:bold;
+      font-size:15px;
+    ">
+    📊 Open NFT Calculator
+  </button>
 </div>
-
 <div class="tabs">
   <button class="active" onclick="showTab('starter',this)">Starter</button>
   <button onclick="showTab('rising',this)">Rising</button>
@@ -88,6 +93,22 @@ function render(list,id){
         365 Days: $${(n[2]*365).toFixed(2)}
       </div>
       <button onclick="buyNFT(${n[0]},'images/${n[1]}',${n[2]})">Buy NFT</button>
+      <div id="calculatorTab"
+  style="
+    display:none;
+    margin:15px;
+    padding:15px;
+    background:#0f172a;
+    border-radius:12px;
+  ">
+  <h3 style="margin:0 0 10px;color:#38bdf8;text-align:center">
+    NFT Income Calculator
+  </h3>
+
+  <div id="calcList"
+    style="font-size:13px;color:#cbd5f5;line-height:1.6">
+  </div>
+</div>
     </div>`;
   });
 }
@@ -124,6 +145,11 @@ document.getElementById("calcAmount").oninput=function(){
 </script>
 
   <script>
+function openCalculator(){
+  const tab = document.getElementById("calculatorTab");
+  tab.style.display = tab.style.display === "none" ? "block" : "none";
+}
+
 const allNFTs = [
   ...starter,
   ...rising,
@@ -131,27 +157,24 @@ const allNFTs = [
   ...legendary
 ];
 
-const calcBox = document.getElementById("autoCalculator");
+const list = document.getElementById("calcList");
 
 allNFTs.forEach(n => {
-  const price = n[0];
-  const dailyPercent = n[2];
-  const dailyIncome = n[3];
-  const total365 = dailyIncome * 365;
+  const price = Number(n[0]);
+  const percent = Number(n[2]);
 
-  calcBox.innerHTML += `
-    <div style="
-      border-bottom:1px solid #1e293b;
-      padding:6px 0
-    ">
+  const dailyIncome = (price * percent) / 100;
+  const yearly = dailyIncome * 365;
+
+  list.innerHTML += `
+    <div style="border-bottom:1px solid #1e293b;padding:6px 0">
       <b>$${price}</b> →
-      Daily ${dailyPercent}% |
-      Income <b>$${dailyIncome}</b> |
-      365 Days: <b>$${total365.toFixed(2)}</b>
+      Daily ${percent}% |
+      Income <b>$${dailyIncome.toFixed(2)}</b> |
+      365 Days: <b>$${yearly.toFixed(2)}</b>
     </div>
   `;
 });
 </script>
-
 </body>
 </html>
