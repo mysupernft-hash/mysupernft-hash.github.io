@@ -1,155 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Withdraw – SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Withdraw</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#020617;
-  color:white;
-}
-header{
-  text-align:center;
-  padding:15px;
-  font-size:22px;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b;
-}
-.box{
-  background:#0f172a;
-  margin:15px;
-  padding:15px;
-  border-radius:12px;
-}
-input,button{
-  width:100%;
-  padding:10px;
-  margin-top:8px;
-  border-radius:8px;
-  border:none;
-}
-input{background:#020617;color:white;border:1px solid #38bdf8}
-button{
-  background:#38bdf8;
-  color:#020617;
-  font-weight:bold;
-  cursor:pointer;
-}
-.status{
-  margin-top:10px;
-  font-size:13px;
-  color:#cbd5f5;
-}
+body{margin:0;font-family:Arial;background:#020617;color:#fff}
+header{text-align:center;padding:15px;color:#38bdf8}
+.box{background:#0f172a;margin:12px;padding:12px;border-radius:12px}
+input,button{width:100%;padding:8px;margin-top:6px}
+button{background:#38bdf8;border:none}
 </style>
 </head>
 
 <body>
 
-<header>💸 Withdraw</header>
+<header>Withdraw</header>
 
 <div class="box">
-  💰 Available Balance<br>
-  <h2 id="balance">$0.0000</h2>
+Balance: <b id="bal">$0</b>
 </div>
 
 <div class="box">
-  <label>Withdraw Amount ($)</label>
-  <input id="amount" type="number" placeholder="Minimum $10">
-
-  <label>Wallet Address</label>
-  <input id="wallet" placeholder="USDT / TRC20 Address">
-
-  <button onclick="requestWithdraw()">Submit Withdraw</button>
-
-  <div class="status" id="msg"></div>
-</div>
-
-<div class="box">
-  <h3>📜 My Withdraw Requests</h3>
-  <div id="list"></div>
+<input id="amt" type="number" placeholder="Amount">
+<input id="wal" placeholder="Wallet Address">
+<button onclick="req()">Withdraw</button>
+<div id="msg"></div>
 </div>
 
 <script>
-/* SETTINGS */
-const MIN_WITHDRAW = 10;
-const WITHDRAW_FEE = 0.05; // 5%
+function liveBal(){
+  const d=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  let l=0;
+  d.forEach(n=>l+=((Date.now()-n.boughtAt)/1000)*(n.daily/86400));
+  return Math.max(l-(Number(localStorage.getItem("withdrawedTotal"))||0),0);
+}
+setInterval(()=>bal.innerText="$"+liveBal().toFixed(4),1000);
 
-/* CALCULATE LIVE BALANCE */
-function getLiveBalance(){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-  let live = 0;
-  data.forEach(n=>{
-    const sec = (Date.now() - n.boughtAt)/1000;
-    live += sec * (n.daily/86400);
+function req(){
+  const a=Number(amt.value);
+  if(a<10||a>liveBal()) return msg.innerText="Invalid";
+  const r=JSON.parse(localStorage.getItem("withdrawRequests"))||[];
+  r.push({
+    amount:a,
+    fee:a*0.05,
+    final:a*0.95,
+    status:"Pending",
+    time:new Date().toLocaleString()
   });
-  return live;
+  localStorage.setItem("withdrawRequests",JSON.stringify(r));
+  msg.innerText="Request Sent";
 }
-
-/* SHOW BALANCE */
-function updateBalance(){
-  balance.innerText = "$" + getLiveBalance().toFixed(4);
-}
-setInterval(updateBalance,1000);
-updateBalance();
-
-/* REQUEST WITHDRAW */
-function requestWithdraw(){
-  const amt = Number(amount.value);
-  const wallet = wallet.value.trim();
-  const balance = getLiveBalance();
-
-  if(!wallet) return msg.innerText="❌ Wallet required";
-  if(amt < MIN_WITHDRAW) return msg.innerText="❌ Minimum $10";
-  if(amt > balance) return msg.innerText="❌ Insufficient balance";
-
-  const fee = amt * WITHDRAW_FEE;
-  const finalAmt = amt - fee;
-
-  const requests = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
-
-  requests.push({
-    amount: amt,
-    fee: fee,
-    final: finalAmt,
-    wallet: wallet,
-    status: "Pending",
-    time: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("withdrawRequests",JSON.stringify(requests));
-
-  msg.innerText = "✅ Withdraw request submitted";
-  amount.value="";
-  wallet.value="";
-  renderList();
-}
-
-/* SHOW REQUESTS */
-function renderList(){
-  const box = document.getElementById("list");
-  const requests = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
-  box.innerHTML="";
-
-  if(requests.length===0){
-    box.innerHTML="<p>No requests yet</p>";
-    return;
-  }
-
-  requests.forEach(r=>{
-    box.innerHTML+=`
-      <div style="border-bottom:1px solid #1e293b;padding:6px 0">
-        $${r.amount} → ${r.status}<br>
-        Fee: $${r.fee.toFixed(2)} | Final: $${r.final.toFixed(2)}
-      </div>
-    `;
-  });
-}
-renderList();
 </script>
-
 </body>
 </html>
