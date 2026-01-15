@@ -1,63 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SuperNFT Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:#fff}
-header{text-align:center;padding:15px;color:#facc15}
-table{width:100%;font-size:13px}
-td,th{padding:6px;border-bottom:1px solid #1e293b}
-button{padding:4px 8px}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#020617;
+  color:#fff;
+}
+header{
+  padding:16px;
+  text-align:center;
+  font-size:22px;
+  font-weight:bold;
+  color:#facc15;
+  border-bottom:1px solid #1e293b;
+}
+.container{
+  max-width:420px;
+  margin:40px auto;
+  background:#0f172a;
+  padding:22px;
+  border-radius:16px;
+  box-shadow:0 0 30px rgba(0,0,0,.5);
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  border-radius:10px;
+  border:none;
+  font-size:15px;
+}
+input{
+  background:#020617;
+  color:#fff;
+  border:1px solid #1e293b;
+}
+button{
+  background:#facc15;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{opacity:.9}
+
+.box{
+  background:#020617;
+  margin-top:14px;
+  padding:14px;
+  border-radius:12px;
+  text-align:center;
+}
+.box b{
+  font-size:18px;
+  color:#38bdf8;
+}
+.danger{
+  background:#ef4444;
+  color:#000;
+}
+.small{
+  font-size:13px;
+  opacity:.8;
+  margin-top:8px;
+}
 </style>
 </head>
 
 <body>
 
-<header>Admin Panel</header>
+<header>🛡 SuperNFT Admin Panel</header>
 
-<table>
-<tr><th>Amount</th><th>Status</th><th>Action</th></tr>
-<tbody id="t"></tbody>
-</table>
+<!-- 🔐 LOGIN -->
+<div id="loginBox" class="container">
+  <h3>Admin Security Lock</h3>
+  <input type="password" id="adminPin" placeholder="Enter Admin PIN">
+  <button onclick="unlockAdmin()">Unlock Admin Panel</button>
+  <p class="small">Authorized access only</p>
+</div>
+
+<!-- 🧠 ADMIN DASHBOARD -->
+<div id="panel" class="container" style="display:none">
+
+  <div class="box">
+    👥 Total NFT Purchases<br>
+    <b id="totalUsers">0</b>
+  </div>
+
+  <div class="box">
+    💰 Total Invested Amount<br>
+    <b id="totalInvested">$0</b>
+  </div>
+
+  <div class="box">
+    📈 Total Daily Payout<br>
+    <b id="totalDaily">$0</b>
+  </div>
+
+  <button class="danger" onclick="resetSystem()">
+    ⚠ Reset All User Data
+  </button>
+
+  <p class="small">
+    Reset will remove all NFTs, earnings & users.
+  </p>
+</div>
 
 <script>
-if(localStorage.getItem("isAdmin")!=="true"){
-  alert("Denied");location.href="dashboard.html";
+/* ===============================
+   ADMIN CONFIG
+================================ */
+const ADMIN_PIN = "7860";
+
+/* ===============================
+   BLOCK DIRECT ACCESS
+================================ */
+sessionStorage.removeItem("adminSession");
+
+/* ===============================
+   UNLOCK ADMIN
+================================ */
+function unlockAdmin(){
+  const pin = document.getElementById("adminPin").value;
+
+  if(pin === ADMIN_PIN){
+    sessionStorage.setItem("adminSession","active");
+    openPanel();
+  }else{
+    alert("❌ Wrong PIN");
+  }
 }
 
-function load(){
-  const d=JSON.parse(localStorage.getItem("withdrawRequests"))||[];
-  t.innerHTML="";
-  d.forEach((r,i)=>{
-    t.innerHTML+=`
-    <tr>
-      <td>$${r.amount}</td>
-      <td>${r.status}</td>
-      <td>
-        <button onclick="ap(${i})">Approve</button>
-        <button onclick="re(${i})">Reject</button>
-      </td>
-    </tr>`;
+/* ===============================
+   OPEN PANEL
+================================ */
+function openPanel(){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("panel").style.display="block";
+  loadStats();
+}
+
+/* ===============================
+   LOAD STATS
+================================ */
+function loadStats(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let invested = 0;
+  let daily = 0;
+
+  data.forEach(n=>{
+    invested += Number(n.price);
+    daily += Number(n.daily);
   });
+
+  document.getElementById("totalUsers").innerText = data.length;
+  document.getElementById("totalInvested").innerText = "$" + invested.toFixed(2);
+  document.getElementById("totalDaily").innerText = "$" + daily.toFixed(2);
 }
-function ap(i){
-  const d=JSON.parse(localStorage.getItem("withdrawRequests"));
-  if(d[i].status!=="Pending")return;
-  d[i].status="Approved";
-  localStorage.setItem("withdrawedTotal",
-   (Number(localStorage.getItem("withdrawedTotal"))||0)+d[i].amount);
-  localStorage.setItem("withdrawRequests",JSON.stringify(d));
-  load();
+
+/* ===============================
+   RESET SYSTEM
+================================ */
+function resetSystem(){
+  if(confirm("Are you sure? This will delete ALL user data.")){
+    localStorage.removeItem("myNFTs");
+    alert("✅ System reset successfully");
+    loadStats();
+  }
 }
-function re(i){
-  const d=JSON.parse(localStorage.getItem("withdrawRequests"));
-  d[i].status="Rejected";
-  localStorage.setItem("withdrawRequests",JSON.stringify(d));
-  load();
-}
-load();
 </script>
+
 </body>
 </html>
