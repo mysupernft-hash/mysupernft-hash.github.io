@@ -182,15 +182,41 @@ render(legendary,"legendary");
 
 /* Buy NFT */
 function buyNFT(price,img,percent){
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+
+  const daily = (price * percent) / 100;
+
   data.push({
-    price, img, percent,
-    daily:(price*percent)/100,
-    boughtAt:Date.now()
+    price: price,
+    img: img,
+    daily: daily,
+    boughtAt: Date.now()
   });
-  localStorage.setItem("myNFTs",JSON.stringify(data));
+
+  localStorage.setItem("myNFTs", JSON.stringify(data));
+
+  updateDashboardSummary(); // 🔥 IMPORTANT LINE
+
   alert("NFT Purchased Successfully");
 }
+  function updateDashboardSummary(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let invested = 0;
+  let daily = 0;
+
+  data.forEach(n=>{
+    invested += Number(n.price);
+    daily += Number(n.daily);
+  });
+
+  document.getElementById("totalInvested").innerText =
+    "$" + invested.toFixed(2);
+
+  document.getElementById("dailyIncome").innerText =
+    "$" + daily.toFixed(2);
+}
+
+updateDashboardSummary();
 
 /* Tabs */
 function showTab(id,btn){
