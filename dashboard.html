@@ -233,6 +233,68 @@ function autoDailyCredit(){
 /* RUN ON LOAD */
 autoDailyCredit();
 </script>
+
+  <script>
+/* ===============================
+   LEVEL INCOME SYSTEM
+================================ */
+
+/*
+LEVEL STRUCTURE
+Level 1 → 5%
+Level 2 → 3%
+Level 3 → 2%
+*/
+
+const levelPercent = [0.05, 0.03, 0.02];
+
+/* INIT STORAGE */
+if(!localStorage.getItem("team")){
+  localStorage.setItem("team", JSON.stringify([]));
+}
+if(!localStorage.getItem("levelIncome")){
+  localStorage.setItem("levelIncome","0");
+}
+
+/* ADD TEAM MEMBER (ON SIGNUP) */
+function addReferral(userId){
+  const team = JSON.parse(localStorage.getItem("team"));
+  team.push({
+    id:userId,
+    joinedAt:Date.now()
+  });
+  localStorage.setItem("team", JSON.stringify(team));
+}
+
+/* LEVEL INCOME CREDIT */
+function creditLevelIncome(amount){
+  const team = JSON.parse(localStorage.getItem("team"));
+  let wallet = Number(localStorage.getItem("walletBalance") || 0);
+  let levelIncome = Number(localStorage.getItem("levelIncome") || 0);
+  const history = JSON.parse(localStorage.getItem("walletHistory")) || [];
+
+  team.forEach((member,index)=>{
+    if(index < 3){
+      const income = amount * levelPercent[index];
+      wallet += income;
+      levelIncome += income;
+
+      history.push({
+        type:`Level ${index+1} Income`,
+        amount: income.toFixed(2),
+        time: new Date().toLocaleString()
+      });
+    }
+  });
+
+  localStorage.setItem("walletBalance", wallet);
+  localStorage.setItem("levelIncome", levelIncome);
+  localStorage.setItem("walletHistory", JSON.stringify(history));
+}
+
+/* CALL THIS WHEN USER BUYS NFT */
+// creditLevelIncome(100); // example
+</script>
   
 </body>
 </html>
