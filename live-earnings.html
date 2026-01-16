@@ -1,73 +1,166 @@
-<!-- live-earnings.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Live Earnings – SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{margin:0;font-family:Arial;background:#020617;color:#fff}
-header{position:fixed;top:0;left:0;right:0;background:#020617;
-border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
-.main{padding:80px 15px}
-.back{color:#38bdf8;text-decoration:none;display:inline-block;margin-bottom:10px}
 
-.earn-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:12px}
-.earn-title{color:#38bdf8;font-weight:bold;margin-bottom:6px}
-.earn-value{font-size:18px;margin-top:4px}
+<style>
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#020617;
+  color:#fff;
+}
+header{
+  position:sticky;
+  top:0;
+  background:#0f172a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.container{
+  padding:18px;
+}
+.stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.box{
+  background:#0f172a;
+  padding:14px;
+  border-radius:14px;
+  text-align:center;
+}
+.box b{
+  display:block;
+  margin-top:6px;
+  font-size:18px;
+  color:#22c55e;
+}
+.card{
+  background:#0f172a;
+  padding:16px;
+  border-radius:16px;
+  margin-top:15px;
+}
+canvas{
+  width:100%;
+  height:160px;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px dashed #1e293b;
+  font-size:14px;
+}
+.row:last-child{border:none;}
+.back{
+  display:block;
+  margin:20px 0;
+  text-align:center;
+  color:#38bdf8;
+  text-decoration:none;
+}
 </style>
 </head>
 
 <body>
-<header>⚡ Live Earnings</header>
-<div class="main">
-<a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
 
-<div id="earningsContainer"></div>
+<header>⚡ Live Earnings</header>
+
+<div class="container">
+
+  <!-- TOP STATS -->
+  <div class="stats">
+    <div class="box">
+      Total Earnings
+      <b id="totalEarn">$0.0000</b>
+    </div>
+    <div class="box">
+      Today Earnings
+      <b id="todayEarn">$0.0000</b>
+    </div>
+  </div>
+
+  <!-- LIVE COUNTER -->
+  <div class="card">
+    <h3>🔴 Live Counter</h3>
+    <b style="font-size:22px;color:#38bdf8" id="liveEarn">$0.0000</b>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <h3>📈 Earnings Chart (Today)</h3>
+    <canvas id="chart"></canvas>
+  </div>
+
+  <!-- NFT BREAKDOWN -->
+  <div class="card">
+    <h3>🧩 NFT Earnings</h3>
+    <div id="nftList"></div>
+  </div>
+
+  <a class="back" href="dashboard.html">← Back to Dashboard</a>
+
 </div>
 
 <script>
-// Load NFTs from localStorage
-const nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
+/* ===== LOAD NFT DATA ===== */
+let nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
+let total=0, today=0, live=0;
 
-const container = document.getElementById("earningsContainer");
-
-function renderEarnings(){
-  container.innerHTML="";
-  let totalDaily = 0;
-  let totalLive = 0;
-  const now = Date.now();
-
-  nfts.forEach((n,i)=>{
-    const seconds = (now - n.boughtAt)/1000;
-    const live = seconds*(n.daily/86400);
-    totalDaily += n.daily;
-    totalLive += live;
-
-    container.innerHTML += `
-      <div class="earn-box">
-        <div class="earn-title">NFT ${i+1}</div>
-        <div>Daily: $${n.daily.toFixed(2)}</div>
-        <div class="earn-value">Live: $${live.toFixed(4)}</div>
-      </div>
-    `;
+/* ===== CALCULATE ===== */
+function calculate(){
+  total=0; today=0; live=0;
+  let now=Date.now();
+  nfts.forEach(n=>{
+    let sec=(now-n.boughtAt)/1000;
+    let earn=sec*(n.daily/86400);
+    total+=earn;
+    live+=earn;
+    if(sec<86400) today+=earn;
   });
-
-  // Total earnings
-  container.innerHTML += `
-    <div class="earn-box">
-      <div class="earn-title">Total Daily Income</div>
-      <div class="earn-value">$${totalDaily.toFixed(2)}</div>
-    </div>
-    <div class="earn-box">
-      <div class="earn-title">Total Live Earnings</div>
-      <div class="earn-value">$${totalLive.toFixed(4)}</div>
-    </div>
-  `;
+  totalEarn.innerText="$"+total.toFixed(4);
+  todayEarn.innerText="$"+today.toFixed(4);
+  liveEarn.innerText="$"+live.toFixed(4);
 }
+setInterval(calculate,1000);
 
-renderEarnings();
-setInterval(renderEarnings,1000);
+/* ===== NFT LIST ===== */
+function renderNFT(){
+  let html="";
+  nfts.forEach((n,i)=>{
+    html+=`
+      <div class="row">
+        <span>NFT #${i+1} ($${n.price})</span>
+        <b>$${n.daily.toFixed(2)}/day</b>
+      </div>`;
+  });
+  nftList.innerHTML=html || "No NFTs purchased";
+}
+renderNFT();
+
+/* ===== SIMPLE CHART ===== */
+let ctx=document.getElementById("chart").getContext("2d");
+function drawChart(){
+  ctx.clearRect(0,0,300,160);
+  ctx.strokeStyle="#38bdf8";
+  ctx.beginPath();
+  ctx.moveTo(0,160);
+  let points=[10,20,30,45,60,75,90];
+  points.forEach((p,i)=>{
+    ctx.lineTo(i*45,160-p);
+  });
+  ctx.stroke();
+}
+drawChart();
 </script>
+
 </body>
 </html>
