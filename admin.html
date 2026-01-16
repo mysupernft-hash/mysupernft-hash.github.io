@@ -3,163 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Admin Panel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
-header{padding:15px;text-align:center;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b;}
-.menu{display:flex;gap:10px;padding:10px;flex-wrap:wrap;justify-content:center;}
-.menu button{padding:10px 18px;border:none;border-radius:10px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
-.section{padding:15px;}
-h2{color:#00e5ff;}
-.card{background:#0f172a;padding:12px;margin:10px;border-radius:12px;}
-.card h3{margin:5px 0;}
-.card p{margin:2px 0;font-size:13px;color:#cbd5f5;}
-#withdrawList div{border-bottom:1px solid #1e293b;padding:8px 0;display:flex;justify-content:space-between;align-items:center;}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#020617;
+  color:white;
+}
+header{
+  position:sticky;
+  top:0;
+  background:#020617;
+  padding:14px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.container{
+  padding:15px;
+  max-width:600px;
+  margin:auto;
+}
+.box{
+  background:#0f172a;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:15px;
+}
+.req{
+  border-bottom:1px solid #1e293b;
+  padding:10px 0;
+}
+button{
+  padding:6px 14px;
+  border:none;
+  border-radius:8px;
+  margin-right:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.approve{background:#22c55e;color:#020617}
+.reject{background:#ef4444;color:white}
+input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  margin-top:10px;
+}
+.hidden{display:none}
 </style>
 </head>
+
 <body>
 
-<header>SuperNFT Admin Panel</header>
+<header>🛡 Admin Panel</header>
 
-<div id="pinSection" class="section">
-  <h2>Enter Admin PIN</h2>
-  <input type="password" id="adminPin" placeholder="Enter PIN" style="padding:8px;border-radius:8px;border:none;margin-right:10px;">
-  <button onclick="checkPin()">Unlock Admin</button>
+<div class="container">
+
+<!-- ADMIN LOGIN -->
+<div class="box" id="loginBox">
+  <b>🔐 Admin PIN</b>
+  <input type="password" id="pin" placeholder="Enter PIN">
+  <button onclick="login()" style="margin-top:10px">Login</button>
 </div>
 
-<div id="adminSection" class="section" style="display:none">
-  <div class="menu">
-    <button onclick="showSection('withdrawSection')">Withdrawals</button>
-    <button onclick="showSection('usersSection')">Users</button>
-    <button onclick="showSection('rankSection')">Rank Bonuses</button>
-    <button onclick="showSection('stakingSection')">Staking</button>
-    <button onclick="showSection('dailyCreditSection')">Daily Credit</button>
-    <button onclick="showSection('teamTreeSection')">Team Tree</button>
-    <button onclick="showSection('graphSection')">Earnings Graph</button>
-    <button onclick="logoutAdmin()">Logout</button>
+<!-- ADMIN PANEL -->
+<div id="adminBox" class="hidden">
+
+  <div class="box">
+    <b>💸 Withdraw Requests</b>
+    <div id="requests"></div>
   </div>
 
-  <div id="withdrawSection" class="card" style="display:none">
-    <h3>Pending Withdrawals</h3>
-    <div id="withdrawList"></div>
+  <div class="box">
+    <button onclick="logout()" style="background:#ef4444;color:white">
+      🔒 Logout Admin
+    </button>
   </div>
 
-  <div id="usersSection" class="card" style="display:none">
-    <h3>All Users & NFTs</h3>
-    <div id="usersList"></div>
-  </div>
-
-  <div id="rankSection" class="card" style="display:none">
-    <h3>Rank Bonuses</h3>
-    <p>Admin can view & assign rank bonuses here.</p>
-  </div>
-
-  <div id="stakingSection" class="card" style="display:none">
-    <h3>Staking Overview</h3>
-    <p>Show all staked NFTs and ROI expiry dates (365 days).</p>
-  </div>
-
-  <div id="dailyCreditSection" class="card" style="display:none">
-    <h3>Auto Daily Credit</h3>
-    <p>Process daily earnings automatically for all users.</p>
-  </div>
-
-  <div id="teamTreeSection" class="card" style="display:none">
-    <h3>Team Referral Tree</h3>
-    <p>Visualize user referrals in tree format.</p>
-  </div>
-
-  <div id="graphSection" class="card" style="display:none">
-    <h3>Earnings Graph</h3>
-    <canvas id="earningsChart" width="400" height="200"></canvas>
-  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</div>
+
 <script>
-function checkPin(){
-  const pin=document.getElementById("adminPin").value;
-  if(pin==="1008"){
+/* ---------- ADMIN LOGIN ---------- */
+const ADMIN_PIN="1008";
+
+function login(){
+  if(document.getElementById("pin").value===ADMIN_PIN){
     sessionStorage.setItem("adminSession","active");
-    document.getElementById("pinSection").style.display="none";
-    document.getElementById("adminSection").style.display="block";
-    loadWithdrawals();
-    loadUsers();
-    renderGraph();
-  } else {
-    alert("Incorrect PIN");
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("adminBox").classList.remove("hidden");
+    loadRequests();
+  }else{
+    alert("Wrong PIN");
   }
 }
 
-function logoutAdmin(){
+function logout(){
   sessionStorage.removeItem("adminSession");
   location.reload();
 }
 
-function showSection(id){
-  const sections=["withdrawSection","usersSection","rankSection","stakingSection","dailyCreditSection","teamTreeSection","graphSection"];
-  sections.forEach(s=>document.getElementById(s).style.display="none");
-  document.getElementById(id).style.display="block";
-}
-
-/* ---------- MOCK DATA ---------- */
-function loadWithdrawals(){
-  const list=document.getElementById("withdrawList");
-  list.innerHTML="";
-  let mock=[
-    {user:"Shivam",amount:100,status:"Pending"},
-    {user:"Ankit",amount:50,status:"Pending"},
-    {user:"Riya",amount:200,status:"Pending"}
-  ];
-  mock.forEach(w=>{
-    const div=document.createElement("div");
-    div.innerHTML=`<span>${w.user} - $${w.amount}</span>
-    <span>
-      <button onclick="approveWithdraw(this)">✅</button>
-      <button onclick="rejectWithdraw(this)">❌</button>
-    </span>`;
-    list.appendChild(div);
-  });
-}
-
-function approveWithdraw(btn){btn.parentElement.parentElement.remove();}
-function rejectWithdraw(btn){btn.parentElement.parentElement.remove();}
-
-function loadUsers(){
-  const list=document.getElementById("usersList");
-  list.innerHTML="";
-  let mockUsers=[
-    {name:"Shivam",nfts:3,dailyIncome:5.5},
-    {name:"Ankit",nfts:2,dailyIncome:3.2},
-    {name:"Riya",nfts:5,dailyIncome:8.1}
-  ];
-  mockUsers.forEach(u=>{
-    const div=document.createElement("div");
-    div.innerHTML=`<b>${u.name}</b> | NFTs: ${u.nfts} | Daily: $${u.dailyIncome.toFixed(2)}`;
-    list.appendChild(div);
-  });
-}
-
-/* ---------- CHART ---------- */
-function renderGraph(){
-  const ctx=document.getElementById("earningsChart").getContext("2d");
-  new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:['Jan','Feb','Mar','Apr','May','Jun'],
-      datasets:[{label:'Daily Income',$backgroundColor:'rgba(0,229,255,0.2)',$borderColor:'#00e5ff',data:[5,10,7,12,9,15]}]
-    },
-    options:{responsive:true,plugins:{legend:{display:true}}}
-  });
-}
-
-/* ---------- ADMIN SESSION ---------- */
+/* ---------- SESSION CHECK ---------- */
 if(sessionStorage.getItem("adminSession")==="active"){
-  document.getElementById("pinSection").style.display="none";
-  document.getElementById("adminSection").style.display="block";
-  loadWithdrawals();
-  loadUsers();
-  renderGraph();
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("adminBox").classList.remove("hidden");
+  loadRequests();
+}
+
+/* ---------- LOAD WITHDRAW REQUESTS ---------- */
+function loadRequests(){
+  const history=JSON.parse(localStorage.getItem("walletHistory"))||[];
+  const box=document.getElementById("requests");
+  box.innerHTML="";
+
+  history.forEach((h,i)=>{
+    if(h.type==="Withdraw (Pending)"){
+      box.innerHTML+=`
+        <div class="req">
+          Amount: $${h.amount}<br>
+          Time: ${h.time}<br><br>
+          <button class="approve" onclick="approve(${i})">Approve</button>
+          <button class="reject" onclick="reject(${i})">Reject</button>
+        </div>
+      `;
+    }
+  });
+
+  if(box.innerHTML===""){
+    box.innerHTML="<small>No pending requests</small>";
+  }
+}
+
+/* ---------- APPROVE ---------- */
+function approve(i){
+  const history=JSON.parse(localStorage.getItem("walletHistory"));
+  history[i].type="Withdraw (Approved)";
+  localStorage.setItem("walletHistory",JSON.stringify(history));
+  loadRequests();
+}
+
+/* ---------- REJECT ---------- */
+function reject(i){
+  const history=JSON.parse(localStorage.getItem("walletHistory"));
+  let bal=Number(localStorage.getItem("walletBalance"));
+  bal+=Number(history[i].amount); // refund
+  localStorage.setItem("walletBalance",bal);
+
+  history[i].type="Withdraw (Rejected)";
+  localStorage.setItem("walletHistory",JSON.stringify(history));
+  loadRequests();
 }
 </script>
 
