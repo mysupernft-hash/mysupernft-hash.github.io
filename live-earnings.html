@@ -11,8 +11,10 @@ header{position:fixed;top:0;left:0;right:0;background:#020617;
 border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
 .main{padding:80px 15px}
 .back{color:#38bdf8;text-decoration:none;display:inline-block;margin-bottom:10px}
-.earn-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:12px;text-align:center}
+
+.earn-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:12px}
 .earn-title{color:#38bdf8;font-weight:bold;margin-bottom:6px}
+.earn-value{font-size:18px;margin-top:4px}
 </style>
 </head>
 
@@ -21,62 +23,51 @@ border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;fon
 <div class="main">
 <a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
 
-<div class="earn-box">
-  <div class="earn-title">Total Invested</div>
-  <div id="totalInvested">$0.00</div>
-</div>
-
-<div class="earn-box">
-  <div class="earn-title">Daily Income</div>
-  <div id="dailyIncome">$0.00</div>
-</div>
-
-<div class="earn-box">
-  <div class="earn-title">Live Earnings</div>
-  <div id="liveEarnings">$0.0000</div>
-</div>
-
-<div class="earn-box">
-  <div class="earn-title">ROI Expiry</div>
-  <div id="roiExpiry">365 Days</div>
-</div>
-
-<div class="earn-box">
-  <div class="earn-title">Level Income</div>
-  <div id="levelIncome">$0.00</div>
-</div>
-
-<div class="earn-box">
-  <div class="earn-title">Staking Rewards</div>
-  <div id="stakingIncome">$0.00</div>
-</div>
+<div id="earningsContainer"></div>
 </div>
 
 <script>
-// Example: fetching NFT data from localStorage
-const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+// Load NFTs from localStorage
+const nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
 
-// Update summary
-function updateEarnings(){
-  let invested=0,daily=0,live=0,level=0,staking=0;
-  data.forEach(n=>{
-    invested+=n.price;
-    daily+=n.daily;
-    // Live earnings per second
-    const sec=(Date.now()-n.boughtAt)/1000;
-    live+=sec*(n.daily/86400);
-    level+=n.daily*0.1; // example level income 10%
-    staking+=n.daily*0.05; // example staking 5%
+const container = document.getElementById("earningsContainer");
+
+function renderEarnings(){
+  container.innerHTML="";
+  let totalDaily = 0;
+  let totalLive = 0;
+  const now = Date.now();
+
+  nfts.forEach((n,i)=>{
+    const seconds = (now - n.boughtAt)/1000;
+    const live = seconds*(n.daily/86400);
+    totalDaily += n.daily;
+    totalLive += live;
+
+    container.innerHTML += `
+      <div class="earn-box">
+        <div class="earn-title">NFT ${i+1}</div>
+        <div>Daily: $${n.daily.toFixed(2)}</div>
+        <div class="earn-value">Live: $${live.toFixed(4)}</div>
+      </div>
+    `;
   });
-  document.getElementById("totalInvested").innerText="$"+invested.toFixed(2);
-  document.getElementById("dailyIncome").innerText="$"+daily.toFixed(2);
-  document.getElementById("liveEarnings").innerText="$"+live.toFixed(4);
-  document.getElementById("levelIncome").innerText="$"+level.toFixed(2);
-  document.getElementById("stakingIncome").innerText="$"+staking.toFixed(2);
+
+  // Total earnings
+  container.innerHTML += `
+    <div class="earn-box">
+      <div class="earn-title">Total Daily Income</div>
+      <div class="earn-value">$${totalDaily.toFixed(2)}</div>
+    </div>
+    <div class="earn-box">
+      <div class="earn-title">Total Live Earnings</div>
+      <div class="earn-value">$${totalLive.toFixed(4)}</div>
+    </div>
+  `;
 }
 
-setInterval(updateEarnings,1000);
-updateEarnings();
+renderEarnings();
+setInterval(renderEarnings,1000);
 </script>
 </body>
 </html>
