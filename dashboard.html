@@ -5,45 +5,193 @@
 <title>SuperNFT Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- ====== STYLES ====== -->
 <style>
 body{
-  margin:0;font-family:Arial,sans-serif;background:#020617;color:white;overflow-x:hidden;
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#020617;
+  color:white;
+  overflow-x:hidden;
 }
-/* HEADER */
-header{
-  position:sticky;top:0;background:#0a192f;z-index:1000;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;
-}
-header .logo{color:#38bdf8;font-size:22px;font-weight:bold;}
-header .walletBalance{color:#00e5ff;font-weight:bold;font-size:16px;}
-.menu-icon{font-size:24px;cursor:pointer;}
 
-/* MENU OVERLAY */
-#menuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;z-index:999;}
-#menuContent{background:#0f172a;width:250px;height:100%;padding:20px;display:flex;flex-direction:column;}
-#menuContent a{color:#38bdf8;text-decoration:none;padding:10px 0;font-size:16px;}
+/* ---------- HEADER ---------- */
+header{
+  position:sticky;
+  top:0;
+  background:#0a192f;
+  z-index:1000;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #1e293b;
+}
+header .logo{
+  font-size:22px;
+  font-weight:bold;
+  color:#38bdf8;
+}
+header .walletBalance{
+  font-size:16px;
+  color:#00e5ff;
+}
+.menu-icon{
+  font-size:24px;
+  cursor:pointer;
+}
+
+/* ---------- MENU OVERLAY ---------- */
+#menuOverlay{
+  position:fixed; top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  z-index:999;
+}
+#menuContent{
+  background:#0f172a;
+  width:250px;
+  height:100%;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+#menuContent a{
+  color:#38bdf8;
+  text-decoration:none;
+  padding:10px 0;
+  font-size:16px;
+}
 #menuContent a:hover{color:#00e5ff;}
 
-/* SUMMARY BOXES */
-.summary{display:flex;flex-wrap:wrap;justify-content:space-around;margin:15px;gap:10px;}
-.summary .box{background:#0f172a;padding:12px 18px;border-radius:12px;text-align:center;min-width:140px;cursor:pointer;}
+/* ---------- SUMMARY BOXES ---------- */
+.summary{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-around;
+  gap:10px;
+  margin:15px;
+}
+.summary .box{
+  background:#0f172a;
+  padding:15px;
+  border-radius:12px;
+  text-align:center;
+  min-width:140px;
+  cursor:pointer;
+}
 .summary .box:hover{background:#1e293b;}
+.summary .box b{display:block;margin-top:5px;color:#00e5ff;font-weight:bold;font-size:18px;}
 
-/* REFERRAL */
-.referral{display:flex;align-items:center;justify-content:center;margin:10px;gap:10px;}
-.referral input{width:70%;padding:6px;border-radius:6px;border:none;background:#0f172a;color:white;}
-.referral button{padding:6px 10px;border:none;border-radius:6px;background:#38bdf8;color:#020617;cursor:pointer;}
+/* ---------- REFERRAL ---------- */
+.referral{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:10px;
+  gap:10px;
+}
+.referral input{
+  width:70%;
+  padding:6px;
+  border-radius:6px;
+  border:none;
+  background:#0f172a;
+  color:white;
+}
+.referral button{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  background:#38bdf8;
+  color:#020617;
+  cursor:pointer;
+}
 
-/* NFT TABS */
-.tabs{display:flex;gap:10px;overflow-x:auto;padding:10px;margin:10px;}
-.tabs button{padding:8px 14px;border-radius:20px;border:1px solid #38bdf8;background:#0f172a;color:#38bdf8;cursor:pointer;}
-.tabs button.active{background:#38bdf8;color:#020617;}
+/* ---------- TABS ---------- */
+.tabs{
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding:10px;
+  margin:10px;
+}
+.tabs button{
+  padding:8px 14px;
+  border-radius:20px;
+  border:1px solid #38bdf8;
+  background:#0f172a;
+  color:#38bdf8;
+  cursor:pointer;
+}
+.tabs button.active{
+  background:#38bdf8;
+  color:#020617;
+}
 
-/* NFT GRID */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px;}
-.card{background:#0f172a;border-radius:16px;padding:10px;text-align:center;}
-.card img{width:100%;border-radius:12px;cursor:pointer;}
-.card button{width:100%;margin-top:8px;padding:8px;border:none;border-radius:10px;background:#38bdf8;font-weight:bold;cursor:pointer;}
+/* ---------- NFT GRID ---------- */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:15px;
+  padding:15px;
+}
+.card{
+  background:#0f172a;
+  border-radius:16px;
+  padding:10px;
+  text-align:center;
+}
+.card img{
+  width:100%;
+  border-radius:12px;
+  cursor:pointer;
+}
+.card button{
+  width:100%;
+  margin-top:8px;
+  padding:8px;
+  border:none;
+  border-radius:10px;
+  background:#38bdf8;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* ---------- MODAL ---------- */
+#nftModal{
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.7);
+  justify-content:center;
+  align-items:center;
+  z-index:2000;
+}
+#nftModal .modal-content{
+  background:#111827;
+  padding:20px;
+  border-radius:12px;
+  max-width:400px;
+  width:90%;
+  text-align:center;
+}
+#nftModal img{
+  width:80%;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+#nftModal button{
+  margin-top:10px;
+  padding:8px 16px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -57,12 +205,13 @@ header .walletBalance{color:#00e5ff;font-weight:bold;font-size:16px;}
 <!-- MENU -->
 <div id="menuOverlay" onclick="closeMenu(event)">
   <div id="menuContent" onclick="event.stopPropagation()">
-    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="account.html">👤 My Account</a>
     <a href="my-investments.html">📁 My Investments</a>
     <a href="wallet.html">💳 Wallet</a>
     <a href="deposit.html">💵 Deposit</a>
     <a href="withdraw.html">💸 Withdraw</a>
     <a href="live-earnings.html">💹 Live Earnings</a>
+    <a href="admin.html">🛡 Admin</a>
     <a href="my-team.html">👥 My Team</a>
     <a href="my-level.html">📊 My Level</a>
     <a href="calculator.html">📈 Calculator</a>
@@ -106,25 +255,29 @@ header .walletBalance{color:#00e5ff;font-weight:bold;font-size:16px;}
 <!-- NFT GRID -->
 <div id="nftGrid" class="grid"></div>
 
-<script>
-// ===== LOGIN CHECK =====
-if(localStorage.getItem("loggedIn") !== "true"){
-  alert("Please login first!");
-  window.location.href = "index.html";
-}
+<!-- NFT MODAL -->
+<div id="nftModal">
+  <div class="modal-content">
+    <img id="modalImg">
+    <div id="modalPrice"></div>
+    <div id="modalDaily"></div>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
 
-// ===== MENU =====
+<script>
+/* ---------- MENU ---------- */
 function openMenu(){ document.getElementById("menuOverlay").style.display="block"; }
 function closeMenu(e){ document.getElementById("menuOverlay").style.display="none"; }
 
-// ===== REFERRAL =====
+/* ---------- REFERRAL ---------- */
 if(!localStorage.getItem("refCode")){
   localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
 }
 document.getElementById("refLink").value = location.origin + "/index.html?ref=" + localStorage.getItem("refCode");
 function copyRef(){ navigator.clipboard.writeText(refLink.value); alert("Referral copied"); }
 
-// ===== NFT DATA =====
+/* ---------- NFT DATA ---------- */
 const NFTS=[
 {cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
 {cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -163,25 +316,24 @@ function renderNFT(cat="all"){
   grid.innerHTML="";
   NFTS.filter(n=>cat==="all"||n.cat===cat).forEach(n=>{
     const daily=(n.price*n.p)/100;
-    grid.innerHTML+=`
-      <div class="card">
-        <img src="${n.img}" onclick="alert('NFT Details:\\nPrice: $${n.price}\\nDaily: $${daily.toFixed(2)}')">
-        <div class="price">$${n.price}</div>
-        <div class="meta">Daily $${daily.toFixed(2)}</div>
-        <button onclick="buyNFT(${n.price},${daily})">Buy NFT</button>
-      </div>`;
+    const card=document.createElement("div");
+    card.className="card";
+    card.innerHTML=`
+      <img src="${n.img}" onclick="openModal('${n.img}',${n.price},${daily})">
+      <div class="price">$${n.price}</div>
+      <div class="meta">Daily $${daily.toFixed(2)}</div>
+      <button onclick="buyNFT(${n.price},${daily})">Buy NFT</button>`;
+    grid.appendChild(card);
   });
 }
 renderNFT();
 
-// NFT FILTER
 function filterNFT(cat,btn){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   renderNFT(cat);
 }
 
-// BUY NFT
 function buyNFT(price,daily){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   data.push({price,daily,boughtAt:Date.now()});
@@ -189,7 +341,6 @@ function buyNFT(price,daily){
   alert("NFT Purchased Successfully");
 }
 
-// DASHBOARD SUMMARY
 function updateSummary(){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   let invested=0,daily=0,live=0,wallet=0;
@@ -208,13 +359,19 @@ function updateSummary(){
 }
 setInterval(updateSummary,1000);
 
-// LOGOUT
+const nftModal=document.getElementById("nftModal");
+function openModal(img,price,daily){
+  document.getElementById("modalImg").src=img;
+  document.getElementById("modalPrice").innerText="Price: $"+price;
+  document.getElementById("modalDaily").innerText="Daily: $"+daily.toFixed(2);
+  nftModal.style.display="flex";
+}
+function closeModal(){ nftModal.style.display="none"; }
+
 function logout(){
-  localStorage.setItem("loggedIn","false");
   alert("Logged out successfully!");
   window.location.href="index.html";
 }
 </script>
-
 </body>
 </html>
