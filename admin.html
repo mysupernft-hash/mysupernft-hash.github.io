@@ -4,161 +4,117 @@
 <meta charset="UTF-8">
 <title>SuperNFT Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:white;
-}
-header{
-  position:sticky;
-  top:0;
-  background:#020617;
-  padding:14px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b;
-}
-.container{
-  padding:15px;
-  max-width:600px;
-  margin:auto;
-}
-.box{
-  background:#0f172a;
-  border-radius:14px;
-  padding:15px;
-  margin-bottom:15px;
-}
-.req{
-  border-bottom:1px solid #1e293b;
-  padding:10px 0;
-}
-button{
-  padding:6px 14px;
-  border:none;
-  border-radius:8px;
-  margin-right:8px;
-  cursor:pointer;
-  font-weight:bold;
-}
-.approve{background:#22c55e;color:#020617}
-.reject{background:#ef4444;color:white}
-input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  margin-top:10px;
-}
-.hidden{display:none}
+body{margin:0;font-family:Arial;background:#020617;color:white}
+header{padding:15px;text-align:center;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b}
+.box{background:#0f172a;padding:12px;margin:12px;border-radius:12px}
+button{padding:8px 12px;margin-top:6px;border:none;border-radius:8px;background:#38bdf8;color:#020617;cursor:pointer}
 </style>
 </head>
-
 <body>
 
-<header>🛡 Admin Panel</header>
+<header>🛡 SuperNFT Admin Panel</header>
 
-<div class="container">
-
-<!-- ADMIN LOGIN -->
-<div class="box" id="loginBox">
-  <b>🔐 Admin PIN</b>
-  <input type="password" id="pin" placeholder="Enter PIN">
-  <button onclick="login()" style="margin-top:10px">Login</button>
+<div id="pinDiv" class="box">
+  Enter Admin PIN:<br>
+  <input type="password" id="pinInput">
+  <button onclick="checkPin()">Login</button>
 </div>
 
-<!-- ADMIN PANEL -->
-<div id="adminBox" class="hidden">
-
+<div id="adminContent" style="display:none;">
   <div class="box">
-    <b>💸 Withdraw Requests</b>
-    <div id="requests"></div>
+    <h3>Withdraw Requests</h3>
+    <div id="withdrawList"></div>
   </div>
 
   <div class="box">
-    <button onclick="logout()" style="background:#ef4444;color:white">
-      🔒 Logout Admin
-    </button>
+    <h3>User Wallets</h3>
+    <div id="walletList"></div>
   </div>
 
-</div>
+  <div class="box">
+    <h3>NFT Management</h3>
+    <div id="nftManage"></div>
+  </div>
 
+  <button onclick="logoutAdmin()">Logout</button>
 </div>
 
 <script>
-/* ---------- ADMIN LOGIN ---------- */
 const ADMIN_PIN="1008";
 
-function login(){
-  if(document.getElementById("pin").value===ADMIN_PIN){
+function checkPin(){
+  const val=document.getElementById("pinInput").value;
+  if(val===ADMIN_PIN){
     sessionStorage.setItem("adminSession","active");
-    document.getElementById("loginBox").style.display="none";
-    document.getElementById("adminBox").classList.remove("hidden");
-    loadRequests();
-  }else{
-    alert("Wrong PIN");
-  }
+    document.getElementById("pinDiv").style.display="none";
+    document.getElementById("adminContent").style.display="block";
+    loadWithdraws();
+    loadWallets();
+    loadNFTs();
+  } else alert("Wrong PIN");
 }
 
-function logout(){
+function logoutAdmin(){
   sessionStorage.removeItem("adminSession");
   location.reload();
 }
 
-/* ---------- SESSION CHECK ---------- */
-if(sessionStorage.getItem("adminSession")==="active"){
-  document.getElementById("loginBox").style.display="none";
-  document.getElementById("adminBox").classList.remove("hidden");
-  loadRequests();
-}
-
-/* ---------- LOAD WITHDRAW REQUESTS ---------- */
-function loadRequests(){
-  const history=JSON.parse(localStorage.getItem("walletHistory"))||[];
-  const box=document.getElementById("requests");
-  box.innerHTML="";
-
-  history.forEach((h,i)=>{
-    if(h.type==="Withdraw (Pending)"){
-      box.innerHTML+=`
-        <div class="req">
-          Amount: $${h.amount}<br>
-          Time: ${h.time}<br><br>
-          <button class="approve" onclick="approve(${i})">Approve</button>
-          <button class="reject" onclick="reject(${i})">Reject</button>
-        </div>
-      `;
-    }
+/* ---------- Withdraw Approval ---------- */
+function loadWithdraws(){
+  let reqs=JSON.parse(localStorage.getItem("withdrawReq"))||[];
+  let html="";
+  reqs.forEach((r,i)=>{
+    html+=`$${r.amount} - ${r.status} 
+      ${r.status==="Pending"?`<button onclick="approve(${i})">Approve</button>`:""}<br>`;
   });
-
-  if(box.innerHTML===""){
-    box.innerHTML="<small>No pending requests</small>";
-  }
+  document.getElementById("withdrawList").innerHTML=html;
 }
-
-/* ---------- APPROVE ---------- */
 function approve(i){
-  const history=JSON.parse(localStorage.getItem("walletHistory"));
-  history[i].type="Withdraw (Approved)";
-  localStorage.setItem("walletHistory",JSON.stringify(history));
-  loadRequests();
+  let reqs=JSON.parse(localStorage.getItem("withdrawReq"))||[];
+  reqs[i].status="Approved";
+  localStorage.setItem("withdrawReq",JSON.stringify(reqs));
+  loadWithdraws();
 }
 
-/* ---------- REJECT ---------- */
-function reject(i){
-  const history=JSON.parse(localStorage.getItem("walletHistory"));
-  let bal=Number(localStorage.getItem("walletBalance"));
-  bal+=Number(history[i].amount); // refund
-  localStorage.setItem("walletBalance",bal);
+/* ---------- Wallet Control ---------- */
+function loadWallets(){
+  let users=JSON.parse(localStorage.getItem("users"))||[];
+  let html="";
+  users.forEach((u,i)=>{
+    html+=`${u.name} - $${u.wallet||0} <button onclick="addBalance(${i})">Add $10</button><br>`;
+  });
+  document.getElementById("walletList").innerHTML=html;
+}
+function addBalance(i){
+  let users=JSON.parse(localStorage.getItem("users"))||[];
+  users[i].wallet = (users[i].wallet||0)+10;
+  localStorage.setItem("users",JSON.stringify(users));
+  loadWallets();
+}
 
-  history[i].type="Withdraw (Rejected)";
-  localStorage.setItem("walletHistory",JSON.stringify(history));
-  loadRequests();
+/* ---------- NFT Management ---------- */
+function loadNFTs(){
+  let nfts=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  let html="";
+  nfts.forEach((n,i)=>{
+    html+=`$${n.price} - Daily $${n.daily.toFixed(2)} 
+      <button onclick="removeNFT(${i})">Remove</button><br>`;
+  });
+  document.getElementById("nftManage").innerHTML=html;
+}
+function removeNFT(i){
+  let nfts=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  nfts.splice(i,1);
+  localStorage.setItem("myNFTs",JSON.stringify(nfts));
+  loadNFTs();
+}
+
+/* ---------- Auto load if already logged in ---------- */
+if(sessionStorage.getItem("adminSession")==="active"){
+  document.getElementById("pinDiv").style.display="none";
+  document.getElementById("adminContent").style.display="block";
+  loadWithdraws(); loadWallets(); loadNFTs();
 }
 </script>
 
