@@ -2,134 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Level – SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<title>My Level - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:#fff;
-}
-header{
-  position:sticky;
-  top:0;
-  background:#0f172a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b;
-}
-.container{
-  padding:20px;
-}
-.card{
-  background:#0f172a;
-  padding:18px;
-  border-radius:16px;
-  margin-bottom:15px;
-}
-.card h3{
-  margin:0 0 10px;
-  color:#22c55e;
-}
-.progress-box{
-  background:#020617;
-  border-radius:20px;
-  overflow:hidden;
-  height:16px;
-  margin-top:10px;
-  border:1px solid #1e293b;
-}
-.progress{
-  height:100%;
-  background:linear-gradient(90deg,#22c55e,#38bdf8);
-  width:0%;
-}
-.level-row{
-  display:flex;
-  justify-content:space-between;
-  padding:10px 0;
-  border-bottom:1px dashed #1e293b;
-  font-size:14px;
-}
-.level-row:last-child{
-  border:none;
-}
-.back{
-  display:block;
-  margin-top:20px;
-  text-align:center;
-  color:#38bdf8;
-  text-decoration:none;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
+header{position:sticky;top:0;background:#0d1117;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
+header h1{color:#38bdf8;}
+#menuToggle{font-size:28px;cursor:pointer;}
+.menu{position:fixed;left:-250px;top:0;width:250px;height:100%;background:#111827;padding-top:60px;transition:0.3s;display:flex;flex-direction:column;z-index:999;}
+.menu.open{left:0;}
+.menu a{color:#38bdf8;text-decoration:none;padding:12px 20px;display:block;border-bottom:1px solid #1e293b;}
+.menu a:hover{background:#1f2937;}
+#overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:900;}
+.container{padding:20px;}
+h2{margin-bottom:15px;color:#38bdf8;}
+.level-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:10px;}
 </style>
 </head>
-
 <body>
 
-<header>📊 My Level</header>
+<header>
+  <div id="menuToggle">&#9776;</div>
+  <h1>My Level</h1>
+</header>
+
+<div id="overlay"></div>
+
+<div id="sideMenu" class="menu">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="account.html">👤 My Account</a>
+  <a href="my-investments.html">📁 My Investments</a>
+  <a href="wallet.html">💳 Wallet</a>
+  <a href="withdraw.html">💸 Withdraw</a>
+  <a href="live-earnings.html">💹 Live Earnings</a>
+  <a href="admin.html">🛡 Admin</a>
+  <a href="my-team.html">👥 My Team</a>
+  <a href="my-level.html">📊 My Level</a>
+  <a href="calculator.html">📈 Calculator</a>
+  <a href="settings.html">⚙️ Settings</a>
+  <a href="#" id="logoutBtn">🔒 Logout</a>
+</div>
 
 <div class="container">
-
-  <div class="card">
-    <h3>🏆 Current Rank</h3>
-    <div><b id="rankName">Starter</b></div>
-    <div class="progress-box">
-      <div class="progress" id="progressBar"></div>
-    </div>
-    <small id="progressText">0% completed</small>
-  </div>
-
-  <div class="card">
-    <h3>💰 Income Benefits</h3>
-    <div class="level-row">
-      <span>Daily Income %</span>
-      <b id="dailyIncome">1%</b>
-    </div>
-    <div class="level-row">
-      <span>Level Income %</span>
-      <b id="levelIncome">5%</b>
-    </div>
-    <div class="level-row">
-      <span>Rank Bonus</span>
-      <b id="rankBonus">$0</b>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>🚀 Next Rank Target</h3>
-    <div>Required Team Volume:</div>
-    <b id="nextTarget">$5,000</b>
-  </div>
-
-  <a class="back" href="dashboard.html">← Back to Dashboard</a>
-
+  <h2>My Level & Rank Bonuses</h2>
+  <div class="level-box">You are at Level 0</div>
 </div>
 
 <script>
-/* ===== DEMO USER LEVEL DATA ===== */
-let user = {
-  rank:"Starter",
-  progress:40,
-  dailyIncome:"1%",
-  levelIncome:"5%",
-  bonus:"$0",
-  nextTarget:"$5,000"
-};
-
-document.getElementById("rankName").innerText = user.rank;
-document.getElementById("dailyIncome").innerText = user.dailyIncome;
-document.getElementById("levelIncome").innerText = user.levelIncome;
-document.getElementById("rankBonus").innerText = user.bonus;
-document.getElementById("nextTarget").innerText = user.nextTarget;
-
-document.getElementById("progressBar").style.width = user.progress + "%";
-document.getElementById("progressText").innerText =
-  user.progress + "% completed";
+const menuToggle = document.getElementById("menuToggle");
+const sideMenu = document.getElementById("sideMenu");
+const overlay = document.getElementById("overlay");
+menuToggle.onclick = ()=>{
+  sideMenu.classList.toggle("open");
+  overlay.style.display = sideMenu.classList.contains("open") ? "block" : "none";
+}
+overlay.onclick = ()=>{
+  sideMenu.classList.remove("open");
+  overlay.style.display = "none";
+}
 </script>
-
 </body>
 </html>
