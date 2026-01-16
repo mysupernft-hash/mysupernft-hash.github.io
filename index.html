@@ -74,7 +74,7 @@ button:hover {
   <h2>Login</h2>
   <input type="text" id="username" placeholder="Username">
   <input type="password" id="password" placeholder="Password">
-  <button onclick="login()">Login</button>
+  <button id="loginBtn">Login</button>
   <div id="error"></div>
   <div class="signup">
     Don't have an account? <a href="signup.html">Signup</a>
@@ -82,38 +82,31 @@ button:hover {
 </div>
 
 <script>
-// --------- DEFAULT USER ----------
+// ----- USERS -----
 const DEFAULT_USER = {username:"Shivam", password:"poiuytrewq"};
-
-// --------- INITIALIZE USERS ----------
 if(!localStorage.getItem("users")){
   localStorage.setItem("users", JSON.stringify([DEFAULT_USER]));
 }
 
-// --------- LOGIN FUNCTION ----------
-function login() {
+// ----- LOGIN FUNCTION -----
+document.getElementById("loginBtn").addEventListener("click", function(){
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
   const users = JSON.parse(localStorage.getItem("users")) || [];
   const errorDiv = document.getElementById("error");
 
-  // Check credentials
   const user = users.find(u => u.username === username && u.password === password);
-
   if(user){
-    // Save logged in session
     localStorage.setItem("loggedInUser", JSON.stringify(user));
-    // Redirect to dashboard
     window.location.href = "dashboard.html";
   } else {
     errorDiv.innerText = "Wrong username or password!";
   }
-}
+});
 
-// --------- AUTO REDIRECT IF ALREADY LOGGED IN ----------
-window.onload = function() {
-  const loggedInUser = localStorage.getItem("loggedInUser");
-  if(loggedInUser){
+// ----- AUTO REDIRECT -----
+window.onload = function(){
+  if(localStorage.getItem("loggedInUser")){
     window.location.href = "dashboard.html";
   }
 }
