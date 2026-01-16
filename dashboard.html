@@ -6,7 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;overflow-x:hidden;}
-header{background:#0f172a;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;}
+/* STICKY HEADER */
+header{position:sticky;top:0;background:#0f172a;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;z-index:1000;}
 header h1{margin:0;font-size:22px;color:#38bdf8;}
 header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:8px;color:#00e5ff;}
 .menu-btn{font-size:22px;cursor:pointer;}
@@ -17,12 +18,11 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 .menu a:hover{background:#1e293b;}
 .menu.show{right:0;}
 
-/* SUMMARY GRID */
-.summary-container{display:flex;justify-content:center;gap:30px;padding:12px;flex-wrap:wrap;}
-.summary-column{display:flex;flex-direction:column;gap:12px;flex:1;}
-.box{background:#1e293b;padding:12px 18px;border-radius:12px;text-align:center;}
+/* SUMMARY GRID BELOW HEADER */
+.summary-container{display:flex;justify-content:center;gap:20px;padding:12px;background:#0f172a;position:sticky;top:52px;z-index:999;flex-wrap:wrap;}
+.box{background:#1e293b;padding:12px 18px;border-radius:12px;text-align:center;cursor:pointer;min-width:120px;}
 .box b{display:block;margin-top:6px;color:#00e5ff;font-size:16px;}
-.box input{width:100%;padding:6px;margin-top:6px;border:none;border-radius:6px;background:#0f172a;color:#38bdf8;}
+.box:hover{background:#1c2533;}
 
 /* NFT GRID */
 .tabs{display:flex;justify-content:center;gap:10px;margin-top:12px;overflow-x:auto;}
@@ -42,9 +42,9 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 .popup-content .close{float:right;font-size:20px;color:#38bdf8;cursor:pointer;}
 .popup-content img{width:100%;border-radius:10px;}
 
-/* REFERRAL FULL WIDTH */
+/* REFERRAL */
 .ref-box{display:flex;gap:6px;align-items:center;overflow-x:auto;white-space:nowrap;padding:6px;}
-.ref-box input{flex:1;}
+.ref-box input{flex:1;padding:6px;border:none;border-radius:6px;background:#0f172a;color:#38bdf8;}
 </style>
 </head>
 <body>
@@ -72,20 +72,16 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
   <a href="#" onclick="logout()">🔒 Logout</a>
 </div>
 
-<!-- SUMMARY GRID -->
+<!-- SUMMARY BELOW HEADER -->
 <div class="summary-container">
-  <div class="summary-column">
-    <div class="box">💰 Total Invested<b id="totalInvested">$0.00</b></div>
-    <div class="box">⚡ Live Earnings<b id="liveEarnings">$0.0000</b></div>
-  </div>
-  <div class="summary-column">
-    <div class="box">📈 Daily Income<b id="dailyIncome">$0.00</b></div>
-    <div class="box">💳 Wallet Balance<b id="walletBalance">$0.00</b></div>
-    <div class="box ref-box">
-      👥 Referral Link
-      <input id="refLink" readonly>
-      <button onclick="copyRef()">Copy</button>
-    </div>
+  <div class="box" onclick="window.location.href='my-investments.html'">💰 Total Invested<b id="totalInvested">$0.00</b></div>
+  <div class="box" onclick="window.location.href='daily-income.html'">📈 Daily Income<b id="dailyIncome">$0.00</b></div>
+  <div class="box" onclick="window.location.href='live-earnings.html'">⚡ Live Earnings<b id="liveEarnings">$0.0000</b></div>
+  <div class="box" onclick="window.location.href='wallet.html'">💳 Wallet Balance<b id="walletBalance">$0.00</b></div>
+  <div class="box ref-box">
+    👥 Referral Link
+    <input id="refLink" readonly>
+    <button onclick="copyRef()">Copy</button>
   </div>
 </div>
 
@@ -112,9 +108,7 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 
 <script>
 /* ---------------- MENU ---------------- */
-function toggleMenu(){
-  document.getElementById("sideMenu").classList.toggle("show");
-}
+function toggleMenu(){document.getElementById("sideMenu").classList.toggle("show");}
 window.addEventListener("click",e=>{
   const menu=document.getElementById("sideMenu");
   if(menu.classList.contains("show") && !e.target.closest(".menu-btn") && !e.target.closest(".menu")){
@@ -123,45 +117,12 @@ window.addEventListener("click",e=>{
 });
 
 /* ---------------- REFERRAL ---------------- */
-if(!localStorage.getItem("refCode")){
-  localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
-}
+if(!localStorage.getItem("refCode")){localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));}
 document.getElementById("refLink").value=location.origin + "/dashboard.html?ref=" + localStorage.getItem("refCode");
 function copyRef(){navigator.clipboard.writeText(document.getElementById("refLink").value);alert("Referral copied");}
 
 /* ---------------- NFT ---------------- */
-const NFTS=[
-{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
-{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
-{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},
-{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},
-{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},
-{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},
-{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},
-{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},
-{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},
-{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},
-{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},
-{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},
-{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},
-{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},
-{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},
-{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},
-{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},
-{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},
-{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},
-{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},
-{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},
-{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},
-{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},
-{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},
-{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},
-{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},
-{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},
-{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
-{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
-{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
-];
+const NFTS=[{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}];
 
 const grid=document.getElementById("nftGrid");
 function renderNFT(cat="all"){
@@ -170,12 +131,10 @@ function renderNFT(cat="all"){
     const daily=(n.price*n.p)/100;
     const card=document.createElement("div");
     card.className="card";
-    card.innerHTML=`
-      <img src="${n.img}" onclick="openPopup('${n.img}','Price: $${n.price}<br>Daily: $${daily.toFixed(2)}')">
-      <div class="price">$${n.price}</div>
-      <div class="meta">Daily $${daily.toFixed(2)}</div>
-      <button onclick="buyNFT(${n.price},${daily})">Buy NFT</button>
-    `;
+    card.innerHTML=`<img src="${n.img}" onclick="openPopup('${n.img}','Price: $${n.price}<br>Daily: $${daily.toFixed(2)}')">
+    <div class="price">$${n.price}</div>
+    <div class="meta">Daily $${daily.toFixed(2)}</div>
+    <button onclick="buyNFT(${n.price},${daily})">Buy NFT</button>`;
     grid.appendChild(card);
   });
 }
