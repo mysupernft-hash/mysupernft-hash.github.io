@@ -125,5 +125,46 @@ function save(){
 }
 </script>
 
+  <script>
+function loadWithdraws(){
+  const box = document.getElementById("adminWithdraws");
+  const data = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
+  box.innerHTML = "";
+
+  data.forEach((w,i)=>{
+    box.innerHTML += `
+      <div style="border:1px solid #444;padding:10px;margin:10px 0">
+        💵 $${w.amount} <br>
+        Status: ${w.status}<br>
+        <button onclick="approve(${i})">Approve</button>
+        <button onclick="reject(${i})">Reject</button>
+      </div>
+    `;
+  });
+}
+
+function approve(i){
+  const data = JSON.parse(localStorage.getItem("withdrawRequests"));
+  data[i].status = "approved";
+  localStorage.setItem("withdrawRequests",JSON.stringify(data));
+  loadWithdraws();
+}
+
+function reject(i){
+  const data = JSON.parse(localStorage.getItem("withdrawRequests"));
+  let wallet = Number(localStorage.getItem("walletBalance"));
+
+  // refund money
+  wallet += data[i].amount;
+  localStorage.setItem("walletBalance",wallet.toFixed(2));
+
+  data[i].status = "rejected";
+  localStorage.setItem("withdrawRequests",JSON.stringify(data));
+  loadWithdraws();
+}
+
+loadWithdraws();
+</script>
+
 </body>
 </html>
