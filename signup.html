@@ -5,46 +5,12 @@
 <title>SuperNFT Signup</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #020617;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-}
-.signup-box {
-  background: #0a192f;
-  padding: 30px;
-  border-radius: 12px;
-  width: 300px;
-  text-align: center;
-}
-.signup-box input {
-  width: 90%;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border: none;
-}
-.signup-box button {
-  padding: 10px 20px;
-  background: #38bdf8;
-  color: #020617;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-.login-link {
-  margin-top: 15px;
-  display: block;
-  color: #38bdf8;
-  text-decoration: none;
-}
-.login-link:hover { color: #00e5ff; }
+body {font-family: Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+.signup-box {background:#0a192f;padding:30px;border-radius:12px;width:300px;text-align:center;}
+.signup-box input {width:90%;padding:10px;margin:10px 0;border-radius:6px;border:none;}
+.signup-box button {padding:10px 20px;background:#38bdf8;color:#020617;border:none;border-radius:6px;cursor:pointer;margin-top:10px;}
+.login-link {margin-top:15px;display:block;color:#38bdf8;text-decoration:none;}
+.login-link:hover {color:#00e5ff;}
 </style>
 </head>
 <body>
@@ -53,31 +19,26 @@ body {
   <h2>Signup</h2>
   <input type="text" id="newUsername" placeholder="Username"><br>
   <input type="password" id="newPassword" placeholder="Password"><br>
-  <input type="password" id="confirmPassword" placeholder="Confirm Password"><br>
   <button onclick="signup()">Signup</button>
   <a href="index.html" class="login-link">Already have an account? Login</a>
 </div>
 
 <script>
-function signup() {
-  const username = document.getElementById("newUsername").value;
-  const password = document.getElementById("newPassword").value;
-  const confirm = document.getElementById("confirmPassword").value;
+function signup(){
+  const username = document.getElementById("newUsername").value.trim();
+  const password = document.getElementById("newPassword").value.trim();
 
-  if(!username || !password) {
-    alert("Please fill all fields");
-    return;
-  }
-  if(password !== confirm) {
-    alert("Passwords do not match");
+  if(!username || !password){
+    alert("Please enter both fields");
     return;
   }
 
-  // Store credentials in localStorage (simple frontend only)
   localStorage.setItem("username", username);
   localStorage.setItem("password", password);
+  localStorage.setItem("loggedIn", "false"); // initial state
+
   alert("Signup successful! Please login.");
-  window.location.href = "index.html"; // redirect to login
+  window.location.href = "index.html";
 }
 </script>
 
