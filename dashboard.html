@@ -187,5 +187,52 @@ function logout(){alert("Logging out");}
 // Admin PIN prompt
 if(sessionStorage.getItem("adminSession")==="active"){ /* show admin button logic */ }
 </script>
+
+<script>
+/* ===============================
+   AUTO DAILY EARNINGS SYSTEM
+================================ */
+
+/* INIT STORAGE */
+if(!localStorage.getItem("lastCredit")){
+  localStorage.setItem("lastCredit","0");
+}
+
+/* AUTO CREDIT FUNCTION */
+function autoDailyCredit(){
+  const now = Date.now();
+  const last = Number(localStorage.getItem("lastCredit"));
+
+  // 24 HOURS CHECK
+  if(now - last < 86400000) return;
+
+  const nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let wallet = Number(localStorage.getItem("walletBalance") || 0);
+  const history = JSON.parse(localStorage.getItem("walletHistory")) || [];
+
+  nfts.forEach(n=>{
+    const daysPassed = Math.floor((now - n.boughtAt) / 86400000);
+
+    // ROI EXPIRY 365 DAYS
+    if(daysPassed < 365){
+      wallet += Number(n.daily);
+
+      history.push({
+        type:"Daily ROI Credit",
+        amount:Number(n.daily).toFixed(2),
+        time:new Date().toLocaleString()
+      });
+    }
+  });
+
+  localStorage.setItem("walletBalance", wallet);
+  localStorage.setItem("walletHistory", JSON.stringify(history));
+  localStorage.setItem("lastCredit", now);
+}
+
+/* RUN ON LOAD */
+autoDailyCredit();
+</script>
+  
 </body>
 </html>
