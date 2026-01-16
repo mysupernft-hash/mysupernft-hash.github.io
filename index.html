@@ -5,37 +5,73 @@
 <title>SuperNFT Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;}
-.container{background:#0a192f;padding:30px;border-radius:12px;width:300px;text-align:center;}
-input{width:90%;padding:8px;margin:8px 0;border-radius:6px;border:none;}
-button{padding:8px 16px;background:#38bdf8;color:#020617;border:none;border-radius:6px;cursor:pointer;}
-a{color:#38bdf8;text-decoration:none;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#020617;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.login-box{
+  background:#0f172a;
+  padding:30px;
+  border-radius:12px;
+  width:300px;
+  text-align:center;
+}
+.login-box h2{
+  color:#38bdf8;
+  margin-bottom:20px;
+}
+.login-box input{
+  width:100%;
+  padding:10px;
+  margin-bottom:15px;
+  border:none;
+  border-radius:8px;
+  background:#020617;
+  color:white;
+}
+.login-box button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
+.login-box button:hover{
+  background:#0ea5e9;
+}
 </style>
 </head>
+
 <body>
-<div class="container">
-  <h2>Login</h2>
-  <input type="text" id="user" placeholder="Username"><br>
-  <input type="password" id="pass" placeholder="Password"><br>
-  <button onclick="login()">Login</button><br><br>
-  Don't have an account? <a href="signup.html">Signup</a>
+
+<div class="login-box">
+  <h2>SuperNFT Login</h2>
+
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+
+  <button onclick="login()">Login</button>
 </div>
 
 <script>
 function login(){
-  const user = document.getElementById("user").value.trim();
-  const pass = document.getElementById("pass").value.trim();
+  // 🔥 NO PASSWORD CHECK
+  localStorage.setItem("snft_logged","true");
+  localStorage.setItem("snft_user",document.getElementById("username").value || "guest");
 
-  const savedUser = localStorage.getItem("snft_user");
-  const savedPass = localStorage.getItem("snft_pass");
-
-  if(user === savedUser && pass === savedPass){
-    localStorage.setItem("snft_logged", "true");
-    window.location.href = "dashboard.html";
-  } else {
-    alert("Wrong username or password!");
-  }
+  // direct dashboard open
+  window.location.href = "dashboard.html";
 }
 </script>
+
 </body>
 </html>
