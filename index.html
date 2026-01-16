@@ -2,116 +2,66 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#020617;
-  color:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.container{
-  background:#0a192f;
-  padding:30px;
-  border-radius:12px;
-  width:300px;
-  text-align:center;
-}
-input{
-  width:90%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:6px;
-  border:none;
-}
-button{
-  padding:10px 20px;
-  margin-top:10px;
-  border:none;
-  border-radius:6px;
-  background:#38bdf8;
-  color:#020617;
-  font-weight:bold;
-  cursor:pointer;
-  width:95%;
-}
-button:hover{background:#00e5ff;}
-.switch{
-  margin-top:12px;
-  font-size:14px;
-  cursor:pointer;
-  color:#38bdf8;
-}
+body{background:#020617;color:white;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+.login-box{background:#0a192f;padding:30px;border-radius:12px;width:300px;text-align:center;}
+.login-box input{width:90%;padding:8px;margin:10px 0;border-radius:6px;border:none;}
+.login-box button{padding:8px 16px;border:none;border-radius:6px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
+#errorMsg{color:#ff6b6b;margin:5px;}
+a{color:#38bdf8;text-decoration:none;font-size:14px;}
 </style>
 </head>
 <body>
 
-<div class="container" id="loginContainer">
+<div class="login-box">
   <h2>Login</h2>
-  <input type="text" id="loginUsername" placeholder="Username">
-  <input type="password" id="loginPassword" placeholder="Password">
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
   <button onclick="login()">Login</button>
-  <div class="switch" onclick="toggleForm()">Don't have account? Signup</div>
-</div>
-
-<div class="container" id="signupContainer" style="display:none;">
-  <h2>Signup</h2>
-  <input type="text" id="signupUsername" placeholder="Username">
-  <input type="password" id="signupPassword" placeholder="Password">
-  <button onclick="signup()">Signup</button>
-  <div class="switch" onclick="toggleForm()">Already have account? Login</div>
+  <div id="errorMsg"></div>
+  <p>Don't have account? <a href="#" onclick="showSignup()">Signup</a></p>
 </div>
 
 <script>
-function toggleForm(){
-  const loginForm = document.getElementById("loginContainer");
-  const signupForm = document.getElementById("signupContainer");
-  loginForm.style.display = loginForm.style.display === "none" ? "block" : "none";
-  signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
+// --------- Predefined user ---------
+if(!localStorage.getItem('users')){
+  let defaultUsers = {"Shivam":"poiuytrewq"}; // username: Shivam, password: poiuytrewq
+  localStorage.setItem('users', JSON.stringify(defaultUsers));
 }
 
-// Signup function
-function signup(){
-  const u = document.getElementById("signupUsername").value.trim();
-  const p = document.getElementById("signupPassword").value.trim();
-  if(!u || !p){ alert("Enter username and password!"); return; }
-
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  if(users.find(user => user.username === u)){
-    alert("Username already exists!");
-    return;
+// --------- Show signup (simple alert for now) ---------
+function showSignup(){
+  let username = prompt("Enter new username:");
+  let password = prompt("Enter new password:");
+  if(username && password){
+    let users = JSON.parse(localStorage.getItem('users')||'{}');
+    users[username] = password;
+    localStorage.setItem('users', JSON.stringify(users));
+    alert("Signup successful! You can now login.");
   }
-
-  users.push({username:u, password:p});
-  localStorage.setItem("users", JSON.stringify(users));
-  alert("Signup successful! Please login.");
-  toggleForm();
 }
 
-// Login function
+// --------- Login function ---------
 function login(){
-  const u = document.getElementById("loginUsername").value.trim();
-  const p = document.getElementById("loginPassword").value.trim();
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  const validUser = users.find(user => user.username === u && user.password === p);
-  if(validUser){
-    sessionStorage.setItem("loggedIn","true");
-    sessionStorage.setItem("username",u);
-    alert("Login Successful!");
-    window.location.href = "dashboard.html";
+  let user = document.getElementById('loginUser').value.trim();
+  let pass = document.getElementById('loginPass').value.trim();
+  let users = JSON.parse(localStorage.getItem('users')||'{}');
+
+  if(users[user] && users[user] === pass){
+    localStorage.setItem('loggedInUser', user);
+    window.location.href='dashboard.html'; // go to dashboard
   } else {
-    alert("Wrong username or password!");
+    document.getElementById('errorMsg').innerText="Wrong username or password!";
   }
 }
 
-// Auto redirect if already logged in
-if(sessionStorage.getItem("loggedIn") === "true"){
-  window.location.href = "dashboard.html";
+// --------- Prevent access to dashboard if not logged in ---------
+if(window.location.pathname.includes("dashboard.html")){
+  if(!localStorage.getItem('loggedInUser')){
+    window.location.href="index.html";
+  }
 }
 </script>
 
