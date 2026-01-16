@@ -43,16 +43,16 @@ button{padding:8px 12px;margin-top:6px;border:none;border-radius:8px;background:
 <script>
 const ADMIN_PIN="1008";
 
-function checkPin(){
-  const val=document.getElementById("pinInput").value;
-  if(val===ADMIN_PIN){
+function openAdmin(){
+  let pin = prompt("Enter Admin PIN");
+  if(pin === "1008"){
     sessionStorage.setItem("adminSession","active");
-    document.getElementById("pinDiv").style.display="none";
-    document.getElementById("adminContent").style.display="block";
-    loadWithdraws();
-    loadWallets();
-    loadNFTs();
-  } else alert("Wrong PIN");
+    alert("Admin Access Granted");
+    window.location.href = "admin.html"; // Direct navigation after correct PIN
+  } else {
+    alert("Wrong PIN");
+  }
+}
 }
 
 function logoutAdmin(){
