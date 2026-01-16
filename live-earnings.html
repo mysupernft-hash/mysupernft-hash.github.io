@@ -1,0 +1,82 @@
+<!-- live-earnings.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Earnings – SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#020617;color:#fff}
+header{position:fixed;top:0;left:0;right:0;background:#020617;
+border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
+.main{padding:80px 15px}
+.back{color:#38bdf8;text-decoration:none;display:inline-block;margin-bottom:10px}
+.earn-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:12px;text-align:center}
+.earn-title{color:#38bdf8;font-weight:bold;margin-bottom:6px}
+</style>
+</head>
+
+<body>
+<header>⚡ Live Earnings</header>
+<div class="main">
+<a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
+
+<div class="earn-box">
+  <div class="earn-title">Total Invested</div>
+  <div id="totalInvested">$0.00</div>
+</div>
+
+<div class="earn-box">
+  <div class="earn-title">Daily Income</div>
+  <div id="dailyIncome">$0.00</div>
+</div>
+
+<div class="earn-box">
+  <div class="earn-title">Live Earnings</div>
+  <div id="liveEarnings">$0.0000</div>
+</div>
+
+<div class="earn-box">
+  <div class="earn-title">ROI Expiry</div>
+  <div id="roiExpiry">365 Days</div>
+</div>
+
+<div class="earn-box">
+  <div class="earn-title">Level Income</div>
+  <div id="levelIncome">$0.00</div>
+</div>
+
+<div class="earn-box">
+  <div class="earn-title">Staking Rewards</div>
+  <div id="stakingIncome">$0.00</div>
+</div>
+</div>
+
+<script>
+// Example: fetching NFT data from localStorage
+const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+
+// Update summary
+function updateEarnings(){
+  let invested=0,daily=0,live=0,level=0,staking=0;
+  data.forEach(n=>{
+    invested+=n.price;
+    daily+=n.daily;
+    // Live earnings per second
+    const sec=(Date.now()-n.boughtAt)/1000;
+    live+=sec*(n.daily/86400);
+    level+=n.daily*0.1; // example level income 10%
+    staking+=n.daily*0.05; // example staking 5%
+  });
+  document.getElementById("totalInvested").innerText="$"+invested.toFixed(2);
+  document.getElementById("dailyIncome").innerText="$"+daily.toFixed(2);
+  document.getElementById("liveEarnings").innerText="$"+live.toFixed(4);
+  document.getElementById("levelIncome").innerText="$"+level.toFixed(2);
+  document.getElementById("stakingIncome").innerText="$"+staking.toFixed(2);
+}
+
+setInterval(updateEarnings,1000);
+updateEarnings();
+</script>
+</body>
+</html>
