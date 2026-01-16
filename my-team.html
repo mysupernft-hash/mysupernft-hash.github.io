@@ -7,17 +7,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{margin:0;font-family:Arial;background:#020617;color:#fff}
-header{position:fixed;top:0;left:0;right:0;background:#020617;
-border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
+header{position:fixed;top:0;left:0;right:0;background:#020617;border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
 .main{padding:80px 15px}
 .back{color:#38bdf8;text-decoration:none;display:inline-block;margin-bottom:10px}
 
-.team-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:12px}
-.team-level{color:#38bdf8;font-weight:bold;margin-bottom:6px}
-.team-member{padding:6px 10px;border-bottom:1px solid #1e293b}
-.team-member:last-child{border-bottom:none}
-.member-name{font-weight:bold}
-.member-info{font-size:12px;opacity:0.8}
+.tree-box{background:#0f172a;padding:12px;border-radius:12px;margin-bottom:10px}
+.tree-level{color:#38bdf8;font-weight:bold;margin-bottom:4px}
+.tree-name{font-size:15px;margin-top:2px}
 </style>
 </head>
 
@@ -26,41 +22,34 @@ border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;fon
 <div class="main">
 <a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
 
-<div class="team-box">
-  <div class="team-level">Level 1 Referrals</div>
-  <div id="level1"></div>
-</div>
-
-<div class="team-box">
-  <div class="team-level">Level 2 Referrals</div>
-  <div id="level2"></div>
-</div>
-
-<div class="team-box">
-  <div class="team-level">Level 3 Referrals</div>
-  <div id="level3"></div>
-</div>
+<div id="teamContainer"></div>
 </div>
 
 <script>
-// Example referral data (you can replace with real referral tracking)
-const myTeam = {
-  level1:[{name:"Alice",income:12},{name:"Bob",income:8}],
-  level2:[{name:"Charlie",income:5}],
-  level3:[{name:"David",income:2}]
-};
+// Sample referral tree
+// In real project, this can come from localStorage or backend
+let referrals = JSON.parse(localStorage.getItem("referrals")) || [
+  {name:"Alice",level:1},
+  {name:"Bob",level:2},
+  {name:"Charlie",level:1},
+  {name:"David",level:3}
+];
 
 function renderTeam(){
-  ["level1","level2","level3"].forEach(lvl=>{
-    const container = document.getElementById(lvl);
-    container.innerHTML = "";
-    myTeam[lvl].forEach(m=>{
-      const div = document.createElement("div");
-      div.className="team-member";
-      div.innerHTML=`<span class="member-name">${m.name}</span>
-                     <div class="member-info">Earned: $${m.income.toFixed(2)}</div>`;
-      container.appendChild(div);
-    });
+  const container = document.getElementById("teamContainer");
+  container.innerHTML="";
+  if(referrals.length===0){
+    container.innerHTML="<p>No referrals yet.</p>";
+    return;
+  }
+
+  referrals.forEach((r,i)=>{
+    container.innerHTML += `
+      <div class="tree-box">
+        <div class="tree-level">Level ${r.level}</div>
+        <div class="tree-name">${r.name}</div>
+      </div>
+    `;
   });
 }
 
