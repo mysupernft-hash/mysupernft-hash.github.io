@@ -1,109 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
-  background:#020617;
-  color:#fff;
-  font-family:Arial;
-}
-.box{
-  max-width:420px;
-  margin:60px auto;
-  padding:20px;
-  background:#0f172a;
-  border-radius:12px;
-}
-h2{text-align:center;color:#38bdf8;}
-input,button{
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border-radius:8px;
-  border:none;
-}
-input{background:#020617;color:white;border:1px solid #38bdf8;}
-button{background:#38bdf8;color:#020617;font-weight:bold;}
-a{color:#38bdf8;text-decoration:none;}
-.hidden{display:none;}
+body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+.login-box{background:#0f172a;padding:30px;border-radius:12px;width:300px;text-align:center;}
+input{width:90%;padding:10px;margin:10px 0;border-radius:6px;border:none;}
+button{padding:10px 20px;border:none;border-radius:6px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
 </style>
 </head>
-
 <body>
-
-<div class="box" id="registerBox">
-  <h2>Create Account</h2>
-  <input id="regEmail" type="email" placeholder="Email">
-  <input id="regPass" type="password" placeholder="Password">
-  <button onclick="register()">Register</button>
-  <p align="center">
-    <a href="#" onclick="showLogin()">Already have account?</a>
-  </p>
-</div>
-
-<div class="box hidden" id="loginBox">
+<div class="login-box">
   <h2>Login</h2>
-  <input id="loginEmail" type="email" placeholder="Email">
-  <input id="loginPass" type="password" placeholder="Password">
+  <input type="text" id="username" placeholder="Username"><br>
+  <input type="password" id="password" placeholder="Password"><br>
   <button onclick="login()">Login</button>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { 
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendEmailVerification
-} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCvDN2vIcI_2gp3cNjDQ95PtG76VbOjkxk",
-  authDomain: "supernft-790f7.firebaseapp.com",
-  projectId: "supernft-790f7",
-  storageBucket: "supernft-790f7.appspot.com",
-  messagingSenderId: "38361916626",
-  appId: "1:38361916626:web:ec747e27def5de982ef90b"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// REGISTER
-window.register = function(){
-  const email = regEmail.value;
-  const pass = regPass.value;
-
-  createUserWithEmailAndPassword(auth, email, pass)
-  .then((userCred)=>{
-    sendEmailVerification(userCred.user);
-    alert("OTP / Verification email sent. Verify first!");
-  })
-  .catch(err=>alert(err.message));
-}
-
-// LOGIN
-window.login = function(){
-  signInWithEmailAndPassword(auth, loginEmail.value, loginPass.value)
-  .then((userCred)=>{
-    if(userCred.user.emailVerified){
-      location.href="dashboard.html";
-    }else{
-      alert("Verify email first!");
-    }
-  })
-  .catch(err=>alert(err.message));
-}
-
-window.showLogin=function(){
-  registerBox.classList.add("hidden");
-  loginBox.classList.remove("hidden");
+<script>
+function login(){
+  const user=document.getElementById("username").value;
+  const pass=document.getElementById("password").value;
+  if(user && pass){
+    localStorage.setItem("isLoggedIn","true"); // Mark user as logged in
+    window.location.href="dashboard.html"; // Redirect to dashboard after login
+  } else {
+    alert("Enter username & password");
+  }
 }
 </script>
-
 </body>
 </html>
