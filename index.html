@@ -1,24 +1,119 @@
-<input type="text" id="username" placeholder="Username">
-<input type="password" id="password" placeholder="Password">
-<button onclick="login()">Login</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Login</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#020617;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.container{
+  background:#0a192f;
+  padding:30px;
+  border-radius:12px;
+  width:300px;
+  text-align:center;
+}
+input{
+  width:90%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:6px;
+  border:none;
+}
+button{
+  padding:10px 20px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+  width:95%;
+}
+button:hover{background:#00e5ff;}
+.switch{
+  margin-top:12px;
+  font-size:14px;
+  cursor:pointer;
+  color:#38bdf8;
+}
+</style>
+</head>
+<body>
+
+<div class="container" id="loginContainer">
+  <h2>Login</h2>
+  <input type="text" id="loginUsername" placeholder="Username">
+  <input type="password" id="loginPassword" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <div class="switch" onclick="toggleForm()">Don't have account? Signup</div>
+</div>
+
+<div class="container" id="signupContainer" style="display:none;">
+  <h2>Signup</h2>
+  <input type="text" id="signupUsername" placeholder="Username">
+  <input type="password" id="signupPassword" placeholder="Password">
+  <button onclick="signup()">Signup</button>
+  <div class="switch" onclick="toggleForm()">Already have account? Login</div>
+</div>
 
 <script>
-const users = [
-  {username:"admin", password:"123456"}, // sample
-  {username:"user", password:"password"}
-];
+function toggleForm(){
+  const loginForm = document.getElementById("loginContainer");
+  const signupForm = document.getElementById("signupContainer");
+  loginForm.style.display = loginForm.style.display === "none" ? "block" : "none";
+  signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
+}
 
+// Signup function
+function signup(){
+  const u = document.getElementById("signupUsername").value.trim();
+  const p = document.getElementById("signupPassword").value.trim();
+  if(!u || !p){ alert("Enter username and password!"); return; }
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  if(users.find(user => user.username === u)){
+    alert("Username already exists!");
+    return;
+  }
+
+  users.push({username:u, password:p});
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("Signup successful! Please login.");
+  toggleForm();
+}
+
+// Login function
 function login(){
-  const u = document.getElementById("username").value;
-  const p = document.getElementById("password").value;
-
+  const u = document.getElementById("loginUsername").value.trim();
+  const p = document.getElementById("loginPassword").value.trim();
+  let users = JSON.parse(localStorage.getItem("users")) || [];
   const validUser = users.find(user => user.username === u && user.password === p);
   if(validUser){
     sessionStorage.setItem("loggedIn","true");
+    sessionStorage.setItem("username",u);
     alert("Login Successful!");
-    window.location.href="dashboard.html";
+    window.location.href = "dashboard.html";
   } else {
     alert("Wrong username or password!");
   }
 }
+
+// Auto redirect if already logged in
+if(sessionStorage.getItem("loggedIn") === "true"){
+  window.location.href = "dashboard.html";
+}
 </script>
+
+</body>
+</html>
