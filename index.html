@@ -95,17 +95,26 @@ function login() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
   const users = JSON.parse(localStorage.getItem("users")) || [];
-
-  const user = users.find(u => u.username === username && u.password === password);
   const errorDiv = document.getElementById("error");
 
+  // Check credentials
+  const user = users.find(u => u.username === username && u.password === password);
+
   if(user){
-    // Save login session
+    // Save logged in session
     localStorage.setItem("loggedInUser", JSON.stringify(user));
     // Redirect to dashboard
     window.location.href = "dashboard.html";
   } else {
     errorDiv.innerText = "Wrong username or password!";
+  }
+}
+
+// --------- AUTO REDIRECT IF ALREADY LOGGED IN ----------
+window.onload = function() {
+  const loggedInUser = localStorage.getItem("loggedInUser");
+  if(loggedInUser){
+    window.location.href = "dashboard.html";
   }
 }
 </script>
