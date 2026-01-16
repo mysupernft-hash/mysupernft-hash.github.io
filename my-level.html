@@ -11,10 +11,11 @@ header{position:fixed;top:0;left:0;right:0;background:#020617;
 border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
 .main{padding:80px 15px}
 .back{color:#38bdf8;text-decoration:none;display:inline-block;margin-bottom:10px}
-.level-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:12px;text-align:center}
-.level-title{color:#38bdf8;font-weight:bold;margin-bottom:6px}
-.progress-bar{background:#1e293b;border-radius:10px;overflow:hidden;height:14px;margin-top:6px}
-.progress{background:#38bdf8;height:14px;width:0%;}
+
+.level-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:12px}
+.level-name{color:#38bdf8;font-weight:bold;margin-bottom:6px}
+.progress-bar{background:#1e293b;border-radius:8px;overflow:hidden;height:16px;margin-top:6px}
+.progress{background:#38bdf8;height:16px;width:0%}
 </style>
 </head>
 
@@ -23,31 +24,26 @@ border-bottom:1px solid #1e293b;padding:14px;text-align:center;color:#38bdf8;fon
 <div class="main">
 <a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
 
-<div id="levelsContainer"></div>
+<div class="level-box">
+  <div class="level-name" id="rankName">Rank: Beginner</div>
+  <div>Bonus: <span id="bonusPercent">0%</span></div>
+  <div class="progress-bar">
+    <div class="progress" id="levelProgress"></div>
+  </div>
+</div>
 </div>
 
 <script>
-// Dummy levels data (replace with real system)
-const levels = [
-  {level:1,name:"Beginner",points:100,earned:50},
-  {level:2,name:"Rising Star",points:200,earned:120},
-  {level:3,name:"Elite",points:500,earned:450},
-  {level:4,name:"Legendary",points:1000,earned:700}
-];
+// Example level data (replace with real NFT progress logic)
+const userLevel = {
+  name:"Silver",
+  bonus:12,
+  progress:65 // %
+};
 
-const container = document.getElementById("levelsContainer");
-
-levels.forEach(l=>{
-  const div = document.createElement("div");
-  div.className="level-box";
-  div.innerHTML=`
-    <div class="level-title">Level ${l.level} – ${l.name}</div>
-    <div>Points: ${l.earned} / ${l.points}</div>
-    <div class="progress-bar"><div class="progress" style="width:${Math.min(100,l.earned/l.points*100)}%"></div></div>
-  `;
-  container.appendChild(div);
-});
+document.getElementById("rankName").innerText = "Rank: "+userLevel.name;
+document.getElementById("bonusPercent").innerText = userLevel.bonus+"%";
+document.getElementById("levelProgress").style.width = userLevel.progress+"%";
 </script>
-
 </body>
 </html>
