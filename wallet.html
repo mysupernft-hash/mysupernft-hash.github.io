@@ -2,47 +2,190 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Wallet – SuperNFT</title>
+<title>SuperNFT Wallet</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:#fff;}
-header{padding:15px;text-align:center;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b;}
-.box{background:#0f172a;margin:15px;padding:15px;border-radius:12px;text-align:center;}
-button{padding:10px 20px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;margin-top:10px;}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#020617;
+  color:#fff;
+}
+header{
+  position:sticky;
+  top:0;
+  background:#020617;
+  padding:14px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  color:#38bdf8;
+  border-bottom:1px solid #1e293b;
+}
+.container{
+  padding:15px;
+  max-width:500px;
+  margin:auto;
+}
+.box{
+  background:#0f172a;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:15px;
+}
+.balance{
+  font-size:26px;
+  color:#38bdf8;
+  font-weight:bold;
+  text-align:center;
+}
+input,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+}
+input{
+  background:#020617;
+  color:white;
+  border:1px solid #1e293b;
+}
+button{
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
+button.withdraw{
+  background:#ef4444;
+  color:white;
+}
+.history{
+  font-size:14px;
+}
+.history div{
+  border-bottom:1px solid #1e293b;
+  padding:8px 0;
+}
+.back{
+  display:block;
+  text-align:center;
+  margin-top:15px;
+  color:#38bdf8;
+  text-decoration:none;
+}
 </style>
 </head>
+
 <body>
 
-<header>💳 Wallet – SuperNFT</header>
+<header>💳 My Wallet</header>
 
-<div class="box">
-  <h3>Wallet Balance</h3>
-  <b id="walletBalance">$0.00</b>
-</div>
+<div class="container">
 
-<div class="box">
-  <h3>Total Earnings</h3>
-  <b id="totalEarnings">$0.00</b>
-</div>
+  <!-- WALLET BALANCE -->
+  <div class="box">
+    Wallet Balance
+    <div class="balance" id="walletBalance">$0.00</div>
+  </div>
 
-<div class="box">
-  <button onclick="claimEarnings()">Claim Earnings</button>
+  <!-- DEPOSIT -->
+  <div class="box">
+    <b>➕ Deposit</b>
+    <input type="number" id="depositAmount" placeholder="Enter amount">
+    <button onclick="deposit()">Add Balance</button>
+  </div>
+
+  <!-- WITHDRAW -->
+  <div class="box">
+    <b>➖ Withdraw</b>
+    <input type="number" id="withdrawAmount" placeholder="Enter amount">
+    <button class="withdraw" onclick="withdraw()">Request Withdraw</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="box">
+    <b>📜 Transaction History</b>
+    <div class="history" id="history"></div>
+  </div>
+
+  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+
 </div>
 
 <script>
-function updateWallet(){
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let wallet=0,total=0;
-  data.forEach(n=>{wallet+=n.daily;total+=n.daily;});
-  document.getElementById("walletBalance").innerText="$"+wallet.toFixed(2);
-  document.getElementById("totalEarnings").innerText="$"+total.toFixed(2);
+/* ---------- WALLET INIT ---------- */
+if(!localStorage.getItem("walletBalance")){
+  localStorage.setItem("walletBalance","0");
 }
-setInterval(updateWallet,1000);
+if(!localStorage.getItem("walletHistory")){
+  localStorage.setItem("walletHistory","[]");
+}
 
-function claimEarnings(){
-  alert("Earnings claimed to your wallet!");
-  // Optionally, reset daily earnings after claim
+/* ---------- UPDATE UI ---------- */
+function updateWallet(){
+  document.getElementById("walletBalance").innerText =
+    "$"+Number(localStorage.getItem("walletBalance")).toFixed(2);
+
+  const historyBox=document.getElementById("history");
+  const history=JSON.parse(localStorage.getItem("walletHistory"));
+  historyBox.innerHTML="";
+  history.slice().reverse().forEach(h=>{
+    historyBox.innerHTML+=`
+      <div>${h.type} $${h.amount} <br><small>${h.time}</small></div>
+    `;
+  });
+}
+updateWallet();
+
+/* ---------- DEPOSIT ---------- */
+function deposit(){
+  const amt=Number(document.getElementById("depositAmount").value);
+  if(amt<=0) return alert("Enter valid amount");
+
+  let bal=Number(localStorage.getItem("walletBalance"));
+  bal+=amt;
+  localStorage.setItem("walletBalance",bal);
+
+  const history=JSON.parse(localStorage.getItem("walletHistory"));
+  history.push({
+    type:"Deposit",
+    amount:amt,
+    time:new Date().toLocaleString()
+  });
+  localStorage.setItem("walletHistory",JSON.stringify(history));
+
+  document.getElementById("depositAmount").value="";
+  updateWallet();
+}
+
+/* ---------- WITHDRAW ---------- */
+function withdraw(){
+  const amt=Number(document.getElementById("withdrawAmount").value);
+  let bal=Number(localStorage.getItem("walletBalance"));
+
+  if(amt<=0) return alert("Enter valid amount");
+  if(amt>bal) return alert("Insufficient balance");
+
+  bal-=amt;
+  localStorage.setItem("walletBalance",bal);
+
+  const history=JSON.parse(localStorage.getItem("walletHistory"));
+  history.push({
+    type:"Withdraw (Pending)",
+    amount:amt,
+    time:new Date().toLocaleString()
+  });
+  localStorage.setItem("walletHistory",JSON.stringify(history));
+
+  document.getElementById("withdrawAmount").value="";
+  alert("Withdraw request sent (Admin approval pending)");
+  updateWallet();
 }
 </script>
+
 </body>
 </html>
