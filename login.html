@@ -5,30 +5,85 @@
 <title>SuperNFT Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
-.login-box{background:#0a192f;padding:30px;border-radius:12px;width:300px;text-align:center;}
-.login-box input{width:90%;padding:10px;margin:10px 0;border-radius:6px;border:none;}
-.login-box button{padding:10px 20px;background:#38bdf8;color:#020617;border:none;border-radius:6px;cursor:pointer;margin-top:10px;}
-.signup-link{margin-top:15px;display:block;color:#38bdf8;text-decoration:none;}
-.signup-link:hover{color:#00e5ff;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#020617;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.container{
+  background:#0a192f;
+  padding:30px;
+  border-radius:12px;
+  width:300px;
+  text-align:center;
+}
+.container h2{color:#38bdf8;margin-bottom:20px;}
+.container input{
+  width:90%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:6px;
+  border:none;
+  background:#0f172a;
+  color:white;
+}
+.container button{
+  width:95%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  background:#38bdf8;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
+.container a{
+  color:#38bdf8;
+  font-size:14px;
+  text-decoration:none;
+}
 </style>
 </head>
 <body>
-<div class="login-box">
-  <h2>Login</h2>
-  <input type="text" id="username" placeholder="Username"><br>
-  <input type="password" id="password" placeholder="Password"><br>
+
+<div class="container">
+  <h2>SuperNFT Login</h2>
+  <input type="text" id="username" placeholder="Username" required>
+  <input type="password" id="password" placeholder="Password" required>
   <button onclick="login()">Login</button>
-  <a href="signup.html" class="signup-link">Don't have an account? Signup</a>
+  <div style="margin-top:10px;">
+    Don't have an account? <a href="signup.html">Signup</a>
+  </div>
 </div>
 
 <script>
 function login(){
-  // Simple example: always login
-  sessionStorage.setItem("isLoggedIn","true");
-  alert("Login successful!");
-  window.location.href="dashboard.html";
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value.trim();
+
+  const savedUsername = localStorage.getItem("superNFT_username");
+  const savedPassword = localStorage.getItem("superNFT_password");
+
+  if(u === savedUsername && p === savedPassword){
+    sessionStorage.setItem("loggedIn","true");
+    alert("Login successful!");
+    window.location.href="dashboard.html";
+  }else{
+    alert("Wrong username or password!");
+  }
+}
+
+// Prevent dashboard access without login
+if(sessionStorage.getItem("loggedIn")!=="true" && window.location.href.includes("dashboard.html")){
+  window.location.href="index.html";
 }
 </script>
+
 </body>
 </html>
