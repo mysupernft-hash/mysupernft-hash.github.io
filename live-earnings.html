@@ -2,165 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Live Earnings – SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<title>Live Earnings - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:#fff;
-}
-header{
-  position:sticky;
-  top:0;
-  background:#0f172a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b;
-}
-.container{
-  padding:18px;
-}
-.stats{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-.box{
-  background:#0f172a;
-  padding:14px;
-  border-radius:14px;
-  text-align:center;
-}
-.box b{
-  display:block;
-  margin-top:6px;
-  font-size:18px;
-  color:#22c55e;
-}
-.card{
-  background:#0f172a;
-  padding:16px;
-  border-radius:16px;
-  margin-top:15px;
-}
-canvas{
-  width:100%;
-  height:160px;
-}
-.row{
-  display:flex;
-  justify-content:space-between;
-  padding:8px 0;
-  border-bottom:1px dashed #1e293b;
-  font-size:14px;
-}
-.row:last-child{border:none;}
-.back{
-  display:block;
-  margin:20px 0;
-  text-align:center;
-  color:#38bdf8;
-  text-decoration:none;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
+header{position:sticky;top:0;background:#0d1117;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
+header h1{color:#38bdf8;}
+#menuToggle{font-size:28px;cursor:pointer;}
+.menu{position:fixed;left:-250px;top:0;width:250px;height:100%;background:#111827;padding-top:60px;transition:0.3s;display:flex;flex-direction:column;z-index:999;}
+.menu.open{left:0;}
+.menu a{color:#38bdf8;text-decoration:none;padding:12px 20px;display:block;border-bottom:1px solid #1e293b;}
+.menu a:hover{background:#1f2937;}
+#overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:900;}
+.container{padding:20px;}
+h2{margin-bottom:15px;color:#38bdf8;}
+.earnings-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:10px;}
 </style>
 </head>
-
 <body>
 
-<header>⚡ Live Earnings</header>
+<header>
+  <div id="menuToggle">&#9776;</div>
+  <h1>Live Earnings</h1>
+</header>
+
+<div id="overlay"></div>
+
+<div id="sideMenu" class="menu">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="account.html">👤 My Account</a>
+  <a href="my-investments.html">📁 My Investments</a>
+  <a href="wallet.html">💳 Wallet</a>
+  <a href="withdraw.html">💸 Withdraw</a>
+  <a href="live-earnings.html">💹 Live Earnings</a>
+  <a href="admin.html">🛡 Admin</a>
+  <a href="my-team.html">👥 My Team</a>
+  <a href="my-level.html">📊 My Level</a>
+  <a href="calculator.html">📈 Calculator</a>
+  <a href="settings.html">⚙️ Settings</a>
+  <a href="#" id="logoutBtn">🔒 Logout</a>
+</div>
 
 <div class="container">
-
-  <!-- TOP STATS -->
-  <div class="stats">
-    <div class="box">
-      Total Earnings
-      <b id="totalEarn">$0.0000</b>
-    </div>
-    <div class="box">
-      Today Earnings
-      <b id="todayEarn">$0.0000</b>
-    </div>
-  </div>
-
-  <!-- LIVE COUNTER -->
-  <div class="card">
-    <h3>🔴 Live Counter</h3>
-    <b style="font-size:22px;color:#38bdf8" id="liveEarn">$0.0000</b>
-  </div>
-
-  <!-- CHART -->
-  <div class="card">
-    <h3>📈 Earnings Chart (Today)</h3>
-    <canvas id="chart"></canvas>
-  </div>
-
-  <!-- NFT BREAKDOWN -->
-  <div class="card">
-    <h3>🧩 NFT Earnings</h3>
-    <div id="nftList"></div>
-  </div>
-
-  <a class="back" href="dashboard.html">← Back to Dashboard</a>
-
+  <h2>Real-Time Earnings</h2>
+  <div class="earnings-box">Live earnings: $0.0000</div>
 </div>
 
 <script>
-/* ===== LOAD NFT DATA ===== */
-let nfts = JSON.parse(localStorage.getItem("myNFTs")) || [];
-let total=0, today=0, live=0;
-
-/* ===== CALCULATE ===== */
-function calculate(){
-  total=0; today=0; live=0;
-  let now=Date.now();
-  nfts.forEach(n=>{
-    let sec=(now-n.boughtAt)/1000;
-    let earn=sec*(n.daily/86400);
-    total+=earn;
-    live+=earn;
-    if(sec<86400) today+=earn;
-  });
-  totalEarn.innerText="$"+total.toFixed(4);
-  todayEarn.innerText="$"+today.toFixed(4);
-  liveEarn.innerText="$"+live.toFixed(4);
+const menuToggle = document.getElementById("menuToggle");
+const sideMenu = document.getElementById("sideMenu");
+const overlay = document.getElementById("overlay");
+menuToggle.onclick = ()=>{
+  sideMenu.classList.toggle("open");
+  overlay.style.display = sideMenu.classList.contains("open") ? "block" : "none";
 }
-setInterval(calculate,1000);
-
-/* ===== NFT LIST ===== */
-function renderNFT(){
-  let html="";
-  nfts.forEach((n,i)=>{
-    html+=`
-      <div class="row">
-        <span>NFT #${i+1} ($${n.price})</span>
-        <b>$${n.daily.toFixed(2)}/day</b>
-      </div>`;
-  });
-  nftList.innerHTML=html || "No NFTs purchased";
+overlay.onclick = ()=>{
+  sideMenu.classList.remove("open");
+  overlay.style.display = "none";
 }
-renderNFT();
-
-/* ===== SIMPLE CHART ===== */
-let ctx=document.getElementById("chart").getContext("2d");
-function drawChart(){
-  ctx.clearRect(0,0,300,160);
-  ctx.strokeStyle="#38bdf8";
-  ctx.beginPath();
-  ctx.moveTo(0,160);
-  let points=[10,20,30,45,60,75,90];
-  points.forEach((p,i)=>{
-    ctx.lineTo(i*45,160-p);
-  });
-  ctx.stroke();
-}
-drawChart();
 </script>
-
 </body>
 </html>
