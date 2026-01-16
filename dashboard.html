@@ -4,20 +4,18 @@
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;overflow-x:hidden;}
 header{background:#0f172a;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;}
 header h1{margin:0;font-size:22px;color:#38bdf8;}
 header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:8px;color:#00e5ff;}
+.menu-btn{font-size:22px;cursor:pointer;}
 
-/* MENU */
-.menu-btn{position:fixed;top:15px;left:15px;z-index:1100;font-size:22px;cursor:pointer;}
-.menu{position:fixed;top:0;left:-260px;width:260px;height:100%;background:#111827;transition:0.3s;padding-top:60px;z-index:1050;display:flex;flex-direction:column;}
+/* SIDE MENU */
+.menu{position:fixed;top:0;right:-260px;width:260px;height:100%;background:#111827;transition:0.3s;padding-top:60px;z-index:1050;display:flex;flex-direction:column;}
 .menu a{color:#38bdf8;padding:12px 20px;text-decoration:none;font-size:16px;border-bottom:1px solid #1e293b;}
 .menu a:hover{background:#1e293b;}
-.menu.show{left:0;}
+.menu.show{right:0;}
 
 /* SUMMARY GRID */
 .summary-container{display:flex;justify-content:center;gap:30px;padding:12px;flex-wrap:wrap;}
@@ -43,14 +41,20 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 .popup-content{background:#0f172a;margin:60px auto;width:90%;max-width:400px;border-radius:12px;padding:15px;color:white;}
 .popup-content .close{float:right;font-size:20px;color:#38bdf8;cursor:pointer;}
 .popup-content img{width:100%;border-radius:10px;}
+
+/* REFERRAL FULL WIDTH */
+.ref-box{display:flex;gap:6px;align-items:center;overflow-x:auto;white-space:nowrap;padding:6px;}
+.ref-box input{flex:1;}
 </style>
 </head>
 <body>
 
 <header>
-  <span class="menu-btn" onclick="toggleMenu()">☰</span>
   <h1>SuperNFT Dashboard</h1>
-  <div class="wallet" id="walletBalanceHeader">$0.00</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="wallet" id="walletBalanceHeader">$0.00</div>
+    <span class="menu-btn" onclick="toggleMenu()">☰</span>
+  </div>
 </header>
 
 <!-- SIDE MENU -->
@@ -77,7 +81,8 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
   <div class="summary-column">
     <div class="box">📈 Daily Income<b id="dailyIncome">$0.00</b></div>
     <div class="box">💳 Wallet Balance<b id="walletBalance">$0.00</b></div>
-    <div class="box">👥 Referral Link
+    <div class="box ref-box">
+      👥 Referral Link
       <input id="refLink" readonly>
       <button onclick="copyRef()">Copy</button>
     </div>
@@ -175,24 +180,22 @@ function renderNFT(cat="all"){
   });
 }
 renderNFT();
-
 function filterNFT(cat,btn){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   renderNFT(cat);
 }
 
-/* ---------------- BUY & SUMMARY ---------------- */
+/* ---------------- SUMMARY ---------------- */
 function buyNFT(price,daily){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   data.push({price,daily,boughtAt:Date.now()});
   localStorage.setItem("myNFTs",JSON.stringify(data));
   alert("NFT Purchased!");
 }
-
 function updateSummary(){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let invested=0,daily=0,live=0,wallet=100; // example wallet
+  let invested=0,daily=0,live=0,wallet=100; // example
   data.forEach(n=>{
     invested+=n.price;
     daily+=n.daily;
@@ -226,6 +229,5 @@ function openCalculator(){alert("Open Calculator");}
 function openSettings(){alert("Open Settings");}
 function logout(){alert("Logout");}
 </script>
-
 </body>
 </html>
