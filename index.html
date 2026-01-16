@@ -2,12 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Login</title>
 <style>
-body {
-  margin:0;
-  font-family: Arial, sans-serif;
+body{
+  font-family:Arial,sans-serif;
   background:#020617;
   color:white;
   display:flex;
@@ -15,99 +14,81 @@ body {
   align-items:center;
   height:100vh;
 }
-.container {
+.container{
   background:#0a192f;
   padding:30px;
   border-radius:12px;
   width:300px;
+  text-align:center;
   box-shadow:0 0 10px rgba(0,0,0,0.5);
 }
-h2 {
-  text-align:center;
-  margin-bottom:20px;
-  color:#38bdf8;
-}
-input {
+h2{margin-bottom:20px;}
+input{
   width:100%;
   padding:10px;
   margin:8px 0;
   border-radius:6px;
   border:none;
-  background:#1e293b;
-  color:white;
 }
-button {
+button{
   width:100%;
   padding:10px;
-  margin-top:12px;
-  border:none;
-  border-radius:6px;
+  margin-top:10px;
   background:#38bdf8;
   color:#020617;
-  font-weight:bold;
+  border:none;
+  border-radius:6px;
   cursor:pointer;
+  font-weight:bold;
 }
-button:hover {
-  background:#00e5ff;
-}
-.signup {
-  text-align:center;
-  margin-top:15px;
-}
-.signup a {
-  color:#38bdf8;
-  text-decoration:none;
-}
-.signup a:hover {
-  color:#00e5ff;
-}
-#error {
-  color:#ff6b6b;
-  margin-top:5px;
-  text-align:center;
-}
+button:hover{background:#00e5ff;}
+p{margin-top:12px;}
+a{color:#38bdf8;text-decoration:none;}
+a:hover{color:#00e5ff;}
+.error{color:red;margin-top:10px;}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>Login</h2>
+  <h2>SuperNFT Login</h2>
   <input type="text" id="username" placeholder="Username">
   <input type="password" id="password" placeholder="Password">
-  <button id="loginBtn">Login</button>
-  <div id="error"></div>
-  <div class="signup">
-    Don't have an account? <a href="signup.html">Signup</a>
-  </div>
+  <button onclick="login()">Login</button>
+  <p>Don't have an account? <a href="#" onclick="signup()">Sign Up</a></p>
+  <div class="error" id="errorMsg"></div>
 </div>
 
 <script>
-// ----- USERS -----
-const DEFAULT_USER = {username:"Shivam", password:"poiuytrewq"};
-if(!localStorage.getItem("users")){
-  localStorage.setItem("users", JSON.stringify([DEFAULT_USER]));
-}
+// ---------- DEFAULT CREDENTIALS ----------
+const defaultUser = "admin";
+const defaultPass = "poiuytrewq";
 
-// ----- LOGIN FUNCTION -----
-document.getElementById("loginBtn").addEventListener("click", function(){
+// ---------- LOGIN FUNCTION ----------
+function login(){
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-  const errorDiv = document.getElementById("error");
+  const errorMsg = document.getElementById("errorMsg");
 
-  const user = users.find(u => u.username === username && u.password === password);
-  if(user){
-    localStorage.setItem("loggedInUser", JSON.stringify(user));
+  // Check credentials
+  if((username === defaultUser && password === defaultPass) || 
+     (localStorage.getItem("username") === username && localStorage.getItem("password") === password)) {
+    // Save login state
+    localStorage.setItem("loggedInUser", username);
     window.location.href = "dashboard.html";
   } else {
-    errorDiv.innerText = "Wrong username or password!";
+    errorMsg.innerText = "Wrong username or password!";
   }
-});
+}
 
-// ----- AUTO REDIRECT -----
-window.onload = function(){
-  if(localStorage.getItem("loggedInUser")){
-    window.location.href = "dashboard.html";
+// ---------- SIGNUP FUNCTION ----------
+function signup(){
+  const username = prompt("Enter new username:");
+  const password = prompt("Enter new password:");
+  if(username && password){
+    localStorage.setItem("username", username);
+    localStorage.setItem("password", password);
+    alert("Signup successful! Please login now.");
   }
 }
 </script>
