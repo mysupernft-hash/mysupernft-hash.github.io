@@ -175,6 +175,9 @@ header .walletBalance{
 <!-- MENU OVERLAY -->
 <div id="menuOverlay" onclick="closeMenu(event)">
   <div id="menuContent" onclick="event.stopPropagation()">
+    <div class="box" onclick="window.location.href='deposit.html'">
+  💵 Deposit<br>
+  <b>Deposit Now</b>
     <a href="account.html">👤 My Account</a>
     <a href="my-investments.html">📁 My Investments</a>
     <a href="wallet.html">💳 Wallet</a>
@@ -193,9 +196,6 @@ header .walletBalance{
 <div class="summary">
   <div class="box" onclick="window.location.href='my-investments.html'">
     💰 Total Invested<br>
-    <div class="box" onclick="window.location.href='deposit.html'">
-  💵 Deposit<br>
-  <b>Deposit Now</b>
 </div>
     <b id="totalInvested">$0.00</b>
   </div>
