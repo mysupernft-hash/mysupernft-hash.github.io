@@ -1,0 +1,93 @@
+<!-- admin-withdraw.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin – Withdraw Approval</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#020617;color:#fff}
+header{position:fixed;top:0;left:0;right:0;
+background:#020617;border-bottom:1px solid #1e293b;
+padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
+.main{padding:80px 15px}
+.card{background:#0f172a;border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+button{padding:8px 14px;border:none;border-radius:10px;
+background:#38bdf8;font-weight:bold;margin-left:6px}
+.small{font-size:13px;opacity:.8}
+.back{color:#38bdf8;text-decoration:none;display:inline-block;margin-bottom:10px}
+</style>
+</head>
+
+<body>
+
+<header>🛡 Withdraw Approvals</header>
+
+<div class="main">
+
+<a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
+
+<div id="list"></div>
+
+</div>
+
+<script>
+// 🔐 ADMIN CHECK
+if(sessionStorage.getItem("adminSession")!=="active"){
+  alert("Admin access denied");
+  location.href="dashboard.html";
+}
+
+// LOAD REQUESTS
+function loadRequests(){
+  const box=document.getElementById("list");
+  box.innerHTML="";
+  const reqs=JSON.parse(localStorage.getItem("withdrawRequests"))||[];
+  if(reqs.length===0){
+    box.innerHTML="<div class='card'>No pending requests</div>";
+    return;
+  }
+  reqs.forEach((r,i)=>{
+    box.innerHTML+=`
+      <div class="card">
+        <div class="row">
+          <b>User:</b><span>${r.user}</span>
+        </div>
+        <div class="row">
+          <b>Amount:</b><span>$${r.amount.toFixed(2)}</span>
+        </div>
+        <div class="row small">
+          <span>${new Date(r.time).toLocaleString()}</span>
+          <div>
+            <button onclick="approve(${i})">Approve</button>
+            <button onclick="reject(${i})">Reject</button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+loadRequests();
+
+// APPROVE
+function approve(i){
+  let reqs=JSON.parse(localStorage.getItem("withdrawRequests"))||[];
+  reqs.splice(i,1);
+  localStorage.setItem("withdrawRequests",JSON.stringify(reqs));
+  alert("Withdraw approved");
+  loadRequests();
+}
+
+// REJECT
+function reject(i){
+  let reqs=JSON.parse(localStorage.getItem("withdrawRequests"))||[];
+  reqs.splice(i,1);
+  localStorage.setItem("withdrawRequests",JSON.stringify(reqs));
+  alert("Withdraw rejected");
+  loadRequests();
+}
+</script>
+
+</body>
+</html>
