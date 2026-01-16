@@ -2,127 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Team – SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<title>My Team - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:#fff;
-}
-header{
-  position:sticky;
-  top:0;
-  background:#0f172a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  color:#22c55e;
-  border-bottom:1px solid #1e293b;
-}
-.container{
-  padding:20px;
-}
-.box{
-  background:#0f172a;
-  padding:15px;
-  border-radius:14px;
-  margin-bottom:15px;
-}
-.box h3{
-  margin:0 0 10px;
-  color:#38bdf8;
-}
-.level{
-  background:#020617;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:10px;
-  border:1px solid #1e293b;
-}
-.member{
-  font-size:14px;
-  padding:6px 0;
-  border-bottom:1px dashed #1e293b;
-}
-.member:last-child{
-  border:none;
-}
-.ref{
-  word-break:break-all;
-  color:#22c55e;
-}
-.back{
-  display:block;
-  margin-top:20px;
-  text-align:center;
-  color:#38bdf8;
-  text-decoration:none;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
+header{position:sticky;top:0;background:#0d1117;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
+header h1{color:#38bdf8;}
+#menuToggle{font-size:28px;cursor:pointer;}
+.menu{position:fixed;left:-250px;top:0;width:250px;height:100%;background:#111827;padding-top:60px;transition:0.3s;display:flex;flex-direction:column;z-index:999;}
+.menu.open{left:0;}
+.menu a{color:#38bdf8;text-decoration:none;padding:12px 20px;display:block;border-bottom:1px solid #1e293b;}
+.menu a:hover{background:#1f2937;}
+#overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:900;}
+.container{padding:20px;}
+h2{margin-bottom:15px;color:#38bdf8;}
+.team-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:10px;}
 </style>
 </head>
-
 <body>
 
-<header>👥 My Team</header>
+<header>
+  <div id="menuToggle">&#9776;</div>
+  <h1>My Team</h1>
+</header>
+
+<div id="overlay"></div>
+
+<div id="sideMenu" class="menu">
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="account.html">👤 My Account</a>
+  <a href="my-investments.html">📁 My Investments</a>
+  <a href="wallet.html">💳 Wallet</a>
+  <a href="withdraw.html">💸 Withdraw</a>
+  <a href="live-earnings.html">💹 Live Earnings</a>
+  <a href="admin.html">🛡 Admin</a>
+  <a href="my-team.html">👥 My Team</a>
+  <a href="my-level.html">📊 My Level</a>
+  <a href="calculator.html">📈 Calculator</a>
+  <a href="settings.html">⚙️ Settings</a>
+  <a href="#" id="logoutBtn">🔒 Logout</a>
+</div>
 
 <div class="container">
-
-  <div class="box">
-    <h3>🔗 Your Referral Link</h3>
-    <div class="ref" id="refLink"></div>
-  </div>
-
-  <div class="box">
-    <h3>📊 Team Summary</h3>
-    <div>Total Team Members: <b id="totalTeam">0</b></div>
-  </div>
-
-  <div class="box">
-    <h3>🌱 Level Wise Team</h3>
-    <div id="levels"></div>
-  </div>
-
-  <a class="back" href="dashboard.html">← Back to Dashboard</a>
-
+  <h2>Team Referral Tree</h2>
+  <div class="team-box">No team members yet.</div>
 </div>
 
 <script>
-/* ===== USER REF CODE ===== */
-let userRef = localStorage.getItem("refCode") || "SNFT848174";
-document.getElementById("refLink").innerText =
-  location.origin + "/signup.html?ref=" + userRef;
-
-/* ===== DEMO TEAM DATA (Future backend replace) ===== */
-let teamData = {
-  level1:["UserA","UserB","UserC"],
-  level2:["UserD","UserE"],
-  level3:["UserF"]
-};
-
-let levelsDiv = document.getElementById("levels");
-let total = 0;
-
-Object.keys(teamData).forEach(level=>{
-  let members = teamData[level];
-  total += members.length;
-
-  let html = `<div class="level">
-    <b>${level.toUpperCase()}</b>
-  `;
-
-  members.forEach(m=>{
-    html += `<div class="member">👤 ${m}</div>`;
-  });
-
-  html += `</div>`;
-  levelsDiv.innerHTML += html;
-});
-
-document.getElementById("totalTeam").innerText = total;
+const menuToggle = document.getElementById("menuToggle");
+const sideMenu = document.getElementById("sideMenu");
+const overlay = document.getElementById("overlay");
+menuToggle.onclick = ()=>{
+  sideMenu.classList.toggle("open");
+  overlay.style.display = sideMenu.classList.contains("open") ? "block" : "none";
+}
+overlay.onclick = ()=>{
+  sideMenu.classList.remove("open");
+  overlay.style.display = "none";
+}
 </script>
-
 </body>
 </html>
