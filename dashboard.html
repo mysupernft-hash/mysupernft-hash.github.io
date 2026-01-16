@@ -192,6 +192,9 @@ main{
 <main>
 
 <!-- SUMMARY -->
+  <a href="#" id="liveBtn">📈 Live Earnings</a>
+<a href="#" id="teamBtn">👥 My Team</a>
+<a href="#" id="levelBtn">📊 My Level</a>
 <div class="summary">
   <div class="box" onclick="location.href='my-investments.html'">
     💰 Total Invested<br><b id="totalInvested">$0.00</b>
@@ -325,6 +328,19 @@ function update(){
   walletTop.innerText=wallet.toFixed(2);
 }
 setInterval(update,1000);
+</script>
+
+  <script>
+// JS code dashboard.html ke <script> section ke end me lagao
+document.getElementById("liveBtn").onclick = function(){
+    window.location.href = "live-earnings.html";
+}
+document.getElementById("teamBtn").onclick = function(){
+    window.location.href = "my-team.html";
+}
+document.getElementById("levelBtn").onclick = function(){
+    window.location.href = "my-level.html";
+}
 </script>
 
 </body>
