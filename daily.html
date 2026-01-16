@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Daily Income - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ====== STYLES ====== -->
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#020617;
+  color:white;
+}
+header{
+  position:sticky;
+  top:0;
+  background:#0a192f;
+  z-index:1000;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #1e293b;
+}
+header .logo{
+  font-size:22px;
+  font-weight:bold;
+  color:#38bdf8;
+}
+header .walletBalance{
+  font-size:16px;
+  color:#00e5ff;
+}
+.menu-icon{
+  font-size:24px;
+  cursor:pointer;
+  display:block;
+}
+#menuOverlay{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  z-index:999;
+}
+#menuContent{
+  background:#0f172a;
+  width:250px;
+  height:100%;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+#menuContent a{
+  color:#38bdf8;
+  text-decoration:none;
+  padding:10px 0;
+  font-size:16px;
+}
+#menuContent a:hover{color:#00e5ff;}
+.summary{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-around;
+  gap:10px;
+  margin:15px;
+}
+.summary .box{
+  background:#0f172a;
+  padding:12px 18px;
+  border-radius:12px;
+  text-align:center;
+  min-width:140px;
+  cursor:pointer;
+}
+.summary .box:hover{
+  background:#1e293b;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="menu-icon" onclick="openMenu()">☰</span>
+  <div class="logo">Daily Income</div>
+  <div class="walletBalance" id="walletBalanceHeader">$0.00</div>
+</header>
+
+<!-- MENU OVERLAY -->
+<div id="menuOverlay" onclick="closeMenu(event)">
+  <div id="menuContent" onclick="event.stopPropagation()">
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="my-investments.html">📁 My Investments</a>
+    <a href="wallet.html">💳 Wallet</a>
+    <a href="withdraw.html">💸 Withdraw</a>
+    <a href="live-earnings.html">💹 Live Earnings</a>
+    <a href="admin.html">🛡 Admin</a>
+    <a href="my-team.html">👥 My Team</a>
+    <a href="my-level.html">📊 My Level</a>
+    <a href="calculator.html">📈 Calculator</a>
+    <a href="settings.html">⚙️ Settings</a>
+    <a href="#" onclick="logout()">🔒 Logout</a>
+  </div>
+</div>
+
+<!-- DAILY INCOME SUMMARY -->
+<div class="summary">
+  <div class="box">
+    Total Daily Income<br>
+    <b id="totalDaily">$0.00</b>
+  </div>
+</div>
+
+<!-- LIST OF DAILY EARNINGS PER NFT -->
+<div id="dailyList" style="padding:20px;"></div>
+
+<script>
+/* -------- MENU -------- */
+function openMenu(){ document.getElementById("menuOverlay").style.display="block"; }
+function closeMenu(e){ document.getElementById("menuOverlay").style.display="none"; }
+
+/* -------- LOGOUT -------- */
+function logout(){
+  alert("Logged out successfully!");
+  window.location.href="index.html";
+}
+
+/* -------- DAILY INCOME -------- */
+function updateDaily(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  const dailyList = document.getElementById("dailyList");
+  dailyList.innerHTML = "";
+  let totalDaily = 0;
+  
+  data.forEach((n,i)=>{
+    const sec = (Date.now()-n.boughtAt)/1000;
+    const earned = sec*(n.daily/86400);
+    totalDaily += earned;
+    const div = document.createElement("div");
+    div.style.background="#0f172a";
+    div.style.marginBottom="10px";
+    div.style.padding="10px";
+    div.style.borderRadius="12px";
+    div.innerHTML = `NFT #${i+1}: Earned $${earned.toFixed(4)} / Daily $${n.daily}`;
+    dailyList.appendChild(div);
+  });
+
+  document.getElementById("totalDaily").innerText = "$" + totalDaily.toFixed(4);
+  document.getElementById("walletBalanceHeader").innerText = "$" + totalDaily.toFixed(4);
+}
+setInterval(updateDaily,1000);
+</script>
+
+</body>
+</html>
