@@ -4,84 +4,38 @@
 <meta charset="UTF-8">
 <title>SuperNFT Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#020617;
-  color:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.login-box{
-  background:#0f172a;
-  padding:30px;
-  border-radius:16px;
-  width:320px;
-  box-shadow:0 0 20px rgba(0,0,0,0.5);
-}
-.login-box h2{
-  text-align:center;
-  margin-bottom:20px;
-  color:#38bdf8;
-}
-.login-box input{
-  width:100%;
-  padding:10px;
-  margin-bottom:15px;
-  border:none;
-  border-radius:8px;
-  background:#020617;
-  color:white;
-}
-.login-box button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#38bdf8;
-  font-weight:bold;
-  cursor:pointer;
-}
-.login-box button:hover{
-  background:#00e5ff;
-}
-.signup{
-  text-align:center;
-  margin-top:15px;
-}
-.signup a{
-  color:#38bdf8;
-  text-decoration:none;
-}
+body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;}
+.container{background:#0a192f;padding:30px;border-radius:12px;width:300px;text-align:center;}
+input{width:90%;padding:8px;margin:8px 0;border-radius:6px;border:none;}
+button{padding:8px 16px;background:#38bdf8;color:#020617;border:none;border-radius:6px;cursor:pointer;}
+a{color:#38bdf8;text-decoration:none;}
 </style>
 </head>
-
 <body>
-
-<div class="login-box">
-  <h2>SuperNFT Login</h2>
-
-  <input type="text" placeholder="Username">
-  <input type="password" placeholder="Password">
-
-  <button onclick="login()">Login</button>
-
-  <div class="signup">
-    Don’t have an account? <a href="signup.html">Signup</a>
-  </div>
+<div class="container">
+  <h2>Login</h2>
+  <input type="text" id="user" placeholder="Username"><br>
+  <input type="password" id="pass" placeholder="Password"><br>
+  <button onclick="login()">Login</button><br><br>
+  Don't have an account? <a href="signup.html">Signup</a>
 </div>
 
 <script>
 function login(){
-  // ✅ LOGIN BYPASS (NO PASSWORD CHECK)
-  localStorage.setItem("loggedInUser", "demoUser");
-  window.location.href = "dashboard.html";
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
+
+  const savedUser = localStorage.getItem("snft_user");
+  const savedPass = localStorage.getItem("snft_pass");
+
+  if(user === savedUser && pass === savedPass){
+    localStorage.setItem("snft_logged", "true");
+    window.location.href = "dashboard.html";
+  } else {
+    alert("Wrong username or password!");
+  }
 }
 </script>
-
 </body>
 </html>
