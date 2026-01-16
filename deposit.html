@@ -2,98 +2,118 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Deposit - SuperNFT</title>
+<title>Deposit | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
 header{position:sticky;top:0;background:#0a192f;z-index:1000;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
 header .logo{font-size:22px;font-weight:bold;color:#38bdf8;}
+header .walletBalance{font-size:16px;color:#00e5ff;}
 .menu-icon{font-size:24px;cursor:pointer;}
-#menuOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;z-index:999;}
-#menuContent{background:#111827;width:250px;height:100%;padding:20px;display:flex;flex-direction:column;}
-#menuContent a{color:#38bdf8;text-decoration:none;padding:12px 0;font-size:16px;}
-#menuContent a:hover{color:#00e5ff;}
-.deposit-box{max-width:400px;margin:30px auto;padding:20px;background:#0f172a;border-radius:12px;text-align:center;}
-.deposit-box input{width:80%;padding:8px;border-radius:6px;border:none;margin-bottom:15px;background:#1e293b;color:white;}
-.deposit-box button{padding:10px 20px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
+.container{padding:20px;max-width:600px;margin:0 auto;}
+h1{text-align:center;color:#38bdf8;margin-bottom:20px;}
+.deposit-box{background:#0f172a;padding:20px;border-radius:12px;text-align:center;margin-bottom:20px;}
+.deposit-box img{max-width:100%;border-radius:12px;margin-top:10px;cursor:pointer;}
+.deposit-box input{width:80%;padding:10px;border-radius:6px;border:none;margin-top:10px;}
+.deposit-box button{padding:10px 20px;margin-top:10px;border:none;border-radius:6px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
+.copy-btn{margin-top:10px;padding:6px 12px;border:none;border-radius:6px;background:#38bdf8;color:#020617;cursor:pointer;}
+.summary{display:flex;flex-wrap:wrap;justify-content:space-around;gap:10px;margin:15px;}
+.summary .box{background:#0f172a;padding:12px 18px;border-radius:12px;text-align:center;min-width:140px;cursor:pointer;}
+.summary .box b{display:block;font-size:18px;color:#00e5ff;margin-top:5px;}
+.summary .box:hover{background:#1e293b;}
 </style>
 </head>
 <body>
 
-<!-- ====== LOGIN CHECK ====== -->
-<script>
-if(!localStorage.getItem("isLoggedIn") || localStorage.getItem("isLoggedIn")!=="true"){
-  window.location.href="index.html";
-}
-</script>
-
 <header>
-  <span class="menu-icon" onclick="openMenu()">☰</span>
-  <div class="logo">Deposit - SuperNFT</div>
+  <span class="menu-icon" onclick="window.location.href='dashboard.html'">🏠</span>
+  <div class="logo">SuperNFT Deposit</div>
   <div class="walletBalance" id="walletBalanceHeader">$0.00</div>
 </header>
 
-<!-- ====== MENU ====== -->
-<div id="menuOverlay" onclick="closeMenu(event)">
-  <div id="menuContent" onclick="event.stopPropagation()">
-    <a href="dashboard.html">🏠 Dashboard</a>
-    <a href="account.html">👤 My Account</a>
-    <a href="my-investments.html">📁 My Investments</a>
-    <a href="deposit.html">💵 Deposit</a>
-    <a href="wallet.html">💳 Wallet</a>
-    <a href="withdraw.html">💸 Withdraw</a>
-    <a href="live-earnings.html">💹 Live Earnings</a>
-    <a href="admin.html">🛡 Admin</a>
-    <a href="my-team.html">👥 My Team</a>
-    <a href="my-level.html">📊 My Level</a>
-    <a href="calculator.html">📈 Calculator</a>
-    <a href="settings.html">⚙️ Settings</a>
-    <a href="#" onclick="logout()">🔒 Logout</a>
+<!-- SUMMARY BOXES (Dashboard style) -->
+<div class="summary">
+  <div class="box" id="totalInvestedBox">Total Invested<br><b>$0.00</b></div>
+  <div class="box" id="dailyIncomeBox">Daily Income<br><b>$0.00</b></div>
+  <div class="box" id="liveEarningsBox">Live Earnings<br><b>$0.0000</b></div>
+  <div class="box" id="walletBox">Wallet Balance<br><b>$0.00</b></div>
+</div>
+
+<div class="container">
+  <h1>Deposit Funds</h1>
+
+  <div class="deposit-box">
+    <p>Send your deposit to this Binance wallet address:</p>
+    <b id="depositAddress">0xaf984e5d8be77dda62cd0cd89107d1a3b1b1038a</b>
+    <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
+    <img src="images/IMG_0757.jpeg" alt="Binance QR Code" onclick="copyAddress()">
+    <p>Minimum deposit: $10</p>
+    <input type="number" id="depositAmount" placeholder="Enter deposit amount in $" min="10">
+    <button onclick="confirmDeposit()">Deposit Now</button>
   </div>
 </div>
 
-<!-- ====== DEPOSIT BOX ====== -->
-<div class="deposit-box">
-  <h2>Deposit Funds</h2>
-  <input type="number" id="depositAmount" placeholder="Enter amount in $" min="1">
-  <br>
-  <button onclick="makeDeposit()">Deposit Now</button>
-</div>
-
 <script>
-/* MENU */
-function openMenu(){document.getElementById("menuOverlay").style.display="block";}
-function closeMenu(e){document.getElementById("menuOverlay").style.display="none";}
-
-/* WALLET BALANCE */
-function updateWallet(){
-  let wallet = parseFloat(localStorage.getItem("walletBalance")||0);
-  document.getElementById("walletBalanceHeader").innerText = "$"+wallet.toFixed(2);
+/* ---------- Wallet Address Copy ---------- */
+function copyAddress(){
+  const address = document.getElementById('depositAddress').innerText;
+  navigator.clipboard.writeText(address);
+  alert("Wallet address copied: " + address);
 }
-updateWallet();
 
-/* DEPOSIT */
-function makeDeposit(){
-  let amount = parseFloat(document.getElementById("depositAmount").value);
-  if(!amount || amount<=0){alert("Enter valid amount"); return;}
-  
-  let wallet = parseFloat(localStorage.getItem("walletBalance")||0);
+/* ---------- Dashboard Summary Update ---------- */
+function updateSummary(){
+  const wallet = parseFloat(localStorage.getItem('walletBalance')) || 0;
+  const totalInvested = parseFloat(localStorage.getItem('totalInvested')) || 0;
+  const dailyIncome = parseFloat(localStorage.getItem('dailyIncome')) || 0;
+  const liveEarnings = parseFloat(localStorage.getItem('liveEarnings')) || 0;
+
+  document.getElementById('walletBalanceHeader').innerText = "$" + wallet.toFixed(2);
+  document.getElementById('walletBox').querySelector('b').innerText = "$" + wallet.toFixed(2);
+  document.getElementById('totalInvestedBox').querySelector('b').innerText = "$" + totalInvested.toFixed(2);
+  document.getElementById('dailyIncomeBox').querySelector('b').innerText = "$" + dailyIncome.toFixed(2);
+  document.getElementById('liveEarningsBox').querySelector('b').innerText = "$" + liveEarnings.toFixed(4);
+}
+
+/* ---------- Deposit Logic ---------- */
+function confirmDeposit(){
+  const amount = parseFloat(document.getElementById('depositAmount').value);
+  if(isNaN(amount) || amount < 10){
+    alert("Minimum deposit is $10");
+    return;
+  }
+
+  // Update wallet and total invested
+  let wallet = parseFloat(localStorage.getItem('walletBalance')) || 0;
+  let totalInvested = parseFloat(localStorage.getItem('totalInvested')) || 0;
+
   wallet += amount;
-  localStorage.setItem("walletBalance", wallet);
-  
-  alert("Deposit Successful: $"+amount.toFixed(2));
-  document.getElementById("depositAmount").value="";
-  updateWallet();
+  totalInvested += amount;
+
+  localStorage.setItem('walletBalance', wallet.toFixed(2));
+  localStorage.setItem('totalInvested', totalInvested.toFixed(2));
+
+  // Optional: simulate daily income and live earnings
+  let dailyIncome = parseFloat(localStorage.getItem('dailyIncome')) || 0;
+  dailyIncome += amount * 0.01; // 1% daily income simulation
+  localStorage.setItem('dailyIncome', dailyIncome.toFixed(2));
+
+  let liveEarnings = parseFloat(localStorage.getItem('liveEarnings')) || 0;
+  liveEarnings += amount * 0.005; // live earnings simulation
+  localStorage.setItem('liveEarnings', liveEarnings.toFixed(4));
+
+  // Update summary boxes immediately
+  updateSummary();
+
+  alert("Deposit of $" + amount + " initiated!\nSend funds to: 0xaf984e5d8be77dda62cd0cd89107d1a3b1b1038a");
+
+  document.getElementById('depositAmount').value = '';
 }
 
-/* LOGOUT */
-function logout(){
-  localStorage.removeItem("isLoggedIn");
-  localStorage.removeItem("username");
-  alert("Logged out successfully!");
-  window.location.href="index.html";
-}
+/* ---------- Load summary on page load ---------- */
+window.onload = function(){
+  updateSummary();
+};
 </script>
 
 </body>
