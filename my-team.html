@@ -1,0 +1,61 @@
+<!-- my-team.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>My Team – SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{margin:0;font-family:Arial;background:#020617;color:#fff}
+header{position:fixed;top:0;left:0;right:0;
+background:#020617;border-bottom:1px solid #1e293b;
+padding:14px;text-align:center;color:#38bdf8;font-weight:bold;z-index:10}
+.main{padding:80px 15px}
+.back{color:#38bdf8;text-decoration:none;display:inline-block;margin-bottom:10px}
+.tree{list-style:none;padding-left:20px;}
+.tree li{margin:6px 0;position:relative;}
+.tree li::before{content:"";position:absolute;top:-6px;left:-12px;width:10px;height:1px;background:#38bdf8;}
+.tree li::after{content:"";position:absolute;top:-6px;left:-12px;width:1px;height:18px;background:#38bdf8;}
+.tree li:first-child::after{display:none;}
+</style>
+</head>
+
+<body>
+<header>👥 My Team</header>
+<div class="main">
+<a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
+
+<ul id="teamTree" class="tree"></ul>
+</div>
+
+<script>
+// Dummy data for example (replace with real referrals)
+const users = JSON.parse(localStorage.getItem("users")) || [
+  {id:1,name:"You",referrals:[2,3]},
+  {id:2,name:"Alice",referrals:[4]},
+  {id:3,name:"Bob",referrals:[]},
+  {id:4,name:"Charlie",referrals:[]}
+];
+
+function buildTree(userId){
+  const user = users.find(u=>u.id===userId);
+  if(!user) return null;
+  const li = document.createElement("li");
+  li.textContent = user.name;
+  if(user.referrals.length>0){
+    const ul = document.createElement("ul");
+    user.referrals.forEach(rid=>{
+      const child = buildTree(rid);
+      if(child) ul.appendChild(child);
+    });
+    li.appendChild(ul);
+  }
+  return li;
+}
+
+const treeRoot = buildTree(1);
+if(treeRoot) document.getElementById("teamTree").appendChild(treeRoot);
+</script>
+
+</body>
+</html>
