@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{box-sizing:border-box}
 body{
   margin:0;
   font-family:Arial, sans-serif;
@@ -14,16 +13,18 @@ body{
   color:#fff;
   text-align:center;
 }
-header{padding:60px 20px}
+header{
+  padding:60px 20px;
+}
 .logo{
   font-size:38px;
   font-weight:800;
-  letter-spacing:1px
+  letter-spacing:1px;
 }
 .subtitle{
   margin-top:10px;
   font-size:16px;
-  opacity:.85
+  opacity:0.85;
 }
 .hero-btn{
   margin-top:30px;
@@ -34,47 +35,52 @@ header{padding:60px 20px}
   background:#00e5ff;
   color:#000;
   font-weight:bold;
-  cursor:pointer
+  cursor:pointer;
 }
-.hero-btn:hover{background:#00c4db}
-
+.hero-btn:hover{
+  background:#00c4db;
+}
 .stats{
   display:flex;
   justify-content:center;
   gap:20px;
   margin-top:40px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 .stat-box{
-  background:rgba(255,255,255,.08);
+  background:rgba(255,255,255,0.08);
   padding:20px;
   border-radius:14px;
-  width:160px
+  width:160px;
 }
 .stat-box h2{
   margin:0;
-  color:#00e5ff
+  color:#00e5ff;
 }
-
-.section{padding:50px 20px}
+.section{
+  padding:50px 20px;
+  text-align:center;
+}
 .cards{
   display:flex;
   justify-content:center;
   gap:20px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 .card{
-  background:rgba(255,255,255,.07);
+  background:rgba(255,255,255,0.07);
   padding:25px;
   width:260px;
-  border-radius:16px
+  border-radius:16px;
 }
-.card h3{margin-top:10px}
-
+.card h3{
+  margin-top:10px;
+}
 footer{
   padding:20px;
-  opacity:.6;
-  font-size:14px
+  text-align:center;
+  opacity:0.6;
+  font-size:14px;
 }
 </style>
 </head>
@@ -87,7 +93,7 @@ footer{
     NFT Power • Earn Rewards • Stake & Grow
   </div>
 
-  <button class="hero-btn" onclick="goDashboard()">
+  <button class="hero-btn" onclick="openLogin()">
     Login / Dashboard
   </button>
 
@@ -107,7 +113,7 @@ footer{
   </div>
 </header>
 
-<section class="section">
+<div class="section">
   <h2>Why SuperNFT?</h2>
   <div class="cards">
     <div class="card">
@@ -126,38 +132,25 @@ footer{
       <p>Stake NFTs and earn daily rewards.</p>
     </div>
   </div>
-</section>
+</div>
 
 <footer>
   © 2026 SuperNFT • All Rights Reserved
 </footer>
 
 <script>
-/* ===== SAFE REDIRECT ===== */
-function goDashboard(){
-  // login.html ho to wahan jaayega, warna dashboard.html
-  fetch("login.html",{method:"HEAD"})
-    .then(()=>window.location.href="login.html")
-    .catch(()=>window.location.href="dashboard.html");
-}
-  function logout(){
-  if(confirm("Are you sure you want to logout?")){
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.href = "index.html"; // Redirect to homepage after logout
-  }
+function openLogin(){
+  window.location.href = "login.html";
 }
 
-/* ===== REFERRAL CAPTURE ===== */
-(function(){
-  const params=new URLSearchParams(window.location.search);
-  const ref=params.get("ref");
-  if(ref && !localStorage.getItem("refBy")){
-    localStorage.setItem("refBy",ref);
-    console.log("Referral saved:",ref);
-  }
-})();
+// 🔗 REFERRAL CAPTURE
+const params = new URLSearchParams(window.location.search);
+const ref = params.get("ref");
+if(ref && !localStorage.getItem("refBy")){
+    localStorage.setItem("refBy", ref);
+    console.log("Referral saved:", ref);
+}
 </script>
-
+  
 </body>
 </html>
