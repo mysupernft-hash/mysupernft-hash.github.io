@@ -2,21 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Pro Dashboard</title>
+<title>SuperNFT Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;overflow-x:hidden;}
-header{position:sticky;top:0;background:#0f172a;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;z-index:1000;}
+header{background:#0f172a;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;}
 header h1{margin:0;font-size:22px;color:#38bdf8;}
 header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:8px;color:#00e5ff;}
-
-/* SUMMARY ROW */
-.summary{display:flex;justify-content:center;gap:15px;padding:12px;background:#0f172a;position:sticky;top:52px;z-index:999;}
-.box{background:#1e293b;padding:12px 18px;border-radius:12px;text-align:center;min-width:120px;flex:1;}
-.box b{display:block;margin-top:6px;color:#00e5ff;font-size:16px;}
 
 /* MENU */
 .menu-btn{position:fixed;top:15px;left:15px;z-index:1100;font-size:22px;cursor:pointer;}
@@ -24,6 +18,13 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 .menu a{color:#38bdf8;padding:12px 20px;text-decoration:none;font-size:16px;border-bottom:1px solid #1e293b;}
 .menu a:hover{background:#1e293b;}
 .menu.show{left:0;}
+
+/* SUMMARY GRID */
+.summary-container{display:flex;justify-content:center;gap:30px;padding:12px;flex-wrap:wrap;}
+.summary-column{display:flex;flex-direction:column;gap:12px;flex:1;}
+.box{background:#1e293b;padding:12px 18px;border-radius:12px;text-align:center;}
+.box b{display:block;margin-top:6px;color:#00e5ff;font-size:16px;}
+.box input{width:100%;padding:6px;margin-top:6px;border:none;border-radius:6px;background:#0f172a;color:#38bdf8;}
 
 /* NFT GRID */
 .tabs{display:flex;justify-content:center;gap:10px;margin-top:12px;overflow-x:auto;}
@@ -38,16 +39,10 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 .card button{width:100%;padding:6px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;margin-top:6px;}
 
 /* POPUP */
-#popup,#teamPopup,#settingsPopup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1200;}
+.popup{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1200;}
 .popup-content{background:#0f172a;margin:60px auto;width:90%;max-width:400px;border-radius:12px;padding:15px;color:white;}
 .popup-content .close{float:right;font-size:20px;color:#38bdf8;cursor:pointer;}
 .popup-content img{width:100%;border-radius:10px;}
-
-/* CHART */
-#earningsChart{background:#1e293b;padding:15px;border-radius:12px;margin-top:12px;}
-
-/* RESPONSIVE */
-@media(max-width:600px){.summary{flex-direction:column;align-items:center;}.box{min-width:80%;}}
 </style>
 </head>
 <body>
@@ -55,18 +50,10 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 <header>
   <span class="menu-btn" onclick="toggleMenu()">☰</span>
   <h1>SuperNFT Dashboard</h1>
-  <div class="wallet" id="walletBalance">$0.00</div>
+  <div class="wallet" id="walletBalanceHeader">$0.00</div>
 </header>
 
-<!-- SUMMARY -->
-<div class="summary">
-  <div class="box">💰 Total Invested<b id="totalInvested">$0.00</b></div>
-  <div class="box">📈 Daily Income<b id="dailyIncome">$0.00</b></div>
-  <div class="box">⚡ Live Earnings<b id="liveEarnings">$0.0000</b></div>
-  <div class="box">💳 Wallet Balance<b id="walletBalance2">$0.00</b></div>
-</div>
-
-<!-- MENU -->
+<!-- SIDE MENU -->
 <div class="menu" id="sideMenu">
   <a href="account.html">👤 My Account</a>
   <a href="my-investments.html">📁 My Investments</a>
@@ -81,6 +68,22 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
   <a href="#" onclick="logout()">🔒 Logout</a>
 </div>
 
+<!-- SUMMARY GRID -->
+<div class="summary-container">
+  <div class="summary-column">
+    <div class="box">💰 Total Invested<b id="totalInvested">$0.00</b></div>
+    <div class="box">⚡ Live Earnings<b id="liveEarnings">$0.0000</b></div>
+  </div>
+  <div class="summary-column">
+    <div class="box">📈 Daily Income<b id="dailyIncome">$0.00</b></div>
+    <div class="box">💳 Wallet Balance<b id="walletBalance">$0.00</b></div>
+    <div class="box">👥 Referral Link
+      <input id="refLink" readonly>
+      <button onclick="copyRef()">Copy</button>
+    </div>
+  </div>
+</div>
+
 <!-- NFT CATEGORIES -->
 <div class="tabs">
   <button class="active" onclick="filterNFT('all',this)">All</button>
@@ -93,8 +96,8 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
 <!-- NFT GRID -->
 <div class="grid" id="nftGrid"></div>
 
-<!-- POPUPS -->
-<div id="popup" class="popup-content">
+<!-- POPUP -->
+<div id="popup" class="popup">
   <div class="popup-content">
     <span class="close" onclick="closePopup()">✖</span>
     <img id="popupImg" src="">
@@ -102,30 +105,10 @@ header .wallet{font-size:16px;background:#1e293b;padding:6px 12px;border-radius:
   </div>
 </div>
 
-<div id="teamPopup" class="popup-content">
-  <div class="popup-content">
-    <span class="close" onclick="closeTeam()">✖</span>
-    <h3>Team Referral Tree</h3>
-    <p>Team structure will appear here.</p>
-  </div>
-</div>
-
-<div id="settingsPopup" class="popup-content">
-  <div class="popup-content">
-    <span class="close" onclick="closeSettings()">✖</span>
-    <h3>Settings</h3>
-    <p>Update preferences here.</p>
-  </div>
-</div>
-
-<!-- EARNINGS CHART -->
-<canvas id="earningsChart" width="400" height="150"></canvas>
-
 <script>
 /* ---------------- MENU ---------------- */
 function toggleMenu(){
-  const menu=document.getElementById("sideMenu");
-  menu.classList.toggle("show");
+  document.getElementById("sideMenu").classList.toggle("show");
 }
 window.addEventListener("click",e=>{
   const menu=document.getElementById("sideMenu");
@@ -133,6 +116,13 @@ window.addEventListener("click",e=>{
     menu.classList.remove("show");
   }
 });
+
+/* ---------------- REFERRAL ---------------- */
+if(!localStorage.getItem("refCode")){
+  localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
+}
+document.getElementById("refLink").value=location.origin + "/dashboard.html?ref=" + localStorage.getItem("refCode");
+function copyRef(){navigator.clipboard.writeText(document.getElementById("refLink").value);alert("Referral copied");}
 
 /* ---------------- NFT ---------------- */
 const NFTS=[
@@ -192,7 +182,7 @@ function filterNFT(cat,btn){
   renderNFT(cat);
 }
 
-/* ---------------- BUY ---------------- */
+/* ---------------- BUY & SUMMARY ---------------- */
 function buyNFT(price,daily){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   data.push({price,daily,boughtAt:Date.now()});
@@ -200,7 +190,6 @@ function buyNFT(price,daily){
   alert("NFT Purchased!");
 }
 
-/* ---------------- SUMMARY ---------------- */
 function updateSummary(){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   let invested=0,daily=0,live=0,wallet=100; // example wallet
@@ -213,48 +202,29 @@ function updateSummary(){
   document.getElementById("dailyIncome").innerText="$"+daily.toFixed(2);
   document.getElementById("liveEarnings").innerText="$"+live.toFixed(4);
   document.getElementById("walletBalance").innerText="$"+wallet.toFixed(2);
-  document.getElementById("walletBalance2").innerText="$"+wallet.toFixed(2);
+  document.getElementById("walletBalanceHeader").innerText="$"+wallet.toFixed(2);
 }
 setInterval(updateSummary,1000);
 
-/* ---------------- POPUPS ---------------- */
+/* ---------------- POPUP ---------------- */
 function openPopup(img,details){
   document.getElementById("popup").style.display="block";
   document.getElementById("popupImg").src=img;
   document.getElementById("popupDetails").innerHTML=details;
 }
 function closePopup(){document.getElementById("popup").style.display="none";}
-function openTeam(){document.getElementById("teamPopup").style.display="block";}
-function closeTeam(){document.getElementById("teamPopup").style.display="none";}
-function openSettings(){document.getElementById("settingsPopup").style.display="block";}
-function closeSettings(){document.getElementById("settingsPopup").style.display="none";}
-function openLevel(){alert("Level Page Open");}
-function openCalculator(){alert("Calculator Page Open");}
-function logout(){alert("Logout");}
 
-/* ---------------- ADMIN PIN ---------------- */
+/* ---------------- ADMIN ---------------- */
 function adminLogin(){
   const pin=prompt("Enter Admin PIN");
   if(pin==="1008"){alert("Admin Access Granted");window.location.href="admin.html";}
   else alert("Wrong PIN");
 }
-
-/* ---------------- CHART ---------------- */
-const ctx=document.getElementById('earningsChart').getContext('2d');
-const chart=new Chart(ctx,{
-  type:'line',
-  data:{
-    labels:['Day1','Day2','Day3','Day4','Day5','Day6','Day7'],
-    datasets:[{
-      label:'Earnings',
-      data:[0,0,0,0,0,0,0],
-      borderColor:'#00e5ff',
-      backgroundColor:'rgba(0,229,255,0.2)',
-      tension:0.3
-    }]
-  },
-  options:{responsive:true,plugins:{legend:{labels:{color:'#00e5ff'}}},scales:{x:{ticks:{color:'#00e5ff'}},y:{ticks:{color:'#00e5ff'}}}}
-});
+function openTeam(){alert("Open Team Page");}
+function openLevel(){alert("Open Level Page");}
+function openCalculator(){alert("Open Calculator");}
+function openSettings(){alert("Open Settings");}
+function logout(){alert("Logout");}
 </script>
 
 </body>
