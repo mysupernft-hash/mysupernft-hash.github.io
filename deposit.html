@@ -2,50 +2,52 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Deposit</title>
+<title>Deposit - SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
 header{position:sticky;top:0;background:#0a192f;z-index:1000;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
 header .logo{font-size:22px;font-weight:bold;color:#38bdf8;}
-input,button{padding:10px;border-radius:6px;border:none;}
-button{background:#38bdf8;color:#020617;cursor:pointer;}
-.container{padding:20px;}
+header .walletBalance{font-size:16px;color:#00e5ff;}
+.container{max-width:500px;margin:30px auto;padding:20px;background:#0f172a;border-radius:12px;text-align:center;}
+.container h2{margin-bottom:20px;}
+.container input{width:80%;padding:10px;border-radius:6px;border:none;margin-bottom:15px;background:#1e293b;color:white;}
+.container button{padding:10px 20px;border:none;border-radius:6px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
 </style>
 </head>
 <body>
 
 <header>
-  <span class="menu-icon" onclick="window.location.href='dashboard.html'">🏠</span>
   <div class="logo">Deposit</div>
   <div class="walletBalance" id="walletBalanceHeader">$0.00</div>
 </header>
 
 <div class="container">
-  <h2>Deposit Funds</h2>
-  <p>Enter amount to deposit into your wallet:</p>
-  <input type="number" id="depositAmount" placeholder="Enter USD" min="1">
+  <h2>Add Funds to Wallet</h2>
+  <input type="number" id="depositAmount" placeholder="Enter amount to deposit" min="1">
+  <br>
   <button onclick="deposit()">Deposit</button>
-  <p>Your current wallet balance: <b id="currentBalance">$0.00</b></p>
+  <br><br>
+  <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
 </div>
 
 <script>
-function updateBalance(){
-  let wallet = parseFloat(localStorage.getItem("walletBalance"))||0;
-  document.getElementById("walletBalanceHeader").innerText="$"+wallet.toFixed(2);
-  document.getElementById("currentBalance").innerText="$"+wallet.toFixed(2);
-}
-updateBalance();
+/* Initialize wallet if not set */
+if(!localStorage.getItem("walletBalance")) localStorage.setItem("walletBalance","0");
 
+/* Show current wallet */
+document.getElementById("walletBalanceHeader").innerText = "$" + parseFloat(localStorage.getItem("walletBalance")).toFixed(2);
+
+/* Deposit function */
 function deposit(){
   let amt = parseFloat(document.getElementById("depositAmount").value);
-  if(!amt || amt<=0){ alert("Enter a valid amount"); return; }
-  let wallet = parseFloat(localStorage.getItem("walletBalance"))||0;
+  if(isNaN(amt) || amt <= 0){ alert("Enter a valid amount"); return; }
+  let wallet = parseFloat(localStorage.getItem("walletBalance")||0);
   wallet += amt;
   localStorage.setItem("walletBalance", wallet);
-  alert("Deposit Successful! $" + amt.toFixed(2) + " added.");
-  updateBalance();
-  document.getElementById("depositAmount").value="";
+  document.getElementById("walletBalanceHeader").innerText = "$" + wallet.toFixed(2);
+  alert("Deposit successful! Wallet balance updated.");
+  document.getElementById("depositAmount").value = "";
 }
 </script>
 
