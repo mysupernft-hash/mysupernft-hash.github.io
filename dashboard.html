@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -53,6 +54,11 @@ header{position:sticky;top:0;background:#020617;padding:15px;text-align:center;f
   <div class="box">⚡ Live Earnings<br><b id="liveEarnings">$0.0000</b></div>
   <div class="box">💳 Wallet Balance<br><b id="walletBalance">$0.00</b></div>
   <div class="box">👥 Referral Link<br><input id="refLink" readonly style="width:100%;font-size:12px;text-align:center;"></div>
+</div>
+
+  <div style="background:#0f172a;margin:15px;padding:15px;border-radius:14px;">
+  <h3 style="margin:0 0 10px;color:#38bdf8;">📈 Earnings Growth</h3>
+  <canvas id="earningsChart" height="120"></canvas>
 </div>
 
 <div class="tabs">
@@ -294,6 +300,64 @@ function creditLevelIncome(amount){
 
 /* CALL THIS WHEN USER BUYS NFT */
 // creditLevelIncome(100); // example
+</script>
+
+  <script>
+/* ===============================
+   EARNINGS GRAPH SYSTEM
+================================ */
+
+const ctx = document.getElementById("earningsChart").getContext("2d");
+
+function getChartData(){
+  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  let labels = [];
+  let values = [];
+  let total = 0;
+
+  data.forEach((n,i)=>{
+    total += n.daily;
+    labels.push("NFT " + (i+1));
+    values.push(total.toFixed(2));
+  });
+
+  return {labels, values};
+}
+
+let chartData = getChartData();
+
+const earningsChart = new Chart(ctx,{
+  type:"line",
+  data:{
+    labels: chartData.labels,
+    datasets:[{
+      label:"Total Earnings ($)",
+      data: chartData.values,
+      borderColor:"#38bdf8",
+      backgroundColor:"rgba(56,189,248,0.2)",
+      tension:0.4,
+      fill:true
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{display:false}
+    },
+    scales:{
+      x:{ticks:{color:"#94a3b8"}},
+      y:{ticks:{color:"#94a3b8"}}
+    }
+  }
+});
+
+/* AUTO UPDATE */
+setInterval(()=>{
+  const newData = getChartData();
+  earningsChart.data.labels = newData.labels;
+  earningsChart.data.datasets[0].data = newData.values;
+  earningsChart.update();
+},3000);
 </script>
   
 </body>
