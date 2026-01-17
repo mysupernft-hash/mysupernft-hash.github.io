@@ -6,161 +6,77 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
-header{background:#0a192f;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
+header{position:sticky;top:0;background:#0a192f;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
 header .logo{font-size:22px;font-weight:bold;color:#38bdf8;}
-nav a{color:#38bdf8;margin-left:15px;text-decoration:none;font-weight:bold;}
-table{width:100%;border-collapse:collapse;margin:20px 0;}
-th,td{padding:10px;border:1px solid #38bdf8;text-align:center;}
-th{background:#0f172a;}
-button{padding:5px 10px;border:none;border-radius:6px;background:#38bdf8;color:#020617;cursor:pointer;font-weight:bold;margin:2px;}
+.container{max-width:800px;margin:50px auto;padding:20px;background:#0f172a;border-radius:12px;}
+h2{margin-bottom:15px;}
+button{padding:6px 12px;border:none;border-radius:6px;background:#38bdf8;color:#020617;margin:2px;cursor:pointer;}
+table{width:100%;border-collapse:collapse;}
+th,td{border:1px solid #38bdf8;padding:8px;text-align:center;}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">SuperNFT Admin Panel</div>
-  <nav>
-    <a href="dashboard.html">Back to Dashboard</a>
-    <a href="#" onclick="logoutAdmin()">Logout</a>
-  </nav>
+  <div class="logo">Admin Panel</div>
 </header>
 
-<h2 style="text-align:center;margin-top:20px;">Users</h2>
-<table id="usersTable">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Deposit</th>
-      <th>Wallet</th>
-      <th>Referral Code</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="container">
+  <h2>Pending Deposits</h2>
+  <table id="depositTable">
+    <tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>
+  </table>
 
-<h2 style="text-align:center;margin-top:20px;">NFTs</h2>
-<table id="nftTable">
-  <thead>
-    <tr>
-      <th>Category</th>
-      <th>Price</th>
-      <th>Daily %</th>
-      <th>Image</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <h2>Pending Withdraws</h2>
+  <table id="withdrawTable">
+    <tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>
+  </table>
+</div>
 
 <script>
-// -------- Admin access check --------
-if(localStorage.getItem("isAdmin")!=="true"){
-  alert("Access denied!");
-  window.location.href="admin-login.html";
-}
-
-// -------- Demo Data --------
-if(!localStorage.getItem("users")){
-  const demoUsers=[
-    {name:"Shivam",email:"shivam@gmail.com",deposit:10,wallet:0,ref:"SNFT123456"},
-    {name:"Aman",email:"aman@gmail.com",deposit:50,wallet:0,ref:"SNFT654321"}
-  ];
-  localStorage.setItem("users",JSON.stringify(demoUsers));
-}
-
-if(!localStorage.getItem("NFTS")){
-  const demoNFTS=[
-    {cat:"starter",price:10,p:2,img:"images/IMG_0458.png"},
-    {cat:"starter",price:15,p:2,img:"images/IMG_0459.png"}
-  ];
-  localStorage.setItem("NFTS",JSON.stringify(demoNFTS));
-}
-
-// -------- Render Users Table --------
-function renderUsers(){
-  const users=JSON.parse(localStorage.getItem("users"));
-  const tbody=document.querySelector("#usersTable tbody");
-  tbody.innerHTML="";
-  users.forEach((u,i)=>{
-    tbody.innerHTML+=`<tr>
-      <td>${u.name}</td>
-      <td>${u.email}</td>
-      <td>$${u.deposit}</td>
-      <td>$${u.wallet}</td>
-      <td>${u.ref}</td>
-      <td>
-        <button onclick="editUser(${i})">Edit</button>
-        <button onclick="deleteUser(${i})">Delete</button>
-      </td>
-    </tr>`;
+// Load pending deposits
+function loadDeposits(){
+  let deposits = JSON.parse(localStorage.getItem("pendingDeposits")) || [];
+  let tbody = document.getElementById("depositTable");
+  tbody.innerHTML="<tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>";
+  deposits.forEach((d,i)=>{
+    let row = tbody.insertRow();
+    row.insertCell(0).innerText=d.amount;
+    row.insertCell(1).innerText=new Date(d.time).toLocaleString();
+    row.insertCell(2).innerHTML=`<button onclick="approveDeposit(${i})">Approve</button>`;
   });
 }
-renderUsers();
-
-function editUser(i){
-  const users=JSON.parse(localStorage.getItem("users"));
-  const newDeposit=prompt("Enter new deposit amount:",users[i].deposit);
-  if(newDeposit!==null){
-    users[i].deposit=parseFloat(newDeposit);
-    localStorage.setItem("users",JSON.stringify(users));
-    renderUsers();
-  }
+function approveDeposit(i){
+  let deposits = JSON.parse(localStorage.getItem("pendingDeposits")) || [];
+  let wallet = parseFloat(localStorage.getItem("walletBalance")) || 0;
+  wallet += deposits[i].amount;
+  localStorage.setItem("walletBalance",wallet.toFixed(2));
+  deposits.splice(i,1);
+  localStorage.setItem("pendingDeposits",JSON.stringify(deposits));
+  loadDeposits();
+  alert("✅ Deposit Approved");
 }
-function deleteUser(i){
-  const users=JSON.parse(localStorage.getItem("users"));
-  if(confirm("Delete this user?")){
-    users.splice(i,1);
-    localStorage.setItem("users",JSON.stringify(users));
-    renderUsers();
-  }
-}
+loadDeposits();
 
-// -------- Render NFT Table --------
-function renderNFTs(){
-  const nfts=JSON.parse(localStorage.getItem("NFTS"));
-  const tbody=document.querySelector("#nftTable tbody");
-  tbody.innerHTML="";
-  nfts.forEach((n,i)=>{
-    tbody.innerHTML+=`<tr>
-      <td>${n.cat}</td>
-      <td>$${n.price}</td>
-      <td>${n.p}%</td>
-      <td><img src="${n.img}" width="50"></td>
-      <td>
-        <button onclick="editNFT(${i})">Edit</button>
-        <button onclick="deleteNFT(${i})">Delete</button>
-      </td>
-    </tr>`;
+// Load pending withdraws
+function loadWithdraws(){
+  let withdraws = JSON.parse(localStorage.getItem("pendingWithdraws")) || [];
+  let tbody = document.getElementById("withdrawTable");
+  tbody.innerHTML="<tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>";
+  withdraws.forEach((d,i)=>{
+    let row = tbody.insertRow();
+    row.insertCell(0).innerText=d.amount;
+    row.insertCell(1).innerText=new Date(d.time).toLocaleString();
+    row.insertCell(2).innerHTML=`<button onclick="approveWithdraw(${i})">Approve</button>`;
   });
 }
-renderNFTs();
-
-function editNFT(i){
-  const nfts=JSON.parse(localStorage.getItem("NFTS"));
-  const newPrice=prompt("Enter new price:",nfts[i].price);
-  if(newPrice!==null){
-    nfts[i].price=parseFloat(newPrice);
-    localStorage.setItem("NFTS",JSON.stringify(nfts));
-    renderNFTs();
-  }
+function approveWithdraw(i){
+  let withdraws = JSON.parse(localStorage.getItem("pendingWithdraws")) || [];
+  withdraws.splice(i,1);
+  localStorage.setItem("pendingWithdraws",JSON.stringify(withdraws));
+  loadWithdraws();
+  alert("✅ Withdraw Approved");
 }
-function deleteNFT(i){
-  const nfts=JSON.parse(localStorage.getItem("NFTS"));
-  if(confirm("Delete this NFT?")){
-    nfts.splice(i,1);
-    localStorage.setItem("NFTS",JSON.stringify(nfts));
-    renderNFTs();
-  }
-}
-
-// -------- Logout --------
-function logoutAdmin(){
-  localStorage.removeItem("isAdmin");
-  window.location.href="admin-login.html";
-}
+loadWithdraws();
 </script>
-
 </body>
 </html>
