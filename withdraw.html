@@ -2,55 +2,52 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Withdraw – SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Withdraw - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:#fff;}
-header{padding:15px;text-align:center;font-size:22px;color:#38bdf8;border-bottom:1px solid #1e293b;}
-.box{background:#0f172a;margin:15px;padding:15px;border-radius:12px;text-align:center;}
-input,button{padding:10px;border-radius:8px;border:none;margin-top:10px;}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
+header{position:sticky;top:0;background:#0a192f;z-index:1000;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
+header .logo{font-size:22px;font-weight:bold;color:#38bdf8;}
+header .walletBalance{font-size:16px;color:#00e5ff;}
+.container{max-width:500px;margin:50px auto;padding:20px;background:#0f172a;border-radius:12px;}
+input,button{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:none;}
 button{background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
 </style>
 </head>
 <body>
+<header>
+  <div class="logo">SuperNFT Withdraw</div>
+  <div class="walletBalance" id="walletBalanceHeader">$0.00</div>
+</header>
 
-<header>💸 Withdraw – SuperNFT</header>
-
-<div class="box">
-  <h3>Wallet Balance</h3>
-  <b id="walletBalance">$0.00</b>
+<div class="container">
+  <h2>Withdraw Funds</h2>
+  <input type="number" id="withdrawAmount" placeholder="Enter amount in $" min="1">
+  <button onclick="makeWithdraw()">Request Withdraw</button>
 </div>
-
-<div class="box">
-  <h3>Enter Withdraw Amount</h3>
-  <input type="number" id="withdrawAmount" placeholder="$0.00">
-  <button onclick="requestWithdraw()">Request Withdraw</button>
-</div>
-
-<div class="box" id="withdrawStatus"></div>
 
 <script>
-function updateWallet(){
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let wallet=0;
-  data.forEach(n=>{wallet+=n.daily;});
-  document.getElementById("walletBalance").innerText="$"+wallet.toFixed(2);
-}
-setInterval(updateWallet,1000);
+if(!localStorage.getItem("walletBalance")) localStorage.setItem("walletBalance","50.00");
+walletBalanceHeader.innerText="$"+parseFloat(localStorage.getItem("walletBalance")).toFixed(2);
 
-function requestWithdraw(){
-  const amount=parseFloat(document.getElementById("withdrawAmount").value);
-  const wallet=parseFloat(document.getElementById("walletBalance").innerText.replace("$",""));
-  const status=document.getElementById("withdrawStatus");
+function makeWithdraw(){
+  let amt=parseFloat(document.getElementById("withdrawAmount").value);
+  let wallet = parseFloat(localStorage.getItem("walletBalance")) || 0;
+  if(isNaN(amt) || amt<=0){ alert("Enter a valid amount"); return; }
+  if(amt>wallet){ alert("❌ Insufficient balance!"); return; }
 
-  if(amount>0 && amount<=wallet){
-    status.innerText="✅ Withdraw request for $"+amount.toFixed(2)+" submitted for approval!";
-    // Optionally: reduce wallet balance
-  } else{
-    status.innerText="❌ Invalid amount! Check wallet balance.";
-  }
+  wallet -= amt;
+  localStorage.setItem("walletBalance",wallet.toFixed(2));
+  walletBalanceHeader.innerText="$"+wallet.toFixed(2);
+
+  // Add to pending withdrawals for admin approval
+  let withdraws = JSON.parse(localStorage.getItem("pendingWithdraws")) || [];
+  withdraws.push({amount:amt,status:"pending",time:Date.now()});
+  localStorage.setItem("pendingWithdraws",JSON.stringify(withdraws));
+
+  alert("✅ Withdraw request sent to admin for approval!");
+  document.getElementById("withdrawAmount").value="";
 }
 </script>
-
 </body>
 </html>
