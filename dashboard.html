@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>SuperNFT Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
 header{position:sticky;top:0;background:#0a192f;z-index:1000;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
@@ -14,8 +15,8 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 #menuContent{background:#0f172a;width:250px;height:100%;padding:20px;display:flex;flex-direction:column;}
 #menuContent a{color:#38bdf8;text-decoration:none;padding:10px 0;font-size:16px;}
 #menuContent a:hover{color:#00e5ff;}
-.summary{display:flex;flex-wrap:wrap;justify-content:space-around;gap:10px;margin:15px;}
-.summary .box{background:#0f172a;padding:12px 18px;border-radius:12px;text-align:center;min-width:140px;cursor:pointer;}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px;}
+.summary .box{background:#0f172a;padding:15px;border-radius:12px;text-align:center;cursor:pointer;}
 .summary .box:hover{background:#1e293b;}
 .referral{display:flex;align-items:center;justify-content:center;margin:10px;gap:10px;}
 .referral input{width:70%;padding:6px;border-radius:6px;border:none;background:#0f172a;color:white;}
@@ -26,8 +27,12 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px;padding:15px;}
 .card{background:#0f172a;border-radius:16px;padding:10px;text-align:center;}
 .card img{width:100%;border-radius:12px;cursor:pointer;}
-.card .price,.card .meta{margin-top:4px;font-size:14px;}
+.card .details{margin-top:5px;font-size:14px;}
 .card button{width:100%;margin-top:8px;padding:8px;border:none;border-radius:10px;background:#38bdf8;font-weight:bold;cursor:pointer;}
+#nftModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;z-index:2000;}
+#nftModal .modal-content{background:#111827;padding:20px;border-radius:12px;max-width:400px;width:90%;text-align:center;}
+#nftModal img{width:80%;border-radius:10px;margin-bottom:10px;}
+#nftModal button{margin-top:10px;padding:8px 16px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -51,17 +56,19 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
     <a href="my-level.html">📊 My Level</a>
     <a href="calculator.html">📈 Calculator</a>
     <a href="settings.html">⚙️ Settings</a>
-    <a href="#" onclick="logout()">🔒 Logout</a>
+    <a href="terms.html">📃 Terms</a>
+    <a href="privacy.html">🔒 Privacy</a>
+    <a href="contact.html">✉ Contact</a>
+    <a href="#" onclick="logout()">🚪 Logout</a>
   </div>
 </div>
 
-<!-- SUMMARY BOXES -->
+<!-- 2x2 SUMMARY BOXES -->
 <div class="summary">
   <div class="box" onclick="window.location.href='my-investments.html'">💰 Total Invested<br><b id="totalInvested">$0.00</b></div>
   <div class="box" onclick="window.location.href='daily.html'">📈 Daily Income<br><b id="dailyIncome">$0.00</b></div>
   <div class="box" onclick="window.location.href='live-earnings.html'">⚡ Live Earnings<br><b id="liveEarnings">$0.0000</b></div>
   <div class="box" onclick="window.location.href='wallet.html'">💳 Wallet Balance<br><b id="walletBalance">$0.00</b></div>
-  <div class="box" onclick="window.location.href='deposit.html'">💵 Deposit<br><b>Deposit Now</b></div>
 </div>
 
 <!-- REFERRAL -->
@@ -82,48 +89,58 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 <!-- NFT GRID -->
 <div id="nftGrid" class="grid"></div>
 
+<!-- NFT DETAILS MODAL -->
+<div id="nftModal">
+  <div class="modal-content">
+    <img id="modalImg">
+    <div id="modalPrice"></div>
+    <div id="modalDaily"></div>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
 <script>
-// -------- MENU --------
+// ---------- MENU ----------
 function openMenu(){ document.getElementById("menuOverlay").style.display="block"; }
 function closeMenu(e){ document.getElementById("menuOverlay").style.display="none"; }
 
-// -------- REFERRAL --------
+// ---------- REFERRAL ----------
 if(!localStorage.getItem("refCode")) localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
 document.getElementById("refLink").value = location.origin + "/index.html?ref=" + localStorage.getItem("refCode");
 function copyRef(){ navigator.clipboard.writeText(refLink.value); alert("Referral copied"); }
 
-// -------- NFT DATA --------
+// ---------- NFT DATA (30 NFTs) ----------
 const NFTS=[
-{cat:"starter",price:10,daily:2,img:"images/IMG_0458.png"},
-{cat:"starter",price:15,daily:2,img:"images/IMG_0459.png"},
-{cat:"starter",price:20,daily:2,img:"images/IMG_0460.png"},
-{cat:"starter",price:25,daily:2,img:"images/IMG_0461.png"},
-{cat:"starter",price:30,daily:2,img:"images/IMG_0462.png"},
-{cat:"starter",price:35,daily:2,img:"images/IMG_0463.png"},
-{cat:"starter",price:40,daily:2,img:"images/IMG_0464.png"},
-{cat:"starter",price:45,daily:2,img:"images/IMG_0465.png"},
-{cat:"starter",price:50,daily:2,img:"images/IMG_0466.png"},
-{cat:"rising",price:55,daily:2,img:"images/IMG_0467.png"},
-{cat:"rising",price:60,daily:2,img:"images/IMG_0468.png"},
-{cat:"rising",price:65,daily:2,img:"images/IMG_0469.png"},
-{cat:"rising",price:70,daily:2,img:"images/IMG_0470.png"},
-{cat:"rising",price:75,daily:2,img:"images/IMG_0471.png"},
-{cat:"rising",price:80,daily:2,img:"images/IMG_0472.png"},
-{cat:"rising",price:90,daily:2,img:"images/IMG_0473.png"},
-{cat:"rising",price:100,daily:2,img:"images/IMG_0474.png"},
-{cat:"elite",price:150,daily:2,img:"images/IMG_0475.png"},
-{cat:"elite",price:200,daily:2,img:"images/IMG_0476.png"},
-{cat:"elite",price:250,daily:2,img:"images/IMG_0477.png"},
-{cat:"elite",price:300,daily:2,img:"images/IMG_0478.png"},
-{cat:"elite",price:350,daily:2,img:"images/IMG_0479.png"},
-{cat:"elite",price:400,daily:2,img:"images/IMG_0480.png"},
-{cat:"elite",price:450,daily:2,img:"images/IMG_0481.png"},
-{cat:"legendary",price:499,daily:2,img:"images/IMG_0482.png"},
-{cat:"legendary",price:599,daily:2,img:"images/IMG_0483.png"},
-{cat:"legendary",price:699,daily:2,img:"images/IMG_0497.png"},
-{cat:"legendary",price:799,daily:2,img:"images/IMG_0498.png"},
-{cat:"legendary",price:899,daily:2,img:"images/IMG_0499.png"},
-{cat:"legendary",price:999,daily:2,img:"images/IMG_0503.png"}
+{cat:"starter",price:10,p:2,img:"images/IMG_0458.png"},
+{cat:"starter",price:15,p:2,img:"images/IMG_0459.png"},
+{cat:"starter",price:20,p:2,img:"images/IMG_0460.png"},
+{cat:"starter",price:25,p:2,img:"images/IMG_0461.png"},
+{cat:"starter",price:30,p:2,img:"images/IMG_0462.png"},
+{cat:"starter",price:35,p:2,img:"images/IMG_0463.png"},
+{cat:"starter",price:40,p:2,img:"images/IMG_0464.png"},
+{cat:"starter",price:45,p:2,img:"images/IMG_0465.png"},
+{cat:"starter",price:50,p:2,img:"images/IMG_0466.png"},
+{cat:"rising",price:55,p:2,img:"images/IMG_0467.png"},
+{cat:"rising",price:60,p:2,img:"images/IMG_0468.png"},
+{cat:"rising",price:65,p:2,img:"images/IMG_0469.png"},
+{cat:"rising",price:70,p:2,img:"images/IMG_0470.png"},
+{cat:"rising",price:75,p:2,img:"images/IMG_0471.png"},
+{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},
+{cat:"rising",price:90,p:2,img:"images/IMG_0473.png"},
+{cat:"rising",price:100,p:2,img:"images/IMG_0474.png"},
+{cat:"elite",price:150,p:2,img:"images/IMG_0475.png"},
+{cat:"elite",price:200,p:2,img:"images/IMG_0476.png"},
+{cat:"elite",price:250,p:2,img:"images/IMG_0477.png"},
+{cat:"elite",price:300,p:2,img:"images/IMG_0478.png"},
+{cat:"elite",price:350,p:2,img:"images/IMG_0479.png"},
+{cat:"elite",price:400,p:2,img:"images/IMG_0480.png"},
+{cat:"elite",price:450,p:2,img:"images/IMG_0481.png"},
+{cat:"legendary",price:499,p:2,img:"images/IMG_0482.png"},
+{cat:"legendary",price:599,p:2,img:"images/IMG_0483.png"},
+{cat:"legendary",price:699,p:2,img:"images/IMG_0497.png"},
+{cat:"legendary",price:799,p:2,img:"images/IMG_0498.png"},
+{cat:"legendary",price:899,p:2,img:"images/IMG_0499.png"},
+{cat:"legendary",price:999,p:2,img:"images/IMG_0503.png"}
 ];
 
 const grid=document.getElementById("nftGrid");
@@ -132,10 +149,13 @@ function renderNFT(cat="all"){
   NFTS.filter(n=>cat==="all"||n.cat===cat).forEach(n=>{
     grid.innerHTML+=`
       <div class="card">
-        <img src="${n.img}" onclick="window.location.href='nft-details.html?img=${n.img}&price=${n.price}&daily=${n.daily}'">
-        <div class="price">Invest - $${n.price}</div>
-        <div class="meta">Income - $${(n.price*n.daily/100).toFixed(2)} | Profit - ${n.daily}%</div>
-        <button onclick="window.location.href='nft-details.html?img=${n.img}&price=${n.price}&daily=${n.daily}'">Buy NFT</button>
+        <img src="${n.img}" onclick="openModal('${n.img}',${n.price},${n.p})">
+        <div class="details">
+          Invest - $${n.price}<br>
+          Income - ${(n.price*(n.p/100)).toFixed(2)}<br>
+          Profit - ${n.p}%
+        </div>
+        <button onclick="buyNFT(${n.price},${n.p})">Buy NFT</button>
       </div>`;
   });
 }
@@ -147,17 +167,29 @@ function filterNFT(cat,btn){
   renderNFT(cat);
 }
 
-// -------- SUMMARY UPDATE --------
+function buyNFT(price,p){
+  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
+  const maxProfit = price*0.5;
+  data.push({price,p,earned:0,maxProfit,boughtAt:Date.now()});
+  localStorage.setItem("myNFTs",JSON.stringify(data));
+  alert("NFT Purchased Successfully");
+}
+
 function updateSummary(){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   let invested=0,daily=0,live=0,wallet=0;
   data.forEach(n=>{
     invested+=n.price;
-    const dailyProfit=n.price*(n.daily/100);
-    live+=n.earned||0;
-    wallet+=n.price+(n.earned||0);
+    const dailyProfit = n.price * (n.p/100);
+    if(n.earned < n.maxProfit){
+      n.earned += dailyProfit/24; // hourly update fraction
+      if(n.earned>=n.maxProfit) alert("🎉 Max 50% profit reached! Upgrade your NFT level!");
+    }
     daily+=dailyProfit;
+    live+=n.earned;
+    wallet+=n.price+n.earned;
   });
+  localStorage.setItem("myNFTs",JSON.stringify(data));
   totalInvested.innerText="$"+invested.toFixed(2);
   dailyIncome.innerText="$"+daily.toFixed(2);
   liveEarnings.innerText="$"+live.toFixed(4);
@@ -166,6 +198,13 @@ function updateSummary(){
 }
 setInterval(updateSummary,1000);
 
+function openModal(img,price,p){
+  document.getElementById("modalImg").src=img;
+  document.getElementById("modalPrice").innerText="Invest: $"+price+" | Daily Return: "+p+"%";
+  document.getElementById("modalDaily").innerText="Details shown here...";
+  document.getElementById("nftModal").style.display="flex";
+}
+function closeModal(){document.getElementById("nftModal").style.display="none";}
 function logout(){alert("Logged out successfully!");window.location.href="index.html";}
 </script>
 
