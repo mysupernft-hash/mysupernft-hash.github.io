@@ -15,7 +15,7 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 #menuContent a{color:#38bdf8;text-decoration:none;padding:10px 0;font-size:16px;}
 #menuContent a:hover{color:#00e5ff;}
 .summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px;}
-.summary .box{background:#0f172a;padding:15px;border-radius:12px;text-align:center;cursor:pointer;}
+.summary .box{background:#0f172a;padding:12px 18px;border-radius:12px;text-align:center;cursor:pointer;}
 .summary .box:hover{background:#1e293b;}
 .referral{display:flex;align-items:center;justify-content:center;margin:10px;gap:10px;}
 .referral input{width:70%;padding:6px;border-radius:6px;border:none;background:#0f172a;color:white;}
@@ -41,6 +41,7 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
   <div class="walletBalance" id="walletBalanceHeader">$0.00</div>
 </header>
 
+<!-- MENU OVERLAY -->
 <div id="menuOverlay" onclick="closeMenu(event)">
   <div id="menuContent" onclick="event.stopPropagation()">
     <a href="dashboard.html">🏠 Dashboard</a>
@@ -57,6 +58,7 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
   </div>
 </div>
 
+<!-- SUMMARY BOXES -->
 <div class="summary">
   <div class="box" onclick="window.location.href='my-investments.html'">💰 Total Invested<br><b id="totalInvested">$0.00</b></div>
   <div class="box" onclick="window.location.href='daily.html'">📈 Daily Income<br><b id="dailyIncome">$0.00</b></div>
@@ -64,11 +66,13 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
   <div class="box" onclick="window.location.href='wallet.html'">💳 Wallet Balance<br><b id="walletBalance">$0.00</b></div>
 </div>
 
+<!-- REFERRAL -->
 <div class="referral">👥 Referral Link:
   <input id="refLink" readonly>
   <button onclick="copyRef()">Copy</button>
 </div>
 
+<!-- NFT TABS -->
 <div class="tabs">
   <button class="active" onclick="filterNFT('all',this)">All</button>
   <button onclick="filterNFT('starter',this)">Starter</button>
@@ -77,8 +81,10 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
   <button onclick="filterNFT('legendary',this)">Legendary</button>
 </div>
 
+<!-- NFT GRID -->
 <div id="nftGrid" class="grid"></div>
 
+<!-- NFT DETAILS MODAL -->
 <div id="nftModal">
   <div class="modal-content">
     <img id="modalImg">
@@ -89,47 +95,47 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 </div>
 
 <script>
-// ----- MENU -----
+// MENU
 function openMenu(){ document.getElementById("menuOverlay").style.display="block"; }
 function closeMenu(e){ document.getElementById("menuOverlay").style.display="none"; }
 
-// ----- REFERRAL -----
+// REFERRAL
 if(!localStorage.getItem("refCode")) localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
 document.getElementById("refLink").value = location.origin + "/index.html?ref=" + localStorage.getItem("refCode");
 function copyRef(){ navigator.clipboard.writeText(refLink.value); alert("Referral copied"); }
 
-// ----- NFT DATA -----
-const NFTS=[
-{cat:"starter",price:10,p:2,img:"images/IMG_0458.png"},
-{cat:"starter",price:15,p:2,img:"images/IMG_0459.png"},
-{cat:"starter",price:20,p:2,img:"images/IMG_0460.png"},
-{cat:"starter",price:25,p:2,img:"images/IMG_0461.png"},
-{cat:"starter",price:30,p:2,img:"images/IMG_0462.png"},
-{cat:"starter",price:35,p:2,img:"images/IMG_0463.png"},
-{cat:"starter",price:40,p:2,img:"images/IMG_0464.png"},
-{cat:"starter",price:45,p:2,img:"images/IMG_0465.png"},
-{cat:"starter",price:50,p:2,img:"images/IMG_0466.png"},
-{cat:"rising",price:55,p:2,img:"images/IMG_0467.png"},
-{cat:"rising",price:60,p:2,img:"images/IMG_0468.png"},
-{cat:"rising",price:65,p:2,img:"images/IMG_0469.png"},
-{cat:"rising",price:70,p:2,img:"images/IMG_0470.png"},
-{cat:"rising",price:75,p:2,img:"images/IMG_0471.png"},
-{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},
-{cat:"rising",price:90,p:2,img:"images/IMG_0473.png"},
-{cat:"rising",price:100,p:2,img:"images/IMG_0474.png"},
-{cat:"elite",price:150,p:2,img:"images/IMG_0475.png"},
-{cat:"elite",price:200,p:2,img:"images/IMG_0476.png"},
-{cat:"elite",price:250,p:2,img:"images/IMG_0477.png"},
-{cat:"elite",price:300,p:2,img:"images/IMG_0478.png"},
-{cat:"elite",price:350,p:2,img:"images/IMG_0479.png"},
-{cat:"elite",price:400,p:2,img:"images/IMG_0480.png"},
-{cat:"elite",price:450,p:2,img:"images/IMG_0481.png"},
-{cat:"legendary",price:499,p:2,img:"images/IMG_0482.png"},
-{cat:"legendary",price:599,p:2,img:"images/IMG_0483.png"},
-{cat:"legendary",price:699,p:2,img:"images/IMG_0497.png"},
-{cat:"legendary",price:799,p:2,img:"images/IMG_0498.png"},
-{cat:"legendary",price:899,p:2,img:"images/IMG_0499.png"},
-{cat:"legendary",price:999,p:2,img:"images/IMG_0503.png"}
+// NFT DATA (ALL 30)
+const NFTS = [
+{cat:"starter", price:10,p:2,img:"images/IMG_0458.png"},
+{cat:"starter", price:15,p:2,img:"images/IMG_0459.png"},
+{cat:"starter", price:20,p:2,img:"images/IMG_0460.png"},
+{cat:"starter", price:25,p:2,img:"images/IMG_0461.png"},
+{cat:"starter", price:30,p:2,img:"images/IMG_0462.png"},
+{cat:"starter", price:35,p:2,img:"images/IMG_0463.png"},
+{cat:"starter", price:40,p:2,img:"images/IMG_0464.png"},
+{cat:"starter", price:45,p:2,img:"images/IMG_0465.png"},
+{cat:"starter", price:50,p:2,img:"images/IMG_0466.png"},
+{cat:"rising", price:55,p:2,img:"images/IMG_0467.png"},
+{cat:"rising", price:60,p:2,img:"images/IMG_0468.png"},
+{cat:"rising", price:65,p:2,img:"images/IMG_0469.png"},
+{cat:"rising", price:70,p:2,img:"images/IMG_0470.png"},
+{cat:"rising", price:75,p:2,img:"images/IMG_0471.png"},
+{cat:"rising", price:80,p:2,img:"images/IMG_0472.png"},
+{cat:"rising", price:90,p:2,img:"images/IMG_0473.png"},
+{cat:"rising", price:100,p:2,img:"images/IMG_0474.png"},
+{cat:"elite", price:150,p:2,img:"images/IMG_0475.png"},
+{cat:"elite", price:200,p:2,img:"images/IMG_0476.png"},
+{cat:"elite", price:250,p:2,img:"images/IMG_0477.png"},
+{cat:"elite", price:300,p:2,img:"images/IMG_0478.png"},
+{cat:"elite", price:350,p:2,img:"images/IMG_0479.png"},
+{cat:"elite", price:400,p:2,img:"images/IMG_0480.png"},
+{cat:"elite", price:450,p:2,img:"images/IMG_0481.png"},
+{cat:"legendary", price:499,p:2,img:"images/IMG_0482.png"},
+{cat:"legendary", price:599,p:2,img:"images/IMG_0483.png"},
+{cat:"legendary", price:699,p:2,img:"images/IMG_0497.png"},
+{cat:"legendary", price:799,p:2,img:"images/IMG_0498.png"},
+{cat:"legendary", price:899,p:2,img:"images/IMG_0499.png"},
+{cat:"legendary", price:999,p:2,img:"images/IMG_0503.png"}
 ];
 
 const grid=document.getElementById("nftGrid");
@@ -168,7 +174,7 @@ function updateSummary(){
     invested+=n.price;
     const dailyProfit = n.price * (n.p/100);
     if(n.earned < n.maxProfit){
-      n.earned += dailyProfit/24; 
+      n.earned += dailyProfit/24;
       if(n.earned>=n.maxProfit) alert("🎉 Max 50% profit reached! Upgrade your NFT level!");
     }
     daily+=dailyProfit;
@@ -187,7 +193,7 @@ setInterval(updateSummary,1000);
 function openModal(img,price,p){
   document.getElementById("modalImg").src=img;
   document.getElementById("modalPrice").innerText="Invest: $"+price+" | Daily Return: "+p+"%";
-  document.getElementById("modalDaily").innerText="Click Buy NFT to invest in this NFT.";
+  document.getElementById("modalDaily").innerText="Details shown here...";
   document.getElementById("nftModal").style.display="flex";
 }
 function closeModal(){document.getElementById("nftModal").style.display="none";}
