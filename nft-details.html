@@ -10,8 +10,7 @@ header{position:sticky;top:0;background:#0a192f;padding:15px;border-bottom:1px s
 header .logo{font-size:22px;color:#38bdf8;font-weight:bold;}
 .container{padding:20px;}
 img.nft-img{width:80%;max-width:400px;border-radius:12px;margin-bottom:20px;}
-.details{background:#0f172a;padding:15px;border-radius:12px;margin:10px auto;max-width:400px;text-align:left;font-size:16px;}
-.details div{margin:8px 0;}
+.details{background:#0f172a;padding:15px;border-radius:12px;margin:10px auto;max-width:400px;text-align:left;font-size:16px;line-height:1.5;}
 button.buy-btn{padding:10px 20px;border:none;border-radius:10px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;margin-top:15px;}
 </style>
 </head>
@@ -28,36 +27,46 @@ button.buy-btn{padding:10px 20px;border:none;border-radius:10px;background:#38bd
 </div>
 
 <script>
-// GET NFT DATA FROM URL
-const params = new URLSearchParams(window.location.search);
-const img = params.get('img');
-const price = parseFloat(params.get('price')) || 0;
-const dailyPercent = parseFloat(params.get('daily')) || 0;
+// -------- NFT PROFIT DATA --------
+const nftData = {
+  "10": {daily:0.2, weekly:1.4, monthly:6.0, yearly:73.0, total:83.0},
+  "15": {daily:0.3, weekly:2.1, monthly:9.0, yearly:109.5, total:124.5},
+  "25": {daily:0.5, weekly:3.5, monthly:15.0, yearly:182.5, total:207.5},
+  "50": {daily:1.0, weekly:7.0, monthly:30.0, yearly:365.0, total:415.0},
+  "100": {daily:2.5, weekly:17.5, monthly:75.0, yearly:912.5, total:1012.5},
+  "150": {daily:5.0, weekly:35.0, monthly:150.0, yearly:1825.0, total:1975.0},
+  "200": {daily:6.6, weekly:46.2, monthly:198.0, yearly:2409.0, total:2609.0},
+  "300": {daily:10.0, weekly:70.0, monthly:300.0, yearly:3650.0, total:3950.0},
+  "499": {daily:25.0, weekly:175.0, monthly:750.0, yearly:9125.0, total:9624.0},
+  "699": {daily:40.0, weekly:280.0, monthly:1200.0, yearly:14600.0, total:15299.0},
+  "999": {daily:100.0, weekly:700.0, monthly:3000.0, yearly:36500.0, total:37499.0}
+};
 
+// -------- GET URL PARAMS --------
+const params = new URLSearchParams(window.location.search);
+const img = params.get('img') || '';
+const price = params.get('price') || '10';
+
+// SHOW IMAGE
 document.getElementById('nftImage').src = img;
 
-// CALCULATE PROFITS
-const dailyProfit = (price * dailyPercent / 100).toFixed(2);
-const weeklyProfit = (dailyProfit * 7).toFixed(2);
-const monthlyProfit = (dailyProfit * 30).toFixed(2);
-const yearlyProfit = (dailyProfit * 365).toFixed(2);
-const totalPayout = (price + parseFloat(yearlyProfit)).toFixed(2);
-
 // SHOW DETAILS
-document.getElementById('nftDetails').innerHTML = `
-Invest - $${price} and Profit - $${yearlyProfit}<br>
-• Daily Profit: $${dailyProfit} (${dailyPercent}%)<br>
-• Weekly Profit: $${weeklyProfit} (${(weeklyProfit/price*100).toFixed(1)}%)<br>
-• Monthly Profit: $${monthlyProfit} (${(monthlyProfit/price*100).toFixed(0)}%)<br>
-• Yearly Profit: $${yearlyProfit} (${(yearlyProfit/price*100).toFixed(0)}%)<br>
-• Total Payout: At the end of the year, you would have $${totalPayout}.
+const d = nftData[price];
+if(d){
+  document.getElementById('nftDetails').innerHTML = `
+Invest - $${price} and Profit - $${d.yearly}<br>
+• Daily Profit: $${d.daily} (${((d.daily/price)*100).toFixed(1)}%)<br>
+• Weekly Profit: $${d.weekly} (${((d.weekly/price)*100).toFixed(1)}%)<br>
+• Monthly Profit: $${d.monthly} (${((d.monthly/price)*100).toFixed(0)}%)<br>
+• Yearly Profit: $${d.yearly} (${((d.yearly/price)*100).toFixed(0)}%)<br>
+• Total Payout: At the end of the year, you would have $${d.total}.
 `;
+}
 
-// BUY NFT FUNCTION
+// BUY NFT
 function buyNFT(){
   const myNFTs = JSON.parse(localStorage.getItem('myNFTs')) || [];
-  const maxProfit = price * 0.5; // 50% max return
-  myNFTs.push({price,dailyPercent,earned:0,maxProfit,boughtAt:Date.now(),img});
+  myNFTs.push({price:parseFloat(price),img:img,earned:0});
   localStorage.setItem('myNFTs',JSON.stringify(myNFTs));
   alert('NFT Purchased Successfully!');
   window.location.href='dashboard.html';
