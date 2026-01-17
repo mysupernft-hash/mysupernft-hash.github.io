@@ -3,167 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Admin Panel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="favicon.ico">
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:#fff;
-}
-header{
-  position:sticky;
-  top:0;
-  background:#0f172a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  color:#22c55e;
-  border-bottom:1px solid #1e293b;
-}
-.container{
-  padding:20px;
-}
-.tx{
-  background:#0f172a;
-  padding:15px;
-  border-radius:14px;
-  margin-bottom:15px;
-}
-.tx b{
-  color:#38bdf8;
-}
-button{
-  margin-top:10px;
-  padding:8px 14px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:bold;
-}
-.approve{
-  background:#22c55e;
-  color:#020617;
-}
-.reject{
-  background:#ef4444;
-  color:#fff;
-  margin-left:10px;
-}
-.back{
-  display:block;
-  margin-top:20px;
-  text-align:center;
-  color:#38bdf8;
-  text-decoration:none;
-}
-.empty{
-  text-align:center;
-  color:#94a3b8;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
+header{position:sticky;top:0;background:#0a192f;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
+header .logo{font-size:22px;color:#38bdf8;font-weight:bold;}
+header .logout{color:#00e5ff;cursor:pointer;}
+.container{padding:20px;}
+.cards{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:20px;}
+.card{background:#0f172a;padding:20px;border-radius:12px;min-width:200px;text-align:center;}
+.card b{display:block;font-size:18px;margin-top:5px;}
+.table-container{overflow-x:auto;background:#0f172a;padding:10px;border-radius:10px;}
+table{width:100%;border-collapse:collapse;color:white;}
+th,td{padding:10px;text-align:left;border-bottom:1px solid #1e293b;}
+th{color:#38bdf8;}
+button{padding:6px 12px;border:none;border-radius:6px;background:#38bdf8;color:#020617;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
-<header>🛡 Admin – Withdraw Approval</header>
+<header>
+  <div class="logo">SuperNFT Admin Panel</div>
+  <div class="logout" onclick="logout()">Logout</div>
+</header>
 
 <div class="container">
-  <div id="list"></div>
-  <a class="back" href="dashboard.html">← Back to Dashboard</a>
+  <!-- Overview Cards -->
+  <div class="cards">
+    <div class="card">Total Users<br><b id="totalUsers">0</b></div>
+    <div class="card">Total Investments<br><b id="totalInvestments">$0.00</b></div>
+    <div class="card">Daily Income<br><b id="totalDaily">$0.00</b></div>
+    <div class="card">Wallet Balance<br><b id="totalWallet">$0.00</b></div>
+    <div class="card">NFTs Sold<br><b id="nftsSold">0</b></div>
+  </div>
+
+  <!-- Users Table -->
+  <h3>Users</h3>
+  <div class="table-container">
+    <table id="usersTable">
+      <thead>
+        <tr><th>Username</th><th>Email</th><th>Referral</th><th>Invested</th><th>Wallet</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- NFTs Table -->
+  <h3>NFTs</h3>
+  <div class="table-container">
+    <table id="nftsTable">
+      <thead>
+        <tr><th>Image</th><th>Price</th><th>Daily %</th><th>Category</th><th>Actions</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
-let withdrawals = JSON.parse(localStorage.getItem("withdrawals")) || [];
-let list = document.getElementById("list");
+// Dummy Data (for now frontend only)
+const users = [
+  {username:"Alice",email:"alice@mail.com",ref:"SNFT123456",invested:50,wallet:55},
+  {username:"Bob",email:"bob@mail.com",ref:"SNFT654321",invested:100,wallet:110}
+];
+const nfts = [
+  {img:"images/IMG_0458.png",price:10,p:2,cat:"starter"},
+  {img:"images/IMG_0467.png",price:55,p:2,cat:"rising"}
+];
 
-function render(){
-  list.innerHTML = "";
-  let pendingFound = false;
+// Render Overview
+document.getElementById("totalUsers").innerText = users.length;
+document.getElementById("totalInvestments").innerText = "$"+users.reduce((a,u)=>a+u.invested,0);
+document.getElementById("totalDaily").innerText = "$"+users.reduce((a,u)=>a+u.invested*0.02,0);
+document.getElementById("totalWallet").innerText = "$"+users.reduce((a,u)=>a+u.wallet,0);
+document.getElementById("nftsSold").innerText = nfts.length;
 
-  withdrawals.forEach((w,i)=>{
-    if(w.status==="pending"){
-      pendingFound = true;
-      list.innerHTML += `
-        <div class="tx">
-          <b>Amount:</b> $${w.amount}<br>
-          <b>Date:</b> ${new Date(w.date).toLocaleString()}<br>
-          <b>Status:</b> ${w.status}<br>
-          <button class="approve" onclick="approve(${i})">Approve</button>
-          <button class="reject" onclick="rejectReq(${i})">Reject</button>
-        </div>
-      `;
-    }
-  });
+// Render Users Table
+const usersBody = document.querySelector("#usersTable tbody");
+users.forEach(u=>{
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${u.username}</td><td>${u.email}</td><td>${u.ref}</td><td>$${u.invested}</td><td>$${u.wallet}</td>`;
+  usersBody.appendChild(tr);
+});
 
-  if(!pendingFound){
-    list.innerHTML = `<div class="empty">No pending withdrawals</div>`;
-  }
+// Render NFTs Table
+const nftsBody = document.querySelector("#nftsTable tbody");
+nfts.forEach(n=>{
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td><img src="${n.img}" width="50"></td><td>$${n.price}</td><td>${n.p}%</td><td>${n.cat}</td><td><button>Edit</button> <button>Delete</button></td>`;
+  nftsBody.appendChild(tr);
+});
+
+function logout(){
+  alert("Logged out successfully!");
+  window.location.href="index.html";
 }
-render();
-
-function approve(i){
-  withdrawals[i].status = "approved";
-  save();
-  alert("Withdrawal Approved");
-}
-
-function rejectReq(i){
-  let wallet = Number(localStorage.getItem("walletBalance")) || 0;
-  wallet += withdrawals[i].amount;
-  localStorage.setItem("walletBalance",wallet);
-
-  withdrawals[i].status = "rejected";
-  save();
-  alert("Withdrawal Rejected & Amount Refunded");
-}
-
-function save(){
-  localStorage.setItem("withdrawals",JSON.stringify(withdrawals));
-  render();
-}
-</script>
-
-  <script>
-function loadWithdraws(){
-  const box = document.getElementById("adminWithdraws");
-  const data = JSON.parse(localStorage.getItem("withdrawRequests")) || [];
-  box.innerHTML = "";
-
-  data.forEach((w,i)=>{
-    box.innerHTML += `
-      <div style="border:1px solid #444;padding:10px;margin:10px 0">
-        💵 $${w.amount} <br>
-        Status: ${w.status}<br>
-        <button onclick="approve(${i})">Approve</button>
-        <button onclick="reject(${i})">Reject</button>
-      </div>
-    `;
-  });
-}
-
-function approve(i){
-  const data = JSON.parse(localStorage.getItem("withdrawRequests"));
-  data[i].status = "approved";
-  localStorage.setItem("withdrawRequests",JSON.stringify(data));
-  loadWithdraws();
-}
-
-function reject(i){
-  const data = JSON.parse(localStorage.getItem("withdrawRequests"));
-  let wallet = Number(localStorage.getItem("walletBalance"));
-
-  // refund money
-  wallet += data[i].amount;
-  localStorage.setItem("walletBalance",wallet.toFixed(2));
-
-  data[i].status = "rejected";
-  localStorage.setItem("withdrawRequests",JSON.stringify(data));
-  loadWithdraws();
-}
-
-loadWithdraws();
 </script>
 
 </body>
