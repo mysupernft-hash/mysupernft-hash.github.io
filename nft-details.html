@@ -2,84 +2,62 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Details</title>
+<title>NFT Details</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
-header{position:sticky;top:0;background:#0a192f;z-index:1000;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
-header .logo{font-size:22px;font-weight:bold;color:#38bdf8;}
-header .walletBalance{font-size:16px;color:#00e5ff;}
-.container{padding:20px;max-width:600px;margin:auto;}
-img.nft-img{width:100%;border-radius:12px;margin-bottom:15px;}
-.details{background:#0f172a;padding:15px;border-radius:12px;}
-.details p{margin:8px 0;font-size:16px;}
-button.buyBtn{width:100%;padding:10px;border:none;border-radius:10px;background:#38bdf8;color:#020617;font-weight:bold;font-size:16px;cursor:pointer;margin-top:15px;}
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;text-align:center;}
+header{background:#0a192f;padding:15px 20px;font-size:22px;font-weight:bold;color:#38bdf8;}
+img{max-width:90%;border-radius:12px;margin:20px 0;}
+.details{background:#0f172a;padding:15px 20px;margin:0 10px;border-radius:12px;text-align:left;line-height:1.6;}
+button{margin-top:15px;padding:10px 20px;font-size:16px;font-weight:bold;background:#38bdf8;color:#020617;border:none;border-radius:8px;cursor:pointer;}
+button:hover{background:#00e5ff;color:#020617;}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">SuperNFT Details</div>
-  <div class="walletBalance" id="walletBalanceHeader">$0.00</div>
-</header>
+<header>NFT Details</header>
 
-<div class="container">
-  <img id="nftImage" class="nft-img">
-  <div class="details">
-    <p id="investText"></p>
-    <p id="dailyText"></p>
-    <p id="weeklyText"></p>
-    <p id="monthlyText"></p>
-    <p id="yearlyText"></p>
-    <p id="totalText"></p>
-  </div>
-  <button class="buyBtn" id="buyNFTBtn">Buy NFT</button>
+<img id="nftImage" src="" alt="NFT Image">
+<div class="details" id="nftDetails">
+<!-- NFT details will be injected here -->
 </div>
+<button id="buyNFTBtn">Buy NFT</button>
 
 <script>
-// Get NFT data from URL
-const urlParams = new URLSearchParams(window.location.search);
-const img = urlParams.get('img');
-const price = parseFloat(urlParams.get('price'));
-const dailyPercent = parseFloat(urlParams.get('daily'));
+// -------- READ URL PARAMETERS --------
+const params = new URLSearchParams(window.location.search);
+const img = params.get("img");
+const price = parseFloat(params.get("price"));
+const daily = parseFloat(params.get("daily"));
 
+// -------- DISPLAY IMAGE --------
 document.getElementById("nftImage").src = img;
 
-// Calculate profits
-const daily = (price*dailyPercent/100).toFixed(2);
-const weekly = (daily*7).toFixed(2);
-const monthly = (daily*30).toFixed(2);
-const yearly = (daily*365).toFixed(2);
-const total = (price + yearly).toFixed(2);
+// -------- CALCULATE PROFITS --------
+const dailyProfit = (price * daily / 100).toFixed(2);
+const weeklyProfit = (dailyProfit * 7).toFixed(2);
+const monthlyProfit = (dailyProfit * 30).toFixed(2);
+const yearlyProfit = (dailyProfit * 365).toFixed(2);
+const totalPayout = (price + parseFloat(yearlyProfit)).toFixed(2);
 
-// Display
-document.getElementById("investText").innerText = `Invest: $${price} | Daily Return: ${dailyPercent}%`;
-document.getElementById("dailyText").innerText = `Daily Profit: $${daily}`;
-document.getElementById("weeklyText").innerText = `Weekly Profit: $${weekly}`;
-document.getElementById("monthlyText").innerText = `Monthly Profit: $${monthly}`;
-document.getElementById("yearlyText").innerText = `Yearly Profit: $${yearly}`;
-document.getElementById("totalText").innerText = `Total Payout: $${total}`;
+// -------- DISPLAY DETAILS --------
+document.getElementById("nftDetails").innerHTML = `
+Invest - $${price}<br>
+Daily Profit: ${daily}% of $${price} = $${dailyProfit}<br>
+Weekly Profit: $${dailyProfit} x 7 = $${weeklyProfit}<br>
+Monthly Profit: $${dailyProfit} x 30 = $${monthlyProfit}<br>
+Yearly Profit: $${dailyProfit} x 365 = $${yearlyProfit}<br>
+Total Payout: $${totalPayout}
+`;
 
-// Wallet balance header
-function updateWalletHeader(){
-  const data = JSON.parse(localStorage.getItem("myNFTs"))||[];
-  let wallet = 0;
-  data.forEach(n=>{
-    wallet += n.price+n.earned;
-  });
-  document.getElementById("walletBalanceHeader").innerText = "$"+wallet.toFixed(2);
-}
-updateWalletHeader();
-setInterval(updateWalletHeader,1000);
-
-// Buy NFT
+// -------- BUY NFT BUTTON --------
 document.getElementById("buyNFTBtn").addEventListener("click",()=>{
-  const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
-  const maxProfit = price*0.5;
-  data.push({price, p:dailyPercent, earned:0, maxProfit, boughtAt:Date.now(), img});
-  localStorage.setItem("myNFTs",JSON.stringify(data));
-  alert("NFT Purchased Successfully!");
-  updateWalletHeader();
+    const myNFTs = JSON.parse(localStorage.getItem("myNFTs")) || [];
+    const maxProfit = price * 0.5; // 50% max return
+    myNFTs.push({price,daily,dailyEarned:0,maxProfit,boughtAt:Date.now()});
+    localStorage.setItem("myNFTs",JSON.stringify(myNFTs));
+    alert("🎉 NFT Purchased Successfully!");
+    window.location.href="dashboard.html";
 });
 </script>
 
