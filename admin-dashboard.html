@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
+header{position:sticky;top:0;background:#0a192f;z-index:1000;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
+header .logo{font-size:22px;font-weight:bold;color:#38bdf8;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;padding:15px;}
+.box{background:#0f172a;padding:20px;border-radius:12px;text-align:center;cursor:pointer;}
+.box:hover{background:#1e293b;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+table,th,td{border:1px solid #38bdf8;}
+th,td{padding:10px;text-align:center;}
+button{padding:6px 12px;border:none;border-radius:6px;background:#38bdf8;color:#020617;cursor:pointer;}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">SuperNFT Admin</div>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<div class="grid">
+  <div class="box" id="totalUsers">Total Users<br>0</div>
+  <div class="box" id="totalInvested">Total Invested<br>$0</div>
+  <div class="box" id="totalNFTs">Total NFTs Purchased<br>0</div>
+  <div class="box" id="walletBalance">Total Wallet<br>$0</div>
+</div>
+
+<h3>User List</h3>
+<table id="userTable">
+<tr><th>User</th><th>Total Invested</th><th>Live Earnings</th><th>Level</th></tr>
+</table>
+
+<h3>Manage NFTs</h3>
+<table id="nftTable">
+<tr><th>Category</th><th>Price</th><th>Daily %</th></tr>
+</table>
+
+<script>
+if(localStorage.getItem("isAdmin")!=="true"){window.location.href="admin-login.html";}
+
+// SAMPLE DATA
+const users=[{name:"Shivam",invested:100,earned:20,level:"Starter"}];
+const nfts=[{cat:"starter",price:10,p:2},{cat:"rising",price:55,p:3},{cat:"elite",price:150,p:4},{cat:"legendary",price:499,p:5}];
+
+// Populate dashboard boxes
+document.getElementById("totalUsers").innerHTML="Total Users<br>"+users.length;
+let totalInvest=0,totalNFTs=0,totalWallet=0;
+users.forEach(u=>{totalInvest+=u.invested;totalWallet+=u.invested+u.earned;totalNFTs+=1;});
+document.getElementById("totalInvested").innerHTML="Total Invested<br>$"+totalInvest;
+document.getElementById("totalNFTs").innerHTML="Total NFTs Purchased<br>"+totalNFTs;
+document.getElementById("walletBalance").innerHTML="Total Wallet<br>$"+totalWallet;
+
+// Populate user table
+const userTable=document.getElementById("userTable");
+users.forEach(u=>{
+  let tr=document.createElement("tr");
+  tr.innerHTML=`<td>${u.name}</td><td>$${u.invested}</td><td>$${u.earned}</td><td>${u.level}</td>`;
+  userTable.appendChild(tr);
+});
+
+// Populate NFT table
+const nftTable=document.getElementById("nftTable");
+nfts.forEach(n=>{
+  let tr=document.createElement("tr");
+  tr.innerHTML=`<td>${n.cat}</td><td>$${n.price}</td><td>${n.p}%</td>`;
+  nftTable.appendChild(tr);
+});
+
+function logout(){localStorage.removeItem("isAdmin");window.location.href="index.html";}
+</script>
+</body>
+</html>
