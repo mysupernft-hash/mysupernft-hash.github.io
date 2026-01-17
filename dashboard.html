@@ -27,10 +27,6 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 .card{background:#0f172a;border-radius:16px;padding:10px;text-align:center;}
 .card img{width:100%;border-radius:12px;cursor:pointer;}
 .card button{width:100%;margin-top:8px;padding:8px;border:none;border-radius:10px;background:#38bdf8;font-weight:bold;cursor:pointer;}
-#nftModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;z-index:2000;}
-#nftModal .modal-content{background:#111827;padding:20px;border-radius:12px;max-width:400px;width:90%;text-align:center;}
-#nftModal img{width:80%;border-radius:10px;margin-bottom:10px;}
-#nftModal button{margin-top:10px;padding:8px 16px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -58,7 +54,7 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
   </div>
 </div>
 
-<!-- SUMMARY BOXES -->
+<!-- SUMMARY BOXES 2x2 -->
 <div class="summary">
   <div class="box" onclick="window.location.href='my-investments.html'">💰 Total Invested<br><b id="totalInvested">$0.00</b></div>
   <div class="box" onclick="window.location.href='daily.html'">📈 Daily Income<br><b id="dailyIncome">$0.00</b></div>
@@ -84,16 +80,6 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 <!-- NFT GRID -->
 <div id="nftGrid" class="grid"></div>
 
-<!-- NFT DETAILS MODAL -->
-<div id="nftModal">
-  <div class="modal-content">
-    <img id="modalImg">
-    <div id="modalPrice"></div>
-    <div id="modalDaily"></div>
-    <button onclick="closeModal()">Close</button>
-  </div>
-</div>
-
 <script>
 // MENU
 function openMenu(){ document.getElementById("menuOverlay").style.display="block"; }
@@ -104,38 +90,38 @@ if(!localStorage.getItem("refCode")) localStorage.setItem("refCode","SNFT"+Math.
 document.getElementById("refLink").value = location.origin + "/index.html?ref=" + localStorage.getItem("refCode");
 function copyRef(){ navigator.clipboard.writeText(refLink.value); alert("Referral copied"); }
 
-// NFT DATA (ALL 30)
-const NFTS = [
-{cat:"starter", price:10,p:2,img:"images/IMG_0458.png"},
-{cat:"starter", price:15,p:2,img:"images/IMG_0459.png"},
-{cat:"starter", price:20,p:2,img:"images/IMG_0460.png"},
-{cat:"starter", price:25,p:2,img:"images/IMG_0461.png"},
-{cat:"starter", price:30,p:2,img:"images/IMG_0462.png"},
-{cat:"starter", price:35,p:2,img:"images/IMG_0463.png"},
-{cat:"starter", price:40,p:2,img:"images/IMG_0464.png"},
-{cat:"starter", price:45,p:2,img:"images/IMG_0465.png"},
-{cat:"starter", price:50,p:2,img:"images/IMG_0466.png"},
-{cat:"rising", price:55,p:2,img:"images/IMG_0467.png"},
-{cat:"rising", price:60,p:2,img:"images/IMG_0468.png"},
-{cat:"rising", price:65,p:2,img:"images/IMG_0469.png"},
-{cat:"rising", price:70,p:2,img:"images/IMG_0470.png"},
-{cat:"rising", price:75,p:2,img:"images/IMG_0471.png"},
-{cat:"rising", price:80,p:2,img:"images/IMG_0472.png"},
-{cat:"rising", price:90,p:2,img:"images/IMG_0473.png"},
-{cat:"rising", price:100,p:2,img:"images/IMG_0474.png"},
-{cat:"elite", price:150,p:2,img:"images/IMG_0475.png"},
-{cat:"elite", price:200,p:2,img:"images/IMG_0476.png"},
-{cat:"elite", price:250,p:2,img:"images/IMG_0477.png"},
-{cat:"elite", price:300,p:2,img:"images/IMG_0478.png"},
-{cat:"elite", price:350,p:2,img:"images/IMG_0479.png"},
-{cat:"elite", price:400,p:2,img:"images/IMG_0480.png"},
-{cat:"elite", price:450,p:2,img:"images/IMG_0481.png"},
-{cat:"legendary", price:499,p:2,img:"images/IMG_0482.png"},
-{cat:"legendary", price:599,p:2,img:"images/IMG_0483.png"},
-{cat:"legendary", price:699,p:2,img:"images/IMG_0497.png"},
-{cat:"legendary", price:799,p:2,img:"images/IMG_0498.png"},
-{cat:"legendary", price:899,p:2,img:"images/IMG_0499.png"},
-{cat:"legendary", price:999,p:2,img:"images/IMG_0503.png"}
+// NFT DATA 30
+const NFTS=[
+{cat:"starter",price:10,p:2,img:"images/IMG_0458.png"},
+{cat:"starter",price:15,p:2,img:"images/IMG_0459.png"},
+{cat:"starter",price:20,p:2,img:"images/IMG_0460.png"},
+{cat:"starter",price:25,p:2,img:"images/IMG_0461.png"},
+{cat:"starter",price:30,p:2,img:"images/IMG_0462.png"},
+{cat:"starter",price:35,p:2,img:"images/IMG_0463.png"},
+{cat:"starter",price:40,p:2,img:"images/IMG_0464.png"},
+{cat:"starter",price:45,p:2,img:"images/IMG_0465.png"},
+{cat:"starter",price:50,p:2,img:"images/IMG_0466.png"},
+{cat:"rising",price:55,p:2,img:"images/IMG_0467.png"},
+{cat:"rising",price:60,p:2,img:"images/IMG_0468.png"},
+{cat:"rising",price:65,p:2,img:"images/IMG_0469.png"},
+{cat:"rising",price:70,p:2,img:"images/IMG_0470.png"},
+{cat:"rising",price:75,p:2,img:"images/IMG_0471.png"},
+{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},
+{cat:"rising",price:90,p:2,img:"images/IMG_0473.png"},
+{cat:"rising",price:100,p:2,img:"images/IMG_0474.png"},
+{cat:"elite",price:150,p:2,img:"images/IMG_0475.png"},
+{cat:"elite",price:200,p:2,img:"images/IMG_0476.png"},
+{cat:"elite",price:250,p:2,img:"images/IMG_0477.png"},
+{cat:"elite",price:300,p:2,img:"images/IMG_0478.png"},
+{cat:"elite",price:350,p:2,img:"images/IMG_0479.png"},
+{cat:"elite",price:400,p:2,img:"images/IMG_0480.png"},
+{cat:"elite",price:450,p:2,img:"images/IMG_0481.png"},
+{cat:"legendary",price:499,p:2,img:"images/IMG_0482.png"},
+{cat:"legendary",price:599,p:2,img:"images/IMG_0483.png"},
+{cat:"legendary",price:699,p:2,img:"images/IMG_0497.png"},
+{cat:"legendary",price:799,p:2,img:"images/IMG_0498.png"},
+{cat:"legendary",price:899,p:2,img:"images/IMG_0499.png"},
+{cat:"legendary",price:999,p:2,img:"images/IMG_0503.png"}
 ];
 
 const grid=document.getElementById("nftGrid");
@@ -144,7 +130,7 @@ function renderNFT(cat="all"){
   NFTS.filter(n=>cat==="all"||n.cat===cat).forEach(n=>{
     grid.innerHTML+=`
       <div class="card">
-        <img src="${n.img}" onclick="openModal('${n.img}',${n.price},${n.p})">
+        <img src="${n.img}" onclick="window.location.href='nft-details.html?img=${n.img}&price=${n.price}&daily=${n.p}'">
         <div class="price">$${n.price}</div>
         <div class="meta">Daily ${n.p}%</div>
         <button onclick="buyNFT(${n.price},${n.p})">Buy NFT</button>
@@ -190,13 +176,6 @@ function updateSummary(){
 }
 setInterval(updateSummary,1000);
 
-function openModal(img,price,p){
-  document.getElementById("modalImg").src=img;
-  document.getElementById("modalPrice").innerText="Invest: $"+price+" | Daily Return: "+p+"%";
-  document.getElementById("modalDaily").innerText="Details shown here...";
-  document.getElementById("nftModal").style.display="flex";
-}
-function closeModal(){document.getElementById("nftModal").style.display="none";}
 function logout(){alert("Logged out successfully!");window.location.href="index.html";}
 </script>
 
