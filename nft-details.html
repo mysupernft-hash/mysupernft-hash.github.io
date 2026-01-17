@@ -2,63 +2,66 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NFT Details</title>
+<title>NFT Details - SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;text-align:center;}
-header{background:#0a192f;padding:15px 20px;font-size:22px;font-weight:bold;color:#38bdf8;}
-img{max-width:90%;border-radius:12px;margin:20px 0;}
-.details{background:#0f172a;padding:15px 20px;margin:0 10px;border-radius:12px;text-align:left;line-height:1.6;}
-button{margin-top:15px;padding:10px 20px;font-size:16px;font-weight:bold;background:#38bdf8;color:#020617;border:none;border-radius:8px;cursor:pointer;}
-button:hover{background:#00e5ff;color:#020617;}
+header{position:sticky;top:0;background:#0a192f;padding:15px;border-bottom:1px solid #1e293b;}
+header .logo{font-size:22px;color:#38bdf8;font-weight:bold;}
+.container{padding:20px;}
+img.nft-img{width:80%;max-width:400px;border-radius:12px;margin-bottom:20px;}
+.details{background:#0f172a;padding:15px;border-radius:12px;margin:10px auto;max-width:400px;text-align:left;font-size:16px;}
+.details div{margin:8px 0;}
+button.buy-btn{padding:10px 20px;border:none;border-radius:10px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;margin-top:15px;}
 </style>
 </head>
 <body>
 
-<header>NFT Details</header>
+<header>
+  <div class="logo">SuperNFT Details</div>
+</header>
 
-<img id="nftImage" src="" alt="NFT Image">
-<div class="details" id="nftDetails">
-<!-- NFT details will be injected here -->
+<div class="container">
+  <img id="nftImage" class="nft-img" src="">
+  <div class="details" id="nftDetails"></div>
+  <button class="buy-btn" onclick="buyNFT()">Buy NFT</button>
 </div>
-<button id="buyNFTBtn">Buy NFT</button>
 
 <script>
-// -------- READ URL PARAMETERS --------
+// GET NFT DATA FROM URL
 const params = new URLSearchParams(window.location.search);
-const img = params.get("img");
-const price = parseFloat(params.get("price"));
-const daily = parseFloat(params.get("daily"));
+const img = params.get('img');
+const price = parseFloat(params.get('price')) || 0;
+const dailyPercent = parseFloat(params.get('daily')) || 0;
 
-// -------- DISPLAY IMAGE --------
-document.getElementById("nftImage").src = img;
+document.getElementById('nftImage').src = img;
 
-// -------- CALCULATE PROFITS --------
-const dailyProfit = (price * daily / 100).toFixed(2);
+// CALCULATE PROFITS
+const dailyProfit = (price * dailyPercent / 100).toFixed(2);
 const weeklyProfit = (dailyProfit * 7).toFixed(2);
 const monthlyProfit = (dailyProfit * 30).toFixed(2);
 const yearlyProfit = (dailyProfit * 365).toFixed(2);
 const totalPayout = (price + parseFloat(yearlyProfit)).toFixed(2);
 
-// -------- DISPLAY DETAILS --------
-document.getElementById("nftDetails").innerHTML = `
-Invest - $${price}<br>
-Daily Profit: ${daily}% of $${price} = $${dailyProfit}<br>
-Weekly Profit: $${dailyProfit} x 7 = $${weeklyProfit}<br>
-Monthly Profit: $${dailyProfit} x 30 = $${monthlyProfit}<br>
-Yearly Profit: $${dailyProfit} x 365 = $${yearlyProfit}<br>
-Total Payout: $${totalPayout}
+// SHOW DETAILS
+document.getElementById('nftDetails').innerHTML = `
+Invest - $${price} and Profit - $${yearlyProfit}<br>
+• Daily Profit: $${dailyProfit} (${dailyPercent}%)<br>
+• Weekly Profit: $${weeklyProfit} (${(weeklyProfit/price*100).toFixed(1)}%)<br>
+• Monthly Profit: $${monthlyProfit} (${(monthlyProfit/price*100).toFixed(0)}%)<br>
+• Yearly Profit: $${yearlyProfit} (${(yearlyProfit/price*100).toFixed(0)}%)<br>
+• Total Payout: At the end of the year, you would have $${totalPayout}.
 `;
 
-// -------- BUY NFT BUTTON --------
-document.getElementById("buyNFTBtn").addEventListener("click",()=>{
-    const myNFTs = JSON.parse(localStorage.getItem("myNFTs")) || [];
-    const maxProfit = price * 0.5; // 50% max return
-    myNFTs.push({price,daily,dailyEarned:0,maxProfit,boughtAt:Date.now()});
-    localStorage.setItem("myNFTs",JSON.stringify(myNFTs));
-    alert("🎉 NFT Purchased Successfully!");
-    window.location.href="dashboard.html";
-});
+// BUY NFT FUNCTION
+function buyNFT(){
+  const myNFTs = JSON.parse(localStorage.getItem('myNFTs')) || [];
+  const maxProfit = price * 0.5; // 50% max return
+  myNFTs.push({price,dailyPercent,earned:0,maxProfit,boughtAt:Date.now(),img});
+  localStorage.setItem('myNFTs',JSON.stringify(myNFTs));
+  alert('NFT Purchased Successfully!');
+  window.location.href='dashboard.html';
+}
 </script>
 
 </body>
