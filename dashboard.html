@@ -175,7 +175,7 @@ function updateSummary(){
     invested+=n.price;
     const dailyProfit = n.price * (n.p/100);
     if(n.earned < n.maxProfit){
-      n.earned += dailyProfit/24; // update every hour fractionally
+      n.earned += dailyProfit/24;
       if(n.earned>=n.maxProfit) alert("🎉 Max 50% profit reached! Upgrade your NFT level!");
     }
     daily+=dailyProfit;
