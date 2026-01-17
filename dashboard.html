@@ -31,9 +31,6 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
 #nftModal .modal-content{background:#111827;padding:20px;border-radius:12px;max-width:400px;width:90%;text-align:center;}
 #nftModal img{width:80%;border-radius:10px;margin-bottom:10px;}
 #nftModal button{margin-top:10px;padding:8px 16px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
-/* Toast Notification */
-#toast{visibility:hidden;min-width:250px;background-color:#38bdf8;color:#020617;text-align:center;border-radius:8px;padding:12px 20px;position:fixed;bottom:20px;right:20px;z-index:3000;font-weight:bold;box-shadow:0 4px 8px rgba(0,0,0,0.3);transition:visibility 0s, opacity 0.5s linear;opacity:0;}
-#toast.show{visibility:visible;opacity:1;}
 </style>
 </head>
 <body>
@@ -98,9 +95,6 @@ header .walletBalance{font-size:16px;color:#00e5ff;}
   </div>
 </div>
 
-<!-- Toast Notification -->
-<div id="toast">🎉 Max 50% profit reached! Upgrade your NFT level!</div>
-
 <script>
 // -------- MENU --------
 function openMenu(){ document.getElementById("menuOverlay").style.display="block"; }
@@ -109,7 +103,7 @@ function closeMenu(e){ document.getElementById("menuOverlay").style.display="non
 // -------- REFERRAL --------
 if(!localStorage.getItem("refCode")) localStorage.setItem("refCode","SNFT"+Math.floor(100000+Math.random()*900000));
 document.getElementById("refLink").value = location.origin + "/index.html?ref=" + localStorage.getItem("refCode");
-function copyRef(){ navigator.clipboard.writeText(refLink.value); showToast("Referral copied"); }
+function copyRef(){ navigator.clipboard.writeText(refLink.value); alert("Referral copied"); }
 
 // -------- NFT DATA (30 NFTs) --------
 const NFTS=[
@@ -169,9 +163,9 @@ function filterNFT(cat,btn){
 function buyNFT(price,p){
   const data=JSON.parse(localStorage.getItem("myNFTs"))||[];
   const maxProfit = price*0.5;
-  data.push({price,p,earned:0,maxProfit,notified:false,boughtAt:Date.now()});
+  data.push({price,p,earned:0,maxProfit,boughtAt:Date.now()});
   localStorage.setItem("myNFTs",JSON.stringify(data));
-  showToast("NFT Purchased Successfully");
+  alert("NFT Purchased Successfully");
 }
 
 function updateSummary(){
@@ -181,11 +175,8 @@ function updateSummary(){
     invested+=n.price;
     const dailyProfit = n.price * (n.p/100);
     if(n.earned < n.maxProfit){
-      n.earned += dailyProfit/24; // update fractionally hourly
-      if(n.earned >= n.maxProfit && !n.notified){
-        showToast("🎉 Max 50% profit reached! Upgrade your NFT level!");
-        n.notified=true;
-      }
+      n.earned += dailyProfit/24; // update every hour fractionally
+      if(n.earned>=n.maxProfit) alert("🎉 Max 50% profit reached! Upgrade your NFT level!");
     }
     daily+=dailyProfit;
     live+=n.earned;
@@ -207,8 +198,7 @@ function openModal(img,price,p){
   document.getElementById("nftModal").style.display="flex";
 }
 function closeModal(){document.getElementById("nftModal").style.display="none";}
-function logout(){showToast("Logged out successfully!");setTimeout(()=>{window.location.href="index.html";},800);}
-function showToast(message){const toast=document.getElementById("toast");toast.innerText=message;toast.classList.add("show");setTimeout(()=>{toast.classList.remove("show");},4000);}
+function logout(){alert("Logged out successfully!");window.location.href="index.html";}
 </script>
 
 </body>
