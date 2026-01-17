@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SuperNFT | Contact Us</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="favicon.ico">
+<style>
+body{background:#020617;color:#e5e7eb;font-family:Arial;margin:0;padding:20px;}
+h1{color:#38bdf8;text-align:center;}
+.container{max-width:500px;margin:auto;background:#0f172a;padding:20px;border-radius:12px;}
+input,textarea,button{
+width:100%;padding:10px;margin:8px 0;
+border-radius:8px;border:none;
+}
+input,textarea{background:#020617;color:white;}
+button{background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
+button:hover{background:#0ea5e9;}
+.info{text-align:center;font-size:14px;color:#94a3b8;margin-top:10px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Contact Us</h1>
+
+<form onsubmit="sendMsg(event)">
+<input type="text" placeholder="Your Name" required>
+<input type="email" placeholder="Your Email" required>
+<textarea rows="4" placeholder="Your Message" required></textarea>
+<button type="submit">Send Message</button>
+</form>
+
+<div class="info">
+📧 Email: <b>mysupernft@gmail.com</b><br>
+⏱ Support Time: 24/7
+</div>
+</div>
+
+<script>
+function sendMsg(e){
+  e.preventDefault();
+  alert("✅ Message sent successfully! Our team will contact you soon.");
+}
+</script>
+
+</body>
+</html>
