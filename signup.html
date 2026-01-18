@@ -5,70 +5,101 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Signup</title>
 <style>
-  body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
-  .container{background:#0f172a;padding:30px;border-radius:12px;width:350px;}
-  h2{text-align:center;color:#38bdf8;}
-  input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;background:#1e293b;color:white;}
-  button{width:100%;padding:10px;border:none;border-radius:6px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
-  button:hover{background:#00e5ff;}
-  .msg{text-align:center;margin-top:10px;font-size:14px;}
-  a{color:#38bdf8;text-decoration:none;}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #020617;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  background: #0a192f;
+  padding: 30px;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+}
+h2 { color: #38bdf8; margin-bottom: 20px; }
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: none;
+  background: #0f172a;
+  color: white;
+}
+button {
+  width: 100%;
+  padding: 10px;
+  background: #38bdf8;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #020617;
+}
+button:hover { background: #00e5ff; }
+.message { margin-top: 10px; font-size: 14px; color: #ffcc00; }
 </style>
 </head>
 <body>
-
 <div class="container">
   <h2>SuperNFT Signup</h2>
-  <input type="email" id="email" placeholder="Enter your email" required>
-  <input type="password" id="password" placeholder="Enter password" required>
+  <input type="text" id="username" placeholder="Username" required>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password" required>
   <button onclick="signup()">Sign Up</button>
-  <div class="msg">
-    Already have an account? <a href="login.html">Login</a>
-  </div>
+  <div class="message" id="msg"></div>
 </div>
 
 <script>
+// ------- SIGNUP FUNCTION -------
 function signup(){
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email || !password){
-    alert("Please fill all fields");
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const msg = document.getElementById('msg');
+
+  if(!username || !email || !password){
+    msg.innerText = "Please fill all fields!";
     return;
   }
 
-  // Get users from localStorage
+  // Get existing users
   let users = JSON.parse(localStorage.getItem("users")) || [];
 
-  // Check if email already exists
-  if(users.find(u => u.email === email)){
-    alert("Email already registered. Please login.");
+  // Check if email already registered
+  if(users.find(u=>u.email===email)){
+    msg.innerText = "Email already registered!";
     return;
   }
 
   // Create new user object
   const newUser = {
+    username,
     email,
     password,
-    verified: false,  // Must verify before login
-    wallet: 0,
-    nfts: [],
-    referral: null
+    verified: false
   };
 
   users.push(newUser);
   localStorage.setItem("users", JSON.stringify(users));
 
-  // Generate verification link
+  // Gmail verification link (demo)
   const verificationLink = location.origin + "/verify.html?email=" + encodeURIComponent(email);
   console.log("Verification link:", verificationLink);
 
-  alert("Signup successful! Check console for verification link.");
+  msg.innerHTML = `Signup successful!<br>Check console for verification link.`;
 
-  // Clear inputs
-  document.getElementById("email").value = "";
-  document.getElementById("password").value = "";
+  // Clear fields
+  document.getElementById('username').value = '';
+  document.getElementById('email').value = '';
+  document.getElementById('password').value = '';
 }
 </script>
-
 </body>
 </html>
