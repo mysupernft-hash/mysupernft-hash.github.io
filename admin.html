@@ -1,82 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Panel - SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
-header{position:sticky;top:0;background:#0a192f;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
-header .logo{font-size:22px;font-weight:bold;color:#38bdf8;}
-.container{max-width:800px;margin:50px auto;padding:20px;background:#0f172a;border-radius:12px;}
-h2{margin-bottom:15px;}
-button{padding:6px 12px;border:none;border-radius:6px;background:#38bdf8;color:#020617;margin:2px;cursor:pointer;}
-table{width:100%;border-collapse:collapse;}
-th,td{border:1px solid #38bdf8;padding:8px;text-align:center;}
+body{background:#020617;color:white;font-family:Arial;margin:0}
+header{background:#020617;padding:15px;text-align:center;font-size:20px;font-weight:bold}
+.container{padding:20px}
+.card{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:15px}
+button{padding:8px 14px;border:none;border-radius:8px;background:#38bdf8;font-weight:bold;cursor:pointer}
+input{padding:8px;border-radius:6px;border:none;width:100%;margin-top:8px}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #334155;padding:8px;text-align:center}
+th{background:#020617}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">Admin Panel</div>
-</header>
 
-<div class="container">
-  <h2>Pending Deposits</h2>
-  <table id="depositTable">
-    <tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>
-  </table>
+<header>🔐 SuperNFT Admin Panel</header>
 
-  <h2>Pending Withdraws</h2>
-  <table id="withdrawTable">
-    <tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>
-  </table>
+<!-- LOGIN -->
+<div class="container" id="loginBox">
+<div class="card">
+<h3>Admin Login</h3>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="adminLogin()">Login</button>
+<p id="loginMsg"></p>
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="container hidden" id="adminPanel">
+
+<div class="card">
+<h3>💳 Deposit Requests</h3>
+<table id="depositTable">
+<tr>
+<th>Amount</th><th>TXID</th><th>Status</th><th>Action</th>
+</tr>
+</table>
+</div>
+
+<div class="card">
+<h3>💸 Withdraw Requests</h3>
+<table id="withdrawTable">
+<tr>
+<th>Amount</th><th>Wallet</th><th>Status</th><th>Action</th>
+</tr>
+</table>
+</div>
+
+<button onclick="logout()">Logout</button>
 </div>
 
 <script>
-// Load pending deposits
+function adminLogin(){
+  if(user.value==="shvm01.ss" && pass.value==="shivatrainer3520"){
+    loginBox.classList.add("hidden");
+    adminPanel.classList.remove("hidden");
+    loadData();
+  } else {
+    loginMsg.innerText="❌ Invalid admin credentials";
+  }
+}
+
+function loadData(){
+  loadDeposits();
+  loadWithdraws();
+}
+
 function loadDeposits(){
-  let deposits = JSON.parse(localStorage.getItem("pendingDeposits")) || [];
-  let tbody = document.getElementById("depositTable");
-  tbody.innerHTML="<tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>";
+  let deposits = JSON.parse(localStorage.getItem("deposits")) || [];
+  depositTable.innerHTML=`<tr><th>Amount</th><th>TXID</th><th>Status</th><th>Action</th></tr>`;
   deposits.forEach((d,i)=>{
-    let row = tbody.insertRow();
-    row.insertCell(0).innerText=d.amount;
-    row.insertCell(1).innerText=new Date(d.time).toLocaleString();
-    row.insertCell(2).innerHTML=`<button onclick="approveDeposit(${i})">Approve</button>`;
+    depositTable.innerHTML+=`
+    <tr>
+      <td>$${d.amount}</td>
+      <td>${d.txid}</td>
+      <td>${d.status}</td>
+      <td>${d.status==="Pending" ? `<button onclick="approveDeposit(${i})">Approve</button>` : "Approved"}</td>
+    </tr>`;
   });
 }
+
 function approveDeposit(i){
-  let deposits = JSON.parse(localStorage.getItem("pendingDeposits")) || [];
+  let deposits = JSON.parse(localStorage.getItem("deposits"));
   let wallet = parseFloat(localStorage.getItem("walletBalance")) || 0;
   wallet += deposits[i].amount;
-  localStorage.setItem("walletBalance",wallet.toFixed(2));
-  deposits.splice(i,1);
-  localStorage.setItem("pendingDeposits",JSON.stringify(deposits));
-  loadDeposits();
-  alert("✅ Deposit Approved");
-}
-loadDeposits();
+  localStorage.setItem("walletBalance", wallet);
 
-// Load pending withdraws
+  deposits[i].status="Approved";
+  localStorage.setItem("deposits", JSON.stringify(deposits));
+  loadDeposits();
+  alert("Deposit Approved & Wallet Updated");
+}
+
 function loadWithdraws(){
-  let withdraws = JSON.parse(localStorage.getItem("pendingWithdraws")) || [];
-  let tbody = document.getElementById("withdrawTable");
-  tbody.innerHTML="<tr><th>Amount ($)</th><th>Time</th><th>Action</th></tr>";
-  withdraws.forEach((d,i)=>{
-    let row = tbody.insertRow();
-    row.insertCell(0).innerText=d.amount;
-    row.insertCell(1).innerText=new Date(d.time).toLocaleString();
-    row.insertCell(2).innerHTML=`<button onclick="approveWithdraw(${i})">Approve</button>`;
+  let w = JSON.parse(localStorage.getItem("withdrawals")) || [];
+  withdrawTable.innerHTML=`<tr><th>Amount</th><th>Wallet</th><th>Status</th><th>Action</th></tr>`;
+  w.forEach((x,i)=>{
+    withdrawTable.innerHTML+=`
+    <tr>
+      <td>$${x.amount}</td>
+      <td>${x.wallet}</td>
+      <td>${x.status}</td>
+      <td>${x.status==="Pending" ? `<button onclick="approveWithdraw(${i})">Paid</button>` : "Completed"}</td>
+    </tr>`;
   });
 }
+
 function approveWithdraw(i){
-  let withdraws = JSON.parse(localStorage.getItem("pendingWithdraws")) || [];
-  withdraws.splice(i,1);
-  localStorage.setItem("pendingWithdraws",JSON.stringify(withdraws));
+  let w = JSON.parse(localStorage.getItem("withdrawals"));
+  w[i].status="Completed";
+  localStorage.setItem("withdrawals", JSON.stringify(w));
   loadWithdraws();
-  alert("✅ Withdraw Approved");
+  alert("Withdraw marked as Paid");
 }
-loadWithdraws();
+
+function logout(){
+  location.reload();
+}
 </script>
+
 </body>
 </html>
