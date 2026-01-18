@@ -3,109 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <title>SuperNFT Signup</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="favicon.ico">
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#020617;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  color:#fff
-}
-.box{
-  width:360px;
-  background:#0f172a;
-  padding:25px;
-  border-radius:16px;
-  text-align:center
-}
-.box h2{
-  color:#22c55e;
-  margin-bottom:20px
-}
-input{
-  width:100%;
-  padding:12px;
-  margin-bottom:12px;
-  border:none;
-  border-radius:8px;
-  outline:none
-}
-button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#22c55e;
-  font-weight:bold;
-  cursor:pointer
-}
-a{
-  color:#38bdf8;
-  text-decoration:none;
-  font-size:14px
-}
-a:hover{text-decoration:underline}
-small{color:#94a3b8}
-</style>
 </head>
-
 <body>
-
-<div class="box">
-  <h2>Create Account</h2>
-
-  <input type="text" id="user" placeholder="Username">
-  <input type="password" id="pass" placeholder="Password">
-  <input type="text" id="ref" placeholder="Referral Code (optional)">
-
-  <button onclick="signup()">Signup</button>
-
-  <br><br>
-  <a href="index.html">Already have an account? Login</a>
-
-  <br><br>
-  <small>Your referral helps you earn more rewards</small>
-</div>
+<h2>Signup</h2>
+<form id="signupForm">
+  Email: <input type="email" id="email" required><br><br>
+  Password: <input type="password" id="password" required><br><br>
+  <button type="submit">Signup</button>
+</form>
+<p id="status"></p>
 
 <script>
-function signup(){
-  let u=document.getElementById("user").value;
-  let p=document.getElementById("pass").value;
-  let r=document.getElementById("ref").value;
+function generateToken(){
+  return Math.random().toString(36).substring(2,12); // simple token
+}
 
-  if(u==="" || p===""){
-    alert("Please fill required fields");
-    return;
-  }
+document.getElementById('signupForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
 
-  let users = JSON.parse(localStorage.getItem("users")) || [];
+  const token = generateToken();
+  localStorage.setItem('userToken', token);  // demo storage
+  localStorage.setItem('userEmail', email);
+  localStorage.setItem('userPassword', password);
 
-  let exists = users.find(x=>x.username===u);
-  if(exists){
-    alert("Username already exists");
-    return;
-  }
-
-  users.push({
-    username:u,
-    password:p,
-    referral:r,
-    wallet:0,
-    earnings:0,
-    team:[]
+  // Call server to send Gmail link
+  const response = await fetch('https://your-server.com/send', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email, token})
   });
 
-  localStorage.setItem("users",JSON.stringify(users));
-
-  alert("Signup successful! Please login");
-  location.href="index.html";
-}
+  if(response.ok){
+    document.getElementById('status').innerText = "Check your email for verification link!";
+  }else{
+    document.getElementById('status').innerText = "Error sending verification email.";
+  }
+});
 </script>
-
 </body>
 </html>
