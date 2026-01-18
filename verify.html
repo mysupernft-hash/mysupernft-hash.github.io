@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SuperNFT Verify</title>
+</head>
+<body>
+<h2>Account Verification</h2>
+<p id="status"></p>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token');
+const storedToken = localStorage.getItem('userToken');
+
+if(token && token === storedToken){
+  document.getElementById('status').innerText = "✅ Your account is verified!";
+  localStorage.setItem('verified','true');
+}else{
+  document.getElementById('status').innerText = "❌ Invalid or expired link.";
+}
+</script>
+</body>
+</html>
