@@ -2,33 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Email Verification - SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;}
-</style>
+<title>Verify Email - SuperNFT</title>
 </head>
 <body>
-
 <h2>Email Verification</h2>
-<p id="msg">Verifying...</p>
+<div id="status"></div>
 
 <script>
-const params = new URLSearchParams(window.location.search);
-const email = params.get("email");
+const urlParams = new URLSearchParams(window.location.search);
+const email = urlParams.get("email");
 
-let users = JSON.parse(localStorage.getItem("users") || "[]");
-let user = users.find(u=>u.email===email);
+if(!email) {
+    document.getElementById("status").innerText = "Invalid verification link.";
+} else {
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find(u => u.email === email);
 
-if(user){
-    user.verified = true;
-    localStorage.setItem("users", JSON.stringify(users));
-    document.getElementById("msg").innerText = "✅ Email verified! You can now login.";
-    setTimeout(()=>{ window.location.href = "index.html"; }, 3000);
-}else{
-    document.getElementById("msg").innerText = "❌ Invalid verification link!";
+    if(!user) {
+        document.getElementById("status").innerText = "User not found.";
+    } else if(user.verified) {
+        document.getElementById("status").innerText = "Email already verified!";
+    } else {
+        user.verified = true;
+        localStorage.setItem("users", JSON.stringify(users));
+        document.getElementById("status").innerText = "✅ Email verified successfully! You can now login.";
+    }
 }
 </script>
-
 </body>
 </html>
