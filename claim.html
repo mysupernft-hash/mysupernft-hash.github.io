@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Claim Earnings</title>
+</head>
+<body style="background:#020617;color:white;text-align:center;padding:40px">
+
+<h2>💸 Claim Earnings</h2>
+
+<p id="earnings"></p>
+
+<input id="address" placeholder="Enter Binance Wallet Address" style="width:80%"><br><br>
+
+<button onclick="claim()">Submit Claim</button>
+
+<script>
+let myNFTs = JSON.parse(localStorage.getItem("myNFTs")) || [];
+let earnings = myNFTs.reduce((a,b)=>a+b.earned,0);
+document.getElementById("earnings").innerText =
+"You can claim: $" + earnings.toFixed(2);
+
+function claim(){
+  let address = document.getElementById("address").value;
+  if(!address){ alert("Enter wallet address"); return; }
+
+  let claims = JSON.parse(localStorage.getItem("claims")) || [];
+
+  claims.push({
+    user: localStorage.getItem("userId"),
+    amount: earnings,
+    address: address,
+    status: "Pending",
+    time: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("claims",JSON.stringify(claims));
+  localStorage.setItem("binanceAddress",address);
+
+  alert("Claim submitted. Admin will process payment.");
+}
+</script>
+
+</body>
+</html>
