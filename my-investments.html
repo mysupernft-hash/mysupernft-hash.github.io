@@ -57,5 +57,20 @@ data.forEach(n=>{
 todayBox.innerText = "$" + totalToday.toFixed(2);
 </script>
 
+  <script>
+let list = document.getElementById("investmentList");
+let myNFTs = JSON.parse(localStorage.getItem("myNFTs")) || [];
+
+myNFTs.forEach(n=>{
+  list.innerHTML += `
+  <div style="background:#0f172a;padding:12px;border-radius:12px;margin-bottom:10px">
+    <img src="${n.image}" style="width:100%;border-radius:10px">
+    <p>Invest: $${n.price}</p>
+    <p>Daily Income: ${(n.price*n.percent/100).toFixed(2)}</p>
+    <p>Earned: $${n.earned.toFixed(2)} / $${n.maxProfit}</p>
+  </div>`;
+});
+</script>
+
 </body>
 </html>
