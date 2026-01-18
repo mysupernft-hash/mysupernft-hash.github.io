@@ -2,38 +2,47 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Login</title>
+<title>Login - SuperNFT</title>
 </head>
 <body>
 <h2>Login</h2>
-<form id="loginForm">
-  Email: <input type="email" id="email" required><br><br>
-  Password: <input type="password" id="password" required><br><br>
-  <button type="submit">Login</button>
-</form>
-<p id="status"></p>
+<input type="email" id="email" placeholder="Enter Email"><br><br>
+<input type="password" id="password" placeholder="Enter Password"><br><br>
+<button onclick="loginUser()">Login</button>
 
 <script>
-document.getElementById('loginForm').addEventListener('submit',(e)=>{
-  e.preventDefault();
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+function loginUser() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-  const storedEmail = localStorage.getItem('userEmail');
-  const storedPass = localStorage.getItem('userPassword');
-  const verified = localStorage.getItem('verified');
-
-  if(email === storedEmail && password === storedPass){
-    if(verified === 'true'){
-      alert("Login successful!");
-      window.location.href = 'dashboard.html';
-    }else{
-      alert("Please verify your account first!");
+    if(!email || !password) {
+        alert("Enter both email and password");
+        return;
     }
-  }else{
-    alert("Wrong email or password!");
-  }
-});
+
+    const users = JSON.parse(localStorage.getItem("users")) || [];
+    const user = users.find(u => u.email === email);
+
+    if(!user) {
+        alert("User not found. Signup first!");
+        return;
+    }
+
+    if(user.password !== password) {
+        alert("Wrong password!");
+        return;
+    }
+
+    if(!user.verified) {
+        alert("Email not verified! Check console for verification link.");
+        return;
+    }
+
+    // Save logged in user
+    localStorage.setItem("loggedInUser", email);
+    alert("Login successful!");
+    window.location.href = "dashboard.html"; // redirect to dashboard
+}
 </script>
 </body>
 </html>
