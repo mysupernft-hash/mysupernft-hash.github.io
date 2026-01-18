@@ -15,6 +15,51 @@ th{background:#0f172a}
 <h2>👑 Admin Dashboard</h2>
 <button onclick="logout()">Logout</button>
 
+<h3>📩 Claim Requests</h3>
+
+<table>
+<tr>
+<th>User</th>
+<th>Amount</th>
+<th>Wallet</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+<tbody id="claimTable"></tbody>
+</table>
+
+<script>
+function loadClaims(){
+  let claims = JSON.parse(localStorage.getItem("claims")) || [];
+  let table = document.getElementById("claimTable");
+  table.innerHTML="";
+
+  claims.forEach((c,i)=>{
+    table.innerHTML+=`
+    <tr>
+      <td>${c.user}</td>
+      <td>$${c.amount.toFixed(2)}</td>
+      <td>${c.address}</td>
+      <td>${c.status}</td>
+      <td>
+        ${c.status==="Pending" ? 
+        `<button onclick="markPaid(${i})">Mark Paid</button>` 
+        : "✔ Paid"}
+      </td>
+    </tr>`;
+  });
+}
+
+function markPaid(i){
+  let claims = JSON.parse(localStorage.getItem("claims"));
+  claims[i].status="Paid";
+  localStorage.setItem("claims",JSON.stringify(claims));
+  loadClaims();
+}
+
+loadClaims();
+</script>
+  
 <table>
 <thead>
 <tr>
