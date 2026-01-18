@@ -2,97 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Login</title>
+<title>Login - SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="favicon.ico">
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#020617;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  color:#fff
-}
-.box{
-  width:330px;
-  background:#0f172a;
-  padding:25px;
-  border-radius:16px;
-  text-align:center
-}
-.box h2{
-  color:#38bdf8;
-  margin-bottom:20px
-}
-input{
-  width:100%;
-  padding:12px;
-  margin-bottom:12px;
-  border:none;
-  border-radius:8px;
-  outline:none
-}
-button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#38bdf8;
-  font-weight:bold;
-  cursor:pointer
-}
-.links{
-  display:flex;
-  justify-content:space-between;
-  margin-top:12px;
-  font-size:14px
-}
-.links a{
-  color:#38bdf8;
-  text-decoration:none
-}
-.links a:hover{text-decoration:underline}
-small{color:#94a3b8}
+body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;}
+input, button{margin:8px 0;padding:10px;border-radius:6px;border:none;width:250px;}
+button{background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
-<div class="box">
-  <h2>SuperNFT Login</h2>
-
-  <input type="text" id="user" placeholder="Username">
-  <input type="password" id="pass" placeholder="Password">
-
-  <button onclick="login()">Login</button>
-
-  <div class="links">
-    <a href="forgot-password.html">Forgot Password?</a>
-    <a href="signup.html">Signup</a>
-  </div>
-
-  <br>
-  <small>Secure NFT Investment Platform</small>
-</div>
+<h2>Login</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p>Don't have an account? <a href="signup.html">Signup</a></p>
 
 <script>
 function login(){
-  let u=document.getElementById("user").value;
-  let p=document.getElementById("pass").value;
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-  if(u==="" || p===""){
-    alert("Please fill all fields");
-    return;
-  }
+    let users = JSON.parse(localStorage.getItem("users") || "[]");
+    let user = users.find(u=>u.email===email);
 
-  /* demo login – replace later */
-  localStorage.setItem("loggedIn","yes");
-  localStorage.setItem("username",u);
+    if(!user){ alert("Incorrect email or password!"); return; }
+    if(user.password!==password){ alert("Incorrect email or password!"); return; }
+    if(!user.verified){ alert("❌ Email not verified! Please verify first."); return; }
 
-  location.href="dashboard.html";
+    localStorage.setItem("currentUser", JSON.stringify(user));
+    alert("✅ Login successful!");
+    window.location.href = "dashboard.html";
 }
 </script>
 
