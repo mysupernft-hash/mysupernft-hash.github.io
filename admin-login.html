@@ -1,39 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Login - SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;}
-.login-container{background:#0f172a;padding:30px;border-radius:12px;width:300px;text-align:center;}
-input{width:90%;padding:10px;margin:10px 0;border-radius:6px;border:none;background:#111827;color:white;}
-button{padding:10px 20px;border:none;border-radius:6px;background:#38bdf8;color:#020617;cursor:pointer;font-weight:bold;}
-</style>
+<title>Admin Login</title>
 </head>
-<body>
+<body style="background:#020617;color:white;text-align:center;padding-top:100px">
 
-<div class="login-container">
-  <h2>Admin Login</h2>
-  <input type="text" id="adminUser" placeholder="Username">
-  <input type="password" id="adminPass" placeholder="Password">
-  <button onclick="loginAdmin()">Login</button>
-</div>
+<h2>Admin Login</h2>
+
+<input id="user" placeholder="Username"><br><br>
+<input id="pass" type="password" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
 
 <script>
-function loginAdmin(){
-  const username=document.getElementById("adminUser").value;
-  const password=document.getElementById("adminPass").value;
-
-  // Updated credentials
-  if(username==="shvm01.ss" && password==="shivatrainer3520"){
-    localStorage.setItem("isAdmin","true");
-    window.location.href="admin.html";
-  } else {
-    alert("Wrong username or password!");
+function login(){
+  if(
+    document.getElementById("user").value==="shvm01.ss" &&
+    document.getElementById("pass").value==="shivatrainer3520"
+  ){
+    localStorage.setItem("adminLogged","true");
+    location.href="admin-dashboard.html";
+  }else{
+    alert("Wrong Admin Credentials");
   }
 }
 </script>
-
 </body>
 </html>
