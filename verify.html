@@ -2,23 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Verify</title>
+<title>Email Verification - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column;}
+</style>
 </head>
 <body>
-<h2>Account Verification</h2>
-<p id="status"></p>
+
+<h2>Email Verification</h2>
+<p id="msg">Verifying...</p>
 
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get('token');
-const storedToken = localStorage.getItem('userToken');
+const params = new URLSearchParams(window.location.search);
+const email = params.get("email");
 
-if(token && token === storedToken){
-  document.getElementById('status').innerText = "✅ Your account is verified!";
-  localStorage.setItem('verified','true');
+let users = JSON.parse(localStorage.getItem("users") || "[]");
+let user = users.find(u=>u.email===email);
+
+if(user){
+    user.verified = true;
+    localStorage.setItem("users", JSON.stringify(users));
+    document.getElementById("msg").innerText = "✅ Email verified! You can now login.";
+    setTimeout(()=>{ window.location.href = "index.html"; }, 3000);
 }else{
-  document.getElementById('status').innerText = "❌ Invalid or expired link.";
+    document.getElementById("msg").innerText = "❌ Invalid verification link!";
 }
 </script>
+
 </body>
 </html>
