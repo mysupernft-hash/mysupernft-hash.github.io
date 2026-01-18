@@ -2,31 +2,72 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Verify Email - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Verify</title>
+<style>
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#020617;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.container{
+  background:#0a192f;
+  padding:30px;
+  border-radius:12px;
+  width:300px;
+  text-align:center;
+}
+h2{color:#38bdf8;margin-bottom:20px;}
+button{
+  padding:10px 20px;
+  background:#38bdf8;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
+  color:#020617;
+}
+button:hover{background:#00e5ff;}
+.message{margin-top:15px;font-size:14px;color:#ffcc00;}
+</style>
 </head>
 <body>
-<h2>Email Verification</h2>
-<div id="status"></div>
+<div class="container">
+  <h2>Email Verification</h2>
+  <div class="message" id="msg"></div>
+  <button onclick="goLogin()">Go to Login</button>
+</div>
 
 <script>
-const urlParams = new URLSearchParams(window.location.search);
-const email = urlParams.get("email");
+const params = new URLSearchParams(window.location.search);
+const email = params.get("email");
+const msg = document.getElementById("msg");
 
-if(!email) {
-    document.getElementById("status").innerText = "Invalid verification link.";
-} else {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(u => u.email === email);
-
-    if(!user) {
-        document.getElementById("status").innerText = "User not found.";
-    } else if(user.verified) {
-        document.getElementById("status").innerText = "Email already verified!";
-    } else {
-        user.verified = true;
-        localStorage.setItem("users", JSON.stringify(users));
-        document.getElementById("status").innerText = "✅ Email verified successfully! You can now login.";
+if(email){
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  const user = users.find(u => u.email === email);
+  if(user){
+    if(!user.verified){
+      user.verified = true;
+      localStorage.setItem("users", JSON.stringify(users));
+      msg.innerText = "✅ Email verified successfully!";
+    }else{
+      msg.innerText = "ℹ️ Email already verified!";
     }
+  }else{
+    msg.innerText = "❌ User not found!";
+  }
+}else{
+  msg.innerText = "❌ Invalid verification link!";
+}
+
+function goLogin(){
+  window.location.href="login.html";
 }
 </script>
 </body>
