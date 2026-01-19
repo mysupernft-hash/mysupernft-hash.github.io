@@ -2,52 +2,41 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Signup</title>
-<style>
-  body { font-family: Arial; background:#020617; color:white; display:flex; justify-content:center; align-items:center; height:100vh; }
-  form { display:flex; flex-direction:column; gap:12px; background:#0a192f; padding:20px; border-radius:12px; width:300px; }
-  input, button { padding:8px; border-radius:6px; border:none; }
-  input { background:#111827; color:white; }
-  button { background:#38bdf8; color:#020617; cursor:pointer; font-weight:bold; }
-  button:hover { background:#00e5ff; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
+<h2>Signup</h2>
+
 <form id="signupForm">
-  <h2>Sign Up</h2>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
+  <input type="email" id="email" placeholder="Email" required><br><br>
+  <input type="password" id="password" placeholder="Password" required><br><br>
   <button type="submit">Sign Up</button>
 </form>
 
 <script>
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
+document.getElementById("signupForm").addEventListener("submit", async function(e){
   e.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email || !password) { alert("Please enter email and password"); return; }
+
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   try {
-    const res = await fetch("https://supernft-backend-5.onrender.com/signup", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email,password})
+    const response = await fetch("https://supernft-backend-5.onrender.com/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
     });
 
-    const data = await res.json();
+    const data = await response.json();
+    alert(data.message);
 
-    if(res.ok){
-      alert("Signup successful! Check your email for verification link.");
-      window.location.href = "verify-check.html"; // page telling user to check email
-    } else {
-      alert(data.message || "Signup failed. Try again.");
-    }
-
-  } catch(err){
-    console.error("Network error:", err);
-    alert("Network or server error. Make sure backend is running.");
+  } catch (error) {
+    console.error(error);
+    alert("Network error");
   }
 });
 </script>
