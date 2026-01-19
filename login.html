@@ -1,32 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Login</title>
+<style>
+  body { font-family: Arial; background:#020617; color:white; display:flex; justify-content:center; align-items:center; height:100vh; }
+  form { display:flex; flex-direction:column; gap:12px; background:#0a192f; padding:20px; border-radius:12px; width:300px; }
+  input, button { padding:8px; border-radius:6px; border:none; }
+  input { background:#111827; color:white; }
+  button { background:#38bdf8; color:#020617; cursor:pointer; font-weight:bold; }
+  button:hover { background:#00e5ff; }
+  a { color:#38bdf8; text-decoration:none; font-size:14px; }
+</style>
+</head>
+<body>
+
 <form id="loginForm">
-  <input type="email" id="email" placeholder="Email" required><br><br>
-  <input type="password" id="password" placeholder="Password" required><br><br>
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password" required>
   <button type="submit">Login</button>
+  <a href="signup.html">Don't have an account? Sign up</a>
 </form>
 
 <script>
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email || !password){ alert("Enter email and password"); return; }
 
   try {
-    const res = await fetch("https://supernft-backend.onrender.com/login", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ email, password })
+    const res = await fetch("https://supernft-backend-5.onrender.com/login", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password})
     });
 
     const data = await res.json();
+
     if(res.ok){
-      alert(data.message);
-      localStorage.setItem("loggedIn","true");
-      window.location.href="dashboard.html";
+      if(data.verified){
+        alert("Login successful!");
+        window.location.href = "dashboard.html"; // redirect verified users
+      } else {
+        alert("Email not verified. Please check your inbox.");
+        window.location.href = "verify-check.html";
+      }
     } else {
-      alert(data.message);
+      alert(data.message || "Invalid credentials.");
     }
-  } catch(err) {
-    alert("Server error");
+
+  } catch(err){
+    console.error("Network error:", err);
+    alert("Network or server error. Make sure backend is running.");
   }
 });
 </script>
+
+</body>
+</html>
