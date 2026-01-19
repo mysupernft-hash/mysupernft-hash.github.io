@@ -1,57 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Login</title>
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;}
-.container{background:#0a192f;padding:30px;border-radius:12px;width:300px;text-align:center;}
-h2{color:#38bdf8;margin-bottom:20px;}
-input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;background:#0f172a;color:white;}
-button{width:100%;padding:10px;border:none;border-radius:6px;background:#38bdf8;font-weight:bold;cursor:pointer;color:#020617;}
-button:hover{background:#00e5ff;}
-.message{margin-top:10px;font-size:14px;color:#ffcc00;}
-a{color:#38bdf8;text-decoration:none;font-size:14px;}
-a:hover{color:#00e5ff;}
-</style>
+  <title>SuperNFT Login</title>
 </head>
 <body>
-<div class="container">
-  <h2>SuperNFT Login</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <div class="message" id="msg"></div>
-  <div style="margin-top:10px;">
-    <a href="signup.html">Sign Up</a> | <a href="#">Forgot Password?</a>
-  </div>
-</div>
+
+<h2>Login</h2>
+
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
+
+<button onclick="login()">Login</button>
+
+<p id="msg"></p>
 
 <script>
-function login(){
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const msg = document.getElementById('msg');
-
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  const user = users.find(u=>u.email===email && u.password===password);
-
-  if(!user){
-    msg.innerText="❌ Wrong email or password!";
-    return;
-  }
-  if(!user.verified){
-    msg.innerText="❌ Please verify your email first!";
-    return;
-  }
-
-  // Save logged-in user
-  localStorage.setItem("currentUser", JSON.stringify(user));
-
-  // Redirect to dashboard
-  window.location.href="dashboard.html";
+function login() {
+  fetch("https://supernft-backend.onrender.com/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: document.getElementById("email").value,
+      password: document.getElementById("password").value
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.message === "Login successful") {
+      window.location.href = "dashboard.html";
+    } else {
+      document.getElementById("msg").innerText = data.message;
+    }
+  })
+  .catch(() => {
+    document.getElementById("msg").innerText = "Login failed";
+  });
 }
 </script>
+
 </body>
 </html>
