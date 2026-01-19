@@ -1,26 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Email Verification</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check Your Email - SuperNFT</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #020617;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    a {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #38bdf8;
+      color: #020617;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    a:hover {
+      background: #00e5ff;
+    }
+  </style>
 </head>
 <body>
-
-<h2>Email Verification</h2>
-<p id="status">Verifying...</p>
-
-<script>
-const params = new URLSearchParams(window.location.search);
-const token = params.get("token");
-
-fetch(`https://supernft-backend.onrender.com/verify/${token}`)
-  .then(res => res.text())
-  .then(msg => {
-    document.getElementById("status").innerText = msg;
-  })
-  .catch(() => {
-    document.getElementById("status").innerText = "Verification failed";
-  });
-</script>
-
+  <div>
+    <h2>Check Your Email 📩</h2>
+    <p>
+      We have sent a verification link to your email address.<br><br>
+      Click the link in your inbox to activate your <b>SuperNFT</b> account.
+    </p>
+    <p>Once verified, you can log in here:</p>
+    <a href="login.html">Go to Login</a>
+  </div>
 </body>
 </html>
