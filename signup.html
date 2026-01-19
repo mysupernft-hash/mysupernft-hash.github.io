@@ -2,71 +2,62 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Signup</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;}
-.container{background:#0a192f;padding:30px;border-radius:12px;width:320px;text-align:center;}
-input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;background:#0f172a;color:white;}
-button{width:100%;padding:12px;border:none;border-radius:6px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
-button:hover{background:#00e5ff;}
-.message{margin-top:15px;font-size:14px;color:#ffcc00;}
+  body{font-family:Arial,sans-serif;background:#020617;color:white;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+  .container{background:#0a192f;padding:30px;border-radius:12px;width:300px;text-align:center;}
+  input{width:100%;padding:10px;margin:10px 0;border-radius:8px;border:none;background:#111827;color:white;}
+  button{width:100%;padding:10px;margin-top:10px;border:none;border-radius:8px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
+  a{color:#38bdf8;text-decoration:none;}
+  a:hover{color:#00e5ff;}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>SuperNFT Signup</h2>
-
-  <input type="text" id="username" placeholder="Username">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-
-  <button onclick="signup()">Sign Up</button>
-
-  <p class="message" id="msg"></p>
-
-  <p style="margin-top:12px;font-size:14px;">
-    Already have account? <a href="login.html" style="color:#38bdf8;">Login</a>
-  </p>
+  <h2>Sign Up</h2>
+  <form id="signupForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+  </form>
+  <p>Already have an account? <a href="login.html">Login</a></p>
 </div>
 
 <script>
-async function signup(){
-  const msgEl = document.getElementById("msg");
-  msgEl.innerText = "";
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault(); // form submit ko block kare
 
-  const username = document.getElementById("username").value.trim();
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
-  if(!username || !email || !password){
-    msgEl.innerText = "Please fill all fields.";
+  if(!email || !password){
+    alert("Please fill in all fields.");
     return;
   }
 
-  try{
-    const response = await fetch("https://supernft-backend.onrender.com/signup", {
+  try {
+    const res = await fetch("https://supernft-backend.onrender.com/signup", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({username, email, password})
+      body: JSON.stringify({email, password})
     });
 
-    const data = await response.json();
+    const data = await res.json();
 
-    if(response.ok){
-      msgEl.style.color = "#00e5ff";
-      msgEl.innerText = data.message || "Signup successful! Check your email.";
+    if(res.ok){
+      alert(data.message); // Signup success message
+      window.location.href = "login.html"; // redirect to login page
     } else {
-      msgEl.style.color = "#ff5555";
-      msgEl.innerText = data.message || "Signup failed.";
+      alert(data.message || "Signup failed. Try again.");
     }
+
   } catch(err){
-    console.error(err);
-    msgEl.style.color = "#ff5555";
-    msgEl.innerText = "Network or server error.";
+    console.error("Network error:", err);
+    alert("Network or server error. Please try later.");
   }
-}
+});
 </script>
 
 </body>
