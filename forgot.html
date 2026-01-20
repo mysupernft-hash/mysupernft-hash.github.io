@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forgot Password - SuperNFT</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <h2>Forgot Password</h2>
+  <input type="email" id="email" placeholder="Enter your email">
+  <button onclick="resetPassword()">Send Reset Link</button>
+  <a href="login.html">Back to Login</a>
+</div>
+
+<script type="module">
+import { auth } from './firebase.js';
+import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+async function resetPassword() {
+  const email = document.getElementById("email").value;
+  if(!email) return alert("Enter your email!");
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert("Password reset email sent!");
+  } catch(error){
+    console.error(error);
+    alert(error.message);
+  }
+}
+</script>
+</body>
+</html>
