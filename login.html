@@ -1,18 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - SuperNFT</title>
-  <style>
-    body { font-family: Arial; background:#020617; color:white; display:flex; justify-content:center; align-items:center; height:100vh; }
-    .container { width: 300px; text-align:center; }
-    input { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:none; }
-    button { width:100%; padding:10px; border:none; border-radius:5px; background:#38bdf8; color:#020617; font-weight:bold; cursor:pointer; }
-    button:hover { background:#00e5ff; }
-    a { color:#38bdf8; display:block; margin-top:10px; text-decoration:none; }
-    a:hover { text-decoration:underline; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - SuperNFT</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
@@ -25,46 +17,27 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { auth } from './firebase.js';
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-    authDomain: "supernft-5b952.firebaseapp.com",
-    projectId: "supernft-5b952",
-    storageBucket: "supernft-5b952.firebasestorage.app",
-    messagingSenderId: "278097730700",
-    appId: "1:278097730700:web:6ba9892334456fd8512fa9",
-    measurementId: "G-SFEPHK7N18"
-  };
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
+  if(!email || !password) return alert("Enter email and password!");
 
-  async function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    if (!email || !password) {
-      alert("Please enter email and password!");
-      return;
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    if(userCredential.user.emailVerified){
+      window.location.href = "dashboard.html";
+    } else {
+      alert("Please verify your email first!");
     }
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      if (user.emailVerified) {
-        // ✅ Email verified, redirect to dashboard
-        window.location.href = "dashboard.html";
-      } else {
-        alert("Please verify your email first!");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Login failed: " + error.message);
-    }
+  } catch(error){
+    console.error(error);
+    alert("Login failed: " + error.message);
   }
+}
 </script>
 </body>
 </html>
