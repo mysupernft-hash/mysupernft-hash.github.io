@@ -3,90 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperNFT Signup</title>
+  <title>Check Your Email - SuperNFT</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #020617;
       color: white;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: #0a192f;
+      text-align: center;
       padding: 20px;
+    }
+    .container {
+      background: #0a192f;
+      padding: 30px;
       border-radius: 12px;
-      width: 300px;
+      max-width: 400px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     }
-    input, button {
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
+    h2 {
+      color: #38bdf8;
+      margin-bottom: 20px;
     }
-    input {
-      background: #111827;
-      color: white;
+    p {
+      margin-bottom: 15px;
+      line-height: 1.5;
     }
-    button {
+    a.button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
       background: #38bdf8;
       color: #020617;
-      cursor: pointer;
       font-weight: bold;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: 0.3s;
     }
-    button:hover {
+    a.button:hover {
       background: #00e5ff;
     }
   </style>
 </head>
 <body>
 
-  <form id="signupForm">
-    <h2>Sign Up</h2>
-    <input type="text" id="name" placeholder="Full Name" required>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Sign Up</button>
-  </form>
-
-  <script>
-    document.getElementById("signupForm").addEventListener("submit", async (e) => {
-      e.preventDefault(); // Prevent page reload
-
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (!name || !email || !password) {
-        alert("All fields are required");
-        return;
-      }
-
-      try {
-        const res = await fetch("https://supernft-backend.onrender.com/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password })
-        });
-
-        const data = await res.json();
-
-        if (res.ok) {
-          alert("Signup successful! Check your email for verification link.");
-          window.location.href = "verify-check.html"; // redirect to check email page
-        } else {
-          alert(data.message || "Signup failed. Try again.");
-        }
-      } catch(err) {
-        console.error("Network error:", err);
-        alert("Network or server error. Make sure backend is running.");
-      }
-    });
-  </script>
+  <div class="container">
+    <h2>Check Your Email 📩</h2>
+    <p>We have sent a verification link to your email address.</p>
+    <p>Click the link in your inbox to activate your <b>SuperNFT</b> account.</p>
+    <p>Once verified, you can log in here:</p>
+    <a href="login.html" class="button">Go to Login</a>
+  </div>
 
 </body>
 </html>
