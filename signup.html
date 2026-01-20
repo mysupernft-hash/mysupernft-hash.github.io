@@ -5,23 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SuperNFT Signup</title>
   <style>
-    body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; background:#020617; color:white; }
-    form { display:flex; flex-direction:column; width:300px; }
-    input { margin:5px 0; padding:10px; border-radius:5px; border:none; }
-    button { padding:10px; margin-top:10px; border:none; border-radius:5px; background:#38bdf8; font-weight:bold; cursor:pointer; }
-    button:hover { background:#00e5ff; }
-    p { margin-top:10px; text-align:center; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #020617;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #111827;
+      padding: 30px;
+      border-radius: 10px;
+      width: 350px;
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      padding: 10px 20px;
+      background: #38bdf8;
+      color: #020617;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00e5ff;
+    }
+    p.message {
+      color: #f87171;
+    }
   </style>
 </head>
 <body>
-  <form id="signupForm">
+  <div class="container">
     <h2>Sign Up - SuperNFT</h2>
-    <input type="text" id="name" placeholder="Your Name" required />
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button type="submit">Sign Up</button>
-    <p id="message"></p>
-  </form>
+    <input type="text" id="name" placeholder="Full Name" />
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="signupBtn">Sign Up</button>
+    <p class="message" id="message"></p>
+  </div>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -29,52 +61,62 @@
     import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyCE8-N_IZgIegL7bOviTbtNnTY-ApBXPbI",
-      authDomain: "supernft-80ed4.firebaseapp.com",
-      projectId: "supernft-80ed4",
-      storageBucket: "supernft-80ed4.firebasestorage.app",
-      messagingSenderId: "859197069660",
-      appId: "1:859197069660:web:ae186392a4adf4dd2b4999",
-      measurementId: "G-H192FXKB63"
+      apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+      authDomain: "supernft-5b952.firebaseapp.com",
+      projectId: "supernft-5b952",
+      storageBucket: "supernft-5b952.firebasestorage.app",
+      messagingSenderId: "278097730700",
+      appId: "1:278097730700:web:6ba9892334456fd8512fa9",
+      measurementId: "G-SFEPHK7N18"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    const form = document.getElementById("signupForm");
-    const message = document.getElementById("message");
+    const signupBtn = document.getElementById("signupBtn");
+    const messageEl = document.getElementById("message");
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
+    signupBtn.addEventListener("click", async () => {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
+
+      if (!name || !email || !password) {
+        messageEl.textContent = "Please fill all fields!";
+        return;
+      }
 
       try {
         // Create user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Send verification email
+        // Update display name (optional)
+        user.displayName = name;
+
+        // Send email verification
         await sendEmailVerification(user);
 
-        message.style.color = "green";
-        message.innerHTML = `✅ Check Your Email 📩 <br> Verification link sent to ${email}`;
-        form.reset();
+        // Success message
+        messageEl.style.color = "#34d399";
+        messageEl.innerHTML = `
+          ✅ Verification email sent!<br>
+          Check your inbox to activate your SuperNFT account.
+        `;
       } catch (error) {
         console.error(error);
-        message.style.color = "red";
+        messageEl.style.color = "#f87171";
 
         if (error.code === "auth/email-already-in-use") {
-          message.textContent = "❌ User already registered";
+          messageEl.textContent = "User already registered!";
         } else if (error.code === "auth/invalid-email") {
-          message.textContent = "❌ Invalid email address";
+          messageEl.textContent = "Invalid email!";
         } else if (error.code === "auth/operation-not-allowed") {
-          message.textContent = "❌ Email/Password sign-in not enabled in Firebase";
+          messageEl.textContent = "Email/Password signup not enabled in Firebase!";
         } else if (error.code === "auth/weak-password") {
-          message.textContent = "❌ Weak password (min 6 chars)";
+          messageEl.textContent = "Password should be at least 6 characters!";
         } else {
-          message.textContent = "❌ " + error.message;
+          messageEl.textContent = "Signup failed. Try again!";
         }
       }
     });
