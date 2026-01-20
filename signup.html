@@ -1,95 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
   <title>SuperNFT Signup</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .box {
-      background: #020617;
-      padding: 25px;
-      width: 320px;
-      border-radius: 10px;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
-      border: none;
-    }
-    button {
-      background: #22c55e;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .msg {
-      margin-top: 15px;
-      font-size: 14px;
-    }
-  </style>
 </head>
 <body>
 
-  <div class="box">
-    <h2>Create SuperNFT Account</h2>
+<h2>Sign Up</h2>
 
-    <input type="text" id="name" placeholder="Full Name" />
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
+<form id="signupForm">
+  <input type="text" id="name" placeholder="Name" required><br><br>
+  <input type="email" id="email" placeholder="Email" required><br><br>
+  <input type="password" id="password" placeholder="Password" required><br><br>
+  <button type="submit">Sign Up</button>
+</form>
 
-    <button onclick="signup()">Sign Up</button>
+<script>
+document.getElementById("signupForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
 
-    <div class="msg" id="message"></div>
-  </div>
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  <script>
-    async function signup() {
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const msg = document.getElementById("message");
+  try {
+    const res = await fetch("https://supernft-backend.onrender.com/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, email, password })
+    });
 
-      if (!name || !email || !password) {
-        msg.innerHTML = "❌ All fields required";
-        return;
-      }
+    const data = await res.json();
 
-      msg.innerHTML = "⏳ Please wait...";
-
-      try {
-        const res = await fetch(
-          "https://supernft-backend.onrender.com/api/auth/signup",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, email, password })
-          }
-        );
-
-        const data = await res.json();
-
-        if (res.ok) {
-          msg.innerHTML = "✅ Signup successful! Check your email 📩";
-        } else {
-          msg.innerHTML = "❌ " + (data.message || "Signup failed");
-        }
-
-      } catch (err) {
-        console.error(err);
-        msg.innerHTML = "❌ Network or server error";
-      }
+    if (res.ok) {
+      alert("✅ Signup successful!");
+      window.location.href = "check-email.html";
+    } else {
+      alert(data.message || "Signup failed");
     }
-  </script>
+
+  } catch (err) {
+    alert("❌ Network or server error");
+    console.error(err);
+  }
+});
+</script>
 
 </body>
 </html>
