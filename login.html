@@ -1,63 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Login</title>
-<style>
-  body { font-family: Arial; background:#020617; color:white; display:flex; justify-content:center; align-items:center; height:100vh; }
-  form { display:flex; flex-direction:column; gap:12px; background:#0a192f; padding:20px; border-radius:12px; width:300px; }
-  input, button { padding:8px; border-radius:6px; border:none; }
-  input { background:#111827; color:white; }
-  button { background:#38bdf8; color:#020617; cursor:pointer; font-weight:bold; }
-  button:hover { background:#00e5ff; }
-  a { color:#38bdf8; text-decoration:none; font-size:14px; }
-</style>
+  <meta charset="UTF-8">
+  <title>SuperNFT Login</title>
 </head>
 <body>
-
-<form id="loginForm">
   <h2>Login</h2>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button type="submit">Login</button>
-  <a href="signup.html">Don't have an account? Sign up</a>
-</form>
 
-<script>
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  if(!email || !password){ alert("Enter email and password"); return; }
+  <form id="loginForm">
+    <input id="email" type="email" placeholder="Email" required><br>
+    <input id="password" type="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+  </form>
 
-  try {
-    const res = await fetch("https://supernft-backend-5.onrender.com/login", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email,password})
-    });
+  <div id="msg"></div>
 
-    const data = await res.json();
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-    if(res.ok){
-      if(data.verified){
-        alert("Login successful!");
-        window.location.href = "dashboard.html"; // redirect verified users
-      } else {
-        alert("Email not verified. Please check your inbox.");
-        window.location.href = "verify-check.html";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCE8-N_IZgIegL7bOviTbtNnTY-ApBXPbI",
+      authDomain: "supernft-80ed4.firebaseapp.com",
+      projectId: "supernft-80ed4",
+      storageBucket: "supernft-80ed4.firebasestorage.app",
+      messagingSenderId: "859197069660",
+      appId: "1:859197069660:web:ae186392a4adf4dd2b4999",
+      measurementId: "G-H192FXKB63"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginForm = document.getElementById("loginForm");
+    const msgDiv = document.getElementById("msg");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        if (!userCredential.user.emailVerified) {
+          msgDiv.textContent = "Please verify your email first 📩";
+          return;
+        }
+
+        msgDiv.textContent = "Login successful! Redirecting...";
+        window.location.href = "dashboard.html"; // Or wherever
+
+      } catch (error) {
+        msgDiv.textContent = "Error: " + error.message;
       }
-    } else {
-      alert(data.message || "Invalid credentials.");
-    }
-
-  } catch(err){
-    console.error("Network error:", err);
-    alert("Network or server error. Make sure backend is running.");
-  }
-});
-</script>
-
+    });
+  </script>
 </body>
 </html>
