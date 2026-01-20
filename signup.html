@@ -3,137 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <title>SuperNFT Signup</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: #020617;
-      color: white;
+      background: #0f172a;
+      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
     }
     .box {
-      background: #0a192f;
+      background: #020617;
       padding: 25px;
-      border-radius: 12px;
       width: 320px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      border-radius: 10px;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    input {
+    input, button {
       width: 100%;
       padding: 10px;
-      margin-bottom: 12px;
-      border-radius: 6px;
+      margin-top: 10px;
+      border-radius: 5px;
       border: none;
-      background: #111827;
-      color: white;
-      font-size: 14px;
     }
     button {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      background: #38bdf8;
-      color: #020617;
+      background: #22c55e;
+      color: #000;
       font-weight: bold;
       cursor: pointer;
-      font-size: 15px;
-    }
-    button:hover {
-      background: #0ea5e9;
     }
     .msg {
-      text-align: center;
-      margin-top: 12px;
+      margin-top: 15px;
       font-size: 14px;
     }
   </style>
 </head>
-
 <body>
 
   <div class="box">
-    <h2>Create Account</h2>
+    <h2>Create SuperNFT Account</h2>
 
+    <input type="text" id="name" placeholder="Full Name" />
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
 
     <button onclick="signup()">Sign Up</button>
 
-    <div class="msg" id="msg"></div>
+    <div class="msg" id="message"></div>
   </div>
 
   <script>
     async function signup() {
+      const name = document.getElementById("name").value.trim();
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
-      const msg = document.getElementById("msg");
+      const msg = document.getElementById("message");
 
-      if (!email || !password) {
-        msg.innerText = "❌ Please fill all fields";
+      if (!name || !email || !password) {
+        msg.innerHTML = "❌ All fields required";
         return;
       }
 
-      msg.innerText = "⏳ Creating account...";
+      msg.innerHTML = "⏳ Please wait...";
 
       try {
-        const res = await fetch("https://supernft-backend.onrender.com/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
+        const res = await fetch(
+          "https://supernft-backend.onrender.com/api/auth/signup",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password })
+          }
+        );
 
         const data = await res.json();
 
         if (res.ok) {
-          window.location.href = "verify-check.html";
+          msg.innerHTML = "✅ Signup successful! Check your email 📩";
         } else {
-          msg.innerText = "❌ " + (data.message || "Signup failed");
+          msg.innerHTML = "❌ " + (data.message || "Signup failed");
         }
 
       } catch (err) {
         console.error(err);
-        msg.innerText = "❌ Network or server error";
+        msg.innerHTML = "❌ Network or server error";
       }
     }
   </script>
-
-  <script>
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    const res = await fetch("https://supernft-backend.onrender.com/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
-    alert(data.message);
-
-    if (res.ok) {
-      window.location.href = "verify-check.html";
-    }
-
-  } catch (err) {
-    console.error(err);
-    alert("❌ Network or server error");
-  }
-});
-</script>
 
 </body>
 </html>
