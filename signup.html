@@ -1,119 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SuperNFT Signup</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     body {
-      background: #020617;
       font-family: Arial, sans-serif;
+      background: #020617;
       color: white;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-    }
-
-    .box {
-      background: #020617;
-      border: 1px solid #38bdf8;
-      padding: 30px;
-      border-radius: 10px;
-      width: 320px;
       text-align: center;
     }
-
-    input {
-      width: 100%;
+    input, button {
       padding: 10px;
-      margin: 10px 0;
+      margin: 5px;
       border-radius: 6px;
       border: none;
-      outline: none;
     }
-
     button {
-      width: 100%;
-      padding: 12px;
-      background: #38bdf8;
+      background-color: #38bdf8;
       color: #020617;
       font-weight: bold;
-      border: none;
-      border-radius: 6px;
       cursor: pointer;
     }
-
     button:hover {
-      background: #00e5ff;
+      background-color: #00e5ff;
     }
-
-    .msg {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
     a {
       color: #38bdf8;
       text-decoration: none;
     }
   </style>
 </head>
-
 <body>
 
-  <div class="box">
-    <h2>Create SuperNFT Account</h2>
+<div>
+  <h2>Signup to SuperNFT 🚀</h2>
+  <input type="text" id="name" placeholder="Name" required><br>
+  <input type="email" id="email" placeholder="Email" required><br>
+  <input type="password" id="password" placeholder="Password" required><br>
+  <button id="signupBtn">Sign Up</button>
+  <p>Already have an account? <a href="login.html">Login here</a></p>
+  <p id="message"></p>
+</div>
 
-    <form id="signupForm">
-      <input type="text" id="name" placeholder="Full Name" required />
-      <input type="email" id="email" placeholder="Email Address" required />
-      <input type="password" id="password" placeholder="Password" required />
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-      <button type="submit">Sign Up</button>
-    </form>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCE8-N_IZgIegL7bOviTbtNnTY-ApBXPbI",
+    authDomain: "supernft-80ed4.firebaseapp.com",
+    projectId: "supernft-80ed4",
+    storageBucket: "supernft-80ed4.firebasestorage.app",
+    messagingSenderId: "859197069660",
+    appId: "1:859197069660:web:ae186392a4adf4dd2b4999",
+    measurementId: "G-H192FXKB63"
+  };
 
-    <div class="msg" id="msg"></div>
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-    <p style="margin-top:15px;">
-      Already have an account?
-      <a href="login.html">Login</a>
-    </p>
-  </div>
+  const signupBtn = document.getElementById("signupBtn");
+  const message = document.getElementById("message");
 
-<script>
-document.getElementById("signupForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
+  signupBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const name = document.getElementById("name").value;
 
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const msg = document.getElementById("msg");
-
-  msg.innerText = "⏳ Please wait...";
-
-  try {
-    const res = await fetch("https://supernft-backend.onrender.com/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ name, email, password })
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      window.location.href = "check-email.html";
-    } else {
-      msg.innerText = data.message || "❌ Signup failed";
+    if (!email || !password || !name) {
+      message.textContent = "All fields are required!";
+      return;
     }
 
-  } catch (err) {
-    msg.innerText = "❌ Network or server error";
-  }
-});
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Send verification email
+      await sendEmailVerification(user);
+
+      message.style.color = "lightgreen";
+      message.innerHTML = `
+        ✅ Signup successful! A verification email has been sent to ${email}.<br>
+        Check your inbox and verify your email before logging in.
+      `;
+    } catch (error) {
+      console.error(error);
+      message.style.color = "red";
+      if (error.code === "auth/email-already-in-use") {
+        message.textContent = "User already registered!";
+      } else if (error.code === "auth/invalid-email") {
+        message.textContent = "Invalid email address!";
+      } else if (error.code === "auth/weak-password") {
+        message.textContent = "Password should be at least 6 characters!";
+      } else {
+        message.textContent = "Error: " + error.message;
+      }
+    }
+  });
 </script>
 
 </body>
