@@ -13,7 +13,9 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      text-align: center;
     }
+
     form {
       display: flex;
       flex-direction: column;
@@ -23,65 +25,117 @@
       border-radius: 12px;
       width: 300px;
     }
+
     input, button {
-      padding: 8px;
+      padding: 10px;
       border-radius: 6px;
       border: none;
+      font-size: 16px;
     }
-    input { background: #111827; color: white; }
+
+    input {
+      background: #111827;
+      color: white;
+    }
+
     button {
       background: #38bdf8;
       color: #020617;
+      font-weight: bold;
       cursor: pointer;
+    }
+
+    button:hover {
+      background: #00e5ff;
+    }
+
+    #message {
+      margin-top: 15px;
       font-weight: bold;
     }
-    button:hover { background: #00e5ff; }
+
+    #check-email {
+      display: none;
+      background: #0a192f;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    #check-email a {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #38bdf8;
+      color: #020617;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    #check-email a:hover {
+      background: #00e5ff;
+    }
   </style>
 </head>
 <body>
 
-  <form id="signupForm">
-    <h2>Sign Up</h2>
-    <input type="text" id="name" placeholder="Full Name" required>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Sign Up</button>
-  </form>
+  <div id="signup-form">
+    <form id="form">
+      <h2>Sign Up</h2>
+      <input type="text" name="name" placeholder="Name" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit">Sign Up</button>
+      <div id="message"></div>
+    </form>
+  </div>
+
+  <div id="check-email">
+    <h2>Check Your Email 📩</h2>
+    <p>
+      We have sent a verification link to your email address.<br><br>
+      Click the link in your inbox to activate your <b>SuperNFT</b> account.
+    </p>
+    <p>Once verified, you can log in here:</p>
+    <a href="login.html">Go to Login</a>
+  </div>
 
   <script>
-    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    const form = document.getElementById("form");
+    const messageDiv = document.getElementById("message");
+    const signupDiv = document.getElementById("signup-form");
+    const checkEmailDiv = document.getElementById("check-email");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (!name || !email || !password) {
-        alert("Please fill all fields");
-        return;
-      }
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password")
+      };
 
       try {
         const res = await fetch("https://supernft-backend-glpsychi8-supernfts-projects.vercel.app/api/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password })
+          body: JSON.stringify(data)
         });
 
-        const data = await res.json();
+        const result = await res.json();
 
         if (res.ok) {
-          // Signup successful
-          alert(data.message || "Signup successful! Check your email for verification link.");
-          window.location.href = "verify-check.html"; // redirect to email verification page
+          // Success
+          signupDiv.style.display = "none";
+          checkEmailDiv.style.display = "block";
         } else {
-          // Backend returned error
-          alert(data.message || "Signup failed. Try again.");
+          messageDiv.textContent = "❌ " + (result.message || "Signup failed");
         }
 
       } catch (err) {
-        console.error("Network error:", err);
-        alert("Network or server error. Make sure backend is running.");
+        console.error("Network or server error", err);
+        messageDiv.textContent = "❌ Network or server error. Make sure backend is running.";
       }
     });
   </script>
