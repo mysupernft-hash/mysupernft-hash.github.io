@@ -1,69 +1,56 @@
-import express from "express";
-import cors from "cors";
-import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Signup</title>
+<style>
+body { font-family: Arial; background:#020617; color:white; display:flex; justify-content:center; align-items:center; height:100vh; }
+form { display:flex; flex-direction:column; gap:12px; background:#0a192f; padding:20px; border-radius:12px; width:300px; }
+input, button { padding:8px; border-radius:6px; border:none; }
+input { background:#111827; color:white; }
+button { background:#38bdf8; color:#020617; cursor:pointer; font-weight:bold; }
+button:hover { background:#00e5ff; }
+</style>
+</head>
+<body>
 
-dotenv.config(); // load EMAIL_USER and EMAIL_PASS
+<form id="signupForm">
+  <h2>Sign Up</h2>
+  <input type="text" id="name" placeholder="Name" required>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button type="submit">Sign Up</button>
+</form>
 
-const app = express();
-app.use(cors());
-app.use(express.json()); // parse JSON body
+<script>
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-// Temporary in-memory "database" for testing
-let users = [];
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-// SIGNUP API
-app.post("/signup", async (req, res) => {
-  const { name, email, password } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields required" });
-  }
-
-  const existingUser = users.find(u => u.email === email);
-
-  if (existingUser) {
-    if (!existingUser.verified) {
-      return res.json({ message: "Verification email already sent. Check your inbox." });
-    } else {
-      return res.status(400).json({ message: "User already registered" });
-    }
-  }
-
-  // Add user to "database"
-  const newUser = { name, email, password, verified: false };
-  users.push(newUser);
-
-  // Send verification email
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+    const res = await fetch("https://supernft-backend.onrender.com/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
     });
 
-    const verifyLink = `https://mysupernft-hash.github.io/verify-check.html`; // redirect page after signup
+    const data = await res.json();
 
-    await transporter.sendMail({
-      from: `"SuperNFT" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Verify your SuperNFT account",
-      html: `
-        <h2>Welcome to SuperNFT</h2>
-        <p>Click the button below to verify your account:</p>
-        <a href="${verifyLink}" style="padding:10px 20px;background:#38bdf8;color:#020617;text-decoration:none;border-radius:6px;font-weight:bold;">Verify Account</a>
-      `,
-    });
-
-    res.json({ success: true, message: "Verification email sent" });
+    if (res.ok) {
+      window.location.href = "verify-check.html"; // redirect after signup
+    } else {
+      alert(data.message || "Signup failed");
+    }
   } catch (err) {
-    console.error("Email error:", err);
-    res.status(500).json({ message: "Failed to send verification email" });
+    console.error("Network error:", err);
+    alert("Network or server error. Make sure backend is running.");
   }
 });
+</script>
 
-// Start server
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`SuperNFT backend running on port ${PORT}`));
+</body>
+</html>
