@@ -4,12 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SuperNFT Signup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #020617;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      margin: 8px 0;
+      width: 250px;
+      border-radius: 5px;
+      border: none;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background: #38bdf8;
+      color: #020617;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00e5ff;
+    }
+    #message {
+      margin-top: 20px;
+      color: #00ff80;
+    }
+  </style>
   <script type="module">
-    // Import Firebase modules
+    // Firebase imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-    // Your Firebase config
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCE8-N_IZgIegL7bOviTbtNnTY-ApBXPbI",
       authDomain: "supernft-80ed4.firebaseapp.com",
@@ -39,28 +76,35 @@
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Send email verification
+        // Send verification email
         await sendEmailVerification(user);
 
-        // Show check your email message
+        // Show success message
         document.getElementById("message").innerHTML = `
-          ✅ Check your email 📩 <br>
-          Verification link sent to ${email}. <br>
-          Once verified, you can <a href="login.html">Login</a>.
+          ✅ Check Your Email 📩 <br>
+          Verification link sent to <b>${email}</b>.<br>
+          Once verified, you can <a href="login.html" style="color:#38bdf8;">Login</a>.
         `;
+
+        // Clear form
+        document.getElementById("name").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("password").value = "";
+
       } catch (error) {
-        alert(error.message);
+        console.error(error);
+        document.getElementById("message").innerText = error.message;
       }
     };
   </script>
 </head>
 <body>
   <h1>SuperNFT Signup</h1>
-  <input type="text" id="name" placeholder="Full Name"><br><br>
-  <input type="email" id="email" placeholder="Email"><br><br>
-  <input type="password" id="password" placeholder="Password"><br><br>
+  <input type="text" id="name" placeholder="Full Name"><br>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
   <button onclick="signup()">Sign Up</button>
 
-  <div id="message" style="margin-top:20px;color:green;"></div>
+  <div id="message"></div>
 </body>
 </html>
