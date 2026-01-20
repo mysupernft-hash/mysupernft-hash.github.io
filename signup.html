@@ -1,32 +1,44 @@
-<form id="signupForm">
-  <input type="text" id="name" placeholder="Name" required>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button type="submit">Sign Up</button>
-</form>
+import express from "express";
+import cors from "cors";
+import nodemailer from "nodemailer";
 
-<script>
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+app.post("/signup", async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password)
+    return res.status(400).json({ message: "All fields required" });
+
+  // Nodemailer setup
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const verifyLink = `https://mysupernft-hash.github.io/login.html`;
 
   try {
-    const res = await fetch("https://supernft-backend.onrender.com/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
+    await transporter.sendMail({
+      from: `"SuperNFT" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Verify your SuperNFT account",
+      html: `<h2>Welcome to SuperNFT</h2>
+             <p>Click below to verify your account:</p>
+             <a href="${verifyLink}">Verify Account</a>`,
     });
 
-    const data = await res.json();
-    alert(data.message);
-
-    if (res.ok) window.location.href = "verify-check.html";
+    res.json({ success: true, message: "Verification email sent" });
   } catch (err) {
     console.error(err);
-    alert("Network or server error");
+    res.status(500).json({ message: "Failed to send verification email" });
   }
 });
-</script>
+
+app.listen(process.env.PORT || 8080, () => {
+  console.log("SuperNFT backend running on port 8080");
+});
