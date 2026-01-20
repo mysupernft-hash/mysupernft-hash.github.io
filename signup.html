@@ -2,60 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Check Your Email - SuperNFT</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #020617;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
-      padding: 20px;
-    }
-    .container {
-      background: #0a192f;
-      padding: 30px;
-      border-radius: 12px;
-      max-width: 400px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    }
-    h2 {
-      color: #38bdf8;
-      margin-bottom: 20px;
-    }
-    p {
-      margin-bottom: 15px;
-      line-height: 1.5;
-    }
-    a.button {
-      display: inline-block;
-      margin-top: 10px;
-      padding: 10px 20px;
-      background: #38bdf8;
-      color: #020617;
-      font-weight: bold;
-      text-decoration: none;
-      border-radius: 6px;
-      transition: 0.3s;
-    }
-    a.button:hover {
-      background: #00e5ff;
-    }
-  </style>
+  <title>SuperNFT Sign Up</title>
 </head>
 <body>
+  <h2>Sign Up</h2>
+  <form id="signupForm">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+  </form>
 
-  <div class="container">
-    <h2>Check Your Email 📩</h2>
-    <p>We have sent a verification link to your email address.</p>
-    <p>Click the link in your inbox to activate your <b>SuperNFT</b> account.</p>
-    <p>Once verified, you can log in here:</p>
-    <a href="login.html" class="button">Go to Login</a>
-  </div>
+  <p>Already have an account? <a href="login.html">Login</a></p>
 
+  <script>
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch("https://supernft-backend.onrender.com/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        alert(data.message);
+
+        if(res.ok) {
+          // Redirect to verify-check page after successful signup
+          window.location.href = "verify-check.html";
+        }
+
+      } catch(err) {
+        console.error(err);
+        alert("Network or server error.");
+      }
+    });
+  </script>
 </body>
 </html>
