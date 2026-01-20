@@ -4,108 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SuperNFT Signup</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #020617;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
-    }
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      border-radius: 6px;
-      border: none;
-    }
-    button {
-      background-color: #38bdf8;
-      color: #020617;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #00e5ff;
-    }
-    a {
-      color: #38bdf8;
-      text-decoration: none;
-    }
-  </style>
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCE8-N_IZgIegL7bOviTbtNnTY-ApBXPbI",
+      authDomain: "supernft-80ed4.firebaseapp.com",
+      projectId: "supernft-80ed4",
+      storageBucket: "supernft-80ed4.firebasestorage.app",
+      messagingSenderId: "859197069660",
+      appId: "1:859197069660:web:ae186392a4adf4dd2b4999",
+      measurementId: "G-H192FXKB63"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Signup function
+    window.signup = async () => {
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (!name || !email || !password) {
+        alert("All fields are required!");
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Send email verification
+        await sendEmailVerification(user);
+
+        // Show check your email message
+        document.getElementById("message").innerHTML = `
+          ✅ Check your email 📩 <br>
+          Verification link sent to ${email}. <br>
+          Once verified, you can <a href="login.html">Login</a>.
+        `;
+      } catch (error) {
+        alert(error.message);
+      }
+    };
+  </script>
 </head>
 <body>
+  <h1>SuperNFT Signup</h1>
+  <input type="text" id="name" placeholder="Full Name"><br><br>
+  <input type="email" id="email" placeholder="Email"><br><br>
+  <input type="password" id="password" placeholder="Password"><br><br>
+  <button onclick="signup()">Sign Up</button>
 
-<div>
-  <h2>Signup to SuperNFT 🚀</h2>
-  <input type="text" id="name" placeholder="Name" required><br>
-  <input type="email" id="email" placeholder="Email" required><br>
-  <input type="password" id="password" placeholder="Password" required><br>
-  <button id="signupBtn">Sign Up</button>
-  <p>Already have an account? <a href="login.html">Login here</a></p>
-  <p id="message"></p>
-</div>
-
-<!-- Firebase SDKs -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCE8-N_IZgIegL7bOviTbtNnTY-ApBXPbI",
-    authDomain: "supernft-80ed4.firebaseapp.com",
-    projectId: "supernft-80ed4",
-    storageBucket: "supernft-80ed4.firebasestorage.app",
-    messagingSenderId: "859197069660",
-    appId: "1:859197069660:web:ae186392a4adf4dd2b4999",
-    measurementId: "G-H192FXKB63"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  const signupBtn = document.getElementById("signupBtn");
-  const message = document.getElementById("message");
-
-  signupBtn.addEventListener("click", async () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const name = document.getElementById("name").value;
-
-    if (!email || !password || !name) {
-      message.textContent = "All fields are required!";
-      return;
-    }
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Send verification email
-      await sendEmailVerification(user);
-
-      message.style.color = "lightgreen";
-      message.innerHTML = `
-        ✅ Signup successful! A verification email has been sent to ${email}.<br>
-        Check your inbox and verify your email before logging in.
-      `;
-    } catch (error) {
-      console.error(error);
-      message.style.color = "red";
-      if (error.code === "auth/email-already-in-use") {
-        message.textContent = "User already registered!";
-      } else if (error.code === "auth/invalid-email") {
-        message.textContent = "Invalid email address!";
-      } else if (error.code === "auth/weak-password") {
-        message.textContent = "Password should be at least 6 characters!";
-      } else {
-        message.textContent = "Error: " + error.message;
-      }
-    }
-  });
-</script>
-
+  <div id="message" style="margin-top:20px;color:green;"></div>
 </body>
 </html>
