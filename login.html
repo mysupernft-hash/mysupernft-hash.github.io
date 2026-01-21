@@ -1,20 +1,65 @@
-<!DOCTYPE html>
-<html>
+<<!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Login - SuperNFT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      background: #020617;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      background: #020617;
+      padding: 30px;
+      border-radius: 10px;
+      width: 320px;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background: #38bdf8;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0ea5e9;
+    }
+    a {
+      color: #38bdf8;
+      display: block;
+      margin-top: 12px;
+      text-align: center;
+      text-decoration: none;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="box">
+    <h2>Login</h2>
 
-<h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
 
-<input type="email" id="email" placeholder="Email"><br><br>
-<input type="password" id="password" placeholder="Password"><br><br>
+    <!-- IMPORTANT -->
+    <button id="loginBtn" type="button">Login</button>
 
-<button id="loginBtn">Login</button><br><br>
-<a href="forgot.html">Forgot Password?</a>
+    <a href="forgot-password.html">Forgot Password?</a>
+  </div>
 
-<!-- 🔥 VERY IMPORTANT -->
-<script type="module" src="login.js"></script>
-
+  <!-- LOGIN JS -->
+  <script type="module" src="login.js"></script>
 </body>
 </html>
