@@ -1,145 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SuperNFT Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body{margin:0;font-family:Arial;background:#0b1120;color:#fff}
-.sidebar{
-  position:fixed;left:0;top:0;width:240px;height:100%;
-  background:#020617;padding:20px;overflow-y:auto
-}
-.sidebar h2{color:#38bdf8;text-align:center}
-.sidebar a{
-  display:block;color:#cbd5f5;text-decoration:none;
-  padding:10px;margin:6px 0;border-radius:6px
-}
-.sidebar a:hover{background:#1e293b;color:#38bdf8}
-.main{margin-left:260px;padding:20px}
-.card{
-  background:#020617;padding:15px;
-  border-radius:10px;margin-bottom:15px
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:15px
-}
-button{
-  padding:8px 14px;border:none;
-  border-radius:6px;cursor:pointer
-}
-.buy{background:#22c55e;color:#000;font-weight:bold}
-.danger{background:#ef4444;color:#fff}
-.small{font-size:13px;color:#94a3b8}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - SuperNFT</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="firebase.js"></script>
 </head>
-
 <body>
+  <div id="sidebar-container"></div>
+  <div class="dashboard-container">
+    <h1>Welcome to your Dashboard 🚀</h1>
+    <p id="userEmail"></p>
+    <button id="logoutBtn">Logout</button>
+  </div>
 
-<script>
-/* BLOCK UNAUTHORIZED ACCESS */
-if(localStorage.getItem("loggedIn")!=="true"){
-  window.location.href="login.html";
-}
-</script>
+  <script type="module">
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-<div class="sidebar">
-  <h2>SuperNFT</h2>
-  <a href="#">Dashboard</a>
-  <a href="#">My Investments</a>
-  <a href="#">Live Earnings</a>
-  <a href="#">Deposit</a>
-  <a href="#">Withdraw</a>
-  <a href="#">Referral</a>
-  <a href="#">Calculator</a>
-  <a href="#">Profile</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
+    const auth = getAuth();
 
-<div class="main">
+    // Check if user is logged in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        if (!user.emailVerified) {
+          alert("Please verify your email first!");
+          window.location.href = "login.html";
+        }
+        document.getElementById("userEmail").textContent = `Logged in as: ${user.email}`;
+      } else {
+        // Not logged in, redirect to login
+        window.location.href = "login.html";
+      }
+    });
 
-<div class="card">
-  <h3>User Dashboard</h3>
-  <p class="small">Status: Verified Account</p>
-  <p>Wallet Balance: <b id="wallet">$100.00</b></p>
-  <button onclick="deposit()">Deposit</button>
-  <button onclick="withdraw()">Withdraw</button>
-</div>
-
-<div class="grid">
-  <div class="card"><h4>Total Invested</h4><p>$450</p></div>
-  <div class="card"><h4>Total Earnings</h4><p>$120</p></div>
-  <div class="card"><h4>Daily Income</h4><p>$4.80</p></div>
-  <div class="card"><h4>Team Income</h4><p>$35</p></div>
-</div>
-
-<h3>Available NFTs</h3>
-<div class="grid" id="nfts"></div>
-
-</div>
-
-<script>
-let wallet=100;
-const nftBox=document.getElementById("nfts");
-
-/* SHOW 30 NFTs */
-for(let i=1;i<=30;i++){
-  let price=10+(i*2);
-  let daily=2+(i%3);
-  nftBox.innerHTML+=`
-  <div class="card">
-    <h4>NFT #${i}</h4>
-    <p>Invest - $${price}</p>
-    <p>Income - ${(price*daily/100).toFixed(2)}</p>
-    <p>Profit - ${daily}%</p>
-    <button class="buy" onclick="buyNFT(${price})">Buy NFT</button>
-    <p class="small" onclick="openDetails(${price},${daily})"
-    style="cursor:pointer">View Details →</p>
-  </div>`;
-}
-
-/* BUY NFT */
-function buyNFT(price){
-  if(wallet>=price){
-    wallet-=price;
-    updateWallet();
-    alert("NFT Purchased Successfully");
-  }else{
-    alert("Insufficient Balance");
-  }
-}
-
-/* WALLET FUNCTIONS */
-function deposit(){
-  alert("Deposit request sent to admin");
-}
-function withdraw(){
-  if(wallet>=20){
-    alert("Withdraw request sent to admin");
-  }else{
-    alert("Minimum withdraw $20");
-  }
-}
-
-/* DETAILS PAGE */
-function openDetails(price,daily){
-  window.location.href=
-  "nft-details.html?price="+price+"&daily="+daily;
-}
-
-/* LOGOUT */
-function logout(){
-  localStorage.removeItem("loggedIn");
-  window.location.href="login.html";
-}
-
-function updateWallet(){
-  document.getElementById("wallet").innerText="$"+wallet.toFixed(2);
-}
-</script>
-
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await signOut(auth);
+      window.location.href = "login.html";
+    });
+  </script>
 </body>
 </html>
