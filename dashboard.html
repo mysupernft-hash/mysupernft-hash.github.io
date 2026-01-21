@@ -289,5 +289,28 @@ function filterNFT(cat){
 renderNFT(NFTS);
 </script>
 
+  <script type="module">
+import { getAuth, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, user=>{
+  if(!user){
+    window.location.href="login.html";
+  }
+});
+</script>
+
 </body>
 </html>
