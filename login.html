@@ -1,31 +1,20 @@
-<form id="loginForm">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button type="submit">Login</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login - SuperNFT</title>
+</head>
+<body>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+<h2>Login</h2>
 
-const firebaseConfig = { /* your config */ };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
 
-document.getElementById("loginForm").addEventListener("submit", async (event) => {
-  event.preventDefault(); // Page reload rokega
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+<button id="loginBtn">Login</button><br><br>
+<a href="forgot.html">Forgot Password?</a>
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    if (userCredential.user.emailVerified) {
-      window.location.href = "dashboard.html"; // Dashboard khulega
-    } else {
-      alert("Please verify your email first!");
-    }
-  } catch(error) {
-    alert(error.message);
-  }
-});
-</script>
+<!-- 🔥 VERY IMPORTANT -->
+<script type="module" src="login.js"></script>
+
+</body>
+</html>
