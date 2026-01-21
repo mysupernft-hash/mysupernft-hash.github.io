@@ -23,10 +23,7 @@ body{
   border-radius:10px;
 }
 
-h2{
-  text-align:center;
-  margin-bottom:20px;
-}
+h2{text-align:center;margin-bottom:20px;}
 
 input{
   width:100%;
@@ -46,20 +43,11 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  background:#00e5ff;
-}
+button:hover{background:#00e5ff;}
 
-.links{
-  text-align:center;
-  margin-top:15px;
-}
+.links{text-align:center;margin-top:15px;}
 
-a{
-  color:#38bdf8;
-  text-decoration:none;
-  font-size:14px;
-}
+a{color:#38bdf8;text-decoration:none;font-size:14px;}
 </style>
 </head>
 
@@ -71,7 +59,7 @@ a{
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
 
-  <button onclick="login()">Login</button>
+  <button id="loginBtn">Login</button>
 
   <div class="links">
     <a href="forgot-password.html">Forgot Password?</a><br><br>
@@ -79,6 +67,35 @@ a{
   </div>
 </div>
 
-<script src="login.js"></script>
+<!-- ✅ FIREBASE LOGIN SCRIPT -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+document.getElementById("loginBtn").addEventListener("click", ()=>{
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(()=>{
+      window.location.href = "dashboard.html";
+    })
+    .catch(err=>{
+      alert(err.message);
+    });
+});
+</script>
+
 </body>
 </html>
