@@ -4,7 +4,6 @@ import {
   signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-/* 🔥 YOUR FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -17,28 +16,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-/* LOGIN BUTTON */
 document.getElementById("loginBtn").addEventListener("click", async () => {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
 
   if (!email || !password) {
-    alert("Please enter email and password");
+    alert("Enter email & password");
     return;
   }
 
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = await signInWithEmailAndPassword(auth, email, password);
 
-    if (!userCredential.user.emailVerified) {
+    if (!user.user.emailVerified) {
       alert("Please verify your email first");
       return;
     }
 
-    // ✅ LOGIN SUCCESS → DASHBOARD
-    window.location.href = "dashboard.html";
+    // ✅ REDIRECT (NO RELOAD)
+    window.location.replace("dashboard.html");
 
-  } catch (error) {
-    alert(error.message);
+  } catch (err) {
+    alert(err.message);
   }
 });
