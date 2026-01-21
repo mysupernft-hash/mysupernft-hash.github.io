@@ -33,7 +33,7 @@ body {
 .sidebar {
   position:fixed;
   top:0;
-  left:-260px; /* hidden */
+  left:-260px;
   width:260px;
   height:100%;
   background:#111827;
@@ -59,7 +59,7 @@ body {
 /* Main Content */
 .main {
   margin-left:0;
-  padding:80px 20px 20px 20px; /* top padding for fixed topbar */
+  padding:80px 20px 20px 20px;
   transition:0.3s;
 }
 .main.shift { margin-left:260px; }
@@ -84,7 +84,7 @@ body {
 /* NFT Grid */
 .nft-grid {
   display:grid;
-  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  grid-template-columns: repeat(2,1fr); /* Two-column layout */
   gap:20px;
 }
 .nft-card {
@@ -157,7 +157,7 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-// 🔹 Firebase Config
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -170,17 +170,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🔐 Dashboard protection
+// Login protection
 onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href="login.html";
+  if(!user) window.location.href="login.html";
 });
 
-// 🔹 Logout
+// Logout
 document.getElementById("logoutBtn").addEventListener("click",()=>{
   signOut(auth).then(()=>window.location.href="login.html");
 });
 
-// 🔹 NFT Data
+// NFT data
 const NFTS=[
 {cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
 {cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -214,7 +214,7 @@ const NFTS=[
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 ];
 
-// 🔹 Render NFTs
+// Render NFTs in 2-column layout
 const nftGrid = document.getElementById("nftGrid");
 function renderNFTs(filter="all"){
   nftGrid.innerHTML="";
@@ -234,7 +234,7 @@ function renderNFTs(filter="all"){
 }
 renderNFTs();
 
-// 🔹 Category Buttons
+// Category buttons
 document.querySelectorAll("#categoryButtons button").forEach(btn=>{
   btn.addEventListener("click",()=>{
     document.querySelectorAll("#categoryButtons button").forEach(b=>b.classList.remove("active"));
@@ -243,7 +243,7 @@ document.querySelectorAll("#categoryButtons button").forEach(btn=>{
   });
 });
 
-// 🔹 Sidebar toggle
+// Sidebar toggle
 const hamburger=document.getElementById("hamburger");
 const sidebar=document.getElementById("sidebar");
 const main=document.getElementById("main");
@@ -252,6 +252,5 @@ hamburger.addEventListener("click",()=>{
   main.classList.toggle("shift");
 });
 </script>
-
 </body>
 </html>
