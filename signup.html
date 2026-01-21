@@ -3,42 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up - SuperNFT</title>
-<link rel="stylesheet" href="style.css">
+<title>SuperNFT Signup</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="container">
-  <h2>Sign Up</h2>
-  <input type="text" id="name" placeholder="Name">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button onclick="signup()">Sign Up</button>
-  <a href="login.html">Already have an account? Login</a>
+<div class="auth-container">
+  <h2>Signup</h2>
+  <input type="text" id="name" placeholder="Full Name" />
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="password" placeholder="Password" />
+  <button id="signupBtn">Sign Up</button>
+  <p>Already have an account? <a href="login.html">Login</a></p>
+  <p id="message"></p>
 </div>
 
 <script type="module">
-import { auth } from './firebase.js';
-import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { auth } from "./firebase.js";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-async function signup() {
-  const name = document.getElementById("name").value;
+const signupBtn = document.getElementById("signupBtn");
+const message = document.getElementById("message");
+
+signupBtn.addEventListener("click", async () => {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  if(!name || !email || !password) return alert("All fields required!");
+  if(!email || !password){
+    message.textContent = "All fields required";
+    return;
+  }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCredential.user, { displayName: name });
     await sendEmailVerification(userCredential.user);
-
-    alert("Check your email for verification link!");
-    window.location.href = "login.html";
-  } catch(error) {
-    console.error(error);
-    alert(error.message);
+    message.textContent = "Check your email for verification link!";
+  } catch (err) {
+    message.textContent = err.message;
   }
-}
+});
 </script>
 </body>
 </html>
