@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <title>Login - SuperNFT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <style>
     body {
       background: #020617;
       color: white;
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -17,41 +16,84 @@
     }
     .box {
       width: 320px;
+      text-align: center;
     }
     input, button {
       width: 100%;
       padding: 10px;
       margin-top: 10px;
+      border-radius: 6px;
+      border: none;
     }
     button {
       background: #38bdf8;
-      border: none;
       font-weight: bold;
       cursor: pointer;
+    }
+    button:hover {
+      background: #0ea5e9;
     }
     a {
       color: #38bdf8;
       display: block;
-      margin-top: 10px;
-      text-align: center;
+      margin-top: 8px;
+      text-decoration: none;
     }
   </style>
 </head>
-
 <body>
+
   <div class="box">
-    <h2>Login</h2>
+    <h2>Login to SuperNFT</h2>
 
-    <!-- ❌ FORM MAT USE KARO -->
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
 
-    <!-- ✅ TYPE = BUTTON -->
     <button id="loginBtn" type="button">Login</button>
 
     <a href="forgot-password.html">Forgot Password?</a>
   </div>
 
-  <script type="module" src="login.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+      authDomain: "supernft-5b952.firebaseapp.com",
+      projectId: "supernft-5b952",
+      storageBucket: "supernft-5b952.firebasestorage.app",
+      messagingSenderId: "278097730700",
+      appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        alert("Enter email & password");
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        if (!userCredential.user.emailVerified) {
+          alert("Please verify your email first");
+          return;
+        }
+        // 🚀 GO TO DASHBOARD
+        window.location.href = "dashboard.html";
+
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  </script>
+
 </body>
 </html>
