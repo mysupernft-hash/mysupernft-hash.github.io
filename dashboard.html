@@ -4,102 +4,112 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
 <style>
+  * { box-sizing: border-box; margin:0; padding:0; }
   body {
-    margin:0;
-    font-family: Arial, sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background:#0b0f1a;
     color:white;
   }
-  /* Top navbar */
+  /* Top Navbar */
   .topbar {
     display:flex;
     align-items:center;
+    justify-content:space-between;
     padding:15px 20px;
     background:#111827;
+    position:fixed;
+    width:100%;
+    z-index:10;
   }
+  .topbar h1 { font-size:20px; }
   .hamburger {
     font-size:24px;
     cursor:pointer;
-    margin-right:15px;
+    display:block;
   }
-  .topbar h1 { flex:1; font-size:20px; }
 
   /* Sidebar */
   .sidebar {
     position:fixed;
     top:0;
-    left:-250px;
-    width:250px;
+    left:-260px;
+    width:260px;
     height:100%;
     background:#111827;
-    padding:20px;
+    padding:30px 20px;
     transition:0.3s;
     overflow-y:auto;
+    z-index:9;
   }
   .sidebar.show { left:0; }
-  .sidebar h2 { color:#38bdf8; text-align:center; margin-bottom:20px; }
-  .sidebar ul { list-style:none; padding:0; }
-  .sidebar ul li { margin:12px 0; }
+  .sidebar h2 { color:#38bdf8; text-align:center; margin-bottom:25px; font-size:22px; }
+  .sidebar ul { list-style:none; }
+  .sidebar ul li { margin:15px 0; }
   .sidebar ul li a {
     color:white;
     text-decoration:none;
-    padding:8px 15px;
+    padding:10px 15px;
     display:block;
-    border-radius:6px;
+    border-radius:8px;
     transition:0.3s;
+    font-weight:600;
   }
   .sidebar ul li a:hover { background:#38bdf8; color:#0b0f1a; }
 
-  /* Main content */
-  .main {
-    margin-left:0;
-    padding:20px;
-    transition:0.3s;
-  }
-  .main.shift { margin-left:250px; }
+  /* Main Content */
+  .main { margin-top:70px; padding:20px; transition:0.3s; margin-left:0; }
+  .main.shift { margin-left:260px; }
 
-  /* Category Buttons */
-  .categories { margin:20px 0; }
+  /* Categories */
+  .categories { display:flex; flex-wrap:wrap; margin:20px 0; gap:10px; }
   .categories button {
-    margin-right:10px;
-    padding:8px 16px;
+    padding:8px 20px;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
     cursor:pointer;
     background:#38bdf8;
     color:#0b0f1a;
-    font-weight:bold;
+    font-weight:600;
     transition:0.3s;
   }
   .categories button:hover { background:#00e5ff; }
 
   /* NFT Grid */
-  .nft-grid { display:flex; flex-wrap:wrap; gap:20px; }
+  .nft-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+    gap:20px;
+  }
   .nft-card {
     background:#1e2130;
     border-radius:12px;
     padding:10px;
-    width: calc(50% - 20px); /* First 2 horizontal */
+    cursor:pointer;
+    transition:0.3s;
+    overflow:hidden;
+  }
+  .nft-card img {
+    width:100%;
+    border-radius:12px;
+    transition:0.3s;
+  }
+  .nft-card:hover img { transform: scale(1.05); }
+  .nft-card h3 { margin:10px 0 5px 0; font-size:16px; color:#38bdf8; }
+  .nft-card p { margin-bottom:10px; font-size:14px; color:#ccc; }
+  .nft-card button {
+    width:100%;
+    padding:8px 0;
+    border:none;
+    border-radius:8px;
+    background:#38bdf8;
+    color:#0b0f1a;
+    font-weight:600;
     cursor:pointer;
     transition:0.3s;
   }
-  .nft-card img { width:100%; border-radius:8px; }
-  .nft-card h3, .nft-card p { margin:6px 0; }
-  .nft-card button {
-    padding:6px 12px;
-    border:none;
-    border-radius:6px;
-    background:#38bdf8;
-    color:#0b0f1a;
-    cursor:pointer;
-    font-weight:bold;
-  }
   .nft-card button:hover { background:#00e5ff; }
-
-  /* Make vertical cards full width after first row */
-  .nft-card.vertical { width:100%; }
-
 </style>
 </head>
 <body>
@@ -189,14 +199,13 @@ const NFTS=[
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 ];
 
-// Render NFTs
 const grid = document.getElementById("nft-grid");
 function renderNFTs(cat="all"){
   grid.innerHTML="";
   let filtered = cat==="all"? NFTS : NFTS.filter(n=>n.cat===cat);
   filtered.forEach((nft,i)=>{
     const card = document.createElement("div");
-    card.className = "nft-card" + (i>1 ? " vertical":"");
+    card.className = "nft-card";
     card.innerHTML=`
       <img src="${nft.img}" alt="NFT">
       <h3>${nft.cat.toUpperCase()} NFT</h3>
