@@ -1,243 +1,171 @@
-/* ----------------- BODY & HEADER ----------------- */
+/* General body */
 body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #020617;
-    color: #fff;
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background: #0b0f1a;
+  color: #ffffff;
 }
 
-header {
-    padding: 15px;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-    color: #38bdf8;
-    border-bottom: 1px solid #1e293b;
-    position: relative;
+/* Top navbar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: #111827;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
-/* ----------------- SUMMARY / WALLET ----------------- */
-.summary {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 10px;
-    background: #0f172a;
-    border-radius: 12px;
-    margin: 10px 15px;
-    gap: 10px;
-    font-size: 14px;
+.topbar h1 {
+  font-size: 20px;
+  margin: 0;
 }
 
-.box {
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #1e293b;
-    text-align: center;
-    min-width: 100px;
-    flex: 1 1 120px;
+.hamburger {
+  font-size: 26px;
+  cursor: pointer;
 }
 
-/* ----------------- SIDE MENU ----------------- */
-.side-menu {
-    position: fixed;
-    top: 0;
-    left: -250px;
-    width: 250px;
-    height: 100%;
-    background: #0f172a;
-    color: white;
-    z-index: 9999;
-    transition: 0.3s;
-    padding-top: 50px;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.5);
+/* Sidebar menu */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px; /* hidden initially */
+  width: 260px;
+  height: 100%;
+  background: #111827;
+  padding: 20px;
+  transition: 0.3s;
+  overflow-y: auto;
+  z-index: 200;
 }
 
-.side-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.sidebar.show {
+  left: 0;
 }
 
-.side-menu ul li {
-    padding: 12px 20px;
-    cursor: pointer;
-    border-bottom: 1px solid #38bdf8;
-    transition: 0.2s;
+.sidebar h2 {
+  color: #38bdf8;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-.side-menu ul li:hover {
-    background: #38bdf8;
-    color: #020617;
+.sidebar ul {
+  list-style: none;
+  padding: 0;
 }
 
-.menu-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    color: white;
-    font-size: 22px;
-    cursor: pointer;
+.sidebar ul li {
+  margin: 12px 0;
 }
 
-/* ----------------- REFERRAL ----------------- */
-.ref-box {
-    margin: 10px 15px;
-    padding: 10px;
-    border-radius: 12px;
-    background: #0f172a;
+.sidebar ul li a {
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  display: block;
+  border-radius: 8px;
+  transition: 0.3s;
 }
 
-.ref-box input {
-    width: 100%;
-    padding: 6px;
-    margin-top: 6px;
-    border-radius: 6px;
-    border: 1px solid #38bdf8;
-    background: #020617;
-    color: #fff;
+.sidebar ul li a:hover {
+  background: #38bdf8;
+  color: #0b0f1a;
 }
 
-/* ----------------- TABS ----------------- */
-.tabs {
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-    overflow-x: auto;
+/* Main content */
+.main {
+  margin-left: 0;
+  padding: 25px;
+  transition: margin-left 0.3s;
 }
 
-.tabs button {
-    padding: 8px 14px;
-    border-radius: 20px;
-    border: 1px solid #38bdf8;
-    background: #0f172a;
-    color: #38bdf8;
-    cursor: pointer;
+.main.shift {
+  margin-left: 260px;
 }
 
-.tabs button.active {
-    background: #38bdf8;
-    color: #020617;
+/* Category buttons */
+.category-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 25px;
 }
 
-/* ----------------- NFT GRID ----------------- */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 15px;
-    padding: 15px;
+.category-buttons button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 20px;
+  background: #38bdf8;
+  color: #0b0f1a;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.card {
-    background: #0f172a;
-    border-radius: 14px;
-    padding: 10px;
-    text-align: center;
-    transition: 0.2s;
+.category-buttons button:hover,
+.category-buttons button.active {
+  background: #00e5ff;
 }
 
-.card:hover {
-    transform: scale(1.03);
+/* NFT container */
+.nft-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
 }
 
-.card img {
-    width: 100%;
-    border-radius: 12px;
+/* NFT cards */
+.nft-card {
+  background: #111827;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+  padding: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.price {
-    color: #38bdf8;
-    font-weight: bold;
-    margin-top: 6px;
+.nft-card img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 12px;
 }
 
-.meta {
-    font-size: 12px;
-    opacity: 0.8;
+.nft-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
 }
 
-.card button {
-    width: 100%;
-    margin-top: 8px;
-    padding: 8px;
-    border: none;
-    border-radius: 10px;
-    background: #38bdf8;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
+.nft-card p {
+  margin: 5px 0;
+  font-size: 14px;
 }
 
-.card button:hover {
-    background: #00e5ff;
-    color: #020617;
+/* Buy button */
+.nft-card button {
+  margin-top: 10px;
+  padding: 10px 20px;
+  background: #38bdf8;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #0b0f1a;
+  transition: 0.3s;
 }
 
-/* ----------------- SETTINGS / POPUPS ----------------- */
-.popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.8);
-    z-index: 9999;
+.nft-card button:hover {
+  background: #00e5ff;
 }
 
-.popup-content {
-    background: #020617;
+/* Responsive for mobile */
+@media screen and (max-width: 650px) {
+  .nft-card {
     width: 90%;
-    max-width: 420px;
-    margin: 60px auto;
-    padding: 20px;
-    border-radius: 14px;
-    color: white;
-    position: relative;
-}
-
-.popup-content h3 {
-    margin: 0 0 10px 0;
-    color: #38bdf8;
-}
-
-/* Close button */
-.popup-close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 22px;
-    color: #38bdf8;
-    border: none;
-    background: none;
-    cursor: pointer;
-}
-
-/* ----------------- CHART ----------------- */
-.chart-container {
-    width: 100%;
-    max-width: 600px;
-    height: 300px;
-    background: #0f172a;
-    padding: 15px;
-    border-radius: 12px;
-    margin: 15px auto;
-    box-sizing: border-box;
-}
-.chart-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-}
-
-/* ----------------- RESPONSIVE ----------------- */
-@media(max-width:600px){
-    .summary {
-        flex-direction: column;
-    }
-    .side-menu {
-        width: 220px;
-    }
+  }
 }
