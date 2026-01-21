@@ -1,42 +1,29 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import {
-  getAuth,
-  signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+
+/* 🔥 SAME FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.firebasestorage.app",
-  messagingSenderId: "278097730700",
   appId: "1:278097730700:web:6ba9892334456fd8512fa9"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-document.getElementById("loginBtn").addEventListener("click", async () => {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+window.login = function(){
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-  if (!email || !password) {
-    alert("Enter email & password");
-    return;
-  }
-
-  try {
-    const user = await signInWithEmailAndPassword(auth, email, password);
-
-    if (!user.user.emailVerified) {
-      alert("Please verify your email first");
-      return;
-    }
-
-    // ✅ REDIRECT (NO RELOAD)
-    window.location.replace("dashboard.html");
-
-  } catch (err) {
-    alert(err.message);
-  }
-});
+  signInWithEmailAndPassword(auth, email, password)
+    .then(()=>{
+      window.location.href = "dashboard.html"; // ✅ SUCCESS
+    })
+    .catch(err=>{
+      alert(err.message);
+    });
+};
