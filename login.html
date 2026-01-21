@@ -1,51 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - SuperNFT</title>
-  <link rel="stylesheet" href="styles.css">
-  <script type="module" src="firebase.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Login</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="login-container">
-    <h2>Login to SuperNFT</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <p><a href="forgot-password.html">Forgot Password?</a></p>
-    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
-  </div>
+<div class="auth-container">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="password" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+  <p><a href="forgot-password.html">Forgot Password?</a></p>
+  <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+  <p id="message"></p>
+</div>
 
-  <script type="module">
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+<script type="module">
+import { auth, protectPage } from "./firebase.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-    const auth = getAuth();
+const loginBtn = document.getElementById("loginBtn");
+const message = document.getElementById("message");
 
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+loginBtn.addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-      if (!email || !password) {
-        alert("Please fill all fields");
-        return;
-      }
+  if(!email || !password){
+    message.textContent = "All fields required";
+    return;
+  }
 
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        if (user.emailVerified) {
-          // ✅ Login successful, redirect to dashboard
-          window.location.href = "dashboard.html";
-        } else {
-          alert("Please verify your email first!");
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Incorrect email or password!");
-      }
-    });
-  </script>
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    if(!userCredential.user.emailVerified){
+      message.textContent = "Please verify your email first!";
+      return;
+    }
+    window.location.href = "index.html"; // go to dashboard
+  } catch(err) {
+    message.textContent = "Incorrect email or password";
+  }
+});
+</script>
 </body>
 </html>
