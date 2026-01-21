@@ -5,12 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
 <style>
-  body { margin:0; font-family: Arial, sans-serif; background:#0b0f1a; color:white; }
-  .topbar { display:flex; align-items:center; padding:15px 20px; background:#111827; }
-  .hamburger { font-size:24px; cursor:pointer; margin-right:15px; }
+  body {margin:0; font-family: Arial, sans-serif; background:#0b0f1a; color:white;}
+  
+  /* Top navbar */
+  .topbar {display:flex; align-items:center; padding:15px 20px; background:#111827;}
+  .hamburger {font-size:24px; cursor:pointer; margin-right:15px;}
   .topbar h1 { flex:1; font-size:20px; }
 
-  .sidebar { position:fixed; top:0; left:-250px; width:250px; height:100%; background:#111827; padding:20px; transition:0.3s; overflow-y:auto; }
+  /* Sidebar */
+  .sidebar {position:fixed; top:0; left:-250px; width:250px; height:100%; background:#111827; padding:20px; transition:0.3s; overflow-y:auto;}
   .sidebar.show { left:0; }
   .sidebar h2 { color:#38bdf8; text-align:center; margin-bottom:20px; }
   .sidebar ul { list-style:none; padding:0; }
@@ -18,20 +21,22 @@
   .sidebar ul li a { color:white; text-decoration:none; padding:8px 15px; display:block; border-radius:6px; transition:0.3s; }
   .sidebar ul li a:hover { background:#38bdf8; color:#0b0f1a; }
 
-  .main { margin-left:0; padding:20px; transition:0.3s; }
+  /* Main content */
+  .main {margin-left:0; padding:20px; transition:0.3s;}
   .main.shift { margin-left:250px; }
 
-  /* Category buttons */
-  .categories { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-  .categories button { background:#111827; color:white; border:1px solid #38bdf8; padding:8px 12px; border-radius:6px; cursor:pointer; transition:0.3s; }
-  .categories button:hover, .categories button.active { background:#38bdf8; color:#0b0f1a; }
+  /* Category tabs */
+  .categories {margin:20px 0; display:flex; gap:10px;}
+  .categories button {padding:8px 15px; border:none; border-radius:6px; cursor:pointer; background:#38bdf8; color:#0b0f1a; font-weight:bold; transition:0.3s;}
+  .categories button:hover, .categories button.active { background:#00e5ff; }
 
   /* NFT grid */
-  .nft-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; }
-  .nft-card { background:#1f2937; padding:10px; border-radius:10px; text-align:center; }
-  .nft-card img { width:100%; border-radius:10px; }
-  .nft-card h3, .nft-card p { margin:5px 0; }
-  .buy-btn { margin-top:10px; padding:8px 12px; background:#38bdf8; border:none; border-radius:6px; cursor:pointer; font-weight:bold; transition:0.3s; }
+  .nft-container {display:grid; grid-template-columns:repeat(2,1fr); gap:20px;}
+  .nft-card {background:#111827; border-radius:12px; padding:15px; text-align:center; transition:0.3s;}
+  .nft-card img {width:100%; border-radius:12px;}
+  .nft-card:hover {transform:scale(1.03); box-shadow:0 0 15px #38bdf8;}
+  .nft-info {margin-top:10px; font-size:14px; line-height:1.4;}
+  .buy-btn {margin-top:10px; padding:8px 15px; background:#38bdf8; color:#0b0f1a; font-weight:bold; border-radius:6px; cursor:pointer; text-decoration:none; display:inline-block;}
   .buy-btn:hover { background:#00e5ff; }
 </style>
 </head>
@@ -72,7 +77,7 @@
     <button data-cat="elite">Elite</button>
     <button data-cat="legendary">Legendary</button>
   </div>
-  <div class="nft-grid" id="nftGrid"></div>
+  <div class="nft-container" id="nftContainer"></div>
 </div>
 
 <script>
@@ -118,23 +123,31 @@
     {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
   ];
 
-  const nftGrid = document.getElementById("nftGrid");
+  const nftContainer = document.getElementById("nftContainer");
 
-  function renderNFTs(category){
-    nftGrid.innerHTML="";
-    NFTS.filter(n=> category==="all" || n.cat===category).forEach(n=>{
-      const div=document.createElement("div");
-      div.className="nft-card";
-      div.innerHTML=`<img src="${n.img}" alt="NFT">
-        <h3>Price $${n.price}</h3>
-        <p>Daily ${n.p*100/n.price}%</p>
-        <p>Income $${n.p}</p>
-        <p>Validity 365 days</p>
-        <button class="buy-btn" onclick="buyNFT('${n.img}',${n.price},${n.p})">Buy NFT</button>`;
-      nftGrid.appendChild(div);
-    });
+  function renderNFTs(category="all"){
+    nftContainer.innerHTML="";
+    NFTS.filter(nft => category==="all" || nft.cat===category)
+       .forEach(nft=>{
+         const card = document.createElement("div");
+         card.className="nft-card";
+         card.innerHTML = `
+           <img src="${nft.img}" alt="NFT">
+           <div class="nft-info">
+             Price $${nft.price}<br>
+             Daily ${nft.p*100}%<br>
+             Income $${nft.p}<br>
+             Validity 365 days
+           </div>
+           <a href="nft-details.html?img=${nft.img}&price=${nft.price}&income=${nft.p}" class="buy-btn">Buy NFT</a>
+         `;
+         nftContainer.appendChild(card);
+       });
   }
 
+  renderNFTs(); // initial render
+
+  // Category buttons
   document.querySelectorAll(".categories button").forEach(btn=>{
     btn.addEventListener("click",()=>{
       document.querySelectorAll(".categories button").forEach(b=>b.classList.remove("active"));
@@ -143,13 +156,6 @@
     });
   });
 
-  function buyNFT(img,price,p){
-    const url=`buy-nft.html?img=${encodeURIComponent(img)}&price=${price}&income=${p}&validity=365`;
-    window.location.href=url;
-  }
-
-  // Initial load
-  renderNFTs("all");
 </script>
 </body>
 </html>
