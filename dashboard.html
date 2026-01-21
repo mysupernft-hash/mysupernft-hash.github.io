@@ -4,119 +4,71 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  body {
-    margin:0;
-    font-family: Arial, sans-serif;
-    background:#0b0f1a;
-    color:white;
-  }
+  /* RESET & BODY */
+  * { margin:0; padding:0; box-sizing:border-box; font-family: 'Roboto', sans-serif; }
+  body { background: #0a0e21; color: #fff; overflow-x: hidden; }
 
-  /* Top navbar */
+  /* TOPBAR */
   .topbar {
-    display:flex;
-    align-items:center;
-    padding:15px 20px;
-    background:#111827;
-    position:fixed;
-    width:100%;
-    z-index:1000;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:15px 20px; background:#111827; position: fixed; width: 100%; top:0; z-index: 1000;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
   }
-  .hamburger {
-    font-size:24px;
-    cursor:pointer;
-    margin-right:15px;
-  }
-  .topbar h1 { flex:1; font-size:20px; }
+  .topbar .hamburger { font-size:24px; cursor:pointer; }
+  .topbar h1 { font-size:20px; }
+  .topbar .user-info { display:flex; align-items:center; gap:10px; }
+  .topbar .user-info img { width:32px; height:32px; border-radius:50%; }
 
-  /* Sidebar */
+  /* SIDEBAR */
   .sidebar {
-    position:fixed;
-    top:0;
-    left:-260px;
-    width:260px;
-    height:100%;
-    background:#111827;
-    padding:20px;
-    transition:0.3s;
-    overflow-y:auto;
-    z-index:999;
+    position:fixed; top:0; left:-260px; width:260px; height:100%; background:#111827; padding:20px; transition:0.3s; overflow-y:auto; z-index:999;
   }
   .sidebar.show { left:0; }
   .sidebar h2 { color:#38bdf8; text-align:center; margin-bottom:20px; }
-  .sidebar ul { list-style:none; padding:0; }
+  .sidebar ul { list-style:none; }
   .sidebar ul li { margin:12px 0; }
-  .sidebar ul li a {
-    color:white;
-    text-decoration:none;
-    padding:8px 15px;
-    display:block;
-    border-radius:6px;
-    transition:0.3s;
-  }
-  .sidebar ul li a:hover { background:#38bdf8; color:#0b0f1a; }
+  .sidebar ul li a { color:#fff; text-decoration:none; padding:8px 15px; display:block; border-radius:6px; transition:0.3s; }
+  .sidebar ul li a:hover { background:#38bdf8; color:#0a0e21; }
 
-  /* Main content */
-  .main {
-    margin-left:0;
-    padding:80px 20px 20px 20px;
-    transition:0.3s;
-  }
+  /* MAIN CONTENT */
+  .main { margin-top:60px; padding:20px; transition:0.3s; margin-left:0; }
   .main.shift { margin-left:260px; }
 
-  /* NFT Filters */
-  .nft-filters {
-    margin-bottom:20px;
-  }
-  .nft-filters button {
-    padding:8px 15px;
-    margin-right:10px;
-    background:#38bdf8;
-    color:#0b0f1a;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    transition:0.3s;
-  }
-  .nft-filters button:hover { background:#00e5ff; }
+  /* NFT CATEGORIES */
+  .categories { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; }
+  .categories button { padding:10px 15px; border:none; border-radius:6px; background:#1f2937; color:#fff; cursor:pointer; transition:0.3s; }
+  .categories button.active, .categories button:hover { background:#38bdf8; color:#0a0e21; }
 
-  /* NFT grid */
-  .nft-grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-    gap:15px;
-  }
+  /* NFT GRID */
+  .nft-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap:20px; }
   .nft-card {
-    background:#111827;
-    padding:10px;
-    border-radius:8px;
-    text-align:center;
-    transition:0.2s;
+    background:#111827; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.5); transition:0.3s;
   }
-  .nft-card:hover { transform:scale(1.05); }
-  .nft-card img { width:100%; border-radius:6px; }
-  .nft-card button {
-    margin-top:5px;
-    padding:5px 10px;
-    background:#38bdf8;
-    color:#0b0f1a;
-    border:none;
-    border-radius:4px;
-    cursor:pointer;
-    transition:0.2s;
-  }
-  .nft-card button:hover { background:#00e5ff; }
+  .nft-card:hover { transform: translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.6); }
+  .nft-card img { width:100%; display:block; }
+  .nft-card .info { padding:10px; }
+  .nft-card .info h3 { font-size:16px; margin-bottom:5px; }
+  .nft-card .info p { font-size:14px; color:#38bdf8; margin-bottom:8px; }
+  .nft-card .info button { width:100%; padding:8px; border:none; border-radius:6px; background:#38bdf8; color:#0a0e21; font-weight:bold; cursor:pointer; transition:0.3s; }
+  .nft-card .info button:hover { background:#00e5ff; }
+
 </style>
 </head>
 <body>
 
-<!-- Topbar -->
+<!-- TOPBAR -->
 <div class="topbar">
   <span class="hamburger" id="hamburger">&#9776;</span>
   <h1>SuperNFT Dashboard</h1>
+  <div class="user-info">
+    <img src="https://via.placeholder.com/32" alt="User">
+    <span>Shivam</span>
+  </div>
 </div>
 
-<!-- Sidebar -->
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <h2>SuperNFT Menu</h2>
   <ul>
@@ -139,75 +91,74 @@
   </ul>
 </div>
 
-<!-- Main content -->
+<!-- MAIN CONTENT -->
 <div class="main" id="main">
   <h2>Welcome to SuperNFT Dashboard</h2>
-  <p>Click ☰ to open the menu and explore all features.</p>
 
-  <!-- NFT Filters -->
-  <div class="nft-filters">
-    <button onclick="filterNFTs('All')">All</button>
-    <button onclick="filterNFTs('Starter')">Starter</button>
-    <button onclick="filterNFTs('Rising')">Rising</button>
-    <button onclick="filterNFTs('Elite')">Elite</button>
-    <button onclick="filterNFTs('Legendary')">Legendary</button>
+  <!-- Categories -->
+  <div class="categories" id="categories">
+    <button class="active" data-category="starter">Starter</button>
+    <button data-category="rising">Rising</button>
+    <button data-category="elite">Elite</button>
+    <button data-category="legendary">Legendary</button>
   </div>
 
-  <!-- NFT Grid -->
-  <div class="nft-grid" id="nftGrid"></div>
+  <!-- NFT GRID -->
+  <div class="nft-grid" id="nft-grid">
+    <!-- NFT cards generated by JS -->
+  </div>
 </div>
 
 <script>
-  // Sidebar toggle
+  // SIDEBAR TOGGLE
   const hamburger = document.getElementById("hamburger");
   const sidebar = document.getElementById("sidebar");
   const main = document.getElementById("main");
-  hamburger.addEventListener("click", ()=>{
+  hamburger.addEventListener("click", () => {
     sidebar.classList.toggle("show");
     main.classList.toggle("shift");
   });
 
-  // NFT Data
-  const categories = ["Starter","Rising","Elite","Legendary"];
+  // SAMPLE NFT DATA
   const nfts = [];
+  const categories = ["starter","rising","elite","legendary"];
   for(let i=1;i<=30;i++){
-    const category = categories[Math.floor(Math.random()*categories.length)];
-    nfts.push({
-      id:i,
-      name:"NFT #"+i,
-      img:`https://via.placeholder.com/150?text=NFT+${i}`,
-      category
-    });
+    const cat = categories[i%4];
+    nfts.push({ id:i, name:`NFT #${i}`, category:cat, image:`https://picsum.photos/200/200?random=${i}`, price:`${(i*10).toFixed(2)}$` });
   }
 
-  // Render NFTs
-  const nftGrid = document.getElementById("nftGrid");
-  function renderNFTs(list){
+  const nftGrid = document.getElementById("nft-grid");
+  const categoryBtns = document.querySelectorAll("#categories button");
+
+  function renderNFTs(category){
     nftGrid.innerHTML="";
-    list.forEach(nft=>{
-      const card=document.createElement("div");
+    const filtered = nfts.filter(n=>category==="all"?true:n.category===category);
+    filtered.forEach(n=>{
+      const card = document.createElement("div");
       card.className="nft-card";
-      card.innerHTML=`
-        <img src="${nft.img}" alt="${nft.name}">
-        <h4>${nft.name}</h4>
-        <p>${nft.category}</p>
-        <button onclick="viewNFT(${nft.id})">View</button>
+      card.innerHTML = `
+        <img src="${n.image}" alt="${n.name}">
+        <div class="info">
+          <h3>${n.name}</h3>
+          <p>${n.category.toUpperCase()}</p>
+          <button>Buy</button>
+        </div>
       `;
       nftGrid.appendChild(card);
     });
   }
 
-  // Initial render
-  renderNFTs(nfts);
+  // INITIAL RENDER
+  renderNFTs("starter");
 
-  // Filter NFTs
-  function filterNFTs(category){
-    if(category==="All") renderNFTs(nfts);
-    else renderNFTs(nfts.filter(n=>n.category===category));
-  }
-
-  // View NFT action
-  function viewNFT(id){ alert("Viewing NFT #" + id); }
+  // CATEGORY BUTTONS
+  categoryBtns.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      categoryBtns.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderNFTs(btn.dataset.category);
+    });
+  });
 </script>
 
 </body>
