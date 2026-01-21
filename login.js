@@ -20,10 +20,9 @@ window.login = function(){
   const password = document.getElementById("password").value;
 
   signInWithEmailAndPassword(auth, email, password)
-    .then(()=>{
-      window.location.href = "dashboard.html"; // ✅ SUCCESS
-    })
-    .catch(err=>{
-      alert(err.message);
-    });
-};
+.then(() => {
+  window.location.href = "dashboard.html";
+})
+.catch((error) => {
+  alert(error.message);
+});
