@@ -3,101 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Admin Login</title>
+<title>SuperNFT Admin Dashboard</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0b0f1a;
-  color:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-form{
-  background:#111827;
-  padding:30px;
-  border-radius:10px;
-  display:flex;
-  flex-direction:column;
-  width:300px;
-}
-input{
-  margin-bottom:15px;
-  padding:10px;
-  border-radius:6px;
-  border:none;
-}
-button{
-  padding:10px;
-  border:none;
-  border-radius:6px;
-  background:#38bdf8;
-  color:#0b0f1a;
-  font-weight:bold;
-  cursor:pointer;
-}
-h1{
-  text-align:center;
-  margin-bottom:20px;
-  color:#10b981;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
+.topbar{background:#111827;padding:15px;text-align:center;font-weight:bold;font-size:18px;color:#38bdf8;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th,td{padding:10px;border:1px solid #38bdf8;text-align:center;}
+button{padding:5px 10px;border:none;border-radius:5px;background:#38bdf8;color:#0b0f1a;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<form id="adminLogin">
-  <h1>SuperNFT Admin</h1>
-  <input type="email" id="email" placeholder="Admin Email" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button type="submit">Login</button>
-</form>
+<div class="topbar">SuperNFT Admin Dashboard</div>
+
+<table id="usersTable">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Wallet Balance</th>
+      <th>Total Deposit</th>
+      <th>Live Earnings</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, db } from './firebase.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔹 Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// 🔹 Admin Login
-document.getElementById("adminLogin").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // 🔹 Check if user is admin
-    const snap = await getDoc(doc(db, "admin", user.uid));
-    if(!snap.exists()){
-      alert("Access denied ❌ Not Admin");
-      await auth.signOut();
-      return;
-    }
-
-    // 🔹 Redirect to admin dashboard
-    window.location.replace("admin-dashboard.html");
-
-  } catch(err){
-    alert("Login failed ❌ " + err.message);
-  }
+// LOGIN GUARD
+onAuthStateChanged(auth,user=>{
+  if(!user) location.replace("admin-login.html");
 });
+
+// FETCH USERS
+async function loadUsers(){
+  const snapshot = await getDocs(collection(db,"users"));
+  const tbody = document.querySelector("#usersTable tbody");
+  tbody.innerHTML="";
+  snapshot.forEach(docSnap=>{
+    const u = docSnap.data();
+    tbody.innerHTML += `<tr>
+      <td>${u.email}</td>
+      <td>$${u.walletBalance || 0}</td>
+      <td>$${u.totalDeposit || 0}</td>
+      <td>$${u.liveEarnings || 0}</td>
+      <td><button onclick="editWallet('${docSnap.id}')">Edit Wallet</button></td>
+    </tr>`;
+  });
+}
+
+async function editWallet(uid){
+  const newBal = prompt("Enter new wallet balance:");
+  if(newBal !== null){
+    await updateDoc(doc(db,"users",uid),{walletBalance: Number(newBal)});
+    alert("Wallet updated ✅");
+    loadUsers();
+  }
+}
+
+loadUsers();
 </script>
 
 </body>
