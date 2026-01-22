@@ -146,6 +146,7 @@ body{
 <li><a href="daily.html">Daily Earnings</a></li>
 <li><a href="settings.html">Settings</a></li>
 <li><a href="login.html">Logout</a></li>
+<a href="#" id="logoutBtn">Logout</a>
 </ul>
 </div>
 
@@ -236,6 +237,53 @@ function buy(p){
  localStorage.setItem("price",p);
  location.href="nft-details.html";
 }
+</script>
+
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+/* 🔐 LOGIN GUARD */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.replace("login.html");
+  }
+});
+</script>
+
+  <script type="module">
+import { getAuth, signOut } from 
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const auth = getAuth();
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth).then(() => {
+    window.location.replace("login.html");
+  });
+});
+</script>
+
+  <script type="module">
+import { getAuth, onAuthStateChanged } from 
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const auth = getAuth();
+onAuthStateChanged(auth, user => {
+  if (!user) location.replace("login.html");
+});
 </script>
 
 </body>
