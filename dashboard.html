@@ -16,7 +16,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;overflo
 .sidebar li{margin:10px 0}
 .sidebar a{display:block;padding:10px;color:#fff;text-decoration:none;border-radius:6px;}
 .sidebar a:hover{background:#38bdf8;color:#000;}
-.main{margin-top:60px;padding:15px;transition:.3s;}
+.main{margin-top:60px;padding:15px;transition:.3s;display:none;} /* hidden initially for login protection */
 .main.shift{margin-left:260px;}
 .stats-container{display:flex;gap:15px;flex-wrap:wrap;margin-bottom:15px;}
 .stat-box{flex:1;background:#1f2937;padding:15px;border-radius:10px;text-align:center;cursor:pointer;}
@@ -105,7 +105,7 @@ const sidebar = document.getElementById("sidebar");
 const main = document.getElementById("main");
 menuBtn.onclick = ()=> { sidebar.classList.toggle("show"); main.classList.toggle("shift"); };
 
-// 🔹 NFTs
+// 🔹 NFT DATA (30 NFTs)
 const NFTS=[
 {cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
 {cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -167,9 +167,13 @@ window.buy=(price,img)=>{
   location.href="nft-details.html";
 };
 
-// 🔹 STATS + REFERRAL
+// 🔹 LOGIN PROTECTION + STATS
 onAuthStateChanged(auth, async user=>{
-  if(!user) return;
+  if(!user) return window.location.replace("login.html");
+
+  // show main only if user is logged in
+  document.getElementById("main").style.display = "block";
+
   const snap=await getDoc(doc(db,"users",user.uid));
   if(snap.exists()){
     document.getElementById("myCode").innerText=snap.data().myReferralCode||"N/A";
@@ -183,7 +187,7 @@ onAuthStateChanged(auth, async user=>{
 // 🔹 LOGOUT
 document.getElementById("logoutBtn").addEventListener("click", async ()=>{
   await signOut(auth);
-  window.location.replace("admin-login.html");
+  window.location.replace("login.html");
 });
 
 // 🔹 COPY/SHARE REFERRAL
