@@ -3,69 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Admin Login</title>
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
-.login-box{background:#111827;padding:30px;border-radius:12px;width:320px;text-align:center;}
-.login-box h2{color:#38bdf8;margin-bottom:20px;}
-.login-box input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;}
-.login-box button{width:100%;padding:10px;margin-top:12px;border:none;border-radius:6px;background:#38bdf8;color:#000;font-weight:bold;cursor:pointer;}
-#errorMsg{color:#f87171;margin-top:10px;}
-</style>
+<title>Admin Login | SuperNFT</title>
 </head>
 <body>
-
-<div class="login-box">
-  <h2>SuperNFT Admin Login</h2>
-  <form id="adminLogin">
-    <input type="email" id="email" placeholder="Email" required value="mysupernft@gmail.com">
-    <input type="password" id="password" placeholder="Password" required value="Shivatrainer@3520">
-    <button type="submit">Login</button>
-    <div id="errorMsg"></div>
-  </form>
-</div>
+<h2>Admin Login</h2>
+<input type="email" id="email" placeholder="Email"><br>
+<input type="password" id="password" placeholder="Password"><br>
+<button id="loginBtn">Login</button>
 
 <script type="module">
-import { auth, ADMIN_UID } from './firebase.js';
-import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { auth, db } from "./firebase.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const form = document.getElementById("adminLogin");
-const errorMsg = document.getElementById("errorMsg");
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  errorMsg.innerText = "";
+const loginBtn = document.getElementById("loginBtn");
+loginBtn.addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   try {
-    // 🔹 Session persistence
-    await setPersistence(auth, browserLocalPersistence);
-
-    // 🔹 Sign in
-    const userCredential = await signInWithEmailAndPassword(auth, form.email.value, form.password.value);
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // 🔹 UID check
-    if (user.uid !== ADMIN_UID) {
-      alert("Access Denied ❌ Not Admin");
-      signOut(auth);
-      return;
-    }
-
-    // 🔹 Redirect to admin dashboard
-    window.location.replace("admin-dashboard.html");
-
-  } catch (err) {
-    console.error(err);
-    if (err.code === "auth/too-many-requests") {
-      errorMsg.innerText = "Too many attempts. Wait a few minutes and try again.";
-    } else if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
-      errorMsg.innerText = "Invalid email or password.";
+    // Admin check
+    const snap = await getDoc(doc(db, "admin", user.uid));
+    if (snap.exists()) {
+      window.location.replace("dashboard.html");
     } else {
-      errorMsg.innerText = err.message;
+      alert("Access denied ❌ Not Admin");
+      await auth.signOut();
     }
+  } catch (error) {
+    alert(error.message);
   }
 });
 </script>
-
 </body>
 </html>
