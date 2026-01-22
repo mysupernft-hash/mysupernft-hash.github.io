@@ -162,6 +162,26 @@ margin-bottom:15px;
   <b>My Referral Code:</b>
   <span id="myCode">Loading...</span>
 </div>
+  <button id="copyBtn" style="
+margin-left:10px;
+padding:5px 10px;
+border:none;
+border-radius:6px;
+background:#38bdf8;
+color:#0b0f1a;
+cursor:pointer;
+font-weight:bold;
+">Copy</button>
+  <button id="shareBtn" style="
+margin-left:10px;
+padding:5px 10px;
+border:none;
+border-radius:6px;
+background:#10b981;
+color:#0b0f1a;
+cursor:pointer;
+font-weight:bold;
+">Share</button>
 <div class="categories">
 <button onclick="filterNFT('all')" class="active">All</button>
 <button onclick="filterNFT('starter')">Starter</button>
@@ -314,6 +334,30 @@ onAuthStateChanged(auth, async (user)=>{
   }
 });
 </script>
+
+  <script type="module">
+const copyBtn = document.getElementById("copyBtn");
+const myCodeSpan = document.getElementById("myCode");
+
+copyBtn.addEventListener("click", () => {
+  const code = myCodeSpan.innerText;
+  navigator.clipboard.writeText(code).then(()=>{
+    alert("Referral code copied ✅");
+  });
+});
+</script>
+  <script type="module">
+const shareBtn = document.getElementById("shareBtn");
+
+shareBtn.addEventListener("click", () => {
+  const code = myCodeSpan.innerText;
+  const text = `Join SuperNFT with my referral code: ${code}`;
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)} ${url}`, "_blank");
+});
+</script>
+
+  
 
 </body>
 </html>
