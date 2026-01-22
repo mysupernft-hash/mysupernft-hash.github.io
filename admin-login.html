@@ -65,5 +65,39 @@ loginForm.addEventListener("submit", async (e)=>{
 });
 </script>
 
+  <script type="module">
+import { auth, db, ADMIN_UID } from './firebase.js';
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const form = document.getElementById("adminLogin");
+const errorMsg = document.getElementById("errorMsg");
+
+form.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  errorMsg.innerText = "";
+
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+
+    const userCredential = await signInWithEmailAndPassword(auth, form.email.value, form.password.value);
+    const user = userCredential.user;
+
+    // 🔹 UID check
+    if(user.uid !== ADMIN_UID){
+      alert("Access Denied ❌ Not Admin");
+      signOut(auth);
+      return;
+    }
+
+    // 🔹 Dashboard redirect
+    window.location.replace("admin-dashboard.html");
+
+  } catch(err){
+    errorMsg.innerText = err.message;
+  }
+});
+</script>
+
 </body>
 </html>
