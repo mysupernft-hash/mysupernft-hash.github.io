@@ -1,74 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>My Investments</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Investments - SuperNFT</title>
+
 <style>
-body{margin:0;font-family:Arial;background:#020617;color:white}
-header{text-align:center;padding:15px;font-size:22px;color:#38bdf8}
-.card{
-background:#0f172a;margin:12px;border-radius:14px;
-padding:10px;display:flex;gap:10px
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b0f1a;
+  color:#fff;
 }
-.card img{width:80px;border-radius:10px}
-.meta{font-size:13px;color:#cbd5f5}
+.topbar{
+  position:fixed; top:0; left:0; width:100%; height:60px;
+  background:#111827; display:flex; align-items:center; padding:0 20px; z-index:1001;
+}
+.topbar h1{font-size:18px; margin:0;}
+.main{margin-top:60px; padding:20px;}
+.investment-card{
+  background:#111827; border-radius:12px; padding:15px; margin-bottom:15px;
+}
+.investment-card p{margin:5px 0; font-size:14px;}
+.progress{
+  background:#1f2937; border-radius:10px; height:12px; width:100%; margin-top:5px;
+}
+.progress-bar{
+  height:12px; border-radius:10px; background:#38bdf8; width:0%;
+}
 .total{
-text-align:center;background:#020617;padding:12px;
-border-bottom:1px solid #1e293b
+  background:#111827; padding:12px; border-radius:10px; margin-bottom:20px;
+  font-weight:bold; font-size:16px;
 }
 </style>
 </head>
-
 <body>
 
-<header>📁 My Investments</header>
-
-<div class="total">
-💰 Total Earnings Today: <b id="today">$0</b>
+<div class="topbar">
+  <h1>My Investments</h1>
 </div>
 
-<div id="list"></div>
+<div class="main" id="mainContainer">
+  <div class="total" id="totalEarnings">
+    Loading investments...
+  </div>
+  <div id="investments"></div>
+</div>
 
-<script>
-const list = document.getElementById("list");
-const todayBox = document.getElementById("today");
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
-let totalToday = 0;
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
 
-data.forEach(n=>{
-  // days passed
-  const days = Math.floor((Date.now() - n.boughtAt)/(1000*60*60*24));
-  const earned = Math.min(days,365) * n.daily;
-  totalToday += n.daily;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  list.innerHTML += `
-  <div class="card">
-    <img src="${n.img}">
-    <div class="meta">
-      💵 Price: $${n.price}<br>
-      📈 Daily Income: $${n.daily.toFixed(2)}<br>
-      ⏳ Earned Till Now: $${earned.toFixed(2)}<br>
-      📆 Days Passed: ${days}/365
-    </div>
-  </div>`;
-});
+const investmentsDiv = document.getElementById("investments");
+const totalDiv = document.getElementById("totalEarnings");
 
-todayBox.innerText = "$" + totalToday.toFixed(2);
-</script>
+onAuthStateChanged(auth, async user => {
+  if(!user) return window.location.replace("login.html");
 
-  <script>
-let list = document.getElementById("investmentList");
-let myNFTs = JSON.parse(localStorage.getItem("myNFTs")) || [];
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(!snap.exists()) return totalDiv.innerText = "No investments found";
 
-myNFTs.forEach(n=>{
-  list.innerHTML += `
-  <div style="background:#0f172a;padding:12px;border-radius:12px;margin-bottom:10px">
-    <img src="${n.image}" style="width:100%;border-radius:10px">
-    <p>Invest: $${n.price}</p>
-    <p>Daily Income: ${(n.price*n.percent/100).toFixed(2)}</p>
-    <p>Earned: $${n.earned.toFixed(2)} / $${n.maxProfit}</p>
-  </div>`;
+  const userData = snap.data();
+
+  // Assume userData has array of purchased NFTs: [{price,p,dailyIncome}]
+  const myNFTs = userData.purchasedNFTs || [];
+
+  if(myNFTs.length === 0) return totalDiv.innerText = "No investments yet";
+
+  let totalDaily = 0;
+  let totalInvestment = 0;
+
+  investmentsDiv.innerHTML = "";
+
+  myNFTs.forEach(nft=>{
+    // Category based on price
+    let cat;
+    if(nft.price <=50) cat="Starter";
+    else if(nft.price <=100) cat="Rising";
+    else if(nft.price <=450) cat="Elite";
+    else cat="Legendary";
+
+    totalDaily += nft.p;
+    totalInvestment += nft.price;
+
+    // Level Progress % for category
+    let levelPercent = Math.min((nft.p/100)*100, 100);
+
+    investmentsDiv.innerHTML += `
+      <div class="investment-card">
+        <p>Price: $${nft.price}</p>
+        <p>Category: ${cat}</p>
+        <p>Daily Income: $${nft.p}</p>
+        <p>Validity: 365 Days</p>
+        <div class="progress">
+          <div class="progress-bar" style="width:${levelPercent}%"></div>
+        </div>
+      </div>
+    `;
+  });
+
+  totalDiv.innerHTML = `
+    Total Investment: $${totalInvestment.toFixed(2)}<br>
+    Total Daily Income: $${totalDaily.toFixed(2)}<br>
+    Total Earnings in 365 Days: $${(totalDaily*365).toFixed(2)}
+  `;
 });
 </script>
 
