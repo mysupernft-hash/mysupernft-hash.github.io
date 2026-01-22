@@ -21,10 +21,18 @@ button{width:100%;padding:14px;margin-top:15px;background:#38bdf8;border:none;bo
 </div>
 
 <script>
+// Get NFT from localStorage
 const nft = JSON.parse(localStorage.getItem("selectedNFT"));
-if(!nft){ location.href="dashboard.html"; }
 
-/* ===== PROFIT TABLE (EXACT AS YOU GAVE) ===== */
+if(!nft){
+  document.getElementById("details").innerHTML = `
+    <h2>No NFT Selected</h2>
+    <p>Please go back and select an NFT.</p>
+    <button onclick="location.href='dashboard.html'">Go Back</button>
+  `;
+}
+
+// Profit Table
 const plans = {
   10:{d:0.2,w:1.4,m:6,y:73,p:83},
   15:{d:0.3,w:2.1,m:9,y:109.5,p:124.5},
@@ -39,25 +47,26 @@ const plans = {
   999:{d:100,w:700,m:3000,y:36500,p:37499}
 };
 
-const plan = plans[nft.amount];
+if(nft){
+  const plan = plans[nft.amount];
+  document.getElementById("details").innerHTML = `
+    <img src="${nft.img}">
+    <h2>Invest $${nft.amount} and Profit $${plan.y}</h2>
 
-document.getElementById("details").innerHTML = `
-<img src="${nft.img}">
-<h2>Invest $${nft.amount} and Profit $${plan.y}</h2>
+    <ul>
+      <li>Daily Profit: $${plan.d}</li>
+      <li>Weekly Profit: $${plan.w}</li>
+      <li>Monthly Profit: $${plan.m}</li>
+      <li>Yearly Profit: $${plan.y}</li>
+    </ul>
 
-<ul>
-<li>Daily Profit: $${plan.d}</li>
-<li>Weekly Profit: $${plan.w}</li>
-<li>Monthly Profit: $${plan.m}</li>
-<li>Yearly Profit: $${plan.y}</li>
-</ul>
+    <div class="total">
+      Total Payout after 1 year: $${plan.p}
+    </div>
 
-<div class="total">
-Total Payout after 1 year: $${plan.p}
-</div>
-
-<button>Buy NFT</button>
-`;
+    <button>Buy NFT</button>
+  `;
+}
 </script>
 </body>
 </html>
