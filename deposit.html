@@ -5,39 +5,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Deposit - SuperNFT</title>
 <style>
-body{margin:0; font-family:Arial,sans-serif; background:#0b0f1a; color:#fff;}
-.topbar{position:fixed; top:0; left:0; width:100%; height:60px; background:#111827; display:flex; align-items:center; padding:0 20px; z-index:1001;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0b0f1a;
+  color:#fff;
+}
+.topbar{
+  position:fixed; top:0; left:0; width:100%; height:60px;
+  background:#111827; display:flex; align-items:center; padding:0 20px; z-index:1001;
+}
 .topbar h1{margin:0; font-size:18px;}
 .main{margin-top:60px; padding:20px;}
-.deposit-card{background:#111827; padding:20px; border-radius:12px; margin-bottom:15px; text-align:center;}
-.deposit-card input{padding:10px; border-radius:6px; border:none; margin:10px 0; width:80%; text-align:center;}
-.deposit-card button{padding:10px 20px; border:none; border-radius:6px; background:#38bdf8; color:#0b0f1a; font-weight:bold; cursor:pointer; margin-top:10px;}
+.deposit-card{
+  background:#111827;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
+  text-align:center;
+}
+.deposit-card p{
+  font-size:14px;
+  margin:6px 0;
+}
+.deposit-card img{
+  width:150px;
+  margin:10px 0;
+}
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:6px;
+  background:#38bdf8;
+  color:#0b0f1a;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:10px;
+}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <h1>Deposit Funds</h1>
+  <h1>Deposit via Binance Wallet</h1>
 </div>
 
 <div class="main">
   <div class="deposit-card">
-    <h2>Deposit Crypto</h2>
-    <p>Send funds to the wallet below:</p>
+    <h2>Send BSC / Binance Coin</h2>
     <p><b>Wallet Address:</b> <span id="walletAddr">0x1234ABCD5678EFGH</span></p>
-    <img src="images/qr-placeholder.png" alt="QR Code" style="width:150px; margin:10px 0;">
+    <img src="images/bsc-qr.png" alt="Binance QR Code">
     <button id="copyWalletBtn">Copy Wallet Address</button>
-  </div>
-
-  <div class="deposit-card">
-    <h2>Deposit USD</h2>
-    <input type="number" id="usdAmount" placeholder="Enter amount in USD">
-    <button id="payBtn">Pay Now</button>
+    <p style="margin-top:10px; font-size:13px;">After sending, your deposit will be recorded automatically.</p>
   </div>
 </div>
 
 <script type="module">
-// Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -57,37 +80,32 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // 🔐 Login Guard
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, user=>{
   if(!user) window.location.replace("login.html");
 });
 
-// Copy Wallet Address
+// Copy wallet address
 document.getElementById("copyWalletBtn").addEventListener("click", ()=>{
   navigator.clipboard.writeText(document.getElementById("walletAddr").innerText)
-    .then(()=>alert("Wallet Address Copied ✅"));
+    .then(()=>alert("Binance Wallet Address Copied ✅"));
 });
 
-// Pay USD Button
-document.getElementById("payBtn").addEventListener("click", async ()=>{
-  const amt = Number(document.getElementById("usdAmount").value);
-  if(!amt || amt <=0) return alert("Enter a valid amount");
-
+// Optional: Record deposit manually (after user sends coins)
+async function recordDeposit(amount){
   const user = auth.currentUser;
   if(!user) return;
-
-  // Save deposit in Firestore
   const userRef = doc(db,"users",user.uid);
   await updateDoc(userRef,{
     deposits: arrayUnion({
-      amount: amt,
-      method: "USD",
+      amount: amount,
+      method: "BSC",
       timestamp: new Date()
     })
   });
+  alert(`Deposit of ${amount} BSC recorded ✅`);
+}
 
-  alert(`USD ${amt} deposit recorded ✅`);
-  document.getElementById("usdAmount").value="";
-});
+// Example usage: recordDeposit(0.5);
 </script>
 
 </body>
