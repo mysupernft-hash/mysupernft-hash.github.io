@@ -152,7 +152,16 @@ body{
 
 <!-- MAIN -->
 <div class="main" id="main">
-
+  
+<div id="refBox" style="
+background:#111827;
+padding:12px;
+border-radius:10px;
+margin-bottom:15px;
+">
+  <b>My Referral Code:</b>
+  <span id="myCode">Loading...</span>
+</div>
 <div class="categories">
 <button onclick="filterNFT('all')" class="active">All</button>
 <button onclick="filterNFT('starter')">Starter</button>
@@ -283,6 +292,26 @@ import { getAuth, onAuthStateChanged } from
 const auth = getAuth();
 onAuthStateChanged(auth, user => {
   if (!user) location.replace("login.html");
+});
+</script>
+
+  <script type="module">
+import { getAuth, onAuthStateChanged } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const auth = getAuth();
+const db = getFirestore();
+
+onAuthStateChanged(auth, async (user)=>{
+  if(!user) return;
+
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(snap.exists()){
+    document.getElementById("myCode").innerText =
+      snap.data().myReferralCode;
+  }
 });
 </script>
 
