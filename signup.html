@@ -21,6 +21,7 @@ body{
   border-radius:12px;
   width:320px;
 }
+h1{ text-align:center; margin-bottom:20px; }
 input{
   width:100%;
   padding:10px;
@@ -49,11 +50,12 @@ p{font-size:14px;text-align:center;margin-top:10px;}
 <body>
 
 <div class="card">
-  <h2 style="text-align:center;">Sign Up</h2>
+  <h1>SuperNFT</h1>
   <input type="text" id="name" placeholder="Full Name">
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
   <input type="password" id="confirm" placeholder="Confirm Password">
+  <input type="text" id="referral" placeholder="Referral Code (Mandatory)">
 
   <!-- reCAPTCHA -->
   <div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY"></div>
@@ -90,9 +92,10 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
   const email = document.getElementById("email").value.trim();
   const pass = document.getElementById("password").value;
   const confirm = document.getElementById("confirm").value;
+  const referral = document.getElementById("referral").value.trim();
 
-  if(!name || !email || !pass || !confirm)
-    return alert("All fields are required");
+  if(!name || !email || !pass || !confirm || !referral)
+    return alert("All fields including Referral Code are required");
 
   if(pass !== confirm)
     return alert("Passwords do not match");
@@ -114,6 +117,7 @@ document.getElementById("signupBtn").addEventListener("click", async ()=>{
     await setDoc(doc(db,"users",user.uid),{
       name,
       email,
+      referralCodeUsed: referral,
       createdAt: new Date(),
       myReferralCode: `REF${Math.floor(Math.random()*1000000)}`,
       deposits: [],
