@@ -1,8 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -16,15 +15,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-document.getElementById("signupForm").addEventListener("submit", async function(e){
+document.getElementById("signupForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
-
-  // reCAPTCHA check
-  const recaptchaResponse = grecaptcha.getResponse();
-  if(!recaptchaResponse){
-    alert("Please verify that you are not a robot!");
-    return;
-  }
 
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
@@ -36,18 +28,26 @@ document.getElementById("signupForm").addEventListener("submit", async function(
     return;
   }
 
-  try {
-    // Firebase signup
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+  try{
+    // 🔍 Referral code validate
+    const q = query(collection(db,"users"), where("myReferralCode","==",referCode));
+    const snap = await getDocs(q);
 
-    // Send email verification
+    if(snap.empty){
+      alert("Invalid referral code ❌");
+      return;
+    }
+
+    // 🔐 Create account
+    const cred = await createUserWithEmailAndPassword(auth,email,password);
+    const user = cred.user;
+
     await sendEmailVerification(user);
 
-    // Create a unique referral code for new user
-    const myReferralCode = 'REF'+Math.random().toString(36).substring(2,10).toUpperCase();
+    // 🎯 Generate unique referral code
+    const myReferralCode = "REF" + Math.random().toString(36).substring(2,10).toUpperCase();
 
-    // Save user data in Firestore
+    // 💾 Save user data
     await setDoc(doc(db,"users",user.uid),{
       name,
       email,
@@ -59,13 +59,14 @@ document.getElementById("signupForm").addEventListener("submit", async function(
       walletBalance:0,
       nfts:[],
       deposits:[],
-      withdrawals:[]
+      withdrawals:[],
+      createdAt: Date.now()
     });
 
-    alert("Signup successful! Please verify your email before login.");
+    alert("Account created ✅ Verify your email before login");
     location.href="login.html";
 
-  } catch(err){
+  }catch(err){
     alert(err.message);
   }
 });
