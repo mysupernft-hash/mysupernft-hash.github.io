@@ -1,114 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin Panel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - SuperNFT</title>
 <style>
-body{background:#020617;color:white;font-family:Arial}
-table{width:100%;border-collapse:collapse}
-th,td{border:1px solid #1e293b;padding:8px;text-align:center}
-th{background:#0f172a}
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
+.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
+.topbar h1{margin:0;font-size:18px;}
+.sidebar{position:fixed;top:60px;left:0;width:260px;height:calc(100vh-60px);background:#111827;padding:15px;overflow-y:auto;}
+.sidebar ul{list-style:none;padding:0;margin:0;}
+.sidebar li{margin:10px 0;}
+.sidebar a{display:block;padding:10px;color:#fff;text-decoration:none;border-radius:6px;}
+.sidebar a:hover{background:#38bdf8;color:#000;}
+.main{margin-left:260px;margin-top:60px;padding:15px;}
+.card{background:#111827;padding:15px;border-radius:10px;margin-bottom:15px;text-align:center;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th,td{border:1px solid #38bdf8;padding:8px;text-align:center;}
+th{background:#1f2937;}
+button{padding:5px 10px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;}
 </style>
 </head>
-
 <body>
 
-<h2>👑 Admin Dashboard</h2>
-<button onclick="logout()">Logout</button>
+<div class="topbar"><h1>Admin Dashboard</h1></div>
+<div class="sidebar">
+<ul>
+<li><a href="admin-dashboard.html">Dashboard</a></li>
+<li><a href="admin-users.html">Users</a></li>
+<li><a href="admin-deposits.html">Deposits</a></li>
+<li><a href="admin-withdraws.html">Withdraws</a></li>
+<li><a href="admin-nfts.html">NFTs</a></li>
+<li><a href="admin-login.html" id="logoutBtn">Logout</a></li>
+</ul>
+</div>
 
-<h3>📩 Claim Requests</h3>
+<div class="main">
+<div class="card">
+<h2>Quick Stats</h2>
+<p>Total Users: <span id="totalUsers">0</span></p>
+<p>Total Deposits: <span id="totalDeposits">0</span></p>
+<p>Total Withdraws: <span id="totalWithdraws">0</span></p>
+<p>Total NFTs Sold: <span id="totalNFTs">0</span></p>
+</div>
+</div>
 
-<table>
-<tr>
-<th>User</th>
-<th>Amount</th>
-<th>Wallet</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-<tbody id="claimTable"></tbody>
-</table>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<script>
-function loadClaims(){
-  let claims = JSON.parse(localStorage.getItem("claims")) || [];
-  let table = document.getElementById("claimTable");
-  table.innerHTML="";
+const firebaseConfig = {
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.appspot.com",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
 
-  claims.forEach((c,i)=>{
-    table.innerHTML+=`
-    <tr>
-      <td>${c.user}</td>
-      <td>$${c.amount.toFixed(2)}</td>
-      <td>${c.address}</td>
-      <td>${c.status}</td>
-      <td>
-        ${c.status==="Pending" ? 
-        `<button onclick="markPaid(${i})">Mark Paid</button>` 
-        : "✔ Paid"}
-      </td>
-    </tr>`;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Login guard + admin role check
+onAuthStateChanged(auth, async user=>{
+  if(!user) return window.location.replace("admin-login.html");
+  const snap = await getDoc(doc(db,"admins",user.uid));
+  if(!snap.exists()) return window.location.replace("admin-login.html");
+  loadStats();
+});
+
+// Logout
+document.getElementById("logoutBtn").addEventListener("click",()=>signOut(auth).then(()=>window.location.replace("admin-login.html")));
+
+// Load Stats
+async function loadStats(){
+  const usersSnap = await getDocs(collection(db,"users"));
+  let totalUsers=0,totalDeposits=0,totalWithdraws=0,totalNFTs=0;
+  usersSnap.forEach(u=>{
+    totalUsers++;
+    const data=u.data();
+    totalDeposits += (data.deposits||[]).reduce((s,d)=>s+d.amount,0);
+    totalWithdraws += (data.withdrawals||[]).reduce((s,w)=>s+w.amount,0);
+    totalNFTs += (data.nfts||[]).length;
   });
-}
-
-function markPaid(i){
-  let claims = JSON.parse(localStorage.getItem("claims"));
-  claims[i].status="Paid";
-  localStorage.setItem("claims",JSON.stringify(claims));
-  loadClaims();
-}
-
-loadClaims();
-</script>
-  
-<table>
-<thead>
-<tr>
-<th>User</th>
-<th>Wallet</th>
-<th>Invested</th>
-<th>Live Earnings</th>
-<th>NFTs</th>
-<th>Wallet Address</th>
-<th>Paid</th>
-<th>Pending</th>
-</tr>
-</thead>
-<tbody id="adminTable"></tbody>
-</table>
-
-<script>
-if(localStorage.getItem("adminLogged")!=="true"){
-  location.href="admin-login.html";
-}
-
-function loadUsers(){
-  let table=document.getElementById("adminTable");
-  table.innerHTML="";
-
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-
-  users.forEach(u=>{
-    table.innerHTML+=`
-    <tr>
-      <td>${u.id}</td>
-      <td>$${u.wallet.toFixed(2)}</td>
-      <td>$${u.invested.toFixed(2)}</td>
-      <td>$${u.earnings.toFixed(2)}</td>
-      <td>${u.nfts}</td>
-      <td>${u.address || "-"}</td>
-      <td>$${u.paid || 0}</td>
-      <td>$${(u.earnings-(u.paid||0)).toFixed(2)}</td>
-    </tr>`;
-  });
-}
-
-loadUsers();
-
-function logout(){
-  localStorage.removeItem("adminLogged");
-  location.href="admin-login.html";
+  document.getElementById("totalUsers").innerText = totalUsers;
+  document.getElementById("totalDeposits").innerText = totalDeposits.toFixed(2);
+  document.getElementById("totalWithdraws").innerText = totalWithdraws.toFixed(2);
+  document.getElementById("totalNFTs").innerText = totalNFTs;
 }
 </script>
-
 </body>
 </html>
