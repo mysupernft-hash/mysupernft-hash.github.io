@@ -3,97 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Admin Panel</title>
+<title>SuperNFT Admin Login</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
-.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
-.topbar h1{color:#38bdf8;font-size:18px;}
-.sidebar{position:fixed;top:60px;left:0;width:260px;height:calc(100vh-60px);background:#111827;padding:15px;overflow-y:auto;}
-.sidebar ul{list-style:none;padding:0;margin:0;}
-.sidebar li{margin:10px 0;}
-.sidebar a{display:block;padding:10px;color:#fff;text-decoration:none;border-radius:6px;}
-.sidebar a:hover{background:#38bdf8;color:#000;}
-.main{margin-left:260px;margin-top:60px;padding:15px;}
-.section{display:none;}
-.section.active{display:block;}
-table{width:100%;border-collapse:collapse;}
-th,td{border:1px solid #38bdf8;padding:8px;text-align:left;}
-th{background:#1f2937;}
-button{padding:5px 10px;border:none;border-radius:6px;background:#38bdf8;color:#000;cursor:pointer;}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b0f1a;
+  color:#fff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+form{
+  background:#111827;
+  padding:30px;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  width:320px;
+}
+input{
+  margin-bottom:15px;
+  padding:10px;
+  border-radius:6px;
+  border:none;
+}
+button{
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  background:#38bdf8;
+  color:#0b0f1a;
+  font-weight:bold;
+  cursor:pointer;
+}
+h1{
+  text-align:center;
+  margin-bottom:20px;
+  color:#10b981;
+}
+p#errorMsg{
+  color:red;
+  text-align:center;
+  margin-bottom:10px;
+}
 </style>
 </head>
 <body>
 
-<div class="topbar"><h1>SuperNFT Admin Panel</h1></div>
-
-<div class="sidebar">
-<ul>
-<li><a href="#" data-section="dashboard">Dashboard</a></li>
-<li><a href="#" data-section="deposit">Deposit</a></li>
-<li><a href="#" data-section="liveEarnings">Live Earnings</a></li>
-<li><a href="#" data-section="team">Team</a></li>
-<li><a href="#" data-section="users">Users</a></li>
-<li><a href="#" data-section="withdrawals">Withdrawals</a></li>
-<li><a href="#" id="logoutBtn">Logout</a></li>
-</ul>
-</div>
-
-<div class="main">
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="section active">
-    <h2>Admin Dashboard Overview</h2>
-    <p>Total Users: <span id="totalUsers">0</span></p>
-    <p>Total Deposits: $<span id="totalDeposits">0</span></p>
-    <p>Total Withdrawals: $<span id="totalWithdrawals">0</span></p>
-    <p>Total Team Members: <span id="totalTeam">0</span></p>
-  </div>
-
-  <!-- DEPOSIT -->
-  <div id="deposit" class="section">
-    <h2>Deposit Requests</h2>
-    <table id="depositTable">
-      <tr><th>UID</th><th>Email</th><th>Amount</th><th>Wallet</th><th>Status</th><th>Actions</th></tr>
-    </table>
-  </div>
-
-  <!-- LIVE EARNINGS -->
-  <div id="liveEarnings" class="section">
-    <h2>Live Earnings</h2>
-    <table id="earningsTable">
-      <tr><th>UID</th><th>Email</th><th>NFT</th><th>Daily Income</th><th>Live Earnings</th></tr>
-    </table>
-  </div>
-
-  <!-- TEAM -->
-  <div id="team" class="section">
-    <h2>Team Members</h2>
-    <table id="teamTable">
-      <tr><th>UID</th><th>Email</th><th>Name</th><th>Level</th></tr>
-    </table>
-  </div>
-
-  <!-- USERS -->
-  <div id="users" class="section">
-    <h2>Users</h2>
-    <table id="usersTable">
-      <tr><th>UID</th><th>Email</th><th>Wallet Balance</th><th>My Referral Code</th><th>Actions</th></tr>
-    </table>
-  </div>
-
-  <!-- WITHDRAWALS -->
-  <div id="withdrawals" class="section">
-    <h2>Withdrawals</h2>
-    <table id="withdrawTable">
-      <tr><th>UID</th><th>Email</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-    </table>
-  </div>
-</div>
+<form id="adminLogin">
+  <h1>SuperNFT Admin</h1>
+  <p id="errorMsg"></p>
+  <input type="email" id="email" placeholder="Admin Email" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button type="submit">Login</button>
+</form>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// 🔹 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -107,142 +79,49 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔹 Section Toggle
-document.querySelectorAll(".sidebar a[data-section]").forEach(btn=>{
-  btn.addEventListener("click",()=>{
-    document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-    document.getElementById(btn.dataset.section).classList.add("active");
-  });
-});
+const errorMsg = document.getElementById("errorMsg");
 
-// 🔹 Logout
-document.getElementById("logoutBtn").addEventListener("click",()=>signOut(auth).then(()=>location.replace("admin-login.html")));
+document.getElementById("adminLogin").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  errorMsg.innerText = "";
 
-// 🔹 Admin Guard
-onAuthStateChanged(auth, async user=>{
-  if(!user) return location.replace("admin-login.html");
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-  const snap = await getDoc(doc(db,"admin",user.uid));
-  if(!snap.exists()){
-    alert("Access denied ❌ Not Admin");
-    signOut(auth);
-  } else {
-    loadDashboard();
-    loadDeposits();
-    loadUsers();
-    loadTeam();
-    loadWithdrawals();
-    loadLiveEarnings();
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // 🔹 Check if user exists in admin collection
+    const adminSnap = await getDoc(doc(db, "admin", user.uid));
+    if(!adminSnap.exists()){
+      errorMsg.innerText = "Access denied ❌ Not Admin";
+      await auth.signOut();
+      return;
+    }
+
+    // 🔹 Optional: Create admin document if missing (first-time setup)
+    if(!adminSnap.exists()){
+      await setDoc(doc(db, "admin", user.uid), {
+        email: email,
+        role: "admin",
+        name: "SuperNFT Admin",
+        createdAt: serverTimestamp()
+      });
+    }
+
+    // 🔹 Redirect to admin dashboard
+    window.location.replace("admin-dashboard.html");
+
+  } catch(err){
+    console.error(err);
+    if(err.code === "auth/user-not-found" || err.code === "auth/wrong-password"){
+      errorMsg.innerText = "Invalid credentials ❌";
+    } else {
+      errorMsg.innerText = err.message;
+    }
   }
 });
-
-// 🔹 Load Dashboard Stats
-async function loadDashboard(){
-  const usersSnap = await getDocs(collection(db,"users"));
-  document.getElementById("totalUsers").innerText = usersSnap.size;
-
-  let totalDeposits=0, totalWithdrawals=0, totalTeam=0;
-  for(let user of usersSnap.docs){
-    const data = user.data();
-    totalDeposits += data.totalDeposit || 0;
-    totalWithdrawals += data.totalWithdrawal || 0;
-    if(data.teamMembers) totalTeam += data.teamMembers.length;
-  }
-  document.getElementById("totalDeposits").innerText = totalDeposits;
-  document.getElementById("totalWithdrawals").innerText = totalWithdrawals;
-  document.getElementById("totalTeam").innerText = totalTeam;
-}
-
-// 🔹 Load Deposits
-async function loadDeposits(){
-  const table = document.getElementById("depositTable");
-  const snaps = await getDocs(collection(db,"deposits"));
-  snaps.forEach(docSnap=>{
-    const d = docSnap.data();
-    table.innerHTML += `<tr>
-      <td>${d.uid}</td><td>${d.email}</td><td>$${d.amount}</td>
-      <td>${d.wallet}</td><td>${d.status}</td>
-      <td>
-        <button onclick="updateDeposit('${docSnap.id}','approved')">Approve</button>
-        <button onclick="updateDeposit('${docSnap.id}','rejected')">Reject</button>
-      </td>
-    </tr>`;
-  });
-}
-window.updateDeposit = async (id,status)=>{
-  await updateDoc(doc(db,"deposits",id),{status});
-  alert("Updated deposit status ✅");
-  location.reload();
-};
-
-// 🔹 Load Users
-async function loadUsers(){
-  const table = document.getElementById("usersTable");
-  const snaps = await getDocs(collection(db,"users"));
-  snaps.forEach(docSnap=>{
-    const u = docSnap.data();
-    table.innerHTML += `<tr>
-      <td>${u.uid}</td><td>${u.email}</td><td>$${u.walletBalance || 0}</td><td>${u.myReferralCode}</td>
-      <td><button onclick="editWallet('${docSnap.id}')">Edit Wallet</button></td>
-    </tr>`;
-  });
-}
-window.editWallet = async (uid)=>{
-  const newBal = prompt("Enter new wallet balance:");
-  if(!newBal) return;
-  await updateDoc(doc(db,"users",uid),{walletBalance: Number(newBal)});
-  alert("Wallet updated ✅");
-  location.reload();
-};
-
-// 🔹 Load Team
-async function loadTeam(){
-  const table = document.getElementById("teamTable");
-  const snaps = await getDocs(collection(db,"team"));
-  snaps.forEach(docSnap=>{
-    const t = docSnap.data();
-    t.teamMembers?.forEach(member=>{
-      table.innerHTML += `<tr>
-        <td>${t.uid}</td><td>${t.email}</td><td>${member.name}</td><td>${member.level}</td>
-      </tr>`;
-    });
-  });
-}
-
-// 🔹 Load Withdrawals
-async function loadWithdrawals(){
-  const table = document.getElementById("withdrawTable");
-  const snaps = await getDocs(collection(db,"withdrawals"));
-  snaps.forEach(docSnap=>{
-    const w = docSnap.data();
-    table.innerHTML += `<tr>
-      <td>${w.uid}</td><td>${w.email}</td><td>$${w.amount}</td><td>${w.status}</td>
-      <td>
-        <button onclick="updateWithdrawal('${docSnap.id}','approved')">Approve</button>
-        <button onclick="updateWithdrawal('${docSnap.id}','rejected')">Reject</button>
-      </td>
-    </tr>`;
-  });
-}
-window.updateWithdrawal = async (id,status)=>{
-  await updateDoc(doc(db,"withdrawals",id),{status});
-  alert("Withdrawal updated ✅");
-  location.reload();
-};
-
-// 🔹 Load Live Earnings
-async function loadLiveEarnings(){
-  const table = document.getElementById("earningsTable");
-  const snaps = await getDocs(collection(db,"users"));
-  snaps.forEach(docSnap=>{
-    const u = docSnap.data();
-    u.nfts?.forEach(nft=>{
-      table.innerHTML += `<tr>
-        <td>${u.uid}</td><td>${u.email}</td><td>${nft}</td><td>$${u.dailyIncome || 0}</td><td>$${u.liveEarnings || 0}</td>
-      </tr>`;
-    });
-  });
-}
 </script>
 
 </body>
