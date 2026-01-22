@@ -4,70 +4,46 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NFT Details</title>
-<style>
-body{background:#0b0f1a;color:#fff;font-family:Arial,sans-serif;margin:0;padding:0}
-.container{max-width:700px;margin:auto;padding:20px}
-.card{background:#111827;padding:20px;border-radius:16px}
-img{width:100%;border-radius:14px;margin-bottom:15px}
-h2{margin:10px 0;color:#38bdf8}
-ul{padding-left:20px}
-li{background:#1f2937;margin:8px 0;padding:12px;border-radius:10px}
-.total{background:#022c22;padding:15px;border-radius:10px;color:#6ee7b7;margin-top:15px}
-button{width:100%;padding:14px;margin-top:15px;background:#38bdf8;border:none;border-radius:12px;font-weight:bold;cursor:pointer}
-</style>
 </head>
 <body>
 
-<div class="container">
-  <div class="card" id="details"></div>
-</div>
+<!-- 🔹 Login Guard -->
+<script type="module">
+import { auth } from "./firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-<script>
-// Get selected NFT from localStorage
-const nft = JSON.parse(localStorage.getItem("selectedNFT"));
-
-// If no NFT selected
-if(!nft){
-  document.getElementById("details").innerHTML = `
-    <h2>No NFT Selected</h2>
-    <p>Please go back and select an NFT from the dashboard.</p>
-    <button onclick="location.href='dashboard.html'">Go Back</button>
-  `;
-}
-
-// Profit plans
-const plans = {
-  10:{d:0.2,w:1.4,m:6,y:73,p:83},
-  15:{d:0.3,w:2.1,m:9,y:109.5,p:124.5},
-  25:{d:0.5,w:3.5,m:15,y:182.5,p:207.5},
-  50:{d:1,w:7,m:30,y:365,p:415},
-  100:{d:2.5,w:17.5,m:75,y:912.5,p:1012.5},
-  150:{d:5,w:35,m:150,y:1825,p:1975},
-  200:{d:6.6,w:46.2,m:198,y:2409,p:2609},
-  300:{d:10,w:70,m:300,y:3650,p:3950},
-  499:{d:25,w:175,m:750,y:9125,p:9624},
-  699:{d:40,w:280,m:1200,y:14600,p:15299},
-  999:{d:100,w:700,m:3000,y:36500,p:37499}
-};
-
-if(nft){
-  const plan = plans[nft.amount];
-  document.getElementById("details").innerHTML = `
-    <img src="${nft.img}" alt="NFT Image">
-    <h2>Invest $${nft.amount} and Profit $${plan.y}</h2>
-    <ul>
-      <li>Daily Profit: $${plan.d} (${((plan.d/nft.amount)*100).toFixed(1)}%)</li>
-      <li>Weekly Profit: $${plan.w} (${((plan.w/nft.amount)*100).toFixed(1)}%)</li>
-      <li>Monthly Profit: $${plan.m} (${((plan.m/nft.amount)*100).toFixed(1)}%)</li>
-      <li>Yearly Profit: $${plan.y} (${((plan.y/nft.amount)*100).toFixed(1)}%)</li>
-    </ul>
-    <div class="total">
-      Total Payout after 1 year: $${plan.p}
-    </div>
-    <button onclick="alert('NFT Purchased!')">Buy NFT</button>
-  `;
-}
+onAuthStateChanged(auth,user=>{
+  if(!user) location.replace("admin-login.html");
+});
 </script>
 
+<h2>NFT Details</h2>
+<img id="nftImage" src="" width="300"><br>
+<div id="nftStats"></div>
+
+<script>
+const price = parseFloat(localStorage.getItem("nftPrice") || 0);
+const img = localStorage.getItem("nftImg") || "";
+document.getElementById("nftImage").src = img;
+
+function calculateProfit(p){
+  const daily = p;
+  const weekly = daily*7;
+  const monthly = daily*30;
+  const yearly = daily*365;
+  const total = yearly + price;
+  return {daily, weekly, monthly, yearly, total};
+}
+
+const nftProfit = calculateProfit(price*0.073); // example % 7.3%
+document.getElementById("nftStats").innerHTML = `
+Invest - $${price} and Profit - $${nftProfit.yearly.toFixed(1)}<br>
+• Daily Profit: $${nftProfit.daily.toFixed(1)}<br>
+• Weekly Profit: $${nftProfit.weekly.toFixed(1)}<br>
+• Monthly Profit: $${nftProfit.monthly.toFixed(1)}<br>
+• Yearly Profit: $${nftProfit.yearly.toFixed(1)}<br>
+• Total Payout: $${nftProfit.total.toFixed(1)}
+`;
+</script>
 </body>
 </html>
