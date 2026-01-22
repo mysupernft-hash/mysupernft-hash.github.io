@@ -5,57 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Admin Login</title>
 <style>
-body{font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
-form{background:#111827;padding:25px;border-radius:12px;width:300px;}
-form h1{text-align:center;color:#38bdf8;margin-bottom:20px;}
-input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;}
-button{width:100%;padding:10px;margin-top:10px;border:none;border-radius:6px;background:#38bdf8;font-weight:bold;cursor:pointer;color:#0b0f1a;}
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
+form{background:#111827;padding:30px;border-radius:10px;display:flex;flex-direction:column;width:320px;}
+input{margin-bottom:15px;padding:10px;border-radius:6px;border:none;}
+button{padding:10px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;}
+h1{text-align:center;margin-bottom:20px;color:#10b981;}
+p#errorMsg{color:red;text-align:center;margin-bottom:10px;}
 </style>
 </head>
 <body>
-<form id="adminLoginForm">
-<h1>SuperNFT Admin</h1>
-<input type="email" id="email" placeholder="Admin Email" required>
-<input type="password" id="password" placeholder="Password" required>
-<button type="submit">Login</button>
+
+<form id="adminLogin">
+  <h1>SuperNFT Admin</h1>
+  <p id="errorMsg"></p>
+  <input type="email" id="email" placeholder="Admin Email" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button type="submit">Login</button>
 </form>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, db } from './firebase.js';
+import { signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, getDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
-};
+const errorMsg = document.getElementById("errorMsg");
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-document.getElementById("adminLoginForm").addEventListener("submit", async e=>{
+document.getElementById("adminLogin").addEventListener("submit", async (e)=>{
   e.preventDefault();
+  errorMsg.innerText = "";
+
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  try{
-    const cred = await signInWithEmailAndPassword(auth,email,password);
-    const user = cred.user;
 
-    // Check if user is admin
-    const snap = await getDoc(doc(db,"admin",user.uid));
-    if(!snap.exists()) throw new Error("Access denied! Not an admin.");
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth,email,password);
+    const user = userCredential.user;
 
-    // Redirect to admin dashboard
-    location.href="admin-dashboard.html";
-  }catch(err){
-    alert(err.message);
+    const adminSnap = await getDoc(doc(db,"admin",user.uid));
+    if(!adminSnap.exists()){
+      // Optionally create admin for first-time setup
+      await setDoc(doc(db,"admin",user.uid),{
+        email: email,
+        role: "admin",
+        name: "SuperNFT Admin",
+        createdAt: serverTimestamp()
+      });
+    }
+
+    window.location.replace("admin-dashboard.html");
+
+  } catch(err){
+    console.error(err);
+    if(err.code === "auth/user-not-found" || err.code === "auth/wrong-password"){
+      errorMsg.innerText = "Invalid credentials ❌";
+    } else {
+      errorMsg.innerText = err.message;
+    }
   }
 });
 </script>
+
 </body>
 </html>
