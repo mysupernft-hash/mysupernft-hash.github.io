@@ -1,72 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Team</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT - My Team</title>
 <style>
-body{
- background:#0b0f1a;
- color:#fff;
- font-family:Arial;
- margin:0;
- padding:20px;
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
+.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
+.topbar h1{color:#38bdf8;font-size:18px;}
+.main{margin-top:60px;padding:15px;}
+.team-member{
+  background:#111827;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:10px;
 }
-.card{
- background:#111827;
- padding:12px;
- border-radius:10px;
- margin-bottom:10px;
-}
+.team-member h3{margin:0 0 5px 0;color:#38bdf8;}
+.team-member p{margin:0;font-size:14px;}
 </style>
 </head>
 <body>
 
-<h2>My Team</h2>
-<div id="team"></div>
+<div class="topbar"><h1>My Team</h1></div>
+<div class="main" id="teamList">
+  <!-- Team members will be loaded here -->
+</div>
 
 <script type="module">
-import { getAuth, onAuthStateChanged } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
- getFirestore, collection, query, where, getDocs, doc, getDoc
-} from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const auth = getAuth();
-const db = getFirestore();
-const box = document.getElementById("team");
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 onAuthStateChanged(auth, async (user)=>{
- if(!user){
-  location.href="login.html";
-  return;
- }
+  if(!user) return location.replace("login.html");
 
- // get my referral code
- const mySnap = await getDoc(doc(db,"users",user.uid));
- const myCode = mySnap.data().myReferralCode;
+  const snap = await getDoc(doc(db,"team",user.uid));
+  const teamList = document.getElementById("teamList");
+  teamList.innerHTML = "";
 
- // find users who joined with my code
- const q = query(
-   collection(db,"users"),
-   where("referralUsed","==",myCode)
- );
+  if(snap.exists()){
+    const data = snap.data();
+    if(data.teamMembers.length === 0){
+      teamList.innerHTML = "<p>No team members yet.</p>";
+      return;
+    }
 
- const snap = await getDocs(q);
-
- if(snap.empty){
-   box.innerHTML="<p>No team members yet</p>";
-   return;
- }
-
- snap.forEach(doc=>{
-   box.innerHTML += `
-   <div class="card">
-     <b>Email:</b> ${doc.data().email}<br>
-     <small>Joined</small>
-   </div>`;
- });
+    data.teamMembers.forEach(member=>{
+      teamList.innerHTML += `
+        <div class="team-member">
+          <h3>${member.name} (Level ${member.level})</h3>
+          <p>Email: ${member.email}</p>
+        </div>
+      `;
+    });
+  } else {
+    teamList.innerHTML = "<p>No team data found.</p>";
+  }
 });
 </script>
 
