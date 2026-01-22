@@ -32,32 +32,34 @@ import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, si
 const form = document.getElementById("adminLogin");
 const errorMsg = document.getElementById("errorMsg");
 
-form.addEventListener("submit", async (e)=>{
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
   errorMsg.innerText = "";
 
   try {
-    // 🔹 Prevent too-many-requests block
+    // 🔹 Session persistence
     await setPersistence(auth, browserLocalPersistence);
 
-    // 🔹 Login
+    // 🔹 Sign in
     const userCredential = await signInWithEmailAndPassword(auth, form.email.value, form.password.value);
     const user = userCredential.user;
 
     // 🔹 UID check
-    if(user.uid !== ADMIN_UID){
+    if (user.uid !== ADMIN_UID) {
       alert("Access Denied ❌ Not Admin");
       signOut(auth);
       return;
     }
 
-    // 🔹 Success → Redirect to Admin Dashboard
+    // 🔹 Redirect to admin dashboard
     window.location.replace("admin-dashboard.html");
 
-  } catch(err){
+  } catch (err) {
     console.error(err);
-    if(err.code === "auth/too-many-requests"){
+    if (err.code === "auth/too-many-requests") {
       errorMsg.innerText = "Too many attempts. Wait a few minutes and try again.";
+    } else if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
+      errorMsg.innerText = "Invalid email or password.";
     } else {
       errorMsg.innerText = err.message;
     }
