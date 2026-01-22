@@ -1,38 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NFT Details</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{background:#0b0f1a;color:#fff;font-family:Arial}
+body{background:#0b0f1a;color:#fff;font-family:Arial,sans-serif;margin:0;padding:0}
 .container{max-width:700px;margin:auto;padding:20px}
 .card{background:#111827;padding:20px;border-radius:16px}
-img{width:100%;border-radius:14px}
+img{width:100%;border-radius:14px;margin-bottom:15px}
+h2{margin:10px 0;color:#38bdf8}
+ul{padding-left:20px}
 li{background:#1f2937;margin:8px 0;padding:12px;border-radius:10px}
 .total{background:#022c22;padding:15px;border-radius:10px;color:#6ee7b7;margin-top:15px}
-button{width:100%;padding:14px;margin-top:15px;background:#38bdf8;border:none;border-radius:12px;font-weight:bold}
+button{width:100%;padding:14px;margin-top:15px;background:#38bdf8;border:none;border-radius:12px;font-weight:bold;cursor:pointer}
 </style>
 </head>
-
 <body>
+
 <div class="container">
   <div class="card" id="details"></div>
 </div>
 
 <script>
-// Get NFT from localStorage
+// Get selected NFT from localStorage
 const nft = JSON.parse(localStorage.getItem("selectedNFT"));
 
+// If no NFT selected
 if(!nft){
   document.getElementById("details").innerHTML = `
     <h2>No NFT Selected</h2>
-    <p>Please go back and select an NFT.</p>
+    <p>Please go back and select an NFT from the dashboard.</p>
     <button onclick="location.href='dashboard.html'">Go Back</button>
   `;
 }
 
-// Profit Table
+// Profit plans
 const plans = {
   10:{d:0.2,w:1.4,m:6,y:73,p:83},
   15:{d:0.3,w:2.1,m:9,y:109.5,p:124.5},
@@ -50,23 +53,21 @@ const plans = {
 if(nft){
   const plan = plans[nft.amount];
   document.getElementById("details").innerHTML = `
-    <img src="${nft.img}">
+    <img src="${nft.img}" alt="NFT Image">
     <h2>Invest $${nft.amount} and Profit $${plan.y}</h2>
-
     <ul>
-      <li>Daily Profit: $${plan.d}</li>
-      <li>Weekly Profit: $${plan.w}</li>
-      <li>Monthly Profit: $${plan.m}</li>
-      <li>Yearly Profit: $${plan.y}</li>
+      <li>Daily Profit: $${plan.d} (${((plan.d/nft.amount)*100).toFixed(1)}%)</li>
+      <li>Weekly Profit: $${plan.w} (${((plan.w/nft.amount)*100).toFixed(1)}%)</li>
+      <li>Monthly Profit: $${plan.m} (${((plan.m/nft.amount)*100).toFixed(1)}%)</li>
+      <li>Yearly Profit: $${plan.y} (${((plan.y/nft.amount)*100).toFixed(1)}%)</li>
     </ul>
-
     <div class="total">
       Total Payout after 1 year: $${plan.p}
     </div>
-
-    <button>Buy NFT</button>
+    <button onclick="alert('NFT Purchased!')">Buy NFT</button>
   `;
 }
 </script>
+
 </body>
 </html>
