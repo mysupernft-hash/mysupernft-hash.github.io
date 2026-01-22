@@ -2,131 +2,97 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Admin - Withdraw Control</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - Withdraws</title>
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
-.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
-.topbar h1{margin:0;font-size:18px;}
-.sidebar{position:fixed;top:60px;left:0;width:260px;height:calc(100vh-60px);background:#111827;padding:15px;overflow-y:auto;}
-.sidebar ul{list-style:none;padding:0;margin:0;}
-.sidebar li{margin:10px 0;}
-.sidebar a{display:block;padding:10px;color:#fff;text-decoration:none;border-radius:6px;}
-.sidebar a:hover{background:#38bdf8;color:#000;}
-.main{margin-left:260px;margin-top:60px;padding:15px;}
-table{width:100%;border-collapse:collapse;margin-top:15px;}
-th,td{border:1px solid #38bdf8;padding:8px;text-align:center;}
-th{background:#1f2937;}
-button{padding:5px 10px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;margin:2px;}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b0f1a;
+  color:#fff;
+}
+header{
+  background:#111827;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+header h1{font-size:18px;margin:0}
+header button{
+  background:#ef4444;
+  border:none;
+  padding:8px 14px;
+  border-radius:6px;
+  color:#fff;
+  cursor:pointer;
+}
+
+.container{padding:20px}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+th,td{
+  border:1px solid #1f2937;
+  padding:10px;
+}
+th{background:#111827}
+
+button.approve{
+  background:#10b981;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  color:#000;
+  font-weight:bold;
+}
+button.reject{
+  background:#ef4444;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  color:#fff;
+  font-weight:bold;
+}
 </style>
 </head>
+
 <body>
 
-<div class="topbar"><h1>Admin - Withdraws</h1></div>
-<div class="sidebar">
-<ul>
-<li><a href="admin-dashboard.html">Dashboard</a></li>
-<li><a href="admin-users.html">Users</a></li>
-<li><a href="admin-deposits.html">Deposits</a></li>
-<li><a href="admin-withdraws.html">Withdraws</a></li>
-<li><a href="admin-nfts.html">NFTs</a></li>
-<li><a href="admin-login.html" id="logoutBtn">Logout</a></li>
-</ul>
-</div>
+<header>
+  <h1>Admin – Withdraw Requests</h1>
+  <button id="logoutBtn">Logout</button>
+</header>
 
-<div class="main">
-<h2>All Withdraw Requests</h2>
-<table>
-<thead>
-<tr>
-<th>User Email</th>
-<th>Amount</th>
-<th>Status</th>
-<th>Timestamp</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody id="withdrawTable"></tbody>
-</table>
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>User Email</th>
+        <th>Amount ($)</th>
+        <th>Wallet Address</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="withdrawTable">
+      <tr><td colspan="5">Loading withdrawals...</td></tr>
+    </tbody>
+  </table>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain: "supernft-5b952.firebaseapp.com",
-projectId: "supernft-5b952",
-storageBucket: "supernft-5b952.appspot.com",
-messagingSenderId: "278097730700",
-appId: "1:278097730700:web:6ba9892334456fd8512fa9"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-onAuthStateChanged(auth, async user=>{
-  if(!user) return window.location.replace("admin-login.html");
-  const snap = await getDoc(doc(db,"admins",user.uid));
-  if(!snap.exists()) return window.location.replace("admin-login.html");
-  loadWithdraws();
-});
-
-document.getElementById("logoutBtn").addEventListener("click",()=>signOut(auth).then(()=>window.location.replace("admin-login.html")));
-
-async function loadWithdraws(){
-  const usersSnap = await getDocs(collection(db,"users"));
-  const tbody = document.getElementById("withdrawTable");
-  tbody.innerHTML="";
-  for(const u of usersSnap.docs){
-    const data = u.data();
-    const email = data.email||u.id;
-    (data.withdrawals||[]).forEach((w,i)=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML=`
-      <td>${email}</td>
-      <td>${w.amount}</td>
-      <td>${w.status||"Pending"}</td>
-      <td>${w.timestamp.toDate().toLocaleString()}</td>
-      <td>
-        ${w.status==="Pending"?`<button onclick="approve('${u.id}',${i})">Approve</button><button onclick="reject('${u.id}',${i})">Reject</button>`:"-"}
-      </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-}
-
-// Approve withdraw
-window.approve = async (uid,index)=>{
-  const userRef = doc(db,"users",uid);
-  const userSnap = await getDoc(userRef);
-  const withdrawals = userSnap.data().withdrawals||[];
-  withdrawals[index].status="Approved";
-  await updateDoc(userRef,{withdrawals});
-  alert("Withdraw approved ✅");
-  loadWithdraws();
-}
-
-// Reject withdraw
-window.reject = async (uid,index)=>{
-  const userRef = doc(db,"users",uid);
-  const userSnap = await getDoc(userRef);
-  const withdrawals = userSnap.data().withdrawals||[];
-  withdrawals[index].status="Rejected";
-  await updateDoc(userRef,{withdrawals});
-  alert("Withdraw rejected ❌");
-  loadWithdraws();
-}
-</script>
-  <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyDdTprqsuAaDiDDoK7K6tHAyabfyPs5DTk",
   authDomain: "mysuper-nft.firebaseapp.com",
@@ -141,19 +107,96 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* 🔐 ADMIN GUARD */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
     location.replace("admin-login.html");
     return;
   }
 
-  const snap = await getDoc(doc(db, "admin", user.uid));
-  if (!snap.exists()) {
-    alert("Access denied ❌ Not Admin");
+  const adminSnap = await getDoc(doc(db,"admin",user.uid));
+  if(!adminSnap.exists()){
+    alert("Access denied ❌");
     await signOut(auth);
     location.replace("admin-login.html");
+    return;
   }
+
+  loadWithdraws();
 });
+
+/* 🔄 LOAD WITHDRAW REQUESTS */
+async function loadWithdraws(){
+  const table = document.getElementById("withdrawTable");
+  table.innerHTML = "";
+
+  const snap = await getDocs(collection(db,"withdrawals"));
+  snap.forEach(d=>{
+    const w = d.data();
+    const id = d.id;
+
+    table.innerHTML += `
+      <tr>
+        <td>${w.email}</td>
+        <td>$${w.amount}</td>
+        <td>${w.wallet || "-"}</td>
+        <td>${w.status}</td>
+        <td>
+          ${
+            w.status === "pending"
+            ? `<button class="approve" onclick="approveWithdraw('${id}','${w.uid}',${w.amount})">Approve</button>
+               <button class="reject" onclick="rejectWithdraw('${id}')">Reject</button>`
+            : "-"
+          }
+        </td>
+      </tr>
+    `;
+  });
+
+  if(snap.size === 0){
+    table.innerHTML = `<tr><td colspan="5">No withdraw requests</td></tr>`;
+  }
+}
+
+/* ✅ APPROVE WITHDRAW */
+window.approveWithdraw = async (withdrawId, uid, amount)=>{
+  const userRef = doc(db,"users",uid);
+  const userSnap = await getDoc(userRef);
+
+  const balance = userSnap.data().walletBalance || 0;
+
+  if(balance < amount){
+    alert("Insufficient wallet balance ❌");
+    return;
+  }
+
+  await updateDoc(userRef,{
+    walletBalance: balance - amount
+  });
+
+  await updateDoc(doc(db,"withdrawals",withdrawId),{
+    status:"approved"
+  });
+
+  alert("Withdraw approved ✅");
+  loadWithdraws();
+};
+
+/* ❌ REJECT WITHDRAW */
+window.rejectWithdraw = async (withdrawId)=>{
+  await updateDoc(doc(db,"withdrawals",withdrawId),{
+    status:"rejected"
+  });
+  alert("Withdraw rejected ❌");
+  loadWithdraws();
+};
+
+/* 🚪 LOGOUT */
+document.getElementById("logoutBtn").onclick = ()=>{
+  signOut(auth).then(()=>{
+    location.replace("admin-login.html");
+  });
+};
 </script>
+
 </body>
 </html>
