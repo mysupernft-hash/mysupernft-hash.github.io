@@ -4,13 +4,18 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 import {
   getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
   doc,
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config */
+/* Firebase config same */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -24,14 +29,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🚫 Block signup if already logged in */
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    window.location.replace("dashboard.html");
-  }
+/* Block signup if already logged in */
+onAuthStateChanged(auth, user => {
+  if (user) location.replace("dashboard.html");
 });
 
-/* 🔒 Enable signup only when referral filled */
+/* Enable button only if referral typed */
 const referralInput = document.getElementById("referral");
 const signupBtn = document.getElementById("signupBtn");
 
@@ -39,14 +42,14 @@ referralInput.addEventListener("input", () => {
   signupBtn.disabled = referralInput.value.trim() === "";
 });
 
-/* ✅ Signup */
-signupBtn.addEventListener("click", () => {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const referral = referralInput.value.trim();
+/* 🔐 SIGNUP WITH REFERRAL VALIDATION */
+signupBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  const referralCode = referralInput.value.trim();
 
-  if (!email || !password || !referral) {
-    alert("All fields are required");
+  if (!email || !password || !referralCode) {
+    alert("All fields required");
     return;
   }
 
@@ -55,18 +58,35 @@ signupBtn.addEventListener("click", () => {
     return;
   }
 
+  /* 🔍 CHECK REFERRAL CODE */
+  const q = query(
+    collection(db, "users"),
+    where("myReferralCode", "==", referralCode)
+  );
+
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    alert("Invalid referral code ❌");
+    return;
+  }
+
+  /* ✅ Referral valid → signup */
   createUserWithEmailAndPassword(auth, email, password)
     .then(async (res) => {
       const user = res.user;
 
-      /* 💾 Save user + referral */
+      /* 🔑 Auto generate referral code */
+      const myCode = "SN" + Math.floor(100000 + Math.random() * 900000);
+
       await setDoc(doc(db, "users", user.uid), {
         email: email,
-        referralUsed: referral,
+        referralUsed: referralCode,
+        myReferralCode: myCode,
         createdAt: new Date()
       });
 
-      window.location.href = "dashboard.html";
+      location.href = "dashboard.html";
     })
     .catch(err => alert(err.message));
 });
