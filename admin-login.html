@@ -26,49 +26,8 @@ body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display
 </div>
 
 <script type="module">
-import { auth, db } from './firebase.js';
-import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const loginForm = document.getElementById("adminLogin");
-const errorMsg = document.getElementById("errorMsg");
-
-loginForm.addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  errorMsg.innerText = "";
-
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  try{
-    // 🔹 Persist session
-    await setPersistence(auth, browserLocalPersistence);
-
-    // 🔹 Sign in
-    const userCredential = await signInWithEmailAndPassword(auth,email,password);
-    const user = userCredential.user;
-
-    // 🔹 Check Firestore admin
-    const adminSnap = await getDoc(doc(db,"admin",user.uid)); // UID = Document ID
-    if(!adminSnap.exists()){
-      alert("Access denied ❌ Not Admin");
-      return;
-    }
-
-    // 🔹 Success → Dashboard
-    window.location.replace("admin-dashboard.html");
-
-  } catch(err){
-    console.error(err);
-    errorMsg.innerText = err.message;
-  }
-});
-</script>
-
-  <script type="module">
-import { auth, db, ADMIN_UID } from './firebase.js';
-import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, ADMIN_UID } from './firebase.js';
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const form = document.getElementById("adminLogin");
 const errorMsg = document.getElementById("errorMsg");
@@ -78,8 +37,10 @@ form.addEventListener("submit", async (e)=>{
   errorMsg.innerText = "";
 
   try {
+    // 🔹 Prevent too-many-requests block
     await setPersistence(auth, browserLocalPersistence);
 
+    // 🔹 Login
     const userCredential = await signInWithEmailAndPassword(auth, form.email.value, form.password.value);
     const user = userCredential.user;
 
@@ -90,11 +51,16 @@ form.addEventListener("submit", async (e)=>{
       return;
     }
 
-    // 🔹 Dashboard redirect
+    // 🔹 Success → Redirect to Admin Dashboard
     window.location.replace("admin-dashboard.html");
 
   } catch(err){
-    errorMsg.innerText = err.message;
+    console.error(err);
+    if(err.code === "auth/too-many-requests"){
+      errorMsg.innerText = "Too many attempts. Wait a few minutes and try again.";
+    } else {
+      errorMsg.innerText = err.message;
+    }
   }
 });
 </script>
