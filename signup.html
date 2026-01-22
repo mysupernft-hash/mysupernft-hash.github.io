@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Signup</title>
+
 <style>
 body{
   font-family:Arial,sans-serif;
@@ -19,9 +20,13 @@ form{
   background:#111827;
   padding:25px;
   border-radius:12px;
-  width:300px;
+  width:320px;
 }
-form h1{text-align:center;color:#38bdf8;margin-bottom:20px;}
+form h1{
+  text-align:center;
+  color:#38bdf8;
+  margin-bottom:20px;
+}
 input{
   width:100%;
   padding:10px;
@@ -32,7 +37,7 @@ input{
 button{
   width:100%;
   padding:10px;
-  margin-top:10px;
+  margin-top:12px;
   border:none;
   border-radius:6px;
   background:#38bdf8;
@@ -41,22 +46,19 @@ button{
   color:#0b0f1a;
 }
 </style>
-<!-- Google reCAPTCHA -->
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
+
 <body>
 
 <form id="signupForm">
   <h1>SuperNFT</h1>
+
   <input type="text" id="name" placeholder="Full Name" required>
   <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <input type="text" id="referCode" placeholder="Referral Code" required>
+  <input type="password" id="password" placeholder="Password (min 6 chars)" required>
+  <input type="text" id="referCode" placeholder="Referral Code (Required)" required>
 
-  <!-- reCAPTCHA widget -->
-  <div class="g-recaptcha" data-sitekey="6LdSfVIsAAAAALhRTu-EMW0YTKPXTe-90A9UEcqo"></div>
-
-  <button type="submit">Sign Up</button>
+  <button type="submit">Create Account</button>
 </form>
 
 <script type="module" src="signup.js"></script>
