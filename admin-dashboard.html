@@ -6,66 +6,68 @@
 <title>SuperNFT Admin Dashboard</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
-.topbar{background:#111827;padding:15px;text-align:center;font-weight:bold;font-size:18px;color:#38bdf8;}
-table{width:100%;border-collapse:collapse;margin-top:15px;}
-th,td{padding:10px;border:1px solid #38bdf8;text-align:center;}
-button{padding:5px 10px;border:none;border-radius:5px;background:#38bdf8;color:#0b0f1a;cursor:pointer;}
+.topbar{height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;}
+.topbar h1{color:#38bdf8;}
+.main{padding:20px;}
+.stats-container{display:flex;gap:15px;margin-bottom:15px;}
+.stat-box{background:#1f2937;padding:15px;border-radius:10px;text-align:center;}
+.stat-box h3{margin:0 0 8px 0;}
+.stat-box p{margin:0;font-weight:bold;}
+#logoutBtn{margin-top:20px;padding:10px;background:#38bdf8;color:#000;border:none;border-radius:6px;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<div class="topbar">SuperNFT Admin Dashboard</div>
+<div class="topbar">
+  <h1>SuperNFT Admin Dashboard</h1>
+</div>
 
-<table id="usersTable">
-  <thead>
-    <tr>
-      <th>Email</th>
-      <th>Wallet Balance</th>
-      <th>Total Deposit</th>
-      <th>Live Earnings</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="main">
+  <div class="stats-container">
+    <div class="stat-box" id="totalUsers">
+      <h3>Total Users</h3>
+      <p>0</p>
+    </div>
+    <div class="stat-box" id="totalDeposits">
+      <h3>Total Deposits</h3>
+      <p>$0</p>
+    </div>
+    <div class="stat-box" id="totalWithdrawals">
+      <h3>Total Withdrawals</h3>
+      <p>$0</p>
+    </div>
+  </div>
+
+  <button id="logoutBtn">Logout</button>
+</div>
 
 <script type="module">
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// LOGIN GUARD
-onAuthStateChanged(auth,user=>{
-  if(!user) location.replace("admin-login.html");
+// 🔹 Check admin login
+onAuthStateChanged(auth, async user=>{
+  if(!user) window.location.replace("admin-login.html");
+
+  const adminSnap = await getDocs(collection(db,"admin"));
+  if(!adminSnap) {
+    alert("Access Denied ❌");
+    signOut(auth);
+    window.location.replace("admin-login.html");
+  }
+
+  // Example: fetch total users
+  const usersSnap = await getDocs(collection(db,"users"));
+  document.getElementById("totalUsers").querySelector("p").innerText = usersSnap.size;
+
+  // You can similarly fetch deposits, withdrawals etc.
 });
 
-// FETCH USERS
-async function loadUsers(){
-  const snapshot = await getDocs(collection(db,"users"));
-  const tbody = document.querySelector("#usersTable tbody");
-  tbody.innerHTML="";
-  snapshot.forEach(docSnap=>{
-    const u = docSnap.data();
-    tbody.innerHTML += `<tr>
-      <td>${u.email}</td>
-      <td>$${u.walletBalance || 0}</td>
-      <td>$${u.totalDeposit || 0}</td>
-      <td>$${u.liveEarnings || 0}</td>
-      <td><button onclick="editWallet('${docSnap.id}')">Edit Wallet</button></td>
-    </tr>`;
-  });
-}
-
-async function editWallet(uid){
-  const newBal = prompt("Enter new wallet balance:");
-  if(newBal !== null){
-    await updateDoc(doc(db,"users",uid),{walletBalance: Number(newBal)});
-    alert("Wallet updated ✅");
-    loadUsers();
-  }
-}
-
-loadUsers();
+// 🔹 Logout
+document.getElementById("logoutBtn").addEventListener("click",()=>{
+  signOut(auth).then(()=> window.location.replace("admin-login.html"));
+});
 </script>
 
 </body>
