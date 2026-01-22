@@ -57,38 +57,5 @@ document.getElementById("adminLoginForm").addEventListener("submit", async e=>{
   }
 });
 </script>
-  <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDdTprqsuAaDiDDoK7K6tHAyabfyPs5DTk",
-  authDomain: "mysuper-nft.firebaseapp.com",
-  projectId: "mysuper-nft",
-  storageBucket: "mysuper-nft.firebasestorage.app",
-  messagingSenderId: "1061978771986",
-  appId: "1:1061978771986:web:ef0302af5bb02c2cd0fecb"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* 🔐 ADMIN GUARD */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    location.replace("admin-login.html");
-    return;
-  }
-
-  const snap = await getDoc(doc(db, "admin", user.uid));
-  if (!snap.exists()) {
-    alert("Access denied ❌ Not Admin");
-    await signOut(auth);
-    location.replace("admin-login.html");
-  }
-});
-</script>
 </body>
 </html>
