@@ -5,43 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Deposit - SuperNFT</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#0b0f1a;
-  color:#fff;
-}
-.topbar{
-  position:fixed; top:0; left:0; width:100%; height:60px;
-  background:#111827; display:flex; align-items:center; padding:0 20px; z-index:1001;
-}
-.topbar h1{margin:0; font-size:18px;}
-.main{margin-top:60px; padding:20px;}
-.deposit-card{
-  background:#111827;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
-  text-align:center;
-}
-.deposit-card p{
-  font-size:14px;
-  margin:6px 0;
-}
-.deposit-card img{
-  width:150px;
-  margin:10px 0;
-}
-button{
-  padding:10px 20px;
-  border:none;
-  border-radius:6px;
-  background:#38bdf8;
-  color:#0b0f1a;
-  font-weight:bold;
-  cursor:pointer;
-  margin-top:10px;
-}
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
+.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
+.topbar h1{margin:0;font-size:18px;}
+.main{margin-top:60px;padding:20px;}
+.deposit-card{background:#111827;padding:20px;border-radius:12px;margin-bottom:20px;text-align:center;}
+.deposit-card p{margin:6px 0;font-size:14px;}
+.deposit-card img{width:150px;margin:10px 0;}
+button{padding:10px 20px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;margin-top:10px;}
+.balance-card{background:#111827;padding:15px;border-radius:10px;margin-bottom:20px;text-align:center;font-weight:bold;}
+.history-card{background:#1f2937;padding:10px;border-radius:8px;margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -51,19 +24,26 @@ button{
 </div>
 
 <div class="main">
+  <div class="balance-card" id="liveBalance">Loading balance...</div>
+
   <div class="deposit-card">
     <h2>Send BSC / Binance Coin</h2>
     <p><b>Wallet Address:</b> <span id="walletAddr">0x1234ABCD5678EFGH</span></p>
     <img src="images/bsc-qr.png" alt="Binance QR Code">
     <button id="copyWalletBtn">Copy Wallet Address</button>
-    <p style="margin-top:10px; font-size:13px;">After sending, your deposit will be recorded automatically.</p>
+    <p style="margin-top:10px;font-size:13px;">After sending, click "Record Deposit" to update your balance.</p>
+    <input type="number" id="depositAmount" placeholder="Amount sent" style="padding:8px;width:60%;border-radius:6px;border:none;text-align:center;">
+    <button id="recordBtn">Record Deposit</button>
   </div>
+
+  <h3>Deposit History</h3>
+  <div id="history"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -79,34 +59,68 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+const liveBalanceDiv = document.getElementById("liveBalance");
+const historyDiv = document.getElementById("history");
+
 // 🔐 Login Guard
-onAuthStateChanged(auth, user=>{
-  if(!user) window.location.replace("login.html");
+onAuthStateChanged(auth, async user => {
+  if(!user) return window.location.replace("login.html");
+
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+
+  if(!snap.exists()){
+    await updateDoc(userRef,{deposits: []});
+    liveBalanceDiv.innerText = "Balance: 0 BSC";
+    return;
+  }
+
+  const userData = snap.data();
+  renderBalance(userData);
 });
 
-// Copy wallet address
+function renderBalance(userData){
+  const deposits = userData.deposits || [];
+  let total = deposits.reduce((sum,d)=>sum+d.amount,0);
+  liveBalanceDiv.innerText = `Balance: ${total.toFixed(4)} BSC`;
+
+  historyDiv.innerHTML = "";
+  deposits.slice().reverse().forEach(d=>{
+    const div = document.createElement("div");
+    div.className="history-card";
+    div.innerHTML = `Amount: ${d.amount} BSC | Method: ${d.method} | ${new Date(d.timestamp.seconds*1000).toLocaleString()}`;
+    historyDiv.appendChild(div);
+  });
+}
+
+// Copy wallet
 document.getElementById("copyWalletBtn").addEventListener("click", ()=>{
   navigator.clipboard.writeText(document.getElementById("walletAddr").innerText)
-    .then(()=>alert("Binance Wallet Address Copied ✅"));
+    .then(()=>alert("Wallet Address Copied ✅"));
 });
 
-// Optional: Record deposit manually (after user sends coins)
-async function recordDeposit(amount){
+// Record Deposit manually
+document.getElementById("recordBtn").addEventListener("click", async ()=>{
+  const amt = Number(document.getElementById("depositAmount").value);
+  if(!amt || amt <=0) return alert("Enter a valid amount");
+
   const user = auth.currentUser;
   if(!user) return;
+
   const userRef = doc(db,"users",user.uid);
   await updateDoc(userRef,{
     deposits: arrayUnion({
-      amount: amount,
+      amount: amt,
       method: "BSC",
       timestamp: new Date()
     })
   });
-  alert(`Deposit of ${amount} BSC recorded ✅`);
-}
 
-// Example usage: recordDeposit(0.5);
+  document.getElementById("depositAmount").value="";
+  const snap = await getDoc(userRef);
+  renderBalance(snap.data());
+  alert(`Deposit of ${amt} BSC recorded ✅`);
+});
 </script>
-
 </body>
 </html>
