@@ -3,7 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔹 Firebase Config (tumhare project ka)
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -13,7 +12,6 @@ const firebaseConfig = {
   appId: "1:278097730700:web:6ba9892334456fd8512fa9"
 };
 
-// 🔹 Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
