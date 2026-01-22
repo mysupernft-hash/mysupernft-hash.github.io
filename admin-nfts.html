@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - NFTs</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
+.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
+.topbar h1{margin:0;font-size:18px;}
+.sidebar{position:fixed;top:60px;left:0;width:260px;height:calc(100vh-60px);background:#111827;padding:15px;overflow-y:auto;}
+.sidebar ul{list-style:none;padding:0;margin:0;}
+.sidebar li{margin:10px 0;}
+.sidebar a{display:block;padding:10px;color:#fff;text-decoration:none;border-radius:6px;}
+.sidebar a:hover{background:#38bdf8;color:#000;}
+.main{margin-left:260px;margin-top:60px;padding:15px;}
+table{width:100%;border-collapse:collapse;margin-top:15px;}
+th,td{border:1px solid #38bdf8;padding:8px;text-align:center;}
+th{background:#1f2937;}
+button{padding:5px 10px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;margin:2px;}
+input,select{width:80px;padding:3px;border-radius:4px;border:none;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="topbar"><h1>Admin - NFTs</h1></div>
+<div class="sidebar">
+<ul>
+<li><a href="admin-dashboard.html">Dashboard</a></li>
+<li><a href="admin-users.html">Users</a></li>
+<li><a href="admin-deposits.html">Deposits</a></li>
+<li><a href="admin-withdraws.html">Withdraws</a></li>
+<li><a href="admin-nfts.html">NFTs</a></li>
+<li><a href="admin-login.html" id="logoutBtn">Logout</a></li>
+</ul>
+</div>
+
+<div class="main">
+<h2>NFT Packages</h2>
+<button onclick="addNFT()">Add NFT</button>
+<table>
+<thead>
+<tr>
+<th>Image</th>
+<th>Price</th>
+<th>Daily %</th>
+<th>Category</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="nftTable"></tbody>
+</table>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.appspot.com",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth, async user=>{
+  if(!user) return window.location.replace("admin-login.html");
+  const snap = await getDoc(doc(db,"admins",user.uid));
+  if(!snap.exists()) return window.location.replace("admin-login.html");
+  loadNFTs();
+});
+
+document.getElementById("logoutBtn").addEventListener("click",()=>signOut(auth).then(()=>window.location.replace("admin-login.html")));
+
+async function loadNFTs(){
+  const snap = await getDocs(collection(db,"nfts"));
+  const tbody = document.getElementById("nftTable");
+  tbody.innerHTML="";
+  snap.forEach(n=>{
+    const data = n.data();
+    const tr = document.createElement("tr");
+    tr.innerHTML=`
+    <td><img src="${data.img}" width="60"></td>
+    <td>${data.price}</td>
+    <td>${data.dailyPercent}</td>
+    <td>${data.cat}</td>
+    <td>
+      <button onclick="editNFT('${n.id}')">Edit</button>
+      <button onclick="deleteNFT('${n.id}')">Delete</button>
+    </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Add NFT
+window.addNFT = async ()=>{
+  const price = prompt("NFT Price ($)","");
+  const daily = prompt("Daily %","");
+  const cat = prompt("Category","");
+  const img = prompt("Image URL","");
+  if(!price||!daily||!cat||!img) return;
+  const id = Date.now().toString();
+  await setDoc(doc(db,"nfts",id),{price:Number(price),dailyPercent:Number(daily),cat,img});
+  alert("NFT added ✅");
+  loadNFTs();
+}
+
+// Edit NFT
+window.editNFT = async (id)=>{
+  const docRef = doc(db,"nfts",id);
+  const snap = await getDoc(docRef);
+  const data = snap.data();
+  const price = prompt("NFT Price ($)",data.price);
+  const daily = prompt("Daily %",data.dailyPercent);
+  const cat = prompt("Category",data.cat);
+  const img = prompt("Image URL",data.img);
+  await setDoc(docRef,{price:Number(price),dailyPercent:Number(daily),cat,img});
+  alert("NFT updated ✅");
+  loadNFTs();
+}
+
+// Delete NFT
+window.deleteNFT = async (id)=>{
+  if(!confirm("Are you sure?")) return;
+  await deleteDoc(doc(db,"nfts",id));
+  alert("NFT deleted ✅");
+  loadNFTs();
+}
+</script>
+</body>
+</html>
