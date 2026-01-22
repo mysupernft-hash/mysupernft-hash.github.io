@@ -1,51 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Deposit | SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit - SuperNFT</title>
 <style>
-body{background:#020617;color:white;font-family:Arial;padding:20px;}
-.box{background:#0f172a;padding:20px;border-radius:12px;max-width:400px;margin:auto;}
-input,button{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none;}
-button{background:#38bdf8;font-weight:bold;cursor:pointer;}
+body{margin:0; font-family:Arial,sans-serif; background:#0b0f1a; color:#fff;}
+.topbar{position:fixed; top:0; left:0; width:100%; height:60px; background:#111827; display:flex; align-items:center; padding:0 20px; z-index:1001;}
+.topbar h1{margin:0; font-size:18px;}
+.main{margin-top:60px; padding:20px;}
+.deposit-card{background:#111827; padding:20px; border-radius:12px; margin-bottom:15px; text-align:center;}
+.deposit-card input{padding:10px; border-radius:6px; border:none; margin:10px 0; width:80%; text-align:center;}
+.deposit-card button{padding:10px 20px; border:none; border-radius:6px; background:#38bdf8; color:#0b0f1a; font-weight:bold; cursor:pointer; margin-top:10px;}
 </style>
 </head>
 <body>
 
-<div class="box">
-<h2>💳 Deposit Funds</h2>
-
-<label>Amount ($)</label>
-<input type="number" id="amount" placeholder="Enter amount">
-
-<label>Transaction ID</label>
-<input type="text" id="txid" placeholder="Blockchain TXID">
-
-<button onclick="submitDeposit()">Submit Deposit</button>
-<p id="msg"></p>
+<div class="topbar">
+  <h1>Deposit Funds</h1>
 </div>
 
-<script>
-function submitDeposit(){
-  let amount = parseFloat(amount.value);
-  let txid = document.getElementById("txid").value;
+<div class="main">
+  <div class="deposit-card">
+    <h2>Deposit Crypto</h2>
+    <p>Send funds to the wallet below:</p>
+    <p><b>Wallet Address:</b> <span id="walletAddr">0x1234ABCD5678EFGH</span></p>
+    <img src="images/qr-placeholder.png" alt="QR Code" style="width:150px; margin:10px 0;">
+    <button id="copyWalletBtn">Copy Wallet Address</button>
+  </div>
 
-  if(!amount || amount<=0 || txid===""){
-    msg.innerText="❌ Enter valid details";
-    return;
-  }
+  <div class="deposit-card">
+    <h2>Deposit USD</h2>
+    <input type="number" id="usdAmount" placeholder="Enter amount in USD">
+    <button id="payBtn">Pay Now</button>
+  </div>
+</div>
 
-  let deposits = JSON.parse(localStorage.getItem("deposits")) || [];
-  deposits.push({
-    amount,
-    txid,
-    status:"Pending",
-    time:new Date().toLocaleString()
+<script type="module">
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// 🔐 Login Guard
+onAuthStateChanged(auth, user => {
+  if(!user) window.location.replace("login.html");
+});
+
+// Copy Wallet Address
+document.getElementById("copyWalletBtn").addEventListener("click", ()=>{
+  navigator.clipboard.writeText(document.getElementById("walletAddr").innerText)
+    .then(()=>alert("Wallet Address Copied ✅"));
+});
+
+// Pay USD Button
+document.getElementById("payBtn").addEventListener("click", async ()=>{
+  const amt = Number(document.getElementById("usdAmount").value);
+  if(!amt || amt <=0) return alert("Enter a valid amount");
+
+  const user = auth.currentUser;
+  if(!user) return;
+
+  // Save deposit in Firestore
+  const userRef = doc(db,"users",user.uid);
+  await updateDoc(userRef,{
+    deposits: arrayUnion({
+      amount: amt,
+      method: "USD",
+      timestamp: new Date()
+    })
   });
 
-  localStorage.setItem("deposits", JSON.stringify(deposits));
-  msg.innerText="✅ Deposit submitted. Waiting for admin approval.";
-}
+  alert(`USD ${amt} deposit recorded ✅`);
+  document.getElementById("usdAmount").value="";
+});
 </script>
 
 </body>
