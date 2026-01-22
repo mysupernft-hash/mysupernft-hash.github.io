@@ -9,31 +9,25 @@ body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
 .topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
 .topbar h1{margin:0;font-size:18px;}
 .main{margin-top:60px;padding:20px;}
-.balance-card{background:#111827;padding:15px;border-radius:10px;margin-bottom:20px;text-align:center;font-weight:bold;}
-.withdraw-card{background:#111827;padding:20px;border-radius:12px;margin-bottom:20px;text-align:center;}
-.withdraw-card input{padding:8px;width:60%;border-radius:6px;border:none;text-align:center;margin-top:10px;}
+.card{background:#111827;padding:20px;border-radius:12px;margin-bottom:20px;text-align:center;}
+.card input{padding:8px;width:60%;border-radius:6px;border:none;text-align:center;margin-top:10px;}
 button{padding:10px 20px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;margin-top:10px;}
 .history-card{background:#1f2937;padding:10px;border-radius:8px;margin-bottom:10px;}
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <h1>Withdraw BSC Earnings</h1>
+<div class="topbar"><h1>Withdraw BSC</h1></div>
+<div class="main">
+<div class="card">
+<h2>Enter withdraw amount</h2>
+<input type="number" id="withdrawAmount" placeholder="Amount to withdraw">
+<button id="withdrawBtn">Request Withdraw</button>
+<p>Minimum withdraw: 0.1 BSC</p>
 </div>
 
-<div class="main">
-  <div class="balance-card" id="liveBalance">Loading balance...</div>
-
-  <div class="withdraw-card">
-    <h2>Withdraw Funds</h2>
-    <input type="number" id="withdrawAmount" placeholder="Enter amount to withdraw">
-    <button id="withdrawBtn">Request Withdraw</button>
-    <p style="margin-top:10px;font-size:13px;">Minimum withdraw: 0.1 BSC</p>
-  </div>
-
-  <h3>Withdraw History</h3>
-  <div id="history"></div>
+<h3>Withdraw History</h3>
+<div id="history"></div>
 </div>
 
 <script type="module">
@@ -41,91 +35,63 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.appspot.com",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:6ba9892334456fd8512fa9"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const liveBalanceDiv = document.getElementById("liveBalance");
 const historyDiv = document.getElementById("history");
+const withdrawAmount = document.getElementById("withdrawAmount");
 
-// 🔐 Login Guard
-onAuthStateChanged(auth, async user => {
-  if(!user) return window.location.replace("login.html");
-
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-
-  if(!snap.exists()){
-    await updateDoc(userRef,{deposits: [], withdrawals: []});
-    liveBalanceDiv.innerText = "Balance: 0 BSC";
-    return;
-  }
-
-  const userData = snap.data();
-  renderBalance(userData);
+// Login guard
+onAuthStateChanged(auth,async user=>{
+if(!user) return window.location.replace("login.html");
+loadHistory(user.uid);
 });
-
-function renderBalance(userData){
-  const deposits = userData.deposits || [];
-  const withdrawals = userData.withdrawals || [];
-
-  const totalDeposits = deposits.reduce((sum,d)=>sum+d.amount,0);
-  const totalWithdrawn = withdrawals.reduce((sum,w)=>sum+w.amount,0);
-  const balance = totalDeposits - totalWithdrawn;
-
-  liveBalanceDiv.innerText = `Balance: ${balance.toFixed(4)} BSC`;
-
-  historyDiv.innerHTML = "";
-  withdrawals.slice().reverse().forEach(w=>{
-    const div = document.createElement("div");
-    div.className="history-card";
-    div.innerHTML = `Amount: ${w.amount} BSC | Status: ${w.status} | ${new Date(w.timestamp.seconds*1000).toLocaleString()}`;
-    historyDiv.appendChild(div);
-  });
-}
 
 // Withdraw request
-document.getElementById("withdrawBtn").addEventListener("click", async ()=>{
-  const amt = Number(document.getElementById("withdrawAmount").value);
-  if(!amt || amt <=0) return alert("Enter a valid amount");
-  if(amt < 0.1) return alert("Minimum withdraw: 0.1 BSC");
-
-  const user = auth.currentUser;
-  if(!user) return;
-
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-  const userData = snap.data();
-
-  const deposits = userData.deposits || [];
-  const withdrawals = userData.withdrawals || [];
-  const balance = deposits.reduce((sum,d)=>sum+d.amount,0) - withdrawals.reduce((sum,w)=>sum+w.amount,0);
-
-  if(amt > balance) return alert("Insufficient balance");
-
-  await updateDoc(userRef,{
-    withdrawals: arrayUnion({
-      amount: amt,
-      status: "Pending",
-      timestamp: new Date()
-    })
-  });
-
-  document.getElementById("withdrawAmount").value="";
-  const newSnap = await getDoc(userRef);
-  renderBalance(newSnap.data());
-  alert(`Withdraw request of ${amt} BSC submitted ✅`);
+document.getElementById("withdrawBtn").addEventListener("click",async ()=>{
+const amt = Number(withdrawAmount.value);
+if(!amt || amt<0.1) return alert("Minimum withdraw: 0.1 BSC");
+const user = auth.currentUser;
+if(!user) return;
+const userRef = doc(db,"users",user.uid);
+const snap = await getDoc(userRef);
+const data = snap.data();
+const deposits = data.deposits||[];
+const withdrawals = data.withdrawals||[];
+const nftEarnings = (data.nfts||[]).reduce((sum,n)=>{
+  const days = Math.floor((Date.now() - n.boughtAt.toDate().getTime())/(1000*60*60*24));
+  return sum + n.price*(n.dailyPercent/100)*days;
+},0);
+const balance = deposits.reduce((s,d)=>s+d.amount,0)-withdrawals.reduce((s,w)=>s+w.amount,0)+nftEarnings;
+if(amt>balance) return alert("Insufficient balance");
+await updateDoc(userRef,{withdrawals: arrayUnion({amount: amt,status:"Pending",timestamp: new Date()})});
+withdrawAmount.value="";
+loadHistory(user.uid);
+alert(`Withdraw request of ${amt} BSC submitted ✅`);
 });
+
+// Load withdraw history
+async function loadHistory(uid){
+const snap = await getDoc(doc(db,"users",uid));
+if(!snap.exists()) return;
+historyDiv.innerHTML="";
+(snap.data().withdrawals||[]).slice().reverse().forEach(w=>{
+const div = document.createElement("div");
+div.className="history-card";
+div.innerText=`Amount: ${w.amount} BSC | Status: ${w.status} | ${new Date(w.timestamp.seconds*1000).toLocaleString()}`;
+historyDiv.appendChild(div);
+});
+}
 </script>
 </body>
 </html>
