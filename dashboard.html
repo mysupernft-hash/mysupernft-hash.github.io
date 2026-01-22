@@ -67,6 +67,17 @@ body{
 }
 .main.shift{margin-left:260px}
 
+/* ===== REFERRAL BOX ===== */
+#refBox{
+  background:#111827;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
 /* ===== CATEGORIES ===== */
 .categories{
   display:flex;
@@ -145,66 +156,47 @@ body{
 <li><a href="calculator.html">Calculator</a></li>
 <li><a href="daily.html">Daily Earnings</a></li>
 <li><a href="settings.html">Settings</a></li>
-<li><a href="login.html">Logout</a></li>
-<a href="#" id="logoutBtn">Logout</a>
+<li><a href="#" id="logoutBtn">Logout</a></li>
 </ul>
 </div>
 
 <!-- MAIN -->
 <div class="main" id="main">
-  
-<div id="refBox" style="
-background:#111827;
-padding:12px;
-border-radius:10px;
-margin-bottom:15px;
-">
-  <b>My Referral Code:</b>
-  <span id="myCode">Loading...</span>
-</div>
-  <button id="copyBtn" style="
-margin-left:10px;
-padding:5px 10px;
-border:none;
-border-radius:6px;
-background:#38bdf8;
-color:#0b0f1a;
-cursor:pointer;
-font-weight:bold;
-">Copy</button>
-  <button id="shareBtn" style="
-margin-left:10px;
-padding:5px 10px;
-border:none;
-border-radius:6px;
-background:#10b981;
-color:#0b0f1a;
-cursor:pointer;
-font-weight:bold;
-">Share</button>
-<div class="categories">
-<button onclick="filterNFT('all')" class="active">All</button>
-<button onclick="filterNFT('starter')">Starter</button>
-<button onclick="filterNFT('rising')">Rising</button>
-<button onclick="filterNFT('elite')">Elite</button>
-<button onclick="filterNFT('legendary')">Legendary</button>
+
+  <!-- REFERRAL BOX -->
+  <div id="refBox">
+    <b>My Referral Code:</b>
+    <span id="myCode">Loading...</span>
+    <button id="copyBtn">Copy</button>
+    <button id="shareBtn">Share</button>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="categories">
+    <button onclick="filterNFT('all')" class="active">All</button>
+    <button onclick="filterNFT('starter')">Starter</button>
+    <button onclick="filterNFT('rising')">Rising</button>
+    <button onclick="filterNFT('elite')">Elite</button>
+    <button onclick="filterNFT('legendary')">Legendary</button>
+  </div>
+
+  <!-- NFT GRID -->
+  <div class="nft-grid" id="nfts"></div>
 </div>
 
-<div class="nft-grid" id="nfts"></div>
-</div>
+<script type="module">
+// SIDEBAR TOGGLE
+const menuBtn = document.getElementById("menuBtn");
+const sidebar = document.getElementById("sidebar");
+const main = document.getElementById("main");
 
-<script>
-const menuBtn=document.getElementById("menuBtn");
-const sidebar=document.getElementById("sidebar");
-const main=document.getElementById("main");
-
-menuBtn.onclick=()=>{
- sidebar.classList.toggle("show");
- main.classList.toggle("shift");
+menuBtn.onclick = () => {
+  sidebar.classList.toggle("show");
+  main.classList.toggle("shift");
 };
 
 /* NFT DATA */
-const NFTS=[
+const NFTS = [
 {cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
 {cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
 {cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},
@@ -237,40 +229,49 @@ const NFTS=[
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 ];
 
-const box=document.getElementById("nfts");
+const box = document.getElementById("nfts");
 
 function render(list){
- box.innerHTML="";
- list.forEach(n=>{
-  box.innerHTML+=`
-  <div class="nft">
-   <img src="${n.img}">
-   <p>Price $${n.price}</p>
-   <p>Daily Income $${n.p}</p>
-   <p>Validity 365 Days</p>
-   <button onclick="buy(${n.price})">Buy NFT</button>
-  </div>`;
- });
+  box.innerHTML = "";
+  list.forEach(n=>{
+    const price = n.price;
+    let cat;
+    if(price <=50) cat="Starter";
+    else if(price <=100) cat="Rising";
+    else if(price <=450) cat="Elite";
+    else cat="Legendary";
+
+    box.innerHTML+=`
+      <div class="nft">
+        <img src="${n.img}">
+        <p>Price $${n.price}</p>
+        <p>Category: ${cat}</p>
+        <p>Daily Income $${n.p}</p>
+        <p>Validity 365 Days</p>
+        <button onclick="buy(${n.price})">Buy NFT</button>
+      </div>
+    `;
+  });
 }
 render(NFTS);
 
 function filterNFT(c){
- document.querySelectorAll(".categories button")
- .forEach(b=>b.classList.remove("active"));
- event.target.classList.add("active");
- if(c==="all") render(NFTS);
- else render(NFTS.filter(n=>n.cat===c));
+  document.querySelectorAll(".categories button")
+    .forEach(b=>b.classList.remove("active"));
+  event.target.classList.add("active");
+  if(c==="all") render(NFTS);
+  else render(NFTS.filter(n=>n.cat===c));
 }
 
 function buy(p){
- localStorage.setItem("price",p);
- location.href="nft-details.html";
+  localStorage.setItem("price",p);
+  location.href="nft-details.html";
 }
-</script>
 
-  <script type="module">
+/* ===== REFERRAL CODE LOGIC ===== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -283,81 +284,41 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-/* 🔐 LOGIN GUARD */
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.replace("login.html");
-  }
-});
-</script>
-
-  <script type="module">
-import { getAuth, signOut } from 
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-const auth = getAuth();
-
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  signOut(auth).then(() => {
-    window.location.replace("login.html");
-  });
-});
-</script>
-
-  <script type="module">
-import { getAuth, onAuthStateChanged } from 
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-const auth = getAuth();
-onAuthStateChanged(auth, user => {
-  if (!user) location.replace("login.html");
-});
-</script>
-
-  <script type="module">
-import { getAuth, onAuthStateChanged } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const auth = getAuth();
-const db = getFirestore();
-
+/* LOGIN GUARD */
 onAuthStateChanged(auth, async (user)=>{
-  if(!user) return;
-
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(snap.exists()){
-    document.getElementById("myCode").innerText =
-      snap.data().myReferralCode;
+  if(!user) window.location.replace("login.html");
+  else{
+    const snap = await getDoc(doc(db,"users",user.uid));
+    if(snap.exists()){
+      document.getElementById("myCode").innerText = snap.data().myReferralCode;
+    }
   }
 });
-</script>
 
-  <script type="module">
+/* COPY BUTTON */
 const copyBtn = document.getElementById("copyBtn");
 const myCodeSpan = document.getElementById("myCode");
-
 copyBtn.addEventListener("click", () => {
   const code = myCodeSpan.innerText;
-  navigator.clipboard.writeText(code).then(()=>{
-    alert("Referral code copied ✅");
-  });
+  navigator.clipboard.writeText(code).then(()=>{ alert("Referral code copied ✅"); });
 });
-</script>
-  <script type="module">
-const shareBtn = document.getElementById("shareBtn");
 
+/* SHARE BUTTON */
+const shareBtn = document.getElementById("shareBtn");
 shareBtn.addEventListener("click", () => {
   const code = myCodeSpan.innerText;
   const text = `Join SuperNFT with my referral code: ${code}`;
   const url = encodeURIComponent(window.location.href);
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)} ${url}`, "_blank");
 });
-</script>
 
-  
+/* LOGOUT BUTTON */
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  signOut(auth).then(()=> window.location.replace("login.html"));
+});
+</script>
 
 </body>
 </html>
