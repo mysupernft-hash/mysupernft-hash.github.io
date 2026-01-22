@@ -1,144 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Investment Details</title>
-
+<title>NFT Details</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0b0f1a;
-  color:#fff;
-}
-
-.container{
-  max-width:800px;
-  margin:auto;
-  padding:20px;
-}
-
-.card{
-  background:#111827;
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:20px;
-}
-
-.card h2{
-  margin:0 0 10px;
-  color:#38bdf8;
-}
-
-.profit-list{
-  list-style:none;
-  padding:0;
-  margin:0;
-}
-
-.profit-list li{
-  background:#1f2937;
-  padding:10px 12px;
-  border-radius:8px;
-  margin:8px 0;
-  font-size:14px;
-}
-
-.total{
-  margin-top:12px;
-  padding:12px;
-  background:#022c22;
-  border-radius:8px;
-  font-weight:bold;
-  color:#6ee7b7;
-}
-
-.buy-btn{
-  width:100%;
-  margin-top:15px;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#38bdf8;
-  color:#000;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
-}
+body{background:#0b0f1a;color:#fff;font-family:Arial}
+.container{max-width:700px;margin:auto;padding:20px}
+.card{background:#111827;padding:20px;border-radius:16px}
+img{width:100%;border-radius:14px}
+li{background:#1f2937;margin:8px 0;padding:12px;border-radius:10px}
+.total{background:#022c22;padding:15px;border-radius:10px;color:#6ee7b7;margin-top:15px}
+button{width:100%;padding:14px;margin-top:15px;background:#38bdf8;border:none;border-radius:12px;font-weight:bold}
 </style>
 </head>
 
 <body>
-
 <div class="container">
-
-  <!-- NFT 1 -->
-  <div class="card">
-    <h2>Invest $10 — Profit $73.0</h2>
-    <ul class="profit-list">
-      <li>Daily Profit: $0.2 (2%)</li>
-      <li>Weekly Profit: $1.4 (14%)</li>
-      <li>Monthly Profit: $6.0 (60%)</li>
-      <li>Yearly Profit: $73.0 (730%)</li>
-    </ul>
-    <div class="total">Total Payout: $83.0 after 1 year</div>
-    <button class="buy-btn">Buy NFT</button>
-  </div>
-
-  <!-- NFT 2 -->
-  <div class="card">
-    <h2>Invest $15 — Profit $109.5</h2>
-    <ul class="profit-list">
-      <li>Daily Profit: $0.3 (2%)</li>
-      <li>Weekly Profit: $2.1 (14%)</li>
-      <li>Monthly Profit: $9.0 (60%)</li>
-      <li>Yearly Profit: $109.5 (730%)</li>
-    </ul>
-    <div class="total">Total Payout: $124.5 after 1 year</div>
-    <button class="buy-btn">Buy NFT</button>
-  </div>
-
-  <!-- NFT 3 -->
-  <div class="card">
-    <h2>Invest $25 — Profit $182.5</h2>
-    <ul class="profit-list">
-      <li>Daily Profit: $0.5 (2%)</li>
-      <li>Weekly Profit: $3.5 (14%)</li>
-      <li>Monthly Profit: $15.0 (60%)</li>
-      <li>Yearly Profit: $182.5 (730%)</li>
-    </ul>
-    <div class="total">Total Payout: $207.5 after 1 year</div>
-    <button class="buy-btn">Buy NFT</button>
-  </div>
-
-  <!-- NFT 4 -->
-  <div class="card">
-    <h2>Invest $50 — Profit $365.0</h2>
-    <ul class="profit-list">
-      <li>Daily Profit: $1.0 (2%)</li>
-      <li>Weekly Profit: $7.0 (14%)</li>
-      <li>Monthly Profit: $30.0 (60%)</li>
-      <li>Yearly Profit: $365.0 (730%)</li>
-    </ul>
-    <div class="total">Total Payout: $415.0 after 1 year</div>
-    <button class="buy-btn">Buy NFT</button>
-  </div>
-
-  <!-- HIGHER PLANS -->
-  <div class="card">
-    <h2>Invest $999 — Profit $36,500</h2>
-    <ul class="profit-list">
-      <li>Daily Profit: $100.0 (10%)</li>
-      <li>Weekly Profit: $700.0 (70%)</li>
-      <li>Monthly Profit: $3,000.0 (300%)</li>
-      <li>Yearly Profit: $36,500.0 (3,650%)</li>
-    </ul>
-    <div class="total">Total Payout: $37,499.0 after 1 year</div>
-    <button class="buy-btn">Buy NFT</button>
-  </div>
-
+  <div class="card" id="details"></div>
 </div>
 
+<script>
+const nft = JSON.parse(localStorage.getItem("selectedNFT"));
+if(!nft){ location.href="dashboard.html"; }
+
+/* ===== PROFIT TABLE (EXACT AS YOU GAVE) ===== */
+const plans = {
+  10:{d:0.2,w:1.4,m:6,y:73,p:83},
+  15:{d:0.3,w:2.1,m:9,y:109.5,p:124.5},
+  25:{d:0.5,w:3.5,m:15,y:182.5,p:207.5},
+  50:{d:1,w:7,m:30,y:365,p:415},
+  100:{d:2.5,w:17.5,m:75,y:912.5,p:1012.5},
+  150:{d:5,w:35,m:150,y:1825,p:1975},
+  200:{d:6.6,w:46.2,m:198,y:2409,p:2609},
+  300:{d:10,w:70,m:300,y:3650,p:3950},
+  499:{d:25,w:175,m:750,y:9125,p:9624},
+  699:{d:40,w:280,m:1200,y:14600,p:15299},
+  999:{d:100,w:700,m:3000,y:36500,p:37499}
+};
+
+const plan = plans[nft.amount];
+
+document.getElementById("details").innerHTML = `
+<img src="${nft.img}">
+<h2>Invest $${nft.amount} and Profit $${plan.y}</h2>
+
+<ul>
+<li>Daily Profit: $${plan.d}</li>
+<li>Weekly Profit: $${plan.w}</li>
+<li>Monthly Profit: $${plan.m}</li>
+<li>Yearly Profit: $${plan.y}</li>
+</ul>
+
+<div class="total">
+Total Payout after 1 year: $${plan.p}
+</div>
+
+<button>Buy NFT</button>
+`;
+</script>
 </body>
 </html>
