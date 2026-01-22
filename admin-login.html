@@ -49,7 +49,7 @@ loginForm.addEventListener("submit", async (e)=>{
     const user = userCredential.user;
 
     // 🔹 Check Firestore admin
-    const adminSnap = await getDoc(doc(db,"admin",user.uid));
+    const adminSnap = await getDoc(doc(db,"admin",user.uid)); // UID = Document ID
     if(!adminSnap.exists()){
       alert("Access denied ❌ Not Admin");
       return;
