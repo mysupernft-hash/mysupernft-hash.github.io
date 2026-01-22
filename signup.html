@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Signup</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>SuperNFT Signup</title>
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
   background:#0b0f1a;
   color:#fff;
   display:flex;
@@ -16,53 +15,120 @@ body{
   align-items:center;
   height:100vh;
 }
-.box{
-  width:100%;
-  max-width:380px;
+.card{
   background:#111827;
-  padding:25px;
+  padding:30px;
   border-radius:12px;
+  width:320px;
 }
-h2{text-align:center;margin-bottom:20px}
 input{
   width:100%;
-  padding:12px;
-  margin-bottom:12px;
+  padding:10px;
+  margin:8px 0;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
 }
 button{
   width:100%;
-  padding:12px;
+  padding:10px;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
   background:#38bdf8;
+  color:#0b0f1a;
   font-weight:bold;
   cursor:pointer;
+  margin-top:12px;
 }
-button:disabled{
-  background:#555;
-  cursor:not-allowed;
-}
-p{text-align:center;margin-top:12px}
-a{color:#38bdf8;text-decoration:none}
+p{font-size:14px;text-align:center;margin-top:10px;}
 </style>
-</head>
 
+<!-- reCAPTCHA -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+</head>
 <body>
 
-<div class="box">
-  <h2>Create Account</h2>
+<div class="card">
+  <h2 style="text-align:center;">Sign Up</h2>
+  <input type="text" id="name" placeholder="Full Name">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <input type="password" id="confirm" placeholder="Confirm Password">
 
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password (min 6 chars)" required>
-  <input type="text" id="referral" placeholder="Referral Code" required>
+  <!-- reCAPTCHA -->
+  <div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY"></div>
 
-  <button id="signupBtn" disabled>Sign Up</button>
-
-  <p>Already have account? <a href="login.html">Login</a></p>
+  <button id="signupBtn">Create Account</button>
+  <p>Already have an account? <a href="login.html" style="color:#38bdf8;">Login</a></p>
 </div>
 
-<script type="module" src="signup.js"></script>
+<script type="module">
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+function isStrongPassword(p){
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(p);
+}
+
+document.getElementById("signupBtn").addEventListener("click", async ()=>{
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const pass = document.getElementById("password").value;
+  const confirm = document.getElementById("confirm").value;
+
+  if(!name || !email || !pass || !confirm)
+    return alert("All fields are required");
+
+  if(pass !== confirm)
+    return alert("Passwords do not match");
+
+  if(!isStrongPassword(pass))
+    return alert("Password must be 8+ chars, include uppercase, lowercase, number & special char");
+
+  const captchaResponse = grecaptcha.getResponse();
+  if(!captchaResponse) return alert("Please complete the CAPTCHA");
+
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth,email,pass);
+    const user = userCred.user;
+
+    // Send email verification
+    await sendEmailVerification(user);
+
+    // Save user data in Firestore
+    await setDoc(doc(db,"users",user.uid),{
+      name,
+      email,
+      createdAt: new Date(),
+      myReferralCode: `REF${Math.floor(Math.random()*1000000)}`,
+      deposits: [],
+      withdrawals: [],
+      nfts: []
+    });
+
+    alert("Signup successful! Please verify your email before login.");
+    window.location.href = "login.html";
+
+  } catch(err){
+    alert(err.message);
+  }
+});
+</script>
+
 </body>
 </html>
