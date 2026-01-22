@@ -1,28 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Admin Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login - SuperNFT</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
+.card{background:#111827;padding:30px;border-radius:12px;text-align:center;width:300px;}
+input{width:80%;padding:8px;margin:10px 0;border-radius:6px;border:none;text-align:center;}
+button{padding:10px 20px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;}
+</style>
 </head>
-<body style="background:#020617;color:white;text-align:center;padding-top:100px">
-
+<body>
+<div class="card">
 <h2>Admin Login</h2>
+<input type="email" id="email" placeholder="Email"><br>
+<input type="password" id="password" placeholder="Password"><br>
+<button id="loginBtn">Login</button>
+</div>
 
-<input id="user" placeholder="Username"><br><br>
-<input id="pass" type="password" placeholder="Password"><br><br>
-<button onclick="login()">Login</button>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<script>
-function login(){
-  if(
-    document.getElementById("user").value==="shvm01.ss" &&
-    document.getElementById("pass").value==="shivatrainer3520"
-  ){
-    localStorage.setItem("adminLogged","true");
-    location.href="admin-dashboard.html";
-  }else{
-    alert("Wrong Admin Credentials");
-  }
-}
+const firebaseConfig = {
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.appspot.com",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+document.getElementById("loginBtn").addEventListener("click", async ()=>{
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  try{
+    const cred = await signInWithEmailAndPassword(auth,email,password);
+    const snap = await getDoc(doc(db,"admins",cred.user.uid));
+    if(!snap.exists()) return alert("Not authorized as admin");
+    window.location.href="admin-dashboard.html";
+  }catch(err){alert(err.message);}
+});
 </script>
 </body>
 </html>
