@@ -14,3 +14,15 @@ const account = new Account(client);
 const databases = new Databases(client);
 
 export { account, databases };
+
+<script type="module">
+  import { Client, Account } from "https://cdn.jsdelivr.net/npm/appwrite@13.0.0/+esm";
+
+  const client = new Client()
+    .setEndpoint("https://fra.cloud.appwrite.io/v1")
+    .setProject("697349db000b61cf48c7");
+
+  const account = new Account(client);
+
+  window.account = account;
+</script>
