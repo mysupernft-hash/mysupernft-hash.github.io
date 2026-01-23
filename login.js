@@ -1,26 +1,48 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from 
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// login.js
+import { auth } from "./firebase.js";
+import {
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
-};
+/* TEST: JS LOADED */
+console.log("login.js loaded");
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+/* ELEMENTS */
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const msg = document.getElementById("msg");
 
-document.getElementById("loginBtn").addEventListener("click", () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+/* EMAIL LOGIN */
+document.getElementById("emailLogin").addEventListener("click", () => {
+  msg.innerText = "Logging in...";
 
-  signInWithEmailAndPassword(auth, email, password)
+  signInWithEmailAndPassword(auth, email.value, password.value)
     .then(() => {
       window.location.href = "dashboard.html";
     })
-    .catch(err => alert(err.message));
+    .catch(err => {
+      msg.innerText = err.message;
+    });
+});
+
+/* GOOGLE LOGIN */
+const provider = new GoogleAuthProvider();
+document.getElementById("googleLogin").addEventListener("click", () => {
+  signInWithPopup(auth, provider)
+    .then(() => {
+      window.location.href = "dashboard.html";
+    })
+    .catch(err => {
+      msg.innerText = err.message;
+    });
+});
+
+/* AUTO REDIRECT IF ALREADY LOGGED IN */
+onAuthStateChanged(auth, user => {
+  if (user) {
+    window.location.href = "dashboard.html";
+  }
 });
