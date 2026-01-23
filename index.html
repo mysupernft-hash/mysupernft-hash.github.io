@@ -1,65 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Dashboard</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>SuperNFT Dashboard</title>
+
+  <!-- Basic styling -->
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    header {
+      background: #020617;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .login-btn {
+      background: #22c55e;
+      color: #000;
+    }
+
+    .logout-btn {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    main {
+      padding: 30px;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      background: #020617;
+      border-radius: 8px;
+    }
+  </style>
 </head>
 <body>
-<div class="sidebar">
-  <h2>SuperNFT</h2>
-  <ul>
-    <li><a href="index.html">Dashboard</a></li>
-    <li><a href="account.html">Account</a></li>
-    <li><a href="my-investments.html">My Investments</a></li>
-    <li><a href="my-team.html">My Team</a></li>
-    <li><a href="my-level.html">My Level</a></li>
-    <li><a href="deposit.html">Deposit</a></li>
-    <li><a href="withdraw.html">Withdraw</a></li>
-    <li><a href="claim.html">Claim</a></li>
-    <li><a href="calculator.html">Calculator</a></li>
-    <li><a href="nft-details.html">NFT Details</a></li>
-    <li><a href="daily.html">Daily Earnings</a></li>
-    <li><a href="live-earnings.html">Live Earnings</a></li>
-    <li><a href="settings.html">Settings</a></li>
-    <li><a href="contact.html">Contact</a></li>
-    <li><a href="privacy.html">Privacy</a></li>
-    <li><a href="#" id="logoutBtn">Logout</a></li>
-  </ul>
-</div>
 
-<div class="main">
-  <h1>Welcome, <span id="userName">User</span>!</h1>
-  <h2>Your NFTs</h2>
-  <div class="nft-grid" id="nftGrid"></div>
-</div>
+  <!-- HEADER -->
+  <header>
+    <h2>🚀 SuperNFT</h2>
+    <div>
+      <button id="loginBtn" class="login-btn">Login</button>
+      <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
+    </div>
+  </header>
 
-<script type="module">
-import { auth, logout, protectPage } from "./firebase.js";
-protectPage(); // Ensure user is verified and logged in
+  <!-- MAIN -->
+  <main>
+    <h1>Welcome to SuperNFT Dashboard</h1>
+    <p>This page is powered by <b>Appwrite</b>.</p>
 
-// Display user email
-auth.onAuthStateChanged(user => {
-  if(user) document.getElementById("userName").textContent = user.email;
-});
+    <div class="status" id="statusBox">
+      Checking login status...
+    </div>
+  </main>
 
-// Logout
-document.getElementById("logoutBtn").addEventListener("click", logout);
+  <!-- IMPORTANT: JS MUST BE MODULE -->
+  <script type="module" src="./main.js"></script>
 
-// Render 30 NFT cards
-const nftGrid = document.getElementById("nftGrid");
-for(let i=1;i<=30;i++){
-  const card = document.createElement("div");
-  card.className = "nft-card";
-  card.innerHTML = `
-    <img src="assets/nft${i}.png" alt="NFT ${i}">
-    <h3>NFT #${i}</h3>
-    <p>Price: ${Math.floor(Math.random()*100)} USDT</p>
-    <button onclick="alert('NFT #${i} Claimed!')">Claim</button>
-  `;
-  nftGrid.appendChild(card);
-}
-</script>
 </body>
 </html>
