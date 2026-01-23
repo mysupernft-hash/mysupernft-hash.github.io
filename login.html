@@ -1,25 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SuperNFT Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Login</title>
+<style>
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
+  background: #0b0f1a;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.login-container {
+  background:#111827;
+  padding: 30px;
+  border-radius: 12px;
+  width: 300px;
+  box-shadow: 0 0 15px #38bdf8;
+}
+.login-container h1 {
+  text-align:center;
+  margin-bottom: 20px;
+  color: #38bdf8;
+}
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 6px;
+  border: none;
+  outline:none;
+}
+.login-container button {
+  width: 100%;
+  padding: 10px;
+  background:#38bdf8;
+  color:#0b0f1a;
+  font-weight:bold;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+.login-container button:hover {
+  background:#10b981;
+}
+.login-container .signup {
+  margin-top: 15px;
+  text-align:center;
+  font-size: 14px;
+}
+.login-container .signup a {
+  color:#38bdf8;
+  text-decoration:none;
+}
+</style>
 </head>
-<body style="font-family: Arial, sans-serif; padding:30px; text-align:center;">
+<body>
 
+<div class="login-container">
   <h1>SuperNFT Login</h1>
-
-  <input type="email" id="email" placeholder="Enter email" /><br/><br/>
-  <input type="password" id="password" placeholder="Enter password" /><br/><br/>
-
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password" required>
   <button id="loginBtn">Login</button>
+  <div class="signup">
+    Don't have an account? <a href="signup.html">Sign Up</a>
+  </div>
+</div>
 
-  <p id="status" style="color:red; margin-top:10px;"></p>
+<!-- Firebase SDK -->
+<script type="module">
+import { auth } from "./firebase.js";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  <p>
-    Don't have an account? <a href="signup.html">Sign up</a>
-  </p>
+// Redirect to dashboard if already logged in
+onAuthStateChanged(auth, user => {
+  if(user) window.location.href = "dashboard.html";
+});
 
-  <script type="module" src="./login.js"></script>
+// Login function
+const loginBtn = document.getElementById("loginBtn");
+loginBtn.addEventListener("click", async () => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    alert("Please enter email and password");
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "dashboard.html";
+  } catch(err) {
+    alert("Login failed: " + err.message);
+  }
+});
+</script>
+
 </body>
 </html>
