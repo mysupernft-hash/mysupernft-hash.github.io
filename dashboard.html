@@ -203,6 +203,37 @@ document.getElementById("shareBtn").addEventListener("click",()=>{
 });
 </script>
 
+  <script>
+async function login() {
+  try {
+    await account.createEmailPasswordSession(
+      document.getElementById("email").value,
+      document.getElementById("password").value
+    );
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert(err.message);
+  }
+}
+</script>
+
+  <script type="module">
+  import { Client, Account } from "https://cdn.jsdelivr.net/npm/appwrite@13.0.0/+esm";
+
+  const client = new Client()
+    .setEndpoint("https://fra.cloud.appwrite.io/v1")
+    .setProject("697349db000b61cf48c7");
+
+  const account = new Account(client);
+
+  try {
+    await account.get();
+  } catch {
+    window.location.href = "login.html";
+  }
+</script>
+  
+
   <script type="module">
 import { auth } from "./firebase.js";
 import { onAuthStateChanged }
