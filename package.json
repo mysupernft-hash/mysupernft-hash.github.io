@@ -2,10 +2,9 @@
   "name": "supernft",
   "version": "1.0.0",
   "private": true,
-  "description": "SuperNFT frontend with Appwrite backend",
   "scripts": {
-    "build": "echo \"No build step required - static site\"",
-    "start": "echo \"Static site running\""
+    "build": "echo Build completed",
+    "start": "node server.js"
   },
   "dependencies": {
     "appwrite": "^13.0.0"
