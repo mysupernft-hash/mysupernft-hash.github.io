@@ -19,7 +19,7 @@ body {
   background:#111827;
   padding: 30px;
   border-radius: 12px;
-  width: 300px;
+  width: 320px;
   box-shadow: 0 0 15px #38bdf8;
 }
 .login-container h1 {
@@ -71,34 +71,50 @@ body {
   </div>
 </div>
 
-<!-- Firebase SDK -->
+<!-- Firebase login script -->
 <script type="module">
-import { auth } from "./firebase.js";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// Redirect to dashboard if already logged in
-onAuthStateChanged(auth, user => {
-  if(user) window.location.href = "dashboard.html";
-});
+  // 🔹 Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+    authDomain: "supernft-5b952.firebaseapp.com",
+    projectId: "supernft-5b952",
+    storageBucket: "supernft-5b952.appspot.com",
+    messagingSenderId: "278097730700",
+    appId: "1:278097730700:web:014d5ab680859db4512fa9",
+    measurementId: "G-BME7FWT355"
+  };
 
-// Login function
-const loginBtn = document.getElementById("loginBtn");
-loginBtn.addEventListener("click", async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
+  // 🔹 Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-  if(!email || !password){
-    alert("Please enter email and password");
-    return;
-  }
+  // 🔹 Redirect if already logged in
+  onAuthStateChanged(auth, user => {
+    if(user) window.location.href = "dashboard.html";
+  });
 
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    window.location.href = "dashboard.html";
-  } catch(err) {
-    alert("Login failed: " + err.message);
-  }
-});
+  // 🔹 Login button
+  const loginBtn = document.getElementById("loginBtn");
+  loginBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    if(!email || !password){
+      alert("Please enter email and password");
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("Login successful ✅");
+      window.location.href = "dashboard.html";
+    } catch(err) {
+      alert("Login failed: " + err.message);
+    }
+  });
 </script>
 
 </body>
