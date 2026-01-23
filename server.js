@@ -1,58 +1,24 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const nodemailer = require("nodemailer");
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
 
+import authRoutes from "./routes/auth.js";
+import adminRoutes from "./routes/admin.js";
+import nftRoutes from "./routes/nft.js";
+
+dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-let users = {};
+mongoose.connect(process.env.MONGO_URI)
+  .then(()=>console.log("MongoDB connected"))
+  .catch(err=>console.log("MongoDB connection error:", err));
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD
-  }
-});
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/nft", nftRoutes);
 
-app.post("/signup", async (req, res) => {
-  const { email, password } = req.body;
-  if (users[email]) return res.json({success:false});
-
-  const token = Date.now();
-  users[email] = { password, verified:false, token };
-
-  const link = `${process.env.BASE_URL}/verify?email=${email}&token=${token}`;
-
-  await transporter.sendMail({
-    from: `"MySuperNFT" <${process.env.GMAIL}>`,
-    to: email,
-    subject: "Verify your account",
-    html: `<a href="${link}">Verify Account</a>`
-  });
-
-  res.json({success:true});
-});
-
-app.get("/verify", (req,res)=>{
-  const { email, token } = req.query;
-  if(users[email] && users[email].token == token){
-    users[email].verified = true;
-    res.send("Verified successfully");
-  } else {
-    res.send("Invalid link");
-  }
-});
-
-app.post("/login",(req,res)=>{
-  const { email, password } = req.body;
-  const u = users[email];
-  if(!u) return res.json({success:false});
-  if(!u.verified) return res.json({success:false, msg:"Verify email"});
-  if(u.password !== password) return res.json({success:false});
-  res.json({success:true});
-});
-
-app.listen(3000);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, ()=>console.log(`Server running on port ${PORT}`));
