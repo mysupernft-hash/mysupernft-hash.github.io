@@ -1,58 +1,45 @@
+// auth.js
 import { auth, db } from "./firebase.js";
-import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const signupBtn = document.getElementById("signupBtn");
-const nameInput = document.getElementById("name");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-const status = document.getElementById("status");
+import {
+  doc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-signupBtn.addEventListener("click", async () => {
-  const name = nameInput.value.trim();
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
-
-  if (!name || !email || !password) {
-    status.textContent = "Please fill all fields";
-    return;
-  }
+// LOGIN
+window.login = async function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   try {
-    // Create Firebase Auth user
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
-    // Add user to Firestore 'users' collection
-    await setDoc(doc(db, "users", user.uid), {
-      name: name,
-      email: email,
-      role: "user",       // Normal user by default
-      createdAt: serverTimestamp()
+// SIGNUP
+window.signup = async function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+
+    await setDoc(doc(db, "users", res.user.uid), {
+      email,
+      role: "user",
+      walletBalance: 0,
+      createdAt: new Date()
     });
 
-    console.log("User signed up:", user.uid);
-
-    status.style.color = "green";
-    status.textContent = "Signup successful! Redirecting to login...";
-    setTimeout(() => {
-      window.location.href = "login.html";
-    }, 1500);
-
-  } catch (error) {
-    console.error(error);
-    switch (error.code) {
-      case "auth/email-already-in-use":
-        status.textContent = "Email already in use";
-        break;
-      case "auth/invalid-email":
-        status.textContent = "Invalid email format";
-        break;
-      case "auth/weak-password":
-        status.textContent = "Password should be at least 6 characters";
-        break;
-      default:
-        status.textContent = "Signup failed: " + error.message;
-    }
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert(err.message);
   }
-});
+};
