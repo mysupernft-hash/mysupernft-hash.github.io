@@ -1,1 +1,5 @@
-https://github.com/mysupernft-hash/mysupernft-hash
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  base: '/mysupernft-hash/',
+})
