@@ -1,45 +1,56 @@
 import { auth } from "./firebase.js";
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+// Get elements
 const loginBtn = document.getElementById("loginBtn");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
-const status = document.getElementById("status");
 
-loginBtn.addEventListener("click", async () => {
+// Safety check
+if (!loginBtn) {
+  console.error("❌ loginBtn not found. Check button ID.");
+}
+
+// Click event
+loginBtn.addEventListener("click", async (e) => {
+  e.preventDefault();
+
   const email = emailInput.value.trim();
-  const password = passwordInput.value;
+  const password = passwordInput.value.trim();
 
   if (!email || !password) {
-    status.textContent = "Please enter email and password";
+    alert("Please enter email and password");
     return;
   }
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    console.log("Logged in UID:", user.uid);
+  console.log("🔐 Login attempt:", email);
 
-    // Login successful, redirect to dashboard
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    const user = userCredential.user;
+    console.log("✅ Login success:", user.uid);
+
+    // Redirect after login
     window.location.href = "dashboard.html";
 
   } catch (error) {
-    console.error(error);
-    switch (error.code) {
-      case "auth/user-not-found":
-        status.textContent = "No user found with this email";
-        break;
-      case "auth/wrong-password":
-        status.textContent = "Incorrect password";
-        break;
-      case "auth/invalid-email":
-        status.textContent = "Invalid email format";
-        break;
-      case "auth/too-many-requests":
-        status.textContent = "Too many login attempts. Try again later.";
-        break;
-      default:
-        status.textContent = "Login failed: " + error.message;
+    console.error("❌ Login error:", error.code, error.message);
+
+    if (error.code === "auth/user-not-found") {
+      alert("User not found");
+    } else if (error.code === "auth/wrong-password") {
+      alert("Wrong password");
+    } else if (error.code === "auth/invalid-credential") {
+      alert("Invalid credentials");
+    } else {
+      alert(error.message);
     }
   }
 });
