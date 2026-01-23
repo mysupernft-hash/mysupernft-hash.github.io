@@ -1,66 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Signup</title>
-
-<style>
-body{
-  font-family:Arial,sans-serif;
-  background:#0b0f1a;
-  color:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  margin:0;
-}
-form{
-  background:#111827;
-  padding:25px;
-  border-radius:12px;
-  width:320px;
-}
-form h1{
-  text-align:center;
-  color:#38bdf8;
-  margin-bottom:20px;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:6px;
-  border:none;
-}
-button{
-  width:100%;
-  padding:10px;
-  margin-top:12px;
-  border:none;
-  border-radius:6px;
-  background:#38bdf8;
-  font-weight:bold;
-  cursor:pointer;
-  color:#0b0f1a;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>SuperNFT Signup</title>
 </head>
-
 <body>
+  <h1>Sign Up for SuperNFT</h1>
+  <input type="text" id="name" placeholder="Full Name" /><br/><br/>
+  <input type="email" id="email" placeholder="Email" /><br/><br/>
+  <input type="password" id="password" placeholder="Password" /><br/><br/>
+  <button id="signupBtn">Sign Up</button>
 
-<form id="signupForm">
-  <h1>SuperNFT</h1>
+  <p id="status" style="color:red;"></p>
 
-  <input type="text" id="name" placeholder="Full Name" required>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password (min 6 chars)" required>
-  <input type="text" id="referCode" placeholder="Referral Code (Required)" required>
-
-  <button type="submit">Create Account</button>
-</form>
-
-<script type="module" src="signup.js"></script>
+  <script type="module" src="./js/signup.js"></script>
 </body>
 </html>
