@@ -1,17 +1,13 @@
 {
-  "name": "supernft-backend",
+  "name": "supernft",
   "version": "1.0.0",
-  "main": "server.js",
-  "type": "module",
+  "private": true,
+  "description": "SuperNFT frontend with Appwrite backend",
   "scripts": {
-    "start": "node server.js"
+    "build": "echo \"No build step required - static site\"",
+    "start": "echo \"Static site running\""
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^7.3.1",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "appwrite": "^13.0.0"
   }
 }
