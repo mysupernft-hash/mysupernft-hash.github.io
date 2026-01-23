@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
 <style>
+/* --- GENERAL --- */
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;overflow-x:hidden;}
 .topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
@@ -16,7 +17,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;overflo
 .sidebar li{margin:10px 0}
 .sidebar a{display:block;padding:10px;color:#fff;text-decoration:none;border-radius:6px;}
 .sidebar a:hover{background:#38bdf8;color:#000;}
-.main{margin-top:60px;padding:15px;transition:.3s;display:none;} /* hidden initially for login protection */
+.main{margin-top:60px;padding:15px;transition:.3s;display:none;} /* hidden until login */
 .main.shift{margin-left:260px;}
 .stats-container{display:flex;gap:15px;flex-wrap:wrap;margin-bottom:15px;}
 .stat-box{flex:1;background:#1f2937;padding:15px;border-radius:10px;text-align:center;cursor:pointer;}
@@ -74,7 +75,7 @@ body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;overflo
   <!-- REFERRAL -->
   <div id="refBox">
     <b>My Referral Code:</b>
-    <span id="myCode">$0</span>
+    <span id="myCode">N/A</span>
     <button id="copyBtn">Copy</button>
     <button id="shareBtn">Share</button>
   </div>
@@ -172,7 +173,7 @@ onAuthStateChanged(auth, async user=>{
   if(!user) return window.location.replace("login.html");
 
   // show main only if user is logged in
-  document.getElementById("main").style.display = "block";
+  main.style.display = "block";
 
   const snap=await getDoc(doc(db,"users",user.uid));
   if(snap.exists()){
@@ -200,49 +201,6 @@ document.getElementById("shareBtn").addEventListener("click",()=>{
   const text=`Join SuperNFT with my referral code: ${code}`;
   const url=encodeURIComponent(window.location.href);
   window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)} ${url}`,"_blank");
-});
-</script>
-
-  <script>
-async function login() {
-  try {
-    await account.createEmailPasswordSession(
-      document.getElementById("email").value,
-      document.getElementById("password").value
-    );
-    window.location.href = "dashboard.html";
-  } catch (err) {
-    alert(err.message);
-  }
-}
-</script>
-
-  <script type="module">
-  import { Client, Account } from "https://cdn.jsdelivr.net/npm/appwrite@13.0.0/+esm";
-
-  const client = new Client()
-    .setEndpoint("https://fra.cloud.appwrite.io/v1")
-    .setProject("697349db000b61cf48c7");
-
-  const account = new Account(client);
-
-  try {
-    await account.get();
-  } catch {
-    window.location.href = "login.html";
-  }
-</script>
-  
-
-  <script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    window.location.replace("login.html");
-  }
 });
 </script>
 
