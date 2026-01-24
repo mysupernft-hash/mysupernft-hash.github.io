@@ -1,47 +1,39 @@
 import { auth, db } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification
+  sendEmailVerification,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   doc,
-  setDoc,
-  serverTimestamp
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const signupBtn = document.getElementById("signupBtn");
-
-signupBtn.addEventListener("click", async () => {
+document.getElementById("signupBtn").addEventListener("click", async () => {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
   try {
-    // 🔹 Create user
     const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
-    // 🔹 Send verification email
-    await sendEmailVerification(userCred.user);
-
-    // 🔹 Create user document
+    // Save user in Firestore
     await setDoc(doc(db, "users", userCred.user.uid), {
-      email: email,
+      email,
       role: "user",
-      walletBalance: 0,
-      dailyIncome: 0,
-      liveEarnings: 0,
-      totalDeposit: 0,
-      myReferralCode: "SNFT" + Math.floor(Math.random() * 100000),
-      createdAt: serverTimestamp()
+      createdAt: new Date()
     });
 
-    alert("Signup successful 🎉 Please verify your email before login.");
+    // Send verification email
+    await sendEmailVerification(userCred.user);
 
-    // 🔹 Logout until verified
-    await auth.signOut();
+    // 🔒 Logout user immediately
+    await signOut(auth);
+
+    alert("Signup successful 🎉\nPlease verify your email before login");
     window.location.href = "login.html";
 
-  } catch (error) {
-    alert(error.message);
+  } catch (err) {
+    alert(err.message);
   }
 });
