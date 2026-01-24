@@ -1,45 +1,35 @@
-// auth.js
-import { auth, db } from "./firebase.js";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// signup.js
+import { auth } from "./firebase.js";
+import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import {
-  doc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const signupForm = document.getElementById("signupForm");
 
-// LOGIN
-window.login = async function () {
-  const email = document.getElementById("email").value;
+signupForm.addEventListener("submit", async (e) => {
+  e.preventDefault(); // prevent page refresh
+
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    window.location.href = "dashboard.html";
-  } catch (err) {
-    alert(err.message);
+  if (!name || !email || !password) {
+    alert("Please fill all fields!");
+    return;
   }
-};
-
-// SIGNUP
-window.signup = async function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
 
   try {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
+    // Create user with Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-    await setDoc(doc(db, "users", res.user.uid), {
-      email,
-      role: "user",
-      walletBalance: 0,
-      createdAt: new Date()
-    });
+    // Optional: Save name in Firestore
+    // import { db } from "./firebase.js";
+    // import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // await setDoc(doc(db, "users", user.uid), { name: name, email: email, role: "user", createdAt: new Date().toISOString() });
 
+    alert("Signup successful! Redirecting to dashboard...");
     window.location.href = "dashboard.html";
   } catch (err) {
-    alert(err.message);
+    console.error(err);
+    alert(`Error: ${err.message}`);
   }
-};
+});
