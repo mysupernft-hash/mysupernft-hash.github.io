@@ -5,84 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Signup</title>
 <style>
-body { font-family: Arial, sans-serif; background: #0b0f1a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-form { background: #111827; padding: 30px; border-radius: 10px; display: flex; flex-direction: column; width: 300px; }
-input { margin-bottom: 15px; padding: 10px; border-radius: 6px; border: none; font-size: 14px; }
-button { padding: 10px; border-radius: 6px; border: none; background: #38bdf8; color: #0b0f1a; font-weight: bold; cursor: pointer; }
-button:hover { background: #10b981; color: #fff; }
-h1 { text-align: center; margin-bottom: 20px; color: #38bdf8; }
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
+.container{background:#111827;padding:30px;border-radius:12px;width:350px;text-align:center;}
+h1{color:#38bdf8;margin-bottom:20px;}input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;}button{padding:10px 20px;background:#38bdf8;color:#0b0f1a;border:none;border-radius:6px;font-weight:bold;width:100%;}button:hover{background:#0ea5e9;cursor:pointer;}p.message{margin-top:10px;font-size:14px;}
 </style>
 </head>
 <body>
 
-<form id="signupForm">
+<div class="container">
   <h1>Sign Up</h1>
   <input type="text" id="name" placeholder="Full Name" required>
   <input type="email" id="email" placeholder="Email" required>
   <input type="password" id="password" placeholder="Password" required>
-  <button type="submit">Sign Up</button>
-</form>
+  <button id="signupBtn">Sign Up</button>
+  <p class="message" id="message"></p>
+  <p>Already have an account? <a href="login.html">Login</a></p>
+</div>
 
-<!-- Firebase -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, db } from "./firebase.js";
+import { createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔹 FIREBASE CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:014d5ab680859db4512fa9",
-  measurementId: "G-BME7FWT355"
-};
+const signupBtn = document.getElementById("signupBtn");
+const message = document.getElementById("message");
 
-// 🔹 INITIALIZE FIREBASE
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// 🔹 SIGNUP LOGIC
-const signupForm = document.getElementById("signupForm");
-signupForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
+signupBtn.addEventListener("click", async () => {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
-  if (!name || !email || !password) {
-    alert("Please fill all fields!");
+  if(!name || !email || !password){
+    message.innerText = "Please fill all fields!";
     return;
   }
 
   try {
-    // Create Firebase Auth User
+    // Create Firebase user
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Save user info to Firestore
+    // Send verification email
+    await sendEmailVerification(user);
+
+    // Save user data to Firestore
     await setDoc(doc(db, "users", user.uid), {
       name,
       email,
       role: "user",
-      createdAt: new Date().toISOString(),
-      myReferralCode: "REF" + Math.floor(Math.random() * 10000),
+      walletBalance: 0,
       dailyIncome: 0,
       liveEarnings: 0,
       totalDeposit: 0,
-      walletBalance: 0
+      myReferralCode: Math.random().toString(36).substring(2,8).toUpperCase(),
+      createdAt: serverTimestamp()
     });
 
-    alert("Signup successful! Redirecting to dashboard...");
-    window.location.href = "dashboard.html";
+    message.style.color = "#10b981";
+    message.innerText = "Signup successful! Please verify your email before logging in.";
+
+    // Clear fields
+    document.getElementById("name").value = "";
+    document.getElementById("email").value = "";
+    document.getElementById("password").value = "";
 
   } catch (err) {
-    console.error(err);
-    alert(`Error: ${err.message}`);
+    message.style.color = "#f87171";
+    message.innerText = err.message;
   }
 });
 </script>
