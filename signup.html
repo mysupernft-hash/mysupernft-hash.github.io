@@ -1,18 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SuperNFT Signup</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Signup</title>
+<style>
+body {margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
+.container {background:#111827;padding:30px;border-radius:12px;width:100%;max-width:400px;box-shadow:0 0 20px rgba(0,0,0,0.5);}
+h1 {text-align:center;color:#38bdf8;margin-bottom:20px;}
+input {width:100%;padding:12px;margin:8px 0;border:none;border-radius:6px;background:#1f2937;color:#fff;}
+button {width:100%;padding:12px;margin-top:12px;border:none;border-radius:6px;background:#38bdf8;color:#0b0f1a;font-weight:bold;cursor:pointer;}
+button:hover {background:#0ea5e9;}
+p {text-align:center;margin-top:12px;}
+a {color:#38bdf8;text-decoration:none;}
+a:hover {text-decoration:underline;}
+</style>
 </head>
 <body>
-  <h1>Sign Up for SuperNFT</h1>
-  <input type="text" id="name" placeholder="Full Name" /><br/><br/>
-  <input type="email" id="email" placeholder="Email" /><br/><br/>
-  <input type="password" id="password" placeholder="Password" /><br/><br/>
+
+<div class="container">
+  <h1>SuperNFT Signup</h1>
+  <input type="text" id="name" placeholder="Full Name" />
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="password" placeholder="Password" />
   <button id="signupBtn">Sign Up</button>
+  <p>Already have an account? <a href="login.html">Login here</a></p>
+</div>
 
-  <p id="status" style="color:red;"></p>
+<script type="module">
+// 🔹 IMPORT FIREBASE
+import { auth, db } from "./firebase.js";
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <script type="module" src="./js/signup.js"></script>
+const signupBtn = document.getElementById("signupBtn");
+
+signupBtn.addEventListener("click", async () => {
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!name || !email || !password) return alert("Please fill all fields");
+
+  try {
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Update user display name
+    await updateProfile(user, { displayName: name });
+
+    // Send verification email
+    await sendEmailVerification(user);
+
+    // Create user in Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      name: name,
+      email: email,
+      role: "user",
+      createdAt: new Date().toISOString(),
+      myReferralCode: Math.random().toString(36).substring(2,8).toUpperCase(),
+      dailyIncome: 0,
+      liveEarnings: 0,
+      totalDeposit: 0,
+      walletBalance: 0
+    });
+
+    alert("Signup successful! Please verify your email before logging in.");
+    window.location.href = "login.html";
+
+  } catch (err) {
+    alert(err.message);
+  }
+});
+</script>
+
 </body>
 </html>
