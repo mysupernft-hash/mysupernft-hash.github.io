@@ -1,102 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login | SuperNFT</title>
-
-  <style>
-    body{
-      margin:0;
-      height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#0b0f1a;
-      font-family:Arial, sans-serif;
-      color:#fff;
-    }
-    .login-box{
-      width:320px;
-      background:#111827;
-      padding:25px;
-      border-radius:12px;
-      box-shadow:0 0 25px rgba(56,189,248,.2);
-    }
-    h2{
-      text-align:center;
-      color:#38bdf8;
-      margin-bottom:20px;
-    }
-    input{
-      width:100%;
-      padding:10px;
-      margin-bottom:12px;
-      border-radius:6px;
-      border:none;
-      outline:none;
-    }
-    button{
-      width:100%;
-      padding:10px;
-      background:#38bdf8;
-      border:none;
-      border-radius:6px;
-      font-weight:bold;
-      cursor:pointer;
-    }
-    button:hover{
-      background:#0ea5e9;
-    }
-    p{
-      text-align:center;
-      margin-top:15px;
-      font-size:14px;
-    }
-    a{
-      color:#38bdf8;
-      text-decoration:none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Login</title>
+<style>
+  body { margin:0; font-family: Arial, sans-serif; background:#0b0f1a; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; }
+  .login-box { background:#111827; padding:30px; border-radius:10px; width:320px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+  h1 { text-align:center; color:#38bdf8; margin-bottom:20px; }
+  input { width:100%; padding:10px; margin:10px 0; border-radius:6px; border:none; }
+  button { width:100%; padding:10px; margin-top:10px; border:none; border-radius:6px; background:#38bdf8; color:#0b0f1a; font-weight:bold; cursor:pointer; }
+  button:hover { background:#10b981; }
+  .signup { text-align:center; margin-top:15px; }
+  .signup a { color:#38bdf8; text-decoration:none; }
+  .signup a:hover { text-decoration:underline; }
+</style>
 </head>
 <body>
 
-  <div class="login-box">
-    <h2>SuperNFT Login</h2>
-
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="password" placeholder="Password" required>
-
-    <button onclick="login()">Login</button>
-
-    <p>New user?
-      <a href="signup.html">Create account</a>
-    </p>
+<div class="login-box">
+  <h1>SuperNFT Login</h1>
+  <input type="email" id="email" placeholder="Email" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button id="loginBtn">Login</button>
+  <div class="signup">
+    Don't have an account? <a href="signup.html">Sign Up</a>
   </div>
+</div>
 
-  <!-- 🔥 FIREBASE LOGIN SCRIPT -->
-  <script type="module">
-    import { auth } from "./firebase.js";
-    import { signInWithEmailAndPassword } from
-    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+<!-- Firebase SDKs -->
+<script type="module">
+  // Import Firebase functions
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    window.login = async function () {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+    authDomain: "supernft-5b952.firebaseapp.com",
+    projectId: "supernft-5b952",
+    storageBucket: "supernft-5b952.appspot.com",
+    messagingSenderId: "278097730700",
+    appId: "1:278097730700:web:014d5ab680859db4512fa9",
+    measurementId: "G-BME7FWT355"
+  };
 
-      if (!email || !password) {
-        alert("Please enter email & password");
-        return;
-      }
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        window.location.href = "dashboard.html";
-      } catch (error) {
-        alert(error.message);
-      }
-    };
-  </script>
+  // Login button event
+  const loginBtn = document.getElementById("loginBtn");
+  loginBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Login successful:", userCredential.user);
+      window.location.href = "dashboard.html"; // Redirect to dashboard
+    } catch (err) {
+      alert("Login failed: " + err.message);
+    }
+  });
+</script>
 
 </body>
 </html>
