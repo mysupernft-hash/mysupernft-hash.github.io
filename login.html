@@ -5,63 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Login</title>
 <style>
-  body { margin:0; font-family: Arial, sans-serif; background:#0b0f1a; color:#fff; display:flex; justify-content:center; align-items:center; height:100vh; }
-  .login-box { background:#111827; padding:30px; border-radius:10px; width:320px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
-  h1 { text-align:center; color:#38bdf8; margin-bottom:20px; }
-  input { width:100%; padding:10px; margin:10px 0; border-radius:6px; border:none; }
-  button { width:100%; padding:10px; margin-top:10px; border:none; border-radius:6px; background:#38bdf8; color:#0b0f1a; font-weight:bold; cursor:pointer; }
-  button:hover { background:#10b981; }
-  .signup { text-align:center; margin-top:15px; }
-  .signup a { color:#38bdf8; text-decoration:none; }
-  .signup a:hover { text-decoration:underline; }
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
+.container{background:#111827;padding:30px;border-radius:12px;width:350px;text-align:center;}
+h1{color:#38bdf8;margin-bottom:20px;}input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;}button{padding:10px 20px;background:#38bdf8;color:#0b0f1a;border:none;border-radius:6px;font-weight:bold;width:100%;}button:hover{background:#0ea5e9;cursor:pointer;}p.message{margin-top:10px;font-size:14px;}
 </style>
 </head>
 <body>
 
-<div class="login-box">
-  <h1>SuperNFT Login</h1>
+<div class="container">
+  <h1>Login</h1>
   <input type="email" id="email" placeholder="Email" required>
   <input type="password" id="password" placeholder="Password" required>
   <button id="loginBtn">Login</button>
-  <div class="signup">
-    Don't have an account? <a href="signup.html">Sign Up</a>
-  </div>
+  <p class="message" id="message"></p>
+  <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
 </div>
 
-<!-- Firebase SDKs -->
 <script type="module">
-  // Import Firebase functions
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { auth } from "./firebase.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  // Your Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-    authDomain: "supernft-5b952.firebaseapp.com",
-    projectId: "supernft-5b952",
-    storageBucket: "supernft-5b952.appspot.com",
-    messagingSenderId: "278097730700",
-    appId: "1:278097730700:web:014d5ab680859db4512fa9",
-    measurementId: "G-BME7FWT355"
-  };
+const loginBtn = document.getElementById("loginBtn");
+const message = document.getElementById("message");
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+loginBtn.addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
-  // Login button event
-  const loginBtn = document.getElementById("loginBtn");
-  loginBtn.addEventListener("click", async () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  if(!email || !password){
+    message.style.color = "#f87171";
+    message.innerText = "Please fill all fields!";
+    return;
+  }
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log("Login successful:", userCredential.user);
-      window.location.href = "dashboard.html"; // Redirect to dashboard
-    } catch (err) {
-      alert("Login failed: " + err.message);
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if(!user.emailVerified){
+      message.style.color = "#fbbf24";
+      message.innerText = "Please verify your email before logging in!";
+      return;
     }
-  });
+
+    // Redirect to dashboard
+    window.location.href = "dashboard.html";
+
+  } catch (err) {
+    message.style.color = "#f87171";
+    message.innerText = err.message;
+  }
+});
 </script>
 
 </body>
