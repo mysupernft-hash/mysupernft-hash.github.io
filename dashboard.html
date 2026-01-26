@@ -40,17 +40,6 @@ body{
   font-size:24px;
   cursor:pointer;
 }
-.header-right{
-  display:flex;
-  align-items:center;
-  gap:15px;
-}
-.header-right img{
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  cursor:pointer;
-}
 
 /* ---------- Sidebar ---------- */
 .sidebar{
@@ -241,13 +230,6 @@ body{
 <div class="header">
   <div class="hamburger" onclick="toggleSidebar()">☰</div>
   <h1>SuperNFT Dashboard</h1>
-  <div class="header-right">
-    <div class="wallet-badge">💰 <span id="headerWallet">$1200</span></div>
-    <div class="bell" onclick="toggleNotify()">🔔</div>
-    <div class="profile" onclick="toggleProfile()">
-      <img src="https://via.placeholder.com/40">
-    </div>
-  </div>
 </div>
 
 <!-- SIDEBAR -->
@@ -257,11 +239,11 @@ body{
   <button onclick="openPage('wallet.html')">💳 Wallet</button>
   <button onclick="openPage('withdraw.html')">💸 Withdraw</button>
   <button onclick="openPage('live-earnings.html')">💹 Live Earnings</button>
-  <button onclick="openPage('dashboard.html')">🖼 NFT Marketplace</button>
   <button onclick="openPage('my-team.html')">👥 My Team</button>
   <button onclick="openPage('my-level.html')">📊 My Level</button>
   <button onclick="openPage('calculator.html')">📈 Calculator</button>
   <button onclick="openPage('settings.html')">⚙️ Settings</button>
+  <button onclick="logout()">🔒 Logout</button>
 </div>
 
 <!-- MAIN -->
@@ -308,7 +290,6 @@ body{
   <button onclick="openPage('chart.js')">📊 Chart</button>
 </div>
 
-<!-- NFT DATA + JS -->
 <script>
 const NFT_MARKETPLACE=[
 {id:1,name:"Starter NFT #1",category:"Starter",price:10,dailyIncome:0.5,image:"https://via.placeholder.com/300?text=NFT+1"},
@@ -340,8 +321,7 @@ const NFT_MARKETPLACE=[
 {id:27,name:"Legendary NFT #2",category:"Legendary",price:800,dailyIncome:40,image:"https://via.placeholder.com/300?text=NFT+27"},
 {id:28,name:"Legendary NFT #3",category:"Legendary",price:900,dailyIncome:45,image:"https://via.placeholder.com/300?text=NFT+28"},
 {id:29,name:"Legendary NFT #4",category:"Legendary",price:1000,dailyIncome:50,image:"https://via.placeholder.com/300?text=NFT+29"},
-{id:30,name:"Legendary NFT #5",category:"Legendary",price:1200,dailyIncome:60,image:"https://via.placeholder.com/300?text=NFT+30"}
-];
+{id:30,name:"Legendary NFT #5",category:"Legendary",price:1200,dailyIncome:60,image:"https://via.placeholder.com/300?text=NFT+30"}];
 
 const nftGrid=document.getElementById('nftGrid');
 function renderNFTs(nfts){
@@ -368,17 +348,4 @@ function filterNFT(category){
   const buttons=document.querySelectorAll('.categories button');
   buttons.forEach(btn=>btn.classList.remove('active'));
   event.target.classList.add('active');
-  if(category==='All') renderNFTs(NFT_MARKETPLACE);
-  else renderNFTs(NFT_MARKETPLACE.filter(n=>n.category===category));
-}
-
-// Initial render
-renderNFTs(NFT_MARKETPLACE);
-
-// Sidebar toggle
-function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('active');}
-function openPage(url){window.location.href=url;}
-</script>
-
-</body>
-</html>
+  if
