@@ -5,20 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
 <style>
-/* -------- Body -------- */
+/* ===== Body ===== */
 body{
   margin:0;
   font-family:'Segoe UI',sans-serif;
   background:#0b0b10;
   color:#ccc;
 }
-
-/* -------- Header -------- */
+/* ===== Header ===== */
 .header{
   position:fixed;
-  top:0;
-  left:0;
-  right:0;
+  top:0; left:0; right:0;
   height:60px;
   background:linear-gradient(180deg,#0f0f16,#07070b);
   border-bottom:1px solid rgba(212,175,55,.25);
@@ -40,14 +37,12 @@ body{
   font-size:24px;
   cursor:pointer;
 }
-
-/* -------- Sidebar -------- */
+/* ===== Sidebar ===== */
 .sidebar{
   width:220px;
   height:100vh;
   position:fixed;
-  top:0;
-  left:0;
+  top:0; left:0;
   background:#0f0f15;
   padding-top:70px;
   border-right:1px solid rgba(212,175,55,.25);
@@ -71,14 +66,12 @@ body{
   background:linear-gradient(90deg,#d4af37,#f5d76e);
   color:#000;
 }
-
-/* -------- Main -------- */
+/* ===== Main ===== */
 .main{
   margin-left:220px;
-  padding:90px 20px 100px;
+  padding:90px 20px 120px;
 }
-
-/* -------- Stats 2x2 -------- */
+/* ===== Stats 2x2 ===== */
 .stats{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -105,8 +98,7 @@ body{
   font-weight:600;
   margin:0;
 }
-
-/* -------- Categories -------- */
+/* ===== Categories ===== */
 .categories{
   display:flex;
   gap:10px;
@@ -127,8 +119,7 @@ body{
   background:linear-gradient(90deg,#d4af37,#f5d76e);
   color:#000;
 }
-
-/* -------- NFT Grid -------- */
+/* ===== NFT Grid ===== */
 .nft-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
@@ -184,8 +175,7 @@ body{
 .nft button:hover{
   background:linear-gradient(90deg,#f5d76e,#d4af37);
 }
-
-/* -------- Footer -------- */
+/* ===== Footer ===== */
 .footer{
   width:100%;
   background:#13131a;
@@ -213,8 +203,7 @@ body{
   background:linear-gradient(90deg,#d4af37,#f5d76e);
   color:#000;
 }
-
-/* -------- Responsive -------- */
+/* ===== Responsive ===== */
 @media(max-width:768px){
   .hamburger{display:block;}
   .sidebar{left:-220px;}
@@ -251,22 +240,10 @@ body{
 <div class="main">
   <!-- Stats -->
   <div class="stats">
-    <div class="stat">
-      <h3>Daily Income</h3>
-      <p>$455.30</p>
-    </div>
-    <div class="stat">
-      <h3>Live Earnings</h3>
-      <p>$364.24</p>
-    </div>
-    <div class="stat">
-      <h3>Deposit Money</h3>
-      <p>$5000</p>
-    </div>
-    <div class="stat">
-      <h3>Wallet Balance</h3>
-      <p>$1200</p>
-    </div>
+    <div class="stat"><h3>Daily Income</h3><p>$455.30</p></div>
+    <div class="stat"><h3>Live Earnings</h3><p>$364.24</p></div>
+    <div class="stat"><h3>Deposit Money</h3><p>$5000</p></div>
+    <div class="stat"><h3>Wallet Balance</h3><p>$1200</p></div>
   </div>
 
   <!-- Categories -->
@@ -292,6 +269,7 @@ body{
 </div>
 
 <script>
+// ===== NFT DATA =====
 const NFT_MARKETPLACE=[
 {id:1,name:"Starter NFT #1",category:"Starter",price:10,dailyIncome:0.5,image:"https://via.placeholder.com/300?text=NFT+1"},
 {id:2,name:"Starter NFT #2",category:"Starter",price:15,dailyIncome:0.7,image:"https://via.placeholder.com/300?text=NFT+2"},
@@ -326,7 +304,7 @@ const NFT_MARKETPLACE=[
 
 const nftGrid=document.getElementById('nftGrid');
 
-// Render NFTs
+// ===== Render NFTs =====
 function renderNFTs(nfts){
   nftGrid.innerHTML='';
   nfts.forEach(nft=>{
@@ -346,10 +324,10 @@ function renderNFTs(nfts){
   });
 }
 
-// NFT click
+// ===== NFT Click =====
 function openNFT(id){window.location.href=`nft-details.html?id=${id}`;}
 
-// Filter NFTs
+// ===== Filter NFTs =====
 function filterNFT(category){
   const buttons=document.querySelectorAll('.categories button');
   buttons.forEach(btn=>btn.classList.remove('active'));
@@ -358,12 +336,12 @@ function filterNFT(category){
   else renderNFTs(NFT_MARKETPLACE.filter(n=>n.category===category));
 }
 
-// Sidebar toggle
+// ===== Sidebar & Navigation =====
 function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('active');}
 function openPage(url){window.location.href=url;}
 function logout(){alert('Logout clicked!');}
 
-// Initial render
+// ===== Initial render =====
 renderNFTs(NFT_MARKETPLACE);
 </script>
 </body>
