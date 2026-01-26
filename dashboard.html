@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
-<link rel="stylesheet" href="styles.css">
 <style>
-/* ---------------- Header ---------------- */
+/* ---------------- Body ---------------- */
 body{
   margin:0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family:'Segoe UI',sans-serif;
   background:#0b0b10;
   color:#ccc;
 }
 
+/* ---------------- Header ---------------- */
 .header{
   position:fixed;
   top:0;
@@ -44,7 +44,6 @@ body{
   margin-right:15px;
 }
 
-/* Header right icons */
 .header-right{
   display:flex;
   align-items:center;
@@ -69,7 +68,7 @@ body{
   padding-top:70px;
   border-right:1px solid rgba(212,175,55,.25);
   transition:0.3s;
-  z-index:10000;
+  z-index:999;
 }
 
 .sidebar button{
@@ -94,10 +93,10 @@ body{
 /* ---------------- Main ---------------- */
 .main{
   margin-left:220px;
-  padding:90px 20px 90px;
+  padding:90px 20px 100px;
 }
 
-/* ---------------- Stats ---------------- */
+/* ---------------- Stats 2x2 ---------------- */
 .stats{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -164,9 +163,9 @@ body{
   overflow:hidden;
   border:1px solid rgba(212,175,55,.25);
   box-shadow:0 0 8px rgba(212,175,55,.1);
-  transition:0.3s;
   display:flex;
   flex-direction:column;
+  transition:0.3s;
 }
 
 .nft:hover{
@@ -248,26 +247,12 @@ body{
 
 /* ---------------- Responsive ---------------- */
 @media(max-width:768px){
-  .hamburger{
-    display:block;
-  }
-  .sidebar{
-    left:-220px;
-  }
-  .sidebar.active{
-    left:0;
-  }
-  .main{
-    margin-left:0;
-    padding-top:90px;
-    padding-bottom:140px;
-  }
-  .stats{
-    grid-template-columns:1fr;
-  }
-  .nft-grid{
-    grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  }
+  .hamburger{display:block;}
+  .sidebar{left:-220px;}
+  .sidebar.active{left:0;}
+  .main{margin-left:0;padding-top:90px;padding-bottom:140px;}
+  .stats{grid-template-columns:1fr;}
+  .nft-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
 }
 </style>
 </head>
@@ -302,7 +287,6 @@ body{
 
 <!-- MAIN -->
 <div class="main">
-
   <!-- Stats -->
   <div class="stats">
     <div class="stat">
@@ -333,10 +317,7 @@ body{
   </div>
 
   <!-- NFT GRID -->
-  <div class="nft-grid" id="nftGrid">
-    <!-- NFTs injected by JS -->
-  </div>
-
+  <div class="nft-grid" id="nftGrid"></div>
 </div>
 
 <!-- FOOTER -->
@@ -348,43 +329,41 @@ body{
   <button onclick="openPage('chart.js')">📊 Chart</button>
 </div>
 
-<!-- NFT DATA & JS -->
+<!-- NFT DATA + JS -->
 <script>
-// NFT DATA
-const NFT_MARKETPLACE = [
-  {id:1,name:"Starter NFT #1",category:"Starter",price:10,dailyIncome:0.5,image:"https://via.placeholder.com/300?text=NFT+1"},
-  {id:2,name:"Starter NFT #2",category:"Starter",price:15,dailyIncome:0.7,image:"https://via.placeholder.com/300?text=NFT+2"},
-  {id:3,name:"Starter NFT #3",category:"Starter",price:20,dailyIncome:1,image:"https://via.placeholder.com/300?text=NFT+3"},
-  {id:4,name:"Starter NFT #4",category:"Starter",price:25,dailyIncome:1.2,image:"https://via.placeholder.com/300?text=NFT+4"},
-  {id:5,name:"Starter NFT #5",category:"Starter",price:30,dailyIncome:1.5,image:"https://via.placeholder.com/300?text=NFT+5"},
-  {id:6,name:"Starter NFT #6",category:"Starter",price:35,dailyIncome:1.7,image:"https://via.placeholder.com/300?text=NFT+6"},
-  {id:7,name:"Starter NFT #7",category:"Starter",price:40,dailyIncome:2,image:"https://via.placeholder.com/300?text=NFT+7"},
-  {id:8,name:"Starter NFT #8",category:"Starter",price:45,dailyIncome:2.2,image:"https://via.placeholder.com/300?text=NFT+8"},
-  {id:9,name:"Starter NFT #9",category:"Starter",price:50,dailyIncome:2.5,image:"https://via.placeholder.com/300?text=NFT+9"},
-  {id:10,name:"Starter NFT #10",category:"Starter",price:60,dailyIncome:3,image:"https://via.placeholder.com/300?text=NFT+10"},
-  {id:11,name:"Rising NFT #1",category:"Rising",price:80,dailyIncome:4,image:"https://via.placeholder.com/300?text=NFT+11"},
-  {id:12,name:"Rising NFT #2",category:"Rising",price:100,dailyIncome:5,image:"https://via.placeholder.com/300?text=NFT+12"},
-  {id:13,name:"Rising NFT #3",category:"Rising",price:120,dailyIncome:6,image:"https://via.placeholder.com/300?text=NFT+13"},
-  {id:14,name:"Rising NFT #4",category:"Rising",price:150,dailyIncome:7.5,image:"https://via.placeholder.com/300?text=NFT+14"},
-  {id:15,name:"Rising NFT #5",category:"Rising",price:180,dailyIncome:9,image:"https://via.placeholder.com/300?text=NFT+15"},
-  {id:16,name:"Rising NFT #6",category:"Rising",price:200,dailyIncome:10,image:"https://via.placeholder.com/300?text=NFT+16"},
-  {id:17,name:"Rising NFT #7",category:"Rising",price:220,dailyIncome:11,image:"https://via.placeholder.com/300?text=NFT+17"},
-  {id:18,name:"Rising NFT #8",category:"Rising",price:250,dailyIncome:12.5,image:"https://via.placeholder.com/300?text=NFT+18"},
-  {id:19,name:"Rising NFT #9",category:"Rising",price:280,dailyIncome:14,image:"https://via.placeholder.com/300?text=NFT+19"},
-  {id:20,name:"Rising NFT #10",category:"Rising",price:300,dailyIncome:15,image:"https://via.placeholder.com/300?text=NFT+20"},
-  {id:21,name:"Elite NFT #1",category:"Elite",price:350,dailyIncome:18,image:"https://via.placeholder.com/300?text=NFT+21"},
-  {id:22,name:"Elite NFT #2",category:"Elite",price:400,dailyIncome:20,image:"https://via.placeholder.com/300?text=NFT+22"},
-  {id:23,name:"Elite NFT #3",category:"Elite",price:450,dailyIncome:22,image:"https://via.placeholder.com/300?text=NFT+23"},
-  {id:24,name:"Elite NFT #4",category:"Elite",price:500,dailyIncome:25,image:"https://via.placeholder.com/300?text=NFT+24"},
-  {id:25,name:"Elite NFT #5",category:"Elite",price:600,dailyIncome:30,image:"https://via.placeholder.com/300?text=NFT+25"},
-  {id:26,name:"Legendary NFT #1",category:"Legendary",price:700,dailyIncome:35,image:"https://via.placeholder.com/300?text=NFT+26"},
-  {id:27,name:"Legendary NFT #2",category:"Legendary",price:800,dailyIncome:40,image:"https://via.placeholder.com/300?text=NFT+27"},
-  {id:28,name:"Legendary NFT #3",category:"Legendary",price:900,dailyIncome:45,image:"https://via.placeholder.com/300?text=NFT+28"},
-  {id:29,name:"Legendary NFT #4",category:"Legendary",price:1000,dailyIncome:50,image:"https://via.placeholder.com/300?text=NFT+29"},
-  {id:30,name:"Legendary NFT #5",category:"Legendary",price:1200,dailyIncome:60,image:"https://via.placeholder.com/300?text=NFT+30"}
+const NFT_MARKETPLACE=[
+{id:1,name:"Starter NFT #1",category:"Starter",price:10,dailyIncome:0.5,image:"https://via.placeholder.com/300?text=NFT+1"},
+{id:2,name:"Starter NFT #2",category:"Starter",price:15,dailyIncome:0.7,image:"https://via.placeholder.com/300?text=NFT+2"},
+{id:3,name:"Starter NFT #3",category:"Starter",price:20,dailyIncome:1,image:"https://via.placeholder.com/300?text=NFT+3"},
+{id:4,name:"Starter NFT #4",category:"Starter",price:25,dailyIncome:1.2,image:"https://via.placeholder.com/300?text=NFT+4"},
+{id:5,name:"Starter NFT #5",category:"Starter",price:30,dailyIncome:1.5,image:"https://via.placeholder.com/300?text=NFT+5"},
+{id:6,name:"Starter NFT #6",category:"Starter",price:35,dailyIncome:1.7,image:"https://via.placeholder.com/300?text=NFT+6"},
+{id:7,name:"Starter NFT #7",category:"Starter",price:40,dailyIncome:2,image:"https://via.placeholder.com/300?text=NFT+7"},
+{id:8,name:"Starter NFT #8",category:"Starter",price:45,dailyIncome:2.2,image:"https://via.placeholder.com/300?text=NFT+8"},
+{id:9,name:"Starter NFT #9",category:"Starter",price:50,dailyIncome:2.5,image:"https://via.placeholder.com/300?text=NFT+9"},
+{id:10,name:"Starter NFT #10",category:"Starter",price:60,dailyIncome:3,image:"https://via.placeholder.com/300?text=NFT+10"},
+{id:11,name:"Rising NFT #1",category:"Rising",price:80,dailyIncome:4,image:"https://via.placeholder.com/300?text=NFT+11"},
+{id:12,name:"Rising NFT #2",category:"Rising",price:100,dailyIncome:5,image:"https://via.placeholder.com/300?text=NFT+12"},
+{id:13,name:"Rising NFT #3",category:"Rising",price:120,dailyIncome:6,image:"https://via.placeholder.com/300?text=NFT+13"},
+{id:14,name:"Rising NFT #4",category:"Rising",price:150,dailyIncome:7.5,image:"https://via.placeholder.com/300?text=NFT+14"},
+{id:15,name:"Rising NFT #5",category:"Rising",price:180,dailyIncome:9,image:"https://via.placeholder.com/300?text=NFT+15"},
+{id:16,name:"Rising NFT #6",category:"Rising",price:200,dailyIncome:10,image:"https://via.placeholder.com/300?text=NFT+16"},
+{id:17,name:"Rising NFT #7",category:"Rising",price:220,dailyIncome:11,image:"https://via.placeholder.com/300?text=NFT+17"},
+{id:18,name:"Rising NFT #8",category:"Rising",price:250,dailyIncome:12.5,image:"https://via.placeholder.com/300?text=NFT+18"},
+{id:19,name:"Rising NFT #9",category:"Rising",price:280,dailyIncome:14,image:"https://via.placeholder.com/300?text=NFT+19"},
+{id:20,name:"Rising NFT #10",category:"Rising",price:300,dailyIncome:15,image:"https://via.placeholder.com/300?text=NFT+20"},
+{id:21,name:"Elite NFT #1",category:"Elite",price:350,dailyIncome:18,image:"https://via.placeholder.com/300?text=NFT+21"},
+{id:22,name:"Elite NFT #2",category:"Elite",price:400,dailyIncome:20,image:"https://via.placeholder.com/300?text=NFT+22"},
+{id:23,name:"Elite NFT #3",category:"Elite",price:450,dailyIncome:22,image:"https://via.placeholder.com/300?text=NFT+23"},
+{id:24,name:"Elite NFT #4",category:"Elite",price:500,dailyIncome:25,image:"https://via.placeholder.com/300?text=NFT+24"},
+{id:25,name:"Elite NFT #5",category:"Elite",price:600,dailyIncome:30,image:"https://via.placeholder.com/300?text=NFT+25"},
+{id:26,name:"Legendary NFT #1",category:"Legendary",price:700,dailyIncome:35,image:"https://via.placeholder.com/300?text=NFT+26"},
+{id:27,name:"Legendary NFT #2",category:"Legendary",price:800,dailyIncome:40,image:"https://via.placeholder.com/300?text=NFT+27"},
+{id:28,name:"Legendary NFT #3",category:"Legendary",price:900,dailyIncome:45,image:"https://via.placeholder.com/300?text=NFT+28"},
+{id:29,name:"Legendary NFT #4",category:"Legendary",price:1000,dailyIncome:50,image:"https://via.placeholder.com/300?text=NFT+29"},
+{id:30,name:"Legendary NFT #5",category:"Legendary",price:1200,dailyIncome:60,image:"https://via.placeholder.com/300?text=NFT+30"}
 ];
 
-// Render NFTs
 const nftGrid=document.getElementById('nftGrid');
 function renderNFTs(nfts){
   nftGrid.innerHTML='';
@@ -410,7 +389,6 @@ function filterNFT(category){
   const buttons=document.querySelectorAll('.categories button');
   buttons.forEach(btn=>btn.classList.remove('active'));
   event.target.classList.add('active');
-
   if(category==='All') renderNFTs(NFT_MARKETPLACE);
   else renderNFTs(NFT_MARKETPLACE.filter(n=>n.category===category));
 }
