@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
 <style>
-/* ---------- Body ---------- */
+/* -------- Body -------- */
 body{
   margin:0;
   font-family:'Segoe UI',sans-serif;
@@ -13,7 +13,7 @@ body{
   color:#ccc;
 }
 
-/* ---------- Header ---------- */
+/* -------- Header -------- */
 .header{
   position:fixed;
   top:0;
@@ -41,7 +41,7 @@ body{
   cursor:pointer;
 }
 
-/* ---------- Sidebar ---------- */
+/* -------- Sidebar -------- */
 .sidebar{
   width:220px;
   height:100vh;
@@ -72,13 +72,13 @@ body{
   color:#000;
 }
 
-/* ---------- Main ---------- */
+/* -------- Main -------- */
 .main{
   margin-left:220px;
   padding:90px 20px 100px;
 }
 
-/* ---------- Stats 2x2 ---------- */
+/* -------- Stats 2x2 -------- */
 .stats{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -106,7 +106,7 @@ body{
   margin:0;
 }
 
-/* ---------- Categories ---------- */
+/* -------- Categories -------- */
 .categories{
   display:flex;
   gap:10px;
@@ -128,7 +128,7 @@ body{
   color:#000;
 }
 
-/* ---------- NFT Grid ---------- */
+/* -------- NFT Grid -------- */
 .nft-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
@@ -184,7 +184,7 @@ body{
   background:linear-gradient(90deg,#f5d76e,#d4af37);
 }
 
-/* ---------- Footer ---------- */
+/* -------- Footer -------- */
 .footer{
   width:100%;
   background:#13131a;
@@ -213,7 +213,7 @@ body{
   color:#000;
 }
 
-/* ---------- Responsive ---------- */
+/* -------- Responsive -------- */
 @media(max-width:768px){
   .hamburger{display:block;}
   .sidebar{left:-220px;}
@@ -348,4 +348,18 @@ function filterNFT(category){
   const buttons=document.querySelectorAll('.categories button');
   buttons.forEach(btn=>btn.classList.remove('active'));
   event.target.classList.add('active');
-  if
+  if(category==='All') renderNFTs(NFT_MARKETPLACE);
+  else renderNFTs(NFT_MARKETPLACE.filter(n=>n.category===category));
+}
+
+// Initial render
+renderNFTs(NFT_MARKETPLACE);
+
+// Sidebar toggle
+function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('active');}
+function openPage(url){window.location.href=url;}
+function logout(){alert('Logout clicked!');}
+</script>
+
+</body>
+</html>
