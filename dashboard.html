@@ -151,6 +151,7 @@ body{
 .nft img{
   width:100%;
   border-bottom:1px solid rgba(212,175,55,.25);
+  cursor:pointer;
 }
 .nft-content{
   padding:12px;
@@ -324,24 +325,29 @@ const NFT_MARKETPLACE=[
 {id:30,name:"Legendary NFT #5",category:"Legendary",price:1200,dailyIncome:60,image:"https://via.placeholder.com/300?text=NFT+30"}];
 
 const nftGrid=document.getElementById('nftGrid');
+
+// Render NFTs
 function renderNFTs(nfts){
   nftGrid.innerHTML='';
   nfts.forEach(nft=>{
     const div=document.createElement('div');
     div.className='nft';
     div.innerHTML=`
-      <img src="${nft.image}" alt="${nft.name}">
+      <img src="${nft.image}" alt="${nft.name}" onclick="openNFT(${nft.id})">
       <div class="nft-content">
         <h4>${nft.name}</h4>
         <p>Category: ${nft.category}</p>
         <p>Price: $${nft.price}</p>
         <p>Daily Income: $${nft.dailyIncome}</p>
-        <button onclick="openPage('nft-details.html?id=${nft.id}')">Buy</button>
+        <button onclick="openNFT(${nft.id})">Buy</button>
       </div>
     `;
     nftGrid.appendChild(div);
   });
 }
+
+// NFT click
+function openNFT(id){window.location.href=`nft-details.html?id=${id}`;}
 
 // Filter NFTs
 function filterNFT(category){
@@ -352,14 +358,13 @@ function filterNFT(category){
   else renderNFTs(NFT_MARKETPLACE.filter(n=>n.category===category));
 }
 
-// Initial render
-renderNFTs(NFT_MARKETPLACE);
-
 // Sidebar toggle
 function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('active');}
 function openPage(url){window.location.href=url;}
 function logout(){alert('Logout clicked!');}
-</script>
 
+// Initial render
+renderNFTs(NFT_MARKETPLACE);
+</script>
 </body>
 </html>
