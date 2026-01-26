@@ -5,7 +5,7 @@
 <title>SuperNFT Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-*{box-sizing:border-box}
+*{box-sizing:border-box;}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#0f172a;color:#fff;}
 header{background:#020617;padding:16px;text-align:center;font-size:22px;font-weight:bold;position:relative;}
 .container{padding:20px;max-width:1400px;margin:auto;}
@@ -13,14 +13,18 @@ header{background:#020617;padding:16px;text-align:center;font-size:22px;font-wei
 /* 2x2 STATS GRID */
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);grid-gap:15px;margin-bottom:20px;}
 .card{background:#020617;padding:20px;border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,.4);}
-.card h3{margin:0 0 10px;font-size:16px;color:#38bdf8;}
-.value{font-size:22px;font-weight:bold;}
-.small{font-size:13px;color:#94a3b8;}
+.card h3{margin:0 0 5px;font-size:16px;color:#38bdf8;}
+.value{font-size:22px;font-weight:bold;margin-top:5px;}
 
 /* NFT GRID */
-.nft-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:15px;}
-.nft-grid img{width:100%;border-radius:8px;cursor:pointer;transition:0.3s;}
-.nft-grid img:hover{transform:scale(1.05);}
+.nft-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:15px;margin-top:15px;}
+.nft-card{background:#020617;padding:10px;border-radius:10px;text-align:center;box-shadow:0 0 8px rgba(0,0,0,.3);}
+.nft-card img{width:100%;border-radius:8px;cursor:pointer;transition:0.3s;}
+.nft-card img:hover{transform:scale(1.05);}
+.nft-card .nft-name{font-weight:bold;margin:8px 0 5px;}
+.nft-card .nft-info{font-size:13px;color:#94a3b8;margin-bottom:5px;}
+.nft-card button{padding:6px 12px;border:none;border-radius:6px;background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;transition:0.2s;}
+.nft-card button:hover{background:#22c55e;color:#fff;}
 
 /* FILTER BUTTONS */
 .filter-btns{margin:15px 0;text-align:center;}
@@ -96,10 +100,7 @@ header{background:#020617;padding:16px;text-align:center;font-size:22px;font-wei
 </div>
 
 <!-- NFT GRID -->
-<div class="card">
-  <h3>My NFT Collection</h3>
-  <div class="nft-grid" id="nftGrid"></div>
-</div>
+<div class="nft-grid" id="nftGrid"></div>
 
 </div>
 
@@ -108,7 +109,7 @@ header{background:#020617;padding:16px;text-align:center;font-size:22px;font-wei
 function openNav(){document.getElementById("sidebar").style.width="250px";}
 function closeNav(){document.getElementById("sidebar").style.width="0";}
 
-// NFT_MARKETPLACE
+// NFT Data
 const NFT_MARKETPLACE = [
   // Starter 1-10
   {id:1,name:"Starter NFT #1",category:"Starter",price:10,dailyIncome:0.5,image:"https://via.placeholder.com/300?text=NFT+1"},
@@ -146,31 +147,50 @@ const NFT_MARKETPLACE = [
   {id:30,name:"Legendary NFT #5",category:"Legendary",price:1200,dailyIncome:60,image:"https://via.placeholder.com/300?text=NFT+30"}
 ];
 
-// DUMMY STATS
-const data = NFT_MARKETPLACE;
-const dailyIncome = data.reduce((a,b)=>a+b.dailyIncome,0).toFixed(2);
-const liveEarnings = (dailyIncome*0.8).toFixed(2);
-const depositMoney = 5000;
-const walletBalance = 1200;
+// INITIAL STATS
+let walletBalance = 1200;
+let dailyIncome = 0;
 
-document.getElementById("dailyIncome").innerText="$"+dailyIncome;
-document.getElementById("liveEarnings").innerText="$"+liveEarnings;
-document.getElementById("depositMoney").innerText="$"+depositMoney;
-document.getElementById("walletBalance").innerText="$"+walletBalance;
+// RENDER STATS
+function updateStats(){
+  document.getElementById("walletBalance").innerText="$"+walletBalance.toFixed(2);
+  document.getElementById("dailyIncome").innerText="$"+dailyIncome.toFixed(2);
+  document.getElementById("liveEarnings").innerText="$"+(dailyIncome*0.8).toFixed(2);
+  document.getElementById("depositMoney").innerText="$5000";
+}
 
-// NFT GRID
+// RENDER NFT GRID
 const nftGrid = document.getElementById("nftGrid");
 function renderNFTs(category){
   nftGrid.innerHTML="";
-  const filtered = category==="All"?data:data.filter(nft=>nft.category===category);
+  const filtered = category==="All"?NFT_MARKETPLACE:NFT_MARKETPLACE.filter(nft=>nft.category===category);
   filtered.forEach(nft=>{
-    const img=document.createElement("img");
-    img.src=nft.image;
-    img.title=`${nft.name} ($${nft.dailyIncome}/day)`;
-    nftGrid.appendChild(img);
+    const card = document.createElement("div");
+    card.className="nft-card";
+    card.innerHTML = `
+      <img src="${nft.image}" alt="${nft.name}">
+      <div class="nft-name">${nft.name}</div>
+      <div class="nft-info">Price: $${nft.price}</div>
+      <div class="nft-info">Daily: $${nft.dailyIncome}</div>
+      <div class="nft-info">30-day Earnings: $${(nft.dailyIncome*30).toFixed(2)}</div>
+      <button onclick="buyNFT(${nft.id})">Buy</button>
+    `;
+    nftGrid.appendChild(card);
   });
 }
-renderNFTs("All");
+
+// BUY FUNCTION
+function buyNFT(id){
+  const nft = NFT_MARKETPLACE.find(n=>n.id===id);
+  if(walletBalance>=nft.price){
+    walletBalance -= nft.price;
+    dailyIncome += nft.dailyIncome;
+    alert(`${nft.name} bought!`);
+    updateStats();
+  }else{
+    alert("Not enough balance!");
+  }
+}
 
 // FILTER BUTTONS
 const buttons = document.querySelectorAll(".filter-btns button");
@@ -181,6 +201,10 @@ buttons.forEach(btn=>{
     renderNFTs(btn.getAttribute("data-category"));
   });
 });
+
+// INITIAL RENDER
+updateStats();
+renderNFTs("All");
 </script>
 
 </body>
