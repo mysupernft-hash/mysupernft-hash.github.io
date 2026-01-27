@@ -19,6 +19,10 @@ header h1{margin:0;font-size:22px;}
 #sidebar h2{color:#FFD700;margin-bottom:20px;}
 #sidebar button{width:100%;background:none;border:none;color:#FFD700;padding:12px 10px;text-align:left;font-size:16px;cursor:pointer;display:flex;align-items:center;margin-bottom:5px;transition:0.2s;}
 #sidebar button:hover{background:#272727;border-radius:8px;}
+/* Category Filter */
+.category-filters{margin:10px 0;}
+.category-filters button{margin-right:5px;padding:5px 8px;background:#272727;color:#FFD700;border:none;border-radius:5px;cursor:pointer;transition:0.2s;}
+.category-filters button:hover, .category-filters button.active{background:#FFD700;color:#000;}
 /* Overlay */
 #overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:998;display:none;}
 #overlay.active{display:block;}
@@ -74,6 +78,13 @@ footer div:hover{color:#e0c200;}
   <button onclick="openPage('calculator')">📈 Calculator</button>
   <button onclick="openPage('settings')">⚙️ Settings</button>
   <button onclick="logout()">🔒 Logout</button>
+  <div class="category-filters">
+    <button class="active" onclick="filterNFT('all', this)">All</button>
+    <button onclick="filterNFT('starter', this)">Starter</button>
+    <button onclick="filterNFT('rising', this)">Rising</button>
+    <button onclick="filterNFT('elite', this)">Elite</button>
+    <button onclick="filterNFT('legendary', this)">Legendary</button>
+  </div>
 </div>
 
 <div class="stats">
@@ -109,7 +120,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🔹 NFT Array - 30 NFTs with images & categories */
+/* 🔹 NFT Array */
 const NFTS=[
   {cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
   {cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -143,7 +154,6 @@ const NFTS=[
   {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
-/* 🔹 Render NFTs */
 const box=document.getElementById("nfts");
 function render(list){
   box.innerHTML="";
@@ -159,9 +169,18 @@ function render(list){
   });
 }
 render(NFTS);
+
+/* Category Filter */
+function filterNFT(cat, btn){
+  document.querySelectorAll(".category-filters button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  if(cat==="all") render(NFTS);
+  else render(NFTS.filter(n=>n.cat===cat));
+}
+
 function buy(p){localStorage.setItem("price",p);location.href="nft-details.html";}
 
-/* Clickable Stats Boxes */
+/* Stats Boxes */
 document.getElementById("dailyIncomeBox").addEventListener("click",()=> window.location.href="daily.html");
 document.getElementById("liveEarningsBox").addEventListener("click",()=> window.location.href="live-earnings.html");
 document.getElementById("depositMoney").addEventListener("click",()=> window.location.href="deposit.html");
@@ -171,12 +190,10 @@ document.getElementById("walletBalanceBox").addEventListener("click",()=> window
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
 document.querySelector(".menu-toggle").addEventListener("click",()=>{
-  sidebar.classList.add("active");
-  overlay.classList.add("active");
+  sidebar.classList.add("active"); overlay.classList.add("active");
 });
 overlay.addEventListener("click",()=>{
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
+  sidebar.classList.remove("active"); overlay.classList.remove("active");
 });
 
 /* Footer links */
@@ -195,7 +212,6 @@ onAuthStateChanged(auth, async user=>{
     document.getElementById("walletBalanceP").innerText = `$${data.walletBalance||0}`;
     document.getElementById("walletBalanceTop").innerText = `$${data.walletBalance||0}`;
 
-    // Referral code auto-generate if missing
     let referral = data.myReferralCode;
     if(!referral){
       referral = Math.random().toString(36).substring(2,8).toUpperCase();
