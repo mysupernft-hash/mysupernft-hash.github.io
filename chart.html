@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Earnings Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+  margin:0;
+  background:#0b0b10;
+  color:#d4af37;
+  font-family:Segoe UI;
+}
+
+.chart-container{
+  width:95%;
+  max-width:600px;
+  height:300px;
+  margin:100px auto;
+  background:#0f172a;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 0 20px rgba(212,175,55,.3);
+}
+</style>
+</head>
+
+<body>
+
+<h2 style="text-align:center;">📈 Earnings Chart</h2>
+
+<div class="chart-container">
+  <canvas id="earningsChart"></canvas>
+</div>
+
+<script src="chart.js"></script>
+</body>
+</html>
