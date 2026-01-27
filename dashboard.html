@@ -20,8 +20,8 @@ header h1{margin:0;font-size:22px;}
 #sidebar button{width:100%;background:none;border:none;color:#FFD700;padding:12px 10px;text-align:left;font-size:16px;cursor:pointer;display:flex;align-items:center;margin-bottom:5px;transition:0.2s;}
 #sidebar button:hover{background:#272727;border-radius:8px;}
 /* Category Filter */
-.category-filters{margin:10px 0;}
-.category-filters button{margin-right:5px;padding:5px 8px;background:#272727;color:#FFD700;border:none;border-radius:5px;cursor:pointer;transition:0.2s;}
+.category-filters{margin:15px 0;display:flex;flex-wrap:wrap;gap:5px;}
+.category-filters button{padding:5px 8px;background:#272727;color:#FFD700;border:none;border-radius:5px;cursor:pointer;transition:0.2s;font-size:14px;}
 .category-filters button:hover, .category-filters button.active{background:#FFD700;color:#000;}
 /* Overlay */
 #overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:998;display:none;}
@@ -78,6 +78,7 @@ footer div:hover{color:#e0c200;}
   <button onclick="openPage('calculator')">📈 Calculator</button>
   <button onclick="openPage('settings')">⚙️ Settings</button>
   <button onclick="logout()">🔒 Logout</button>
+  
   <div class="category-filters">
     <button class="active" onclick="filterNFT('all', this)">All</button>
     <button onclick="filterNFT('starter', this)">Starter</button>
@@ -88,13 +89,13 @@ footer div:hover{color:#e0c200;}
 </div>
 
 <div class="stats">
-  <div class="stat-box" id="dailyIncomeBox"><h2>Daily Income</h2><p id="dailyIncome">$12.50</p></div>
-  <div class="stat-box" id="liveEarningsBox"><h2>Live Earnings</h2><p id="liveEarnings">$42.10</p></div>
-  <div class="stat-box" id="depositMoney"><h2>Total Deposit</h2><p>$300</p></div>
-  <div class="stat-box" id="walletBalanceBox"><h2>Wallet Balance</h2><p id="walletBalanceP">$120</p></div>
+  <div class="stat-box" id="dailyIncomeBox"><h2>Daily Income</h2><p id="dailyIncome">$0</p></div>
+  <div class="stat-box" id="liveEarningsBox"><h2>Live Earnings</h2><p id="liveEarnings">$0</p></div>
+  <div class="stat-box" id="depositMoney"><h2>Total Deposit</h2><p>$0</p></div>
+  <div class="stat-box" id="walletBalanceBox"><h2>Wallet Balance</h2><p id="walletBalanceP">$0</p></div>
 </div>
 
-<div id="referralCodeDisplay">Your Referral Code: N/A</div>
+<div id="referralCodeDisplay">Your Referral Code: </div>
 
 <h2 style="margin-left:20px;">NFT Marketplace</h2>
 <div class="nft-grid" id="nfts"></div>
@@ -113,14 +114,14 @@ footer div:hover{color:#e0c200;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952",storageBucket:"supernft-5b952.appspot.com",messagingSenderId:"278097730700",appId:"1:278097730700:web:6ba9892334456fd8512fa9"};
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🔹 NFT Array */
+/* 🔹 NFT Array (30 Images) */
 const NFTS=[
   {cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
   {cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -159,18 +160,17 @@ function render(list){
   box.innerHTML="";
   list.forEach(n=>{
     box.innerHTML+=`<div class="nft">
-      <img src="${n.img}" onclick="buy(${n.price})">
+      <img src="${n.img}" onclick="buy('${n.price}')">
       <p>Category: ${n.cat}</p>
       <p>Price $${n.price}</p>
       <p>Daily Income $${n.p}</p>
       <p>Validity 365 Days</p>
-      <button onclick="buy(${n.price})">Buy NFT</button>
+      <button onclick="buy('${n.price}')">Buy NFT</button>
     </div>`;
   });
 }
 render(NFTS);
 
-/* Category Filter */
 function filterNFT(cat, btn){
   document.querySelectorAll(".category-filters button").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
@@ -203,7 +203,8 @@ document.querySelectorAll('footer div').forEach((el,i)=>el.addEventListener('cli
 /* Firebase Login + Referral + Live Earnings */
 onAuthStateChanged(auth, async user=>{
   if(!user) window.location.replace("login.html");
-  const snap = await getDoc(doc(db,"users",user.uid));
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
   if(snap.exists()){
     const data = snap.data();
     document.getElementById("dailyIncome").innerText = `$${data.dailyIncome||0}`;
@@ -212,23 +213,24 @@ onAuthStateChanged(auth, async user=>{
     document.getElementById("walletBalanceP").innerText = `$${data.walletBalance||0}`;
     document.getElementById("walletBalanceTop").innerText = `$${data.walletBalance||0}`;
 
+    // Referral Code
     let referral = data.myReferralCode;
     if(!referral){
       referral = Math.random().toString(36).substring(2,8).toUpperCase();
-      await updateDoc(doc(db,"users",user.uid), { myReferralCode: referral });
+      await setDoc(userRef, { myReferralCode: referral }, { merge: true });
     }
     document.getElementById("referralCodeDisplay").innerText = `Your Referral Code: ${referral}`;
   }
-
+  // Live earnings update
   setInterval(async ()=>{
-    const snap2 = await getDoc(doc(db,"users",user.uid));
+    const snap2 = await getDoc(userRef);
     if(!snap2.exists()) return;
     let live = 0;
     (snap2.data().nfts||[]).forEach(nft=>{
       const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};
       live += map[nft]||0;
     });
-    await updateDoc(doc(db,"users",user.uid),{liveEarnings:live});
+    await updateDoc(userRef,{liveEarnings:live});
     document.getElementById("liveEarnings").innerText = `$${live.toFixed(2)}`;
   },5000);
 });
