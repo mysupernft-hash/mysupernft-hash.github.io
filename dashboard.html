@@ -179,6 +179,10 @@ overlay.addEventListener("click",()=>{
   overlay.classList.remove("active");
 });
 
+/* Footer links */
+const footerLinks = ['account.html','my-investments.html','wallet.html','withdraw.html','live-earnings.html'];
+document.querySelectorAll('footer div').forEach((el,i)=>el.addEventListener('click',()=> window.location.href=footerLinks[i]));
+
 /* Firebase Login + Referral + Live Earnings */
 onAuthStateChanged(auth, async user=>{
   if(!user) window.location.replace("login.html");
@@ -190,8 +194,16 @@ onAuthStateChanged(auth, async user=>{
     document.getElementById("depositMoney").querySelector("p").innerText = `$${data.totalDeposit||0}`;
     document.getElementById("walletBalanceP").innerText = `$${data.walletBalance||0}`;
     document.getElementById("walletBalanceTop").innerText = `$${data.walletBalance||0}`;
-    document.getElementById("referralCodeDisplay").innerText = `Your Referral Code: ${data.myReferralCode || 'N/A'}`;
+
+    // Referral code auto-generate if missing
+    let referral = data.myReferralCode;
+    if(!referral){
+      referral = Math.random().toString(36).substring(2,8).toUpperCase();
+      await updateDoc(doc(db,"users",user.uid), { myReferralCode: referral });
+    }
+    document.getElementById("referralCodeDisplay").innerText = `Your Referral Code: ${referral}`;
   }
+
   setInterval(async ()=>{
     const snap2 = await getDoc(doc(db,"users",user.uid));
     if(!snap2.exists()) return;
@@ -206,7 +218,20 @@ onAuthStateChanged(auth, async user=>{
 });
 
 function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
-function openPage(page){alert("Open "+page+" page (implement separately)");}
+function openPage(page){
+    switch(page){
+        case 'account': window.location.href='account.html'; break;
+        case 'investments': window.location.href='my-investments.html'; break;
+        case 'wallet': window.location.href='wallet.html'; break;
+        case 'withdraw': window.location.href='withdraw.html'; break;
+        case 'live': window.location.href='live-earnings.html'; break;
+        case 'team': window.location.href='my-team.html'; break;
+        case 'level': window.location.href='my-level.html'; break;
+        case 'calculator': window.location.href='calculator.html'; break;
+        case 'settings': window.location.href='settings.html'; break;
+        default: console.log("Page not found");
+    }
+}
 </script>
 </body>
 </html>
