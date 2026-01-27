@@ -1,81 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT – Earn Daily From NFTs</title>
 
-  <title>SuperNFT Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{
+  background:#0f0f0f;
+  color:#fff;
+  overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
 
-  <!-- Basic styling -->
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #0f172a;
-      color: #ffffff;
-    }
+/* GOLD THEME */
+.gold{color:#FFD700}
+.btn{
+  background:#FFD700;
+  color:#000;
+  padding:14px 22px;
+  border-radius:10px;
+  font-weight:bold;
+  border:none;
+  cursor:pointer;
+}
+.btn.outline{
+  background:transparent;
+  border:1px solid #FFD700;
+  color:#FFD700;
+}
 
-    header {
-      background: #020617;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+/* HEADER */
+header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:#0f0f0f;
+  border-bottom:1px solid #222;
+  padding:14px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+header h1{font-size:20px}
 
-    button {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+/* HERO */
+.hero{
+  padding:40px 16px;
+  text-align:center;
+}
+.hero h2{
+  font-size:30px;
+  line-height:1.2;
+  margin-bottom:12px;
+}
+.hero p{
+  font-size:16px;
+  color:#ccc;
+  margin-bottom:24px;
+}
+.hero .actions{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
 
-    .login-btn {
-      background: #22c55e;
-      color: #000;
-    }
+/* TRUST BAR */
+.trust{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  padding:20px 16px;
+}
+.trust div{
+  background:#161616;
+  border:1px solid #222;
+  border-radius:12px;
+  padding:16px;
+  text-align:center;
+}
+.trust h3{font-size:22px}
+.trust p{font-size:12px;color:#aaa}
 
-    .logout-btn {
-      background: #ef4444;
-      color: #fff;
-    }
+/* WHY */
+.section{
+  padding:40px 16px;
+}
+.section h3{
+  font-size:24px;
+  text-align:center;
+  margin-bottom:24px;
+}
+.features{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+.feature{
+  background:#161616;
+  border:1px solid #222;
+  border-radius:14px;
+  padding:16px;
+}
+.feature h4{margin-bottom:6px}
 
-    main {
-      padding: 30px;
-    }
+/* HOW IT WORKS */
+.steps{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+}
+.step{
+  display:flex;
+  gap:12px;
+  background:#161616;
+  border-radius:14px;
+  padding:16px;
+}
+.step span{
+  font-size:22px;
+  color:#FFD700;
+}
 
-    .status {
-      margin-top: 20px;
-      padding: 15px;
-      background: #020617;
-      border-radius: 8px;
-    }
-  </style>
+/* CTA */
+.cta{
+  background:linear-gradient(180deg,#FFD70022,transparent);
+  text-align:center;
+  padding:40px 16px;
+}
+.cta h3{font-size:26px;margin-bottom:12px}
+.cta p{color:#ccc;margin-bottom:20px}
+
+/* FOOTER */
+footer{
+  border-top:1px solid #222;
+  padding:16px;
+  text-align:center;
+  font-size:12px;
+  color:#888;
+}
+
+/* MOBILE ONLY FOCUS */
+@media(min-width:768px){
+  body::before{
+    content:"Mobile Optimized Experience";
+    position:fixed;
+    bottom:10px;
+    right:10px;
+    font-size:10px;
+    color:#555;
+  }
+}
+</style>
 </head>
+
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <h2>🚀 SuperNFT</h2>
-    <div>
-      <button id="loginBtn" class="login-btn">Login</button>
-      <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
+<header>
+  <h1 class="gold">SuperNFT</h1>
+  <a href="login.html" class="btn outline">Login</a>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h2>Earn <span class="gold">Daily Income</span><br>From Premium NFTs</h2>
+  <p>Buy NFTs once. Earn every day. Withdraw anytime.<br>No trading. No stress.</p>
+
+  <div class="actions">
+    <button class="btn" onclick="location.href='signup.html'">Create Free Account</button>
+    <button class="btn outline" onclick="location.href='login.html'">Already Member? Login</button>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust">
+  <div>
+    <h3 class="gold">$12.5+</h3>
+    <p>Daily Earnings</p>
+  </div>
+  <div>
+    <h3 class="gold">30+</h3>
+    <p>Premium NFTs</p>
+  </div>
+  <div>
+    <h3 class="gold">24/7</h3>
+    <p>Live Earnings</p>
+  </div>
+  <div>
+    <h3 class="gold">Instant</h3>
+    <p>Withdrawals</p>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="section">
+  <h3>Why <span class="gold">SuperNFT</span>?</h3>
+  <div class="features">
+    <div class="feature">
+      <h4>💰 Fixed Daily Income</h4>
+      <p>No market risk. Earn daily.</p>
     </div>
-  </header>
-
-  <!-- MAIN -->
-  <main>
-    <h1>Welcome to SuperNFT Dashboard</h1>
-    <p>This page is powered by <b>Appwrite</b>.</p>
-
-    <div class="status" id="statusBox">
-      Checking login status...
+    <div class="feature">
+      <h4>🖼 Premium NFTs</h4>
+      <p>Starter to Legendary.</p>
     </div>
-  </main>
+    <div class="feature">
+      <h4>📈 Live Dashboard</h4>
+      <p>Real-time earnings.</p>
+    </div>
+    <div class="feature">
+      <h4>🔐 Secure System</h4>
+      <p>Login protected access.</p>
+    </div>
+  </div>
+</section>
 
-  <!-- IMPORTANT: JS MUST BE MODULE -->
-  <script type="module" src="./main.js"></script>
+<!-- HOW -->
+<section class="section">
+  <h3>How It Works</h3>
+  <div class="steps">
+    <div class="step"><span>1</span><div>Create free account</div></div>
+    <div class="step"><span>2</span><div>Buy income NFT</div></div>
+    <div class="step"><span>3</span><div>Earn daily automatically</div></div>
+    <div class="step"><span>4</span><div>Withdraw anytime</div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h3>Don’t Miss Daily Income</h3>
+  <p>People are already earning from SuperNFT.<br>Login or create account to continue.</p>
+  <button class="btn" onclick="location.href='signup.html'">Start Earning Now</button>
+</section>
+
+<footer>
+  © 2026 SuperNFT • All Rights Reserved
+</footer>
 
 </body>
 </html>
