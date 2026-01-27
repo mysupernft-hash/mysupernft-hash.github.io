@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Earnings Chart</title>
+<title>Live Earnings Chart</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -12,12 +13,11 @@ body{
   color:#d4af37;
   font-family:Segoe UI;
 }
-
 .chart-container{
   width:95%;
   max-width:600px;
-  height:300px;
-  margin:100px auto;
+  height:320px;
+  margin:90px auto;
   background:#0f172a;
   padding:15px;
   border-radius:12px;
@@ -28,12 +28,14 @@ body{
 
 <body>
 
-<h2 style="text-align:center;">📈 Earnings Chart</h2>
+<h2 style="text-align:center;">📈 Live Earnings</h2>
 
 <div class="chart-container">
   <canvas id="earningsChart"></canvas>
 </div>
 
-<script src="chart.js"></script>
+<!-- Firebase + Chart Logic -->
+<script type="module" src="chart.js"></script>
+
 </body>
 </html>
