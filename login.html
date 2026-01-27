@@ -3,60 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Login</title>
+<title>Login – SuperNFT</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
-.container{background:#111827;padding:30px;border-radius:12px;width:350px;text-align:center;}
-h1{color:#38bdf8;margin-bottom:20px;}input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;}button{padding:10px 20px;background:#38bdf8;color:#0b0f1a;border:none;border-radius:6px;font-weight:bold;width:100%;}button:hover{background:#0ea5e9;cursor:pointer;}p.message{margin-top:10px;font-size:14px;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#0f0f0f;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.card{width:100%;max-width:360px;background:#161616;border:1px solid #222;border-radius:16px;padding:24px;}
+h1{text-align:center;color:#FFD700;margin-bottom:8px;}
+p{text-align:center;color:#aaa;font-size:14px;margin-bottom:24px;}
+input{width:100%;padding:14px;margin-bottom:14px;border-radius:10px;border:1px solid #333;background:#0f0f0f;color:#fff;font-size:14px;}
+input:focus{outline:none;border-color:#FFD700}
+button{width:100%;padding:14px;background:#FFD700;color:#000;border:none;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;}
+button:hover{opacity:.9}
+.links{text-align:center;margin-top:16px;font-size:13px;}
+.links a{color:#FFD700;text-decoration:none}
+.footer{text-align:center;margin-top:20px;font-size:11px;color:#777;}
+#error{color:red;font-size:13px;text-align:center;margin-bottom:10px;}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Login</h1>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
+<div class="card">
+  <h1>SuperNFT</h1>
+  <p>Login to access your earnings</p>
+  <div id="error"></div>
+  <input type="email" id="email" placeholder="Email address">
+  <input type="password" id="password" placeholder="Password">
   <button id="loginBtn">Login</button>
-  <p class="message" id="message"></p>
-  <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+  <div class="links">
+    New user? <a href="signup.html">Create account</a><br><br>
+    <a href="#">Forgot password?</a>
+  </div>
+  <div class="footer">Secure Login • Encrypted System</div>
 </div>
 
 <script type="module">
-import { auth } from "./firebase.js";
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const loginBtn = document.getElementById("loginBtn");
-const message = document.getElementById("message");
+// 🔹 Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-loginBtn.addEventListener("click", async () => {
+document.getElementById("loginBtn").addEventListener("click", async()=>{
   const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+  const password = document.getElementById("password").value.trim();
+  const errorDiv = document.getElementById("error");
+  errorDiv.innerText = "";
 
-  if(!email || !password){
-    message.style.color = "#f87171";
-    message.innerText = "Please fill all fields!";
-    return;
-  }
+  if(!email || !password){errorDiv.innerText="Please fill all fields";return;}
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    if(!user.emailVerified){
-      message.style.color = "#fbbf24";
-      message.innerText = "Please verify your email before logging in!";
-      return;
-    }
-
-    // Redirect to dashboard
-    window.location.href = "dashboard.html";
-
-  } catch (err) {
-    message.style.color = "#f87171";
-    message.innerText = err.message;
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    // 🔹 Successful login → redirect to dashboard
+    window.location.href="dashboard.html";
+  } catch(err){
+    console.error(err);
+    errorDiv.innerText = err.message;
   }
 });
 </script>
-
 </body>
 </html>
