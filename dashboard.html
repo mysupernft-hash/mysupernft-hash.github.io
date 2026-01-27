@@ -3,87 +3,54 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Mega Dashboard</title>
+<title>SuperNFT Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-/* -------------------- General Body -------------------- */
-body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
-a{text-decoration:none;color:#FFD700;}
-/* -------------------- Header -------------------- */
-header{position:sticky;top:0;background:#1a1a1a;color:#FFD700;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:1000;}
-header h1{margin:0;font-size:22px;}
-#walletBalanceTop{font-weight:bold;}
-/* -------------------- Sidebar -------------------- */
-#sidebar{position:fixed;top:0;left:0;width:220px;height:100%;background:#1a1a1a;color:#FFD700;display:flex;flex-direction:column;padding:20px;overflow-y:auto;z-index:1000;}
-#sidebar h2{margin-bottom:10px;}
-#sidebar button{background:#272727;color:#FFD700;border:none;margin:5px 0;padding:10px;border-radius:6px;text-align:left;cursor:pointer;transition:0.2s;}
+body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;display:flex;flex-direction:row;}
+#sidebar{width:200px;padding:20px;position:fixed;top:0;left:0;height:100%;background:#1a1a1a;overflow-y:auto;}
+#sidebar h2{margin-bottom:12px;}
+#sidebar button{display:block;width:100%;background:#272727;color:#FFD700;border:none;padding:10px;margin:6px 0;border-radius:6px;text-align:left;cursor:pointer;}
 #sidebar button:hover{background:#FFD700;color:#000;}
-/* -------------------- Stats Boxes -------------------- */
-.stats{display:flex;flex-wrap:wrap;gap:20px;margin:20px;margin-left:240px;}
-.stat-box{flex:1 1 calc(50% - 20px);background:#1a1a1a;padding:20px;border-radius:12px;text-align:center;cursor:pointer;transition:0.3s;}
+header{margin-left:200px;padding:15px 20px;background:#1a1a1a;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50;}
+header h1{font-size:20px;}
+.stats{display:flex;gap:20px;flex-wrap:wrap;margin:20px 20px 10px 220px;}
+.stat-box{background:#1a1a1a;padding:18px;border-radius:10px;flex:1 1 45%;text-align:center;cursor:pointer;}
 .stat-box:hover{background:#272727;}
-.stat-box h2{margin:0 0 10px;font-size:16px;}
-.stat-box p{margin:0;font-size:20px;font-weight:bold;}
-/* -------------------- Wallet/Deposit/Withdraw Panels -------------------- */
-.wallet-panel{background:#1a1a1a;padding:20px;border-radius:12px;margin-left:240px;margin:10px;display:flex;flex-wrap:wrap;gap:20px;}
-.wallet-panel div{flex:1 1 calc(50% - 20px);background:#272727;padding:15px;border-radius:10px;text-align:center;cursor:pointer;transition:0.3s;}
-.wallet-panel div:hover{background:#FFD700;color:#000;}
-/* -------------------- Referral -------------------- */
-#referralCode{margin-left:240px;margin:10px;font-weight:bold;}
-#referralCode button{margin-left:5px;padding:5px 10px;border:none;border-radius:6px;cursor:pointer;background:#FFD700;color:#000;transition:0.2s;}
-#referralCode button:hover{background:#e0c200;}
-/* -------------------- Layout toggle -------------------- */
-#layoutToggle{margin-left:240px;margin:10px 0;}
-#layoutToggle button{padding:6px 12px;border-radius:6px;border:none;margin-right:5px;cursor:pointer;background:#272727;color:#FFD700;transition:0.2s;}
-#layoutToggle button:hover{background:#FFD700;color:#000;}
-/* -------------------- Categories -------------------- */
-#categories{margin-left:240px;margin:10px;}
-#categories button{background:#272727;color:#FFD700;border:none;margin:0 5px;padding:6px 10px;border-radius:6px;cursor:pointer;}
-#categories button.active{background:#FFD700;color:#000;}
-/* -------------------- NFT Grid/List -------------------- */
-.nft-grid{display:flex;flex-wrap:wrap;gap:20px;margin:20px;margin-left:240px;}
-.nft{background:#1a1a1a;border-radius:12px;padding:10px;flex:1 1 calc(50% - 20px);text-align:center;transition:0.3s;cursor:pointer;}
-.nft.list{flex:1 1 100%;display:flex;align-items:center;gap:20px;}
-.nft img{width:100%;border-radius:8px;}
-.nft.list img{width:200px;height:auto;}
-.nft p{margin:3px 0;font-size:14px;}
-.nft button{background:#FFD700;border:none;padding:8px 12px;border-radius:6px;color:#000;font-weight:bold;transition:0.2s;cursor:pointer;}
+.stat-box h2{font-size:16px;}
+.stat-box p{font-size:22px;font-weight:bold;}
+#referralCode{margin:10px 20px 0 240px;font-size:16px;}
+#referralCode button{margin-left:8px;padding:6px 10px;background:#FFD700;border:none;color:#000;border-radius:6px;cursor:pointer;}
+#layoutToggle,#categories{margin-left:240px;margin-top:15px;}
+#layoutToggle button,#categories button{background:#272727;color:#FFD700;border:none;padding:8px 12px;margin-right:6px;border-radius:6px;cursor:pointer;}
+#categories button.active,#layoutToggle button:hover{background:#FFD700;color:#000;}
+.nft-grid{display:flex;flex-wrap:wrap;gap:18px;margin:12px 20px 30px 240px;}
+.nft{background:#1a1a1a;border-radius:10px;padding:10px;flex:1 1 calc(50% - 20px);text-align:center;transition:0.3s;}
+.nft.list{flex:1 1 100%;display:flex;align-items:center;gap:14px;}
+.nft img{width:100%;border-radius:8px;cursor:pointer;}
+.nft.list img{width:240px;}
+.nft p{font-size:14px;margin:5px 0;}
+.nft button{background:#FFD700;color:#000;border:none;padding:8px 12px;margin-top:5px;border-radius:6px;cursor:pointer;}
 .nft button:hover{background:#e0c200;}
-/* -------------------- Chart -------------------- */
-#earningsChart{background:#1a1a1a;padding:10px;border-radius:12px;margin:20px auto;display:block;max-width:90%;margin-left:240px;}
-/* -------------------- Responsive -------------------- */
-@media(max-width:768px){
-.stats,.nft-grid,#layoutToggle,#referralCode,#categories,.wallet-panel{margin-left:20px;}
-.stat-box{flex:1 1 100%}
-.nft{flex:1 1 100%}
-#sidebar{width:180px;}
-.wallet-panel div{flex:1 1 100%;}
-}
+#earningsChart{background:#1a1a1a;border-radius:10px;margin:10px auto 30px 240px;padding:10px;max-width:90%;}
+@media(max-width:768px){.stat-box{flex:1 1 100%;}.nft{flex:1 1 100%;}body{flex-direction:column;}header{margin-left:0;}.stats,.nft-grid,#layoutToggle,#categories,#referralCode{margin-left:20px;}#sidebar{position:relative;width:100%;height:auto;}}
 </style>
 </head>
 <body>
 
 <header>
-<h1>SuperNFT Mega Dashboard</h1>
+<h1>SuperNFT Dashboard</h1>
 <div id="walletBalanceTop">$0</div>
 </header>
 
 <div id="sidebar">
 <h2>Menu</h2>
 <button onclick="openPage('account')">👤 My Account</button>
-<button onclick="openPage('investments')">📁 My Investments</button>
 <button onclick="openPage('wallet')">💳 Wallet</button>
 <button onclick="openPage('withdraw')">💸 Withdraw</button>
-<button onclick="openPage('live')">💹 Live Earnings</button>
-<button onclick="openPage('admin')">🛡 Admin</button>
-<button onclick="openPage('team')">👥 My Team</button>
-<button onclick="openPage('level')">📊 My Level</button>
-<button onclick="openPage('calculator')">📈 Calculator</button>
-<button onclick="openPage('settings')">⚙️ Settings</button>
+<button onclick="openPage('live')">📈 Live Earnings</button>
 <button onclick="logout()">🔒 Logout</button>
 </div>
 
-<!-- -------------------- Stats -------------------- -->
 <div class="stats">
 <div class="stat-box" id="dailyIncomeBox"><h2>Daily Income</h2><p id="dailyIncome">$0</p></div>
 <div class="stat-box" id="liveEarningsBox"><h2>Live Earnings</h2><p id="liveEarnings">$0</p></div>
@@ -91,23 +58,18 @@ header h1{margin:0;font-size:22px;}
 <div class="stat-box" id="walletBalance"><h2>Wallet Balance</h2><p id="walletBalanceP">$0</p></div>
 </div>
 
-<!-- -------------------- Wallet / Deposit / Withdraw Panels -------------------- -->
-<div class="wallet-panel">
-<div onclick="openPage('deposit')">💰 Deposit Money</div>
-<div onclick="openPage('wallet')">💳 Wallet</div>
-<div onclick="openPage('withdraw')">💸 Withdraw</div>
-<div onclick="openPage('live')">📈 Live Earnings</div>
+<div id="referralCode">
+Referral Code: <span id="myCode">N/A</span>
+<button id="copyBtn">Copy</button>
+<button id="shareBtn">Share</button>
 </div>
 
-<!-- -------------------- Referral -------------------- -->
-<div id="referralCode">Referral: <span id="myCode">N/A</span> <button id="copyBtn">Copy</button> <button id="shareBtn">Share</button></div>
-
-<!-- -------------------- NFT Marketplace -------------------- -->
-<h2 style="margin-left:240px;">NFT Marketplace</h2>
+<h2 style="margin-left:240px;margin-top:15px;">NFT Marketplace</h2>
 <div id="layoutToggle">
 <button onclick="setLayout('grid')">Grid View</button>
 <button onclick="setLayout('list')">List View</button>
 </div>
+
 <div id="categories">
 <button class="active" onclick="filterNFT('all')">All</button>
 <button onclick="filterNFT('starter')">Starter</button>
@@ -115,91 +77,110 @@ header h1{margin:0;font-size:22px;}
 <button onclick="filterNFT('elite')">Elite</button>
 <button onclick="filterNFT('legendary')">Legendary</button>
 </div>
+
 <div class="nft-grid" id="nfts"></div>
 
-<!-- -------------------- Earnings Chart -------------------- -->
 <h2 style="margin-left:240px;">Earnings Chart</h2>
 <canvas id="earningsChart" width="400" height="200"></canvas>
 
 <script type="module">
+// Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore,doc,getDoc,updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* Firebase Config */
-const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952",storageBucket:"supernft-5b952.appspot.com",messagingSenderId:"278097730700",appId:"1:278097730700:web:6ba9892334456fd8512fa9"};
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const firebaseConfig = { apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952",storageBucket:"supernft-5b952.appspot.com",messagingSenderId:"278097730700",appId:"1:278097730700:web:6ba9892334456fd8512fa9" };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-/* NFT Array */
+// NFT LIST
 const NFTS=[
-{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
-{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},
-{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},
-{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},
-{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},
-{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},
-{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},
-{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},
-{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},
-{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},
-{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},
-{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},
-{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},
-{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
-{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
+{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
+{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
+{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},
+{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},
+{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},
+{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},
+{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},
+{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},
+{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},
+{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},
+{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},
+{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},
+{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},
+{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},
+{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},
+{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},
+{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},
+{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},
+{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},
+{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},
+{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},
+{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},
+{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},
+{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},
+{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},
+{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},
+{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},
+{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
+{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
+{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 ];
 
-let layout="grid";
+// RENDER
 const box=document.getElementById("nfts");
-function render(list){box.innerHTML="";list.forEach(n=>{const cls=layout==="list"?"nft list":"nft";box.innerHTML+=`<div class="${cls}" onclick="buy(${n.price})"><img src="${n.img}"><div><p>Price $${n.price}</p><p>Daily Income $${n.p}</p><p>Validity 365 Days</p><button>Buy NFT</button></div></div>`;});}
-function setLayout(l){layout=l;render(NFTS);}
+function render(list){
+ box.innerHTML="";
+ list.forEach(n=>{
+  box.innerHTML+=`<div class="nft"><img src="${n.img}" onclick="buy(${n.price})"><p>Price $${n.price}</p><p>Daily Income $${n.p}</p><p>Validity 365 Days</p><button onclick="buy(${n.price})">Buy NFT</button></div>`;
+ });
+}
+render(NFTS);
+function filterNFT(c){
+ document.querySelectorAll("#categories button").forEach(b=>b.classList.remove("active"));
+ event.target.classList.add("active");
+ if(c==="all") render(NFTS); else render(NFTS.filter(n=>n.cat===c));
+}
+function setLayout(l){document.querySelectorAll(".nft").forEach(n=>{if(l==="list"){n.classList.add("list");}else{n.classList.remove("list");}});}
 function buy(p){localStorage.setItem("price",p);location.href="nft-details.html";}
-function filterNFT(cat){document.querySelectorAll("#categories button").forEach(b=>b.classList.remove("active"));event.target.classList.add("active");if(cat==="all"){render(NFTS);}else{render(NFTS.filter(n=>n.cat===cat));}}
 
-/* Stats Boxes Clickable */
+// Stats Click
 document.getElementById("dailyIncomeBox").addEventListener("click",()=>window.location.href="daily.html");
 document.getElementById("liveEarningsBox").addEventListener("click",()=>window.location.href="live-earnings.html");
 document.getElementById("depositMoney").addEventListener("click",()=>window.location.href="deposit.html");
 document.getElementById("walletBalance").addEventListener("click",()=>window.location.href="wallet.html");
 
-/* Firebase Live Earnings + Referral */
-onAuthStateChanged(auth,async user=>{
-if(!user)window.location.replace("login.html");
-const snap=await getDoc(doc(db,"users",user.uid));
-if(snap.exists()){
-const data=snap.data();
-document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
-document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
-document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
-document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
-document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
-document.getElementById("myCode").innerText=data.myReferralCode||"N/A";
-}
-setInterval(async ()=>{
-const snap2=await getDoc(doc(db,"users",user.uid));
-if(!snap2.exists())return;
-let live=0;
-(snap2.data().nfts||[]).forEach(nft=>{const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};live+=map[nft]||0;});
-await updateDoc(doc(db,"users",user.uid),{liveEarnings:live});
-document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;
-},5000);
+// Firebase Auth
+onAuthStateChanged(auth, async user=>{
+ if(!user) window.location.replace("login.html");
+ const snap = await getDoc(doc(db,"users",user.uid));
+ if(snap.exists()){
+  const data=snap.data();
+  document.getElementById("myCode").innerText=data.myReferralCode||"N/A";
+  document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
+  document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
+  document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
+  document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
+  document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
+ }
+ setInterval(async ()=>{
+  const snap2 = await getDoc(doc(db,"users",user.uid));
+  if(!snap2.exists()) return;
+  let live=0; (snap2.data().nfts||[]).forEach(nft=>{const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10}; live+=map[nft]||0;});
+  await updateDoc(doc(db,"users",user.uid),{liveEarnings:live});
+  document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;
+ },5000);
 });
 
-/* Chart */
+// Logout & referral
+function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
+document.getElementById("copyBtn").addEventListener("click",()=>{navigator.clipboard.writeText(document.getElementById("myCode").innerText);alert("Referral copied ✅");});
+document.getElementById("shareBtn").addEventListener("click",()=>{const code=document.getElementById("myCode").innerText;const text=`Join SuperNFT: ${code}`;window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)} ${encodeURIComponent(window.location.href)}`,"_blank");});
+
+// Chart
 const ctx=document.getElementById("earningsChart");
-new Chart(ctx,{type:"line",data:{labels:["Day1","Day2","Day3","Day4","Day5","Day6","Day7"],datasets:[{label:"Earnings",data:[2,5,8,12,18,25,32],borderColor:"#FFD700",backgroundColor:"rgba(212,175,55,0.2)",fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-
-/* Sidebar Functions */
-function openPage(page){switch(page){case'account':window.location.href='account.html';break;case'investments':window.location.href='my-investments.html';break;case'wallet':window.location.href='wallet.html';break;case'withdraw':window.location.href='withdraw.html';break;case'live':window.location.href='live-earnings.html';break;case'admin':window.location.href='admin.html';break;case'team':window.location.href='team.html';break;case'level':window.location.href='level.html';break;case'calculator':window.location.href='calculator.html';break;case'settings':window.location.href='settings.html';break;}}
-function logout(){signOut(auth).then(()=>window.location.href='login.html');}
-
-/* Referral copy/share */
-document.getElementById("copyBtn").addEventListener("click",()=>{navigator.clipboard.writeText(document.getElementById("myCode").innerText);alert("Referral code copied ✅");});
-document.getElementById("shareBtn").addEventListener("click",()=>{const code=document.getElementById("myCode").innerText;const text=`Join SuperNFT with my referral code: ${code}`;const url=encodeURIComponent(window.location.href);window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)} ${url}`,"_blank");});
-
-render(NFTS);
+const chart=new Chart(ctx,{type:"line",data:{labels:["Day1","Day2","Day3","Day4","Day5","Day6","Day7"],datasets:[{label:"Earnings",data:[2,5,8,12,18,25,32],borderColor:"#FFD700",backgroundColor:"rgba(212,175,55,0.2)",fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
 </script>
 </body>
 </html>
