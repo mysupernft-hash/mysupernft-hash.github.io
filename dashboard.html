@@ -18,25 +18,42 @@ body{
   top:0; left:0; right:0;
   height:60px;
   background:linear-gradient(180deg,#0f0f16,#07070b);
-  border-bottom:1px solid rgba(212,175,55,.25);
   display:flex;
   align-items:center;
-  justify-content:space-between; /* Left: title, Right: buttons */
+  justify-content:space-between;
   padding:0 20px;
   z-index:1000;
+  border-bottom:1px solid rgba(212,175,55,.25);
   box-shadow:0 0 15px rgba(212,175,55,.2);
 }
-.header h1{
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.header-left h1{
   color:#d4af37;
   font-size:22px;
   font-weight:700;
   text-shadow:0 0 12px rgba(212,175,55,.9);
 }
+
+.menu-btn{
+  background:none;
+  border:none;
+  font-size:24px;
+  color:#d4af37;
+  cursor:pointer;
+}
+
 .header-right{
   display:flex;
   align-items:center;
   gap:15px;
 }
+
 .claim-btn{
   background:linear-gradient(90deg,#d4af37,#f5d76e);
   border:none;
@@ -50,6 +67,7 @@ body{
 .claim-btn:hover{
   background:linear-gradient(90deg,#f5d76e,#d4af37);
 }
+
 .wallet-balance{
   color:#d4af37;
   font-weight:600;
@@ -61,13 +79,14 @@ body{
   width:220px;
   height:100vh;
   position:fixed;
-  top:0; left:0;
+  top:0; left:-220px;
   background:#0f0f15;
   padding-top:70px;
   border-right:1px solid rgba(212,175,55,.25);
   transition:0.3s;
   z-index:999;
 }
+.sidebar.active{left:0;}
 .sidebar button{
   width:100%;
   background:none;
@@ -88,8 +107,9 @@ body{
 
 /* ===== Main ===== */
 .main{
-  margin-left:220px;
+  margin-left:0;
   padding:90px 20px 120px;
+  transition:margin-left 0.3s;
 }
 
 /* ===== Stats 2x2 ===== */
@@ -243,7 +263,10 @@ body{
 
 <!-- HEADER -->
 <div class="header">
-  <h1>SuperNFT Dashboard</h1>
+  <div class="header-left">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <h1>SuperNFT Dashboard</h1>
+  </div>
   <div class="header-right">
     <button class="claim-btn" onclick="openPage('claim.html')">🎁 Claim</button>
     <span class="wallet-balance">💳 $1200</span>
@@ -364,7 +387,7 @@ function filterNFT(category){
   else renderNFTs(NFT_MARKETPLACE.filter(n=>n.category===category));
 }
 
-// ===== Sidebar & Navigation =====
+// ===== Sidebar Toggle & Navigation =====
 function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('active');}
 function openPage(url){window.location.href=url;}
 function logout(){alert('Logout clicked!');}
