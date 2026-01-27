@@ -3,78 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Signup</title>
+<title>Sign Up – SuperNFT</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;}
-.container{background:#111827;padding:30px;border-radius:12px;width:350px;text-align:center;}
-h1{color:#38bdf8;margin-bottom:20px;}input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;}button{padding:10px 20px;background:#38bdf8;color:#0b0f1a;border:none;border-radius:6px;font-weight:bold;width:100%;}button:hover{background:#0ea5e9;cursor:pointer;}p.message{margin-top:10px;font-size:14px;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{background:#0f0f0f;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.card{width:100%;max-width:360px;background:#161616;border:1px solid #222;border-radius:16px;padding:24px;}
+h1{text-align:center;color:#FFD700;margin-bottom:8px;}
+p{text-align:center;color:#aaa;font-size:14px;margin-bottom:24px;}
+input{width:100%;padding:14px;margin-bottom:14px;border-radius:10px;border:1px solid #333;background:#0f0f0f;color:#fff;font-size:14px;}
+input:focus{outline:none;border-color:#FFD700}
+button{width:100%;padding:14px;background:#FFD700;color:#000;border:none;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;}
+button:hover{opacity:.9}
+.links{text-align:center;margin-top:16px;font-size:13px;}
+.links a{color:#FFD700;text-decoration:none}
+.footer{text-align:center;margin-top:20px;font-size:11px;color:#777;}
+#error{color:red;font-size:13px;text-align:center;margin-bottom:10px;}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Sign Up</h1>
-  <input type="text" id="name" placeholder="Full Name" required>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button id="signupBtn">Sign Up</button>
-  <p class="message" id="message"></p>
-  <p>Already have an account? <a href="login.html">Login</a></p>
+<div class="card">
+  <h1>Join SuperNFT</h1>
+  <p>Create account & start earning daily</p>
+  <div id="error"></div>
+  <input type="text" id="name" placeholder="Full Name">
+  <input type="email" id="email" placeholder="Email address">
+  <input type="text" id="referral" placeholder="Referral Code (optional)">
+  <input type="password" id="password" placeholder="Password">
+  <button id="signupBtn">Create Account</button>
+  <div class="links">Already have account? <a href="login.html">Login</a></div>
+  <div class="footer">By signing up, you agree to our Terms</div>
 </div>
 
 <script type="module">
-import { auth, db } from "./firebase.js";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const signupBtn = document.getElementById("signupBtn");
-const message = document.getElementById("message");
+// 🔹 Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-signupBtn.addEventListener("click", async () => {
+document.getElementById("signupBtn").addEventListener("click", async()=>{
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
+  const password = document.getElementById("password").value.trim();
+  const referral = document.getElementById("referral").value.trim();
+  const errorDiv = document.getElementById("error");
+  errorDiv.innerText = "";
 
-  if(!name || !email || !password){
-    message.innerText = "Please fill all fields!";
-    return;
-  }
+  if(!name || !email || !password){errorDiv.innerText="Please fill all required fields";return;}
 
-  try {
-    // Create Firebase user
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+  try{
+    const userCredential = await createUserWithEmailAndPassword(auth,email,password);
+    const uid = userCredential.user.uid;
 
-    // Send verification email
-    await sendEmailVerification(user);
-
-    // Save user data to Firestore
-    await setDoc(doc(db, "users", user.uid), {
+    // 🔹 Save additional data to Firestore
+    await setDoc(doc(db,"users",uid),{
       name,
       email,
-      role: "user",
-      walletBalance: 0,
-      dailyIncome: 0,
-      liveEarnings: 0,
-      totalDeposit: 0,
-      myReferralCode: Math.random().toString(36).substring(2,8).toUpperCase(),
-      createdAt: serverTimestamp()
+      referralCode:referral || "N/A",
+      walletBalance:0,
+      dailyIncome:0,
+      liveEarnings:0,
+      totalDeposit:0,
+      nfts:[]
     });
 
-    message.style.color = "#10b981";
-    message.innerText = "Signup successful! Please verify your email before logging in.";
-
-    // Clear fields
-    document.getElementById("name").value = "";
-    document.getElementById("email").value = "";
-    document.getElementById("password").value = "";
-
-  } catch (err) {
-    message.style.color = "#f87171";
-    message.innerText = err.message;
+    window.location.href="dashboard.html";
+  } catch(err){
+    console.error(err);
+    errorDiv.innerText = err.message;
   }
 });
 </script>
-
 </body>
 </html>
