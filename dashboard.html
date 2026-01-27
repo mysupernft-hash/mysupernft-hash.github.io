@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
 <style>
+/* ===== BODY ===== */
 body{
   margin:0;
   font-family:'Segoe UI',sans-serif;
@@ -61,7 +62,7 @@ body{
   font-size:16px;
 }
 
-/* ===== Sidebar ===== */
+/* ===== SIDEBAR ===== */
 .sidebar{
   width:220px;
   height:100vh;
@@ -92,14 +93,14 @@ body{
   color:#000;
 }
 
-/* ===== Main ===== */
+/* ===== MAIN ===== */
 .main{
   margin-left:0;
   padding:90px 20px 120px;
   transition:margin-left 0.3s;
 }
 
-/* ===== Stats 2x2 ===== */
+/* ===== STATS 2x2 ===== */
 .stats{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -128,7 +129,7 @@ body{
   margin:0;
 }
 
-/* ===== Categories ===== */
+/* ===== CATEGORIES ===== */
 .categories{
   display:flex;
   gap:10px;
@@ -150,7 +151,7 @@ body{
   color:#000;
 }
 
-/* ===== NFT Grid ===== */
+/* ===== NFT GRID ===== */
 .nft-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
@@ -204,7 +205,7 @@ body{
   background:linear-gradient(90deg,#f5d76e,#d4af37);
 }
 
-/* ===== Footer ===== */
+/* ===== FOOTER ===== */
 .footer{
   width:100%;
   background:#13131a;
@@ -233,14 +234,13 @@ body{
   color:#000;
 }
 
-/* ===== Responsive ===== */
+/* ===== RESPONSIVE ===== */
 @media(max-width:768px){
   .sidebar{left:-220px;position:fixed;}
   .sidebar.active{left:0;}
   .main{margin-left:0;padding-top:90px;padding-bottom:140px;}
   .stats{grid-template-columns:1fr;}
   .nft-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
-  .header{flex-wrap:wrap;justify-content:space-between;}
 }
 </style>
 </head>
@@ -253,7 +253,7 @@ body{
     <h1>SuperNFT Dashboard</h1>
   </div>
   <div class="header-right">
-    <span class="wallet-balance">💳 $1200</span>
+    <span class="wallet-balance" id="walletBalanceTop">💳 $1200</span>
   </div>
 </div>
 
@@ -273,15 +273,15 @@ body{
 
 <!-- MAIN -->
 <div class="main">
-  <!-- Stats -->
+  <!-- STATS 2x2 -->
   <div class="stats">
     <div class="stat" id="dailyIncomeBox"><h3>Daily Income</h3><p id="dailyIncome">$455.30</p></div>
     <div class="stat" id="liveEarningsBox"><h3>Live Earnings</h3><p id="liveEarnings">$364.24</p></div>
-    <div class="stat" id="depositMoney"><h3>Deposit Money</h3><p>$5000</p></div>
-    <div class="stat" id="walletBalance"><h3>Wallet Balance</h3><p>$1200</p></div>
+    <div class="stat" id="depositMoneyBox"><h3>Deposit Money</h3><p id="depositMoney">$5000</p></div>
+    <div class="stat" id="walletBalanceBox"><h3>Wallet Balance</h3><p id="walletBalance">$1200</p></div>
   </div>
 
-  <!-- Categories -->
+  <!-- CATEGORIES -->
   <div class="categories">
     <button class="active" onclick="filterNFT('all')">All</button>
     <button onclick="filterNFT('starter')">Starter</button>
@@ -365,7 +365,6 @@ function filterNFT(c){
  if(c==="all") render(NFTS);
  else render(NFTS.filter(n=>n.cat===c));
 }
-
 function buy(p){
  localStorage.setItem("price",p);
  location.href="nft-details.html";
@@ -374,8 +373,8 @@ function buy(p){
 // ===== STATS CLICKABLE =====
 document.getElementById("dailyIncomeBox").addEventListener("click",()=> window.location.href="daily.html");
 document.getElementById("liveEarningsBox").addEventListener("click",()=> window.location.href="live-earnings.html");
-document.getElementById("depositMoney").addEventListener("click",()=> window.location.href="deposit.html");
-document.getElementById("walletBalance").addEventListener("click",()=> window.location.href="wallet.html");
+document.getElementById("depositMoneyBox").addEventListener("click",()=> window.location.href="deposit.html");
+document.getElementById("walletBalanceBox").addEventListener("click",()=> window.location.href="wallet.html");
 
 // ===== SIDEBAR TOGGLE =====
 function toggleSidebar(){document.querySelector('.sidebar').classList.toggle('active');}
