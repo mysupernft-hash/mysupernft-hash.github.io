@@ -28,7 +28,7 @@ button:hover{opacity:.9}
   <div id="error"></div>
   <input type="text" id="name" placeholder="Full Name">
   <input type="email" id="email" placeholder="Email address">
-  <input type="text" id="referral" placeholder="Referral Code (optional)">
+  <input type="text" id="referral" placeholder="Referral Code (mandatory)">
   <input type="password" id="password" placeholder="Password">
   <button id="signupBtn">Create Account</button>
   <div class="links">Already have account? <a href="login.html">Login</a></div>
@@ -61,17 +61,21 @@ document.getElementById("signupBtn").addEventListener("click", async()=>{
   const errorDiv = document.getElementById("error");
   errorDiv.innerText = "";
 
-  if(!name || !email || !password){errorDiv.innerText="Please fill all required fields";return;}
+  // 🔹 Validate all fields
+  if(!name || !email || !password || !referral){
+    errorDiv.innerText="All fields including Referral Code are mandatory!";
+    return;
+  }
 
   try{
     const userCredential = await createUserWithEmailAndPassword(auth,email,password);
     const uid = userCredential.user.uid;
 
-    // 🔹 Save additional data to Firestore
+    // 🔹 Save additional user info in Firestore
     await setDoc(doc(db,"users",uid),{
       name,
       email,
-      referralCode:referral || "N/A",
+      referralCode:referral,
       walletBalance:0,
       dailyIncome:0,
       liveEarnings:0,
