@@ -39,8 +39,8 @@ header h1{margin:0;font-size:22px;}
 /* 🔹 Chart */
 #earningsChart{background:#1a1a1a;padding:10px;border-radius:12px;margin:20px auto;display:block;width:95%;}
 /* 🔹 Footer */
-footer{background:#1a1a1a;padding:15px;margin-top:20px;border-top:1px solid #272727;display:grid;grid-template-columns:repeat(5,1fr);text-align:center;font-size:14px;color:#FFD700;}
-footer div{padding:5px;}
+footer{position:sticky;bottom:0;background:#1a1a1a;padding:15px;margin-top:20px;border-top:1px solid #272727;display:grid;grid-template-columns:repeat(5,1fr);text-align:center;font-size:14px;color:#FFD700;}
+footer div{padding:5px;cursor:pointer;}
 /* 🔹 Responsive */
 @media(max-width:480px){.stats{grid-template-columns:repeat(2,1fr)} .nft-grid{grid-template-columns:repeat(2,1fr)} #sidebar{width:200px;}}
 </style>
@@ -115,7 +115,19 @@ const NFTS=[
 
 /* 🔹 Render NFTs */
 const box=document.getElementById("nfts");
-function render(list){box.innerHTML="";list.forEach(n=>{box.innerHTML+=`<div class="nft"><img src="${n.img}" onclick="buy(${n.price})"><p>Price $${n.price}</p><p>Daily Income $${n.p}</p><p>Validity 365 Days</p><button onclick="buy(${n.price})">Buy NFT</button></div>`});}
+function render(list){
+  box.innerHTML="";
+  list.forEach(n=>{
+    box.innerHTML+=`
+    <div class="nft">
+      <img src="${n.img}" onclick="buy(${n.price})">
+      <p>Price $${n.price}</p>
+      <p>Daily Income $${n.p}</p>
+      <p>Validity 365 Days</p>
+      <button onclick="buy(${n.price})">Buy NFT</button>
+    </div>`;
+  });
+}
 render(NFTS);
 function buy(p){localStorage.setItem("price",p);location.href="nft-details.html";}
 
@@ -128,16 +140,41 @@ document.getElementById("walletBalanceBox").addEventListener("click",()=> window
 /* 🔹 Sidebar Toggle */
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
-document.querySelector(".menu-toggle").addEventListener("click",()=>{sidebar.classList.add("active");overlay.classList.add("active");});
-overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay.classList.remove("active");});
+document.querySelector(".menu-toggle").addEventListener("click",()=>{
+  sidebar.classList.add("active");overlay.classList.add("active");
+});
+overlay.addEventListener("click",()=>{
+  sidebar.classList.remove("active");overlay.classList.remove("active");
+});
 
 /* 🔹 Firebase Login + Live Earnings */
-onAuthStateChanged(auth,async user=>{if(!user) window.location.replace("login.html");const snap=await getDoc(doc(db,"users",user.uid));if(snap.exists()){const data=snap.data();document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;}
-setInterval(async()=>{const snap2=await getDoc(doc(db,"users",user.uid));if(!snap2.exists()) return;let live=0;(snap2.data().nfts||[]).forEach(nft=>{const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};live+=map[nft]||0;});await updateDoc(doc(db,"users",user.uid),{liveEarnings:live});document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;},5000);});
+onAuthStateChanged(auth,async user=>{
+  if(!user) window.location.replace("login.html");
+  const snap=await getDoc(doc(db,"users",user.uid));
+  if(snap.exists()){
+    const data=snap.data();
+    document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
+    document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
+    document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
+    document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
+    document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
+  }
+  setInterval(async()=>{
+    const snap2=await getDoc(doc(db,"users",user.uid));
+    if(!snap2.exists()) return;
+    let live=0;
+    (snap2.data().nfts||[]).forEach(nft=>{
+      const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};
+      live+=map[nft]||0;
+    });
+    await updateDoc(doc(db,"users",user.uid),{liveEarnings:live});
+    document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;
+  },5000);
+});
 
-/* 🔹 Logout, Copy/Share */
+/* 🔹 Logout, Open Page */
 function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
-function openPage(page){alert("Open "+page+" page (implement separately)");}
+function openPage(page){alert("Open "+page+" page (implement separately)";}
 </script>
 </body>
 </html>
