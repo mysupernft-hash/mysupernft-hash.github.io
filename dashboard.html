@@ -130,21 +130,21 @@ overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay
 function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
 
 /* OpenPage */
-window.openPage=function(page){
+window.openPage = function(page){
   switch(page){
     case "account": window.location.href="account.html"; break;
     case "investments": window.location.href="my-investments.html"; break;
     case "wallet": window.location.href="wallet.html"; break;
+    case "deposit": window.location.href="deposit.html"; break;
     case "withdraw": window.location.href="withdraw.html"; break;
     case "live": window.location.href="live-earnings.html"; break;
-    case "deposit": window.location.href="deposit.html"; break;
     case "team": window.location.href="team.html"; break;
     case "level": window.location.href="level.html"; break;
     case "calculator": window.location.href="calculator.html"; break;
     case "settings": window.location.href="settings.html"; break;
     default: alert("Page not found");
   }
-}
+};
 
 /* Stats Boxes Click */
 // ✅ Stats Boxes Click Navigation (FIXED)
