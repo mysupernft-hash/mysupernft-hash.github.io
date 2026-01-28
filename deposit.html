@@ -28,40 +28,37 @@ header{
   background:#1a1a1a;
   border-radius:12px;
   padding:20px;
-  margin-bottom:15px;
+  margin-bottom:20px;
+  text-align:center;
 }
 .card h2{
-  margin:0 0 10px;
+  margin:0 0 12px;
   font-size:18px;
 }
-.amount{
-  font-size:28px;
-  font-weight:bold;
+.qr-img{
+  width:200px;
+  height:200px;
+  margin:10px auto;
+  border-radius:12px;
+  border:2px solid #FFD700;
 }
-input{
-  width:100%;
+.wallet-address{
+  background:#272727;
   padding:12px;
-  margin-top:10px;
   border-radius:8px;
-  border:none;
   font-size:16px;
+  margin-top:10px;
+  word-break: break-all;
 }
-button{
-  width:100%;
-  margin-top:15px;
-  padding:12px;
+.copy-btn{
+  margin-top:10px;
+  padding:10px 15px;
   background:#FFD700;
   color:#000;
   border:none;
   border-radius:8px;
-  font-size:16px;
   font-weight:bold;
   cursor:pointer;
-}
-.note{
-  font-size:13px;
-  opacity:0.8;
-  margin-top:10px;
 }
 .back-btn{
   display:block;
@@ -73,6 +70,11 @@ button{
   border-radius:8px;
   text-decoration:none;
 }
+.note{
+  font-size:13px;
+  opacity:0.8;
+  margin-top:10px;
+}
 </style>
 </head>
 
@@ -83,70 +85,24 @@ button{
 <div class="container">
 
   <div class="card">
-    <h2>Total Deposit</h2>
-    <div class="amount" id="totalDeposit">$0</div>
-  </div>
-
-  <div class="card">
-    <h2>Add Deposit</h2>
-    <input type="number" id="depositAmount" placeholder="Enter amount">
-    <button onclick="addDeposit()">Deposit Now</button>
-    <div class="note">This is demo deposit (admin approval can be added later)</div>
+    <h2>Send to Binance Wallet</h2>
+    <img src="images/binance-qr.png" alt="Binance QR" class="qr-img">
+    <div class="wallet-address" id="walletAddress">bc1qexampleaddresshere1234567890</div>
+    <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
+    <div class="note">Scan QR or copy wallet address</div>
   </div>
 
   <a href="dashboard.html" class="back-btn">⬅ Back to Dashboard</a>
-
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let currentUser;
-let totalDeposit = 0;
-
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    window.location.replace("login.html");
-    return;
-  }
-  currentUser = user;
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(snap.exists()){
-    totalDeposit = snap.data().totalDeposit || 0;
-    document.getElementById("totalDeposit").innerText = "$" + totalDeposit;
-  }
-});
-
-window.addDeposit = async function(){
-  const amount = Number(document.getElementById("depositAmount").value);
-  if(amount <= 0){
-    alert("Enter valid amount");
-    return;
-  }
-  totalDeposit += amount;
-
-  await updateDoc(doc(db,"users",currentUser.uid),{
-    totalDeposit: totalDeposit
+<script>
+function copyAddress(){
+  const address = document.getElementById("walletAddress").innerText;
+  navigator.clipboard.writeText(address).then(()=>{
+    alert("Wallet address copied to clipboard ✅");
+  }).catch(err=>{
+    alert("Failed to copy. Try manually.");
   });
-
-  document.getElementById("totalDeposit").innerText = "$" + totalDeposit;
-  document.getElementById("depositAmount").value = "";
-  alert("Deposit successful (demo)");
 }
 </script>
 
