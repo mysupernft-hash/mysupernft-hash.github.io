@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mining | SuperNFT</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
+}
+header{
+  position:sticky;
+  top:0;
+  background:#1a1a1a;
+  padding:12px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+.container{
+  padding:20px;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  margin-bottom:20px;
+}
+.stat-box{
+  background:#1a1a1a;
+  border-radius:12px;
+  padding:15px;
+  text-align:center;
+}
+.stat-box h2{
+  margin:0 0 10px;
+  font-size:14px;
+}
+.stat-box p{
+  margin:0;
+  font-size:18px;
+  font-weight:bold;
+}
+.mining-animation{
+  text-align:center;
+  margin-bottom:20px;
+}
+.mining-gif{
+  width:150px;
+  height:150px;
+  object-fit:contain;
+  border:2px solid #FFD700;
+  border-radius:12px;
+}
+.chart-container{
+  background:#1a1a1a;
+  padding:10px;
+  border-radius:12px;
+}
+.back{
+  display:block;
+  margin-top:20px;
+  padding:12px;
+  background:#272727;
+  color:#FFD700;
+  text-align:center;
+  border-radius:8px;
+  text-decoration:none;
+}
+@media(max-width:480px){
+  .stats{grid-template-columns:1fr;}
+  .mining-gif{width:120px;height:120px;}
+}
+</style>
+</head>
+<body>
+
+<header>Mining Dashboard</header>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat-box">
+      <h2>Total Daily Income</h2>
+      <p id="dailyIncome">$0</p>
+    </div>
+    <div class="stat-box">
+      <h2>Live Earnings</h2>
+      <p id="liveEarnings">$0</p>
+    </div>
+  </div>
+
+  <!-- Mining GIF -->
+  <div class="mining-animation">
+    <img src="images/mining.gif" alt="Mining in progress" class="mining-gif">
+  </div>
+
+  <!-- Earnings Chart -->
+  <div class="chart-container">
+    <canvas id="miningChart" width="400" height="200"></canvas>
+  </div>
+
+  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* Firebase config */
+const firebaseConfig = {
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952",
+  storageBucket:"supernft-5b952.appspot.com",
+  messagingSenderId:"278097730700",
+  appId:"1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let userId;
+let liveEarnings = 0;
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user) window.location.replace("login.html");
+  userId = user.uid;
+  const snap = await getDoc(doc(db,"users",userId));
+  if(snap.exists()){
+    const data = snap.data();
+    document.getElementById("dailyIncome").innerText = "$"+(data.dailyIncome||0);
+  }
+  updateLiveEarnings();
+});
+
+/* Live earnings calculation (every 1 sec) */
+async function updateLiveEarnings(){
+  const snap = await getDoc(doc(db,"users",userId));
+  if(!snap.exists()) return;
+  const nfts = snap.data().nfts || [];
+  let live = 0;
+  const nftMap = {"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};
+  nfts.forEach(nft=>{
+    live += nftMap[nft]||0;
+  });
+  liveEarnings = live;
+  document.getElementById("liveEarnings").innerText = "$"+liveEarnings.toFixed(2);
+
+  // update Firestore liveEarnings field
+  await updateDoc(doc(db,"users",userId),{liveEarnings:liveEarnings});
+
+  // update chart
+  updateChart(liveEarnings);
+
+  setTimeout(updateLiveEarnings,1000);
+}
+
+/* Chart.js setup */
+const ctx = document.getElementById('miningChart').getContext('2d');
+const chartData = {
+  labels: ['6 Days Ago','5 Days Ago','4 Days Ago','3 Days Ago','2 Days Ago','Yesterday','Today'],
+  datasets: [{
+    label: 'Earnings ($)',
+    data: [0,0,0,0,0,0,0],
+    borderColor:'#FFD700',
+    backgroundColor:'rgba(255,215,0,0.2)',
+    tension:0.3
+  }]
+};
+const miningChart = new Chart(ctx, {
+  type:'line',
+  data: chartData,
+  options:{
+    responsive:true,
+    plugins:{
+      legend:{display:true,labels:{color:'#FFD700'}}
+    },
+    scales:{
+      x:{ticks:{color:'#FFD700'}},
+      y:{ticks:{color:'#FFD700'}}
+    }
+  }
+});
+
+/* Update chart live */
+function updateChart(live){
+  const data = miningChart.data.datasets[0].data;
+  data.shift(); // remove oldest
+  data.push(live); // add current live
+  miningChart.update();
+}
+</script>
+
+</body>
+</html>
