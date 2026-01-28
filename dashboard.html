@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Dashboard</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;overflow-x:hidden;}
 a{text-decoration:none;color:#FFD700;}
@@ -111,115 +110,82 @@ footer div:hover{color:#e0c200;}
   <div>💹 Live Earnings</div>
 </footer>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952",storageBucket:"supernft-5b952.appspot.com",messagingSenderId:"278097730700",appId:"1:278097730700:web:6ba9892334456fd8512fa9"};
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-/* 🔹 NFT Array (30 images) */
+<script>
+// ✅ NFT Data
 const NFTS=[
-{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}];
+{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
+{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},
+{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},
+{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},
+{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},
+{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},
+{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},
+{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},
+{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},
+{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},
+{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},
+{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},
+{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},
+{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
+{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
+];
 
+// ✅ Render NFTs
 const box=document.getElementById("nfts");
 function render(list){
   box.innerHTML="";
   list.forEach(n=>{
-    box.innerHTML+=`<div class="nft">
-      <img src="${n.img}" onclick="buy('${n.price}')">
+    const div=document.createElement("div");
+    div.className="nft";
+    div.innerHTML=`
+      <img src="${n.img}">
       <p>Category: ${n.cat}</p>
       <p>Price $${n.price}</p>
       <p>Daily Income $${n.p}</p>
       <p>Validity 365 Days</p>
-      <button onclick="buy('${n.price}')">Buy NFT</button>
-    </div>`;
+      <button>Buy NFT</button>
+    `;
+    // Click events properly attached
+    div.querySelector("img").addEventListener("click",()=>buy(n));
+    div.querySelector("button").addEventListener("click",()=>buy(n));
+    box.appendChild(div);
   });
 }
 render(NFTS);
 
-function filterNFT(cat, btn){
+function buy(nft){
+  localStorage.setItem("selectedNFT",JSON.stringify(nft));
+  location.href="nft-details.html";
+}
+
+// Filter
+function filterNFT(cat,btn){
   document.querySelectorAll(".category-filters button").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   if(cat==="all") render(NFTS);
   else render(NFTS.filter(n=>n.cat===cat));
 }
 
-function buy(p){
-  const nft = NFTS.find(n=>n.price==p);
-  localStorage.setItem("selectedNFT",JSON.stringify(nft));
-  location.href="nft-details.html";
-}
-
-/* Stats Boxes */
+// Stats Boxes click
 document.getElementById("dailyIncomeBox").addEventListener("click",()=> window.location.href="daily.html");
 document.getElementById("liveEarningsBox").addEventListener("click",()=> window.location.href="live-earnings.html");
 document.getElementById("depositMoney").addEventListener("click",()=> window.location.href="deposit.html");
 document.getElementById("walletBalanceBox").addEventListener("click",()=> window.location.href="wallet.html");
 
-/* Sidebar Toggle */
+// Sidebar toggle
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
-document.querySelector(".menu-toggle").addEventListener("click",()=>{sidebar.classList.add("active");overlay.classList.add("active");});
-overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay.classList.remove("active");});
+document.querySelector(".menu-toggle").addEventListener("click",()=>{
+  sidebar.classList.add("active"); overlay.classList.add("active");
+});
+overlay.addEventListener("click",()=>{sidebar.classList.remove("active"); overlay.classList.remove("active");});
 
-/* Footer links */
+// Footer links
 const footerLinks = ['account.html','my-investments.html','wallet.html','withdraw.html','live-earnings.html'];
 document.querySelectorAll('footer div').forEach((el,i)=>el.addEventListener('click',()=> window.location.href=footerLinks[i]));
 
-/* Firebase Login + Referral + Live Earnings */
-onAuthStateChanged(auth,async user=>{
-  if(!user) window.location.replace("login.html");
-  const userRef=doc(db,"users",user.uid);
-  const snap=await getDoc(userRef);
-  if(snap.exists()){
-    const data=snap.data();
-    document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
-    document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
-    document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
-    document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
-    document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
-
-    // Referral Code
-    let referral=data.myReferralCode;
-    if(!referral){
-      referral=Math.random().toString(36).substring(2,8).toUpperCase();
-      await setDoc(userRef,{myReferralCode:referral},{merge:true});
-    }
-    document.getElementById("referralCodeDisplay").innerText=`Your Referral Code: ${referral}`;
-  }
-  // Live earnings update
-  setInterval(async()=>{
-    const snap2=await getDoc(userRef);
-    if(!snap2.exists()) return;
-    let live=0;
-    (snap2.data().nfts||[]).forEach(nft=>{
-      const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};
-      live+=map[nft]||0;
-    });
-    await updateDoc(userRef,{liveEarnings:live});
-    document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;
-  },5000);
-});
-
-function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
-function openPage(page){
-    switch(page){
-        case 'account': window.location.href='account.html'; break;
-        case 'investments': window.location.href='my-investments.html'; break;
-        case 'wallet': window.location.href='wallet.html'; break;
-        case 'withdraw': window.location.href='withdraw.html'; break;
-        case 'live': window.location.href='live-earnings.html'; break;
-        case 'team': window.location.href='my-team.html'; break;
-        case 'level': window.location.href='my-level.html'; break;
-        case 'calculator': window.location.href='calculator.html'; break;
-        case 'settings': window.location.href='settings.html'; break;
-        default: console.log("Page not found");
-    }
-}
+// Referral code example (replace with Firebase logic)
+document.getElementById("referralCodeDisplay").innerText="Your Referral Code: "+Math.random().toString(36).substring(2,8).toUpperCase();
 </script>
 </body>
 </html>
