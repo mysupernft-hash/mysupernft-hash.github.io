@@ -3,91 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up – SuperNFT</title>
+<title>SuperNFT Signup</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{background:#0f0f0f;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.card{width:100%;max-width:360px;background:#161616;border:1px solid #222;border-radius:16px;padding:24px;}
-h1{text-align:center;color:#FFD700;margin-bottom:8px;}
-p{text-align:center;color:#aaa;font-size:14px;margin-bottom:24px;}
-input{width:100%;padding:14px;margin-bottom:14px;border-radius:10px;border:1px solid #333;background:#0f0f0f;color:#fff;font-size:14px;}
-input:focus{outline:none;border-color:#FFD700}
-button{width:100%;padding:14px;background:#FFD700;color:#000;border:none;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;}
-button:hover{opacity:.9}
-.links{text-align:center;margin-top:16px;font-size:13px;}
-.links a{color:#FFD700;text-decoration:none}
-.footer{text-align:center;margin-top:20px;font-size:11px;color:#777;}
-#error{color:red;font-size:13px;text-align:center;margin-bottom:10px;}
+body{font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
+form{background:#1a1a1a;padding:30px;border-radius:12px;width:300px;}
+input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;}
+button{width:100%;padding:10px;background:#FFD700;color:#000;font-weight:bold;border:none;border-radius:6px;cursor:pointer;}
+button:hover{background:#e0c200;}
 </style>
 </head>
 <body>
 
-<div class="card">
-  <h1>Join SuperNFT</h1>
-  <p>Create account & start earning daily</p>
-  <div id="error"></div>
-  <input type="text" id="name" placeholder="Full Name">
-  <input type="email" id="email" placeholder="Email address">
-  <input type="text" id="referral" placeholder="Referral Code (mandatory)">
-  <input type="password" id="password" placeholder="Password">
-  <button id="signupBtn">Create Account</button>
-  <div class="links">Already have account? <a href="login.html">Login</a></div>
-  <div class="footer">By signing up, you agree to our Terms</div>
-</div>
+<form id="signupForm">
+<h2>Signup</h2>
+<input type="email" id="email" placeholder="Email" required>
+<input type="password" id="password" placeholder="Password" required>
+<input type="text" id="referralCode" placeholder="Referral Code (required)" required>
+<button type="submit">Signup</button>
+<p id="message"></p>
+</form>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔹 Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// Firebase Config
+const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952"};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-document.getElementById("signupBtn").addEventListener("click", async()=>{
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const referral = document.getElementById("referral").value.trim();
-  const errorDiv = document.getElementById("error");
-  errorDiv.innerText = "";
+document.getElementById("signupForm").addEventListener("submit", async(e)=>{
+    e.preventDefault();
+    const email=document.getElementById("email").value;
+    const password=document.getElementById("password").value;
+    const referralCode=document.getElementById("referralCode").value;
 
-  // 🔹 Validate all fields
-  if(!name || !email || !password || !referral){
-    errorDiv.innerText="All fields including Referral Code are mandatory!";
-    return;
-  }
+    // Check if referral exists
+    const q=query(collection(db,"users"),where("referralCode","==",referralCode));
+    const querySnapshot=await getDocs(q);
+    if(querySnapshot.empty){
+        document.getElementById("message").innerText="Invalid referral code!";
+        return;
+    }
 
-  try{
-    const userCredential = await createUserWithEmailAndPassword(auth,email,password);
-    const uid = userCredential.user.uid;
-
-    // 🔹 Save additional user info in Firestore
-    await setDoc(doc(db,"users",uid),{
-      name,
-      email,
-      referralCode:referral,
-      walletBalance:0,
-      dailyIncome:0,
-      liveEarnings:0,
-      totalDeposit:0,
-      nfts:[]
-    });
-
-    window.location.href="dashboard.html";
-  } catch(err){
-    console.error(err);
-    errorDiv.innerText = err.message;
-  }
+    // Signup user
+    try{
+        const { user } = await createUserWithEmailAndPassword(auth,email,password);
+        // Save user data with referral used
+        await setDoc(doc(db,"users",user.uid),{
+            email: email,
+            dailyIncome: 0,
+            liveEarnings: 0,
+            totalDeposit:0,
+            walletBalance:0,
+            referralCodeUsed: referralCode
+        });
+        window.location.replace("dashboard.html");
+    }catch(err){
+        document.getElementById("message").innerText=err.message;
+    }
 });
 </script>
 </body>
