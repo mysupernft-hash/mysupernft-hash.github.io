@@ -129,7 +129,7 @@ footer div:hover{color:#e0c200;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* Firebase Config */
 const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952"};
@@ -209,24 +209,31 @@ window.copyReferral=function(){navigator.clipboard.writeText(document.getElement
 onAuthStateChanged(auth,async user=>{
   if(!user){window.location.replace("login.html");return;}
   const userRef=doc(db,"users",user.uid);
-  const snap=await getDoc(userRef);
-  if(!snap.exists()) return;
-  const data=snap.data();
+  let snap=await getDoc(userRef);
 
-  // Stable Referral
-  if(!data.referralCode){
+  if(!snap.exists()){
+    // Create new user doc with referral
     const code="SNFT"+Math.floor(100000+Math.random()*900000);
-    await updateDoc(userRef,{referralCode:code});
-    data.referralCode=code;
+    await setDoc(userRef,{
+      referralCode:code,dailyIncome:0,liveEarnings:0,totalDeposit:0,walletBalance:0,nfts:[]
+    });
+    document.getElementById("referralCode").innerText="Referral: "+code;
+  } else {
+    const data=snap.data();
+    if(!data.referralCode){
+      const code="SNFT"+Math.floor(100000+Math.random()*900000);
+      await updateDoc(userRef,{referralCode:code});
+      document.getElementById("referralCode").innerText="Referral: "+code;
+    } else {
+      document.getElementById("referralCode").innerText="Referral: "+data.referralCode;
+    }
+    // Stats
+    document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
+    document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
+    document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
+    document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
+    document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
   }
-  document.getElementById("referralCode").innerText="Referral: "+data.referralCode;
-
-  // Stats
-  document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
-  document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
-  document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
-  document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
-  document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
 
   // Live Earnings Update every 5s
   setInterval(async()=>{
