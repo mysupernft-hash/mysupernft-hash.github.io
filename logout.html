@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logging Out...</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#0f0f0f;
+  color:#FFD700;
+  font-family:Arial, sans-serif;
+}
+.box{
+  background:#1a1a1a;
+  padding:30px;
+  border-radius:12px;
+  text-align:center;
+}
+.loader{
+  margin-top:15px;
+  border:4px solid #272727;
+  border-top:4px solid #FFD700;
+  border-radius:50%;
+  width:40px;
+  height:40px;
+  animation:spin 1s linear infinite;
+}
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Logging you out...</h2>
+  <p>Please wait</p>
+  <div class="loader"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* Firebase config */
+const firebaseConfig = {
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952",
+  storageBucket:"supernft-5b952.appspot.com",
+  messagingSenderId:"278097730700",
+  appId:"1:278097730700:web:6ba9892334456fd8512fa9"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+/* Logout immediately */
+signOut(auth)
+  .then(()=>{
+    window.location.replace("login.html");
+  })
+  .catch(()=>{
+    alert("Logout failed");
+    window.location.replace("dashboard.html");
+  });
+</script>
+
+</body>
+</html>
