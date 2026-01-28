@@ -6,78 +6,71 @@
 <title>NFT Details</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
-header{position:sticky;top:0;background:#1a1a1a;color:#FFD700;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;}
-header h1{margin:0;font-size:22px;}
-header a{color:#FFD700;text-decoration:none;font-weight:bold;}
-#nftDetails{margin:20px;padding:15px;background:#1a1a1a;border-radius:12px;text-align:center;}
-#nftDetails img{width:80%;border-radius:12px;margin-bottom:10px;}
-#nftDetails p{margin:5px 0;font-size:16px;}
-#nftDetails button{background:#FFD700;border:none;padding:10px 15px;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;transition:0.2s;margin-top:10px;}
-#nftDetails button:hover{background:#e0c200;}
+.container{max-width:500px;margin:20px auto;padding:15px;background:#1a1a1a;border-radius:12px;}
+img{width:100%;border-radius:8px;}
+h1,h2,p{margin:5px 0;}
+.profit-box{background:#272727;padding:10px;margin:10px 0;border-radius:8px;}
+button{background:#FFD700;color:#000;border:none;padding:10px 15px;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.2s;}
+button:hover{background:#e0c200;}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>NFT Details</h1>
-  <a href="dashboard.html">Back</a>
-</header>
+<div class="container">
+  <h1 id="nftTitle">NFT Details</h1>
+  <img id="nftImage" src="" alt="NFT Image">
+  <p id="nftCategory"></p>
+  <p id="nftPrice"></p>
 
-<div id="nftDetails">
-  <img id="nftImg" src="" alt="NFT Image">
-  <p id="nftCategory">Category: </p>
-  <p id="nftPrice">Price: </p>
-  <p id="nftDaily">Daily Income: </p>
-  <p id="nftValidity">Validity: 365 Days</p>
-  <button id="buyNFT">Buy NFT</button>
+  <div class="profit-box" id="profitBox"></div>
+
+  <button onclick="goBack()">Back to Dashboard</button>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952",storageBucket:"supernft-5b952.appspot.com",messagingSenderId:"278097730700",appId:"1:278097730700:web:6ba9892334456fd8512fa9"};
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-const nftData = JSON.parse(localStorage.getItem("selectedNFT"));
-if(nftData){
-  document.getElementById("nftImg").src = nftData.img;
-  document.getElementById("nftCategory").innerText = `Category: ${nftData.cat}`;
-  document.getElementById("nftPrice").innerText = `Price: $${nftData.price}`;
-  document.getElementById("nftDaily").innerText = `Daily Income: $${nftData.p}`;
-}else{
-  document.getElementById("nftDetails").innerHTML = "<p>No NFT selected. Go back to dashboard.</p>";
+<script>
+// Get selected NFT from localStorage
+const nft = JSON.parse(localStorage.getItem('selectedNFT'));
+if(!nft){
+  alert('No NFT selected'); 
+  window.location.href='dashboard.html';
 }
 
-onAuthStateChanged(auth, async (user)=>{
-  if(!user) location.replace("login.html");
+document.getElementById('nftImage').src = nft.img;
+document.getElementById('nftCategory').innerText = "Category: "+nft.cat;
+document.getElementById('nftPrice').innerText = "Invest: $"+nft.price;
 
-  document.getElementById("buyNFT").addEventListener("click", async ()=>{
-    if(!nftData) return;
+// Profit calculations
+function calculateProfit(price){
+  let dailyPerc = 0;
+  if(price<=50) dailyPerc = 0.02;       // 2%
+  else if(price<=100) dailyPerc = 0.025; // 2.5%
+  else if(price<=300) dailyPerc = 0.033; // 3.3%
+  else if(price<=499) dailyPerc = 0.05;  // 5%
+  else if(price<=699) dailyPerc = 0.05;  // 5%
+  else dailyPerc = 0.10;                 // 10%
 
-    const userRef = doc(db,"users",user.uid);
-    const snap = await getDoc(userRef);
-    let walletBalance = snap.exists() ? snap.data().walletBalance || 0 : 0;
+  const daily = price*dailyPerc;
+  const weekly = daily*7;
+  const monthly = daily*30;
+  const yearly = daily*365;
+  const totalPayout = yearly + price;
 
-    if(walletBalance < nftData.price){
-      alert("Insufficient wallet balance!");
-      return;
-    }
+  return {daily, weekly, monthly, yearly, totalPayout};
+}
 
-    // Deduct price from wallet and add NFT
-    walletBalance -= nftData.price;
-    await updateDoc(userRef,{
-      walletBalance: walletBalance,
-      nfts: arrayUnion(nftData.cat + " NFT") // store NFT category name
-    });
+const profit = calculateProfit(nft.price);
 
-    alert(`You bought ${nftData.cat} NFT for $${nftData.price}`);
-    window.location.href="dashboard.html";
-  });
-});
+// Display profit
+document.getElementById('profitBox').innerHTML = `
+<h2>Profit Breakdown</h2>
+<p>• Daily Profit: $${profit.daily.toFixed(2)} (${(profit.daily/nft.price*100).toFixed(1)}%)</p>
+<p>• Weekly Profit: $${profit.weekly.toFixed(2)} (${(profit.weekly/nft.price*100).toFixed(1)}%)</p>
+<p>• Monthly Profit: $${profit.monthly.toFixed(2)} (${(profit.monthly/nft.price*100).toFixed(1)}%)</p>
+<p>• Yearly Profit: $${profit.yearly.toFixed(2)} (${(profit.yearly/nft.price*100).toFixed(1)}%)</p>
+<p>• Total Payout: At the end of the year, you would have $${profit.totalPayout.toFixed(2)}</p>
+`;
+
+function goBack(){ window.location.href='dashboard.html'; }
 </script>
 </body>
 </html>
