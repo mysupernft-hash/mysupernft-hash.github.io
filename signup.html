@@ -4,67 +4,120 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Signup</title>
+
 <style>
-body{font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;}
-form{background:#1a1a1a;padding:30px;border-radius:12px;width:300px;}
-input{width:100%;padding:10px;margin:10px 0;border-radius:6px;border:none;}
-button{width:100%;padding:10px;background:#FFD700;color:#000;font-weight:bold;border:none;border-radius:6px;cursor:pointer;}
-button:hover{background:#e0c200;}
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#0f0f0f;
+  font-family:Arial, sans-serif;
+  color:#FFD700;
+}
+.signup-box{
+  background:#1a1a1a;
+  padding:30px;
+  border-radius:14px;
+  width:330px;
+  text-align:center;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:none;
+  border-radius:8px;
+  outline:none;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  background:#FFD700;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  background:#e0c200;
+}
+p{
+  margin-top:12px;
+  font-size:14px;
+  cursor:pointer;
+}
+p:hover{
+  text-decoration:underline;
+}
 </style>
 </head>
+
 <body>
 
-<form id="signupForm">
-<h2>Signup</h2>
-<input type="email" id="email" placeholder="Email" required>
-<input type="password" id="password" placeholder="Password" required>
-<input type="text" id="referralCode" placeholder="Referral Code (required)" required>
-<button type="submit">Signup</button>
-<p id="message"></p>
-</form>
+<div class="signup-box">
+  <h2>Create Account</h2>
+
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password (min 6 chars)">
+
+  <button onclick="signup()">Sign Up</button>
+
+  <p onclick="location.href='login.html'">Already have an account? Login</p>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+  getAuth,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// Firebase Config
-const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952"};
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+/* Firebase Config */
+const firebaseConfig = {
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952",
+  storageBucket:"supernft-5b952.appspot.com",
+  messagingSenderId:"278097730700",
+  appId:"1:278097730700:web:6ba9892334456fd8512fa9"
+};
 
-document.getElementById("signupForm").addEventListener("submit", async(e)=>{
-    e.preventDefault();
-    const email=document.getElementById("email").value;
-    const password=document.getElementById("password").value;
-    const referralCode=document.getElementById("referralCode").value;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-    // Check if referral exists
-    const q=query(collection(db,"users"),where("referralCode","==",referralCode));
-    const querySnapshot=await getDocs(q);
-    if(querySnapshot.empty){
-        document.getElementById("message").innerText="Invalid referral code!";
-        return;
-    }
-
-    // Signup user
-    try{
-        const { user } = await createUserWithEmailAndPassword(auth,email,password);
-        // Save user data with referral used
-        await setDoc(doc(db,"users",user.uid),{
-            email: email,
-            dailyIncome: 0,
-            liveEarnings: 0,
-            totalDeposit:0,
-            walletBalance:0,
-            referralCodeUsed: referralCode
-        });
-        window.location.replace("dashboard.html");
-    }catch(err){
-        document.getElementById("message").innerText=err.message;
-    }
+/* Auto redirect if logged in */
+onAuthStateChanged(auth,(user)=>{
+  if(user){
+    window.location.replace("dashboard.html");
+  }
 });
+
+/* Signup function */
+function signup(){
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    alert("Fill all fields");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth,email,password)
+    .then(()=>{
+      alert("Account created successfully");
+      window.location.replace("dashboard.html");
+    })
+    .catch(err=>{
+      alert(err.message);
+    });
+}
+
+window.signup = signup;
 </script>
+
 </body>
 </html>
