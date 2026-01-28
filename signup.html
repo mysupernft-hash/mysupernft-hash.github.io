@@ -16,7 +16,7 @@ body{
   font-family:Arial, sans-serif;
   color:#FFD700;
 }
-.signup-box{
+.box{
   background:#1a1a1a;
   padding:30px;
   border-radius:14px;
@@ -29,39 +29,35 @@ input{
   margin:8px 0;
   border:none;
   border-radius:8px;
-  outline:none;
 }
 button{
   width:100%;
   padding:12px;
-  margin-top:15px;
+  margin-top:12px;
   background:#FFD700;
   border:none;
   border-radius:8px;
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{
-  background:#e0c200;
-}
+button:hover{background:#e0c200;}
 p{
-  margin-top:12px;
   font-size:14px;
   cursor:pointer;
+  margin-top:10px;
 }
-p:hover{
-  text-decoration:underline;
-}
+p:hover{text-decoration:underline;}
 </style>
 </head>
 
 <body>
 
-<div class="signup-box">
+<div class="box">
   <h2>Create Account</h2>
 
   <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password (min 6 chars)">
+  <input type="password" id="password" placeholder="Password">
+  <input type="text" id="referral" placeholder="Referral Code (Required)">
 
   <button onclick="signup()">Sign Up</button>
 
@@ -72,11 +68,19 @@ p:hover{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { 
   getAuth,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged
+  createUserWithEmailAndPassword 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  setDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* Firebase Config */
+/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -88,26 +92,51 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-/* Auto redirect if logged in */
-onAuthStateChanged(auth,(user)=>{
-  if(user){
-    window.location.replace("dashboard.html");
-  }
-});
-
-/* Signup function */
-function signup(){
+/* 🔐 Signup with referral verification */
+async function signup(){
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
+  const referral = document.getElementById("referral").value.trim();
 
-  if(!email || !password){
-    alert("Fill all fields");
+  if(!email || !password || !referral){
+    alert("All fields are required");
     return;
   }
 
+  // 🔎 Verify referral code
+  const q = query(
+    collection(db,"users"),
+    where("referralCode","==",referral)
+  );
+  const snap = await getDocs(q);
+
+  if(snap.empty){
+    alert("Invalid referral code");
+    return;
+  }
+
+  // ✅ Create user
   createUserWithEmailAndPassword(auth,email,password)
-    .then(()=>{
+    .then(async (cred)=>{
+      const uid = cred.user.uid;
+
+      // 🔑 Generate own referral code
+      const myCode = "SNFT" + uid.slice(0,6).toUpperCase();
+
+      await setDoc(doc(db,"users",uid),{
+        email,
+        referralCode: myCode,
+        referredBy: referral,
+        walletBalance: 0,
+        totalDeposit: 0,
+        dailyIncome: 0,
+        liveEarnings: 0,
+        nfts: [],
+        createdAt: Date.now()
+      });
+
       alert("Account created successfully");
       window.location.replace("dashboard.html");
     })
