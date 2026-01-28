@@ -13,7 +13,7 @@ body{
   justify-content:center;
   align-items:center;
   background:#0f0f0f;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
   color:#FFD700;
 }
 .box{
@@ -68,7 +68,7 @@ p:hover{text-decoration:underline;}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { 
   getAuth,
-  createUserWithEmailAndPassword 
+  createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
   getFirestore,
@@ -77,7 +77,7 @@ import {
   where,
   getDocs,
   doc,
-  setDoc 
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* 🔥 Firebase Config */
@@ -94,9 +94,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔐 Signup with referral verification */
+/* 🔐 Signup function */
 async function signup(){
-  const email = document.getElementById("email").value;
+  const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const referral = document.getElementById("referral").value.trim();
 
@@ -105,13 +105,9 @@ async function signup(){
     return;
   }
 
-  // 🔎 Verify referral code
-  const q = query(
-    collection(db,"users"),
-    where("referralCode","==",referral)
-  );
+  // 🔎 Verify referral code exists
+  const q = query(collection(db,"users"), where("referralCode","==",referral));
   const snap = await getDocs(q);
-
   if(snap.empty){
     alert("Invalid referral code");
     return;
@@ -119,10 +115,8 @@ async function signup(){
 
   // ✅ Create user
   createUserWithEmailAndPassword(auth,email,password)
-    .then(async (cred)=>{
+    .then(async cred=>{
       const uid = cred.user.uid;
-
-      // 🔑 Generate own referral code
       const myCode = "SNFT" + uid.slice(0,6).toUpperCase();
 
       await setDoc(doc(db,"users",uid),{
@@ -137,7 +131,7 @@ async function signup(){
         createdAt: Date.now()
       });
 
-      alert("Account created successfully");
+      alert("Account created successfully!");
       window.location.replace("dashboard.html");
     })
     .catch(err=>{
@@ -145,6 +139,7 @@ async function signup(){
     });
 }
 
+/* 🔑 Important: attach to window for onclick */
 window.signup = signup;
 </script>
 
