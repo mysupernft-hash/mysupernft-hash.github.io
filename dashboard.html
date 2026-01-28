@@ -147,11 +147,22 @@ window.openPage=function(page){
 }
 
 /* Stats Boxes Click */
-document.getElementById("dailyIncomeBox").addEventListener("click",()=>window.openPage("daily"));
-document.getElementById("liveEarningsBox").addEventListener("click",()=>window.openPage("live"));
-document.getElementById("depositMoney").addEventListener("click",()=>window.openPage("deposit"));
-document.getElementById("walletBalanceBox").addEventListener("click",()=>window.openPage("wallet"));
+// ✅ Stats Boxes Click Navigation (FIXED)
+document.getElementById("dailyIncomeBox").onclick = () => {
+  window.location.href = "daily.html";
+};
 
+document.getElementById("liveEarningsBox").onclick = () => {
+  window.location.href = "live-earnings.html";
+};
+
+document.getElementById("depositMoney").onclick = () => {
+  window.location.href = "deposit.html";
+};
+
+document.getElementById("walletBalanceBox").onclick = () => {
+  window.location.href = "wallet.html";
+};
 /* Footer Clicks */
 const footerBtns=document.querySelectorAll("footer div");
 footerBtns[0].addEventListener("click",()=>window.openPage("account")); 
