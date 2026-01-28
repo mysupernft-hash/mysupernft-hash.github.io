@@ -4,46 +4,80 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NFT Details</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
+header{position:sticky;top:0;background:#1a1a1a;color:#FFD700;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;}
+header h1{margin:0;font-size:22px;}
+header a{color:#FFD700;text-decoration:none;font-weight:bold;}
+#nftDetails{margin:20px;padding:15px;background:#1a1a1a;border-radius:12px;text-align:center;}
+#nftDetails img{width:80%;border-radius:12px;margin-bottom:10px;}
+#nftDetails p{margin:5px 0;font-size:16px;}
+#nftDetails button{background:#FFD700;border:none;padding:10px 15px;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;transition:0.2s;margin-top:10px;}
+#nftDetails button:hover{background:#e0c200;}
+</style>
 </head>
 <body>
 
-<!-- 🔹 Login Guard -->
+<header>
+  <h1>NFT Details</h1>
+  <a href="dashboard.html">Back</a>
+</header>
+
+<div id="nftDetails">
+  <img id="nftImg" src="" alt="NFT Image">
+  <p id="nftCategory">Category: </p>
+  <p id="nftPrice">Price: </p>
+  <p id="nftDaily">Daily Income: </p>
+  <p id="nftValidity">Validity: 365 Days</p>
+  <button id="buyNFT">Buy NFT</button>
+</div>
+
 <script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-onAuthStateChanged(auth,user=>{
-  if(!user) location.replace("admin-login.html");
-});
-</script>
+const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952",storageBucket:"supernft-5b952.appspot.com",messagingSenderId:"278097730700",appId:"1:278097730700:web:6ba9892334456fd8512fa9"};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-<h2>NFT Details</h2>
-<img id="nftImage" src="" width="300"><br>
-<div id="nftStats"></div>
-
-<script>
-const price = parseFloat(localStorage.getItem("nftPrice") || 0);
-const img = localStorage.getItem("nftImg") || "";
-document.getElementById("nftImage").src = img;
-
-function calculateProfit(p){
-  const daily = p;
-  const weekly = daily*7;
-  const monthly = daily*30;
-  const yearly = daily*365;
-  const total = yearly + price;
-  return {daily, weekly, monthly, yearly, total};
+const nftData = JSON.parse(localStorage.getItem("selectedNFT"));
+if(nftData){
+  document.getElementById("nftImg").src = nftData.img;
+  document.getElementById("nftCategory").innerText = `Category: ${nftData.cat}`;
+  document.getElementById("nftPrice").innerText = `Price: $${nftData.price}`;
+  document.getElementById("nftDaily").innerText = `Daily Income: $${nftData.p}`;
+}else{
+  document.getElementById("nftDetails").innerHTML = "<p>No NFT selected. Go back to dashboard.</p>";
 }
 
-const nftProfit = calculateProfit(price*0.073); // example % 7.3%
-document.getElementById("nftStats").innerHTML = `
-Invest - $${price} and Profit - $${nftProfit.yearly.toFixed(1)}<br>
-• Daily Profit: $${nftProfit.daily.toFixed(1)}<br>
-• Weekly Profit: $${nftProfit.weekly.toFixed(1)}<br>
-• Monthly Profit: $${nftProfit.monthly.toFixed(1)}<br>
-• Yearly Profit: $${nftProfit.yearly.toFixed(1)}<br>
-• Total Payout: $${nftProfit.total.toFixed(1)}
-`;
+onAuthStateChanged(auth, async (user)=>{
+  if(!user) location.replace("login.html");
+
+  document.getElementById("buyNFT").addEventListener("click", async ()=>{
+    if(!nftData) return;
+
+    const userRef = doc(db,"users",user.uid);
+    const snap = await getDoc(userRef);
+    let walletBalance = snap.exists() ? snap.data().walletBalance || 0 : 0;
+
+    if(walletBalance < nftData.price){
+      alert("Insufficient wallet balance!");
+      return;
+    }
+
+    // Deduct price from wallet and add NFT
+    walletBalance -= nftData.price;
+    await updateDoc(userRef,{
+      walletBalance: walletBalance,
+      nfts: arrayUnion(nftData.cat + " NFT") // store NFT category name
+    });
+
+    alert(`You bought ${nftData.cat} NFT for $${nftData.price}`);
+    window.location.href="dashboard.html";
+  });
+});
 </script>
 </body>
 </html>
