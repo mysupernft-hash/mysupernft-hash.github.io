@@ -146,8 +146,22 @@ overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay
 /* Logout */
 function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
 
-/* Open Page (demo) */
-function openPage(page){alert("Open "+page+" page (implement separately)");}
+/* Open Page (fixed) */
+function openPage(page){
+  switch(page){
+    case "account": window.location.href="account.html"; break;
+    case "investments": window.location.href="my-investments.html"; break;
+    case "wallet": window.location.href="wallet.html"; break;
+    case "withdraw": window.location.href="withdraw.html"; break;
+    case "live": window.location.href="live-earnings.html"; break;
+    case "admin": window.location.href="admin.html"; break;
+    case "team": window.location.href="team.html"; break;
+    case "level": window.location.href="level.html"; break;
+    case "calculator": window.location.href="calculator.html"; break;
+    case "settings": window.location.href="settings.html"; break;
+    default: alert("Page not found"); 
+  }
+}
 
 /* NFT Array */
 const NFTS=[ 
@@ -212,11 +226,8 @@ onAuthStateChanged(auth,async user=>{
   let snap=await getDoc(userRef);
 
   if(!snap.exists()){
-    // Create new user doc with referral
     const code="SNFT"+Math.floor(100000+Math.random()*900000);
-    await setDoc(userRef,{
-      referralCode:code,dailyIncome:0,liveEarnings:0,totalDeposit:0,walletBalance:0,nfts:[]
-    });
+    await setDoc(userRef,{referralCode:code,dailyIncome:0,liveEarnings:0,totalDeposit:0,walletBalance:0,nfts:[]});
     document.getElementById("referralCode").innerText="Referral: "+code;
   } else {
     const data=snap.data();
@@ -235,7 +246,6 @@ onAuthStateChanged(auth,async user=>{
     document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
   }
 
-  // Live Earnings Update every 5s
   setInterval(async()=>{
     const snap2=await getDoc(userRef);
     if(!snap2.exists()) return;
