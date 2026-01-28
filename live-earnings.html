@@ -3,76 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Live Earnings</title>
+<title>Live Earnings | SuperNFT</title>
+
 <style>
-*{box-sizing:border-box;}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
-  background:#0b0f1a;
-  color:#fff;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
 }
-
-/* TOP BAR */
-.topbar{
-  position:fixed;
-  top:0;left:0;
-  width:100%;
-  height:60px;
-  background:#111827;
-  display:flex;
-  align-items:center;
-  padding:0 20px;
-  z-index:1001;
+header{
+  position:sticky;
+  top:0;
+  background:#1a1a1a;
+  padding:12px 16px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
 }
-.topbar h1{font-size:18px;color:#38bdf8;}
-
-/* MAIN */
-.main{
-  margin-top:60px;
-  padding:15px;
+.container{
+  padding:20px;
 }
-
-/* NFT LIST */
-.nft-list{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:15px;
-}
-.nft{
-  background:#111827;
+.card{
+  background:#1a1a1a;
   border-radius:12px;
-  padding:10px;
+  padding:20px;
+  margin-bottom:15px;
   text-align:center;
 }
-.nft img{
-  width:100%;
-  border-radius:10px;
+.card h2{
+  margin:0 0 10px;
+  font-size:18px;
 }
-.nft h3{margin:10px 0 5px 0;font-size:16px;}
-.nft p{margin:4px 0;font-size:14px;color:#38bdf8;font-weight:bold;}
+.card p{
+  margin:0;
+  font-size:28px;
+  font-weight:bold;
+}
+.note{
+  font-size:13px;
+  opacity:0.8;
+  margin-top:8px;
+}
+.back-btn{
+  display:block;
+  width:100%;
+  margin-top:20px;
+  padding:12px;
+  background:#FFD700;
+  color:#000;
+  text-align:center;
+  border-radius:8px;
+  font-weight:bold;
+  text-decoration:none;
+}
 </style>
 </head>
+
 <body>
 
-<div class="topbar">
-  <h1>SuperNFT Live Earnings</h1>
-</div>
+<header>Live Earnings</header>
 
-<div class="main">
-  <div id="totalIncome" style="margin-bottom:15px;font-size:18px;color:#10b981;font-weight:bold;">
-    Total Daily Earnings: $0
+<div class="container">
+  <div class="card">
+    <h2>Current Live Earnings</h2>
+    <p id="liveEarnings">$0.00</p>
+    <div class="note">Auto updating every second</div>
   </div>
 
-  <div class="nft-list" id="nftList">
-    <!-- NFT earnings will be loaded here -->
+  <div class="card">
+    <h2>Total Earnings</h2>
+    <p id="totalEarnings">$0.00</p>
   </div>
+
+  <a href="dashboard.html" class="back-btn">⬅ Back to Dashboard</a>
 </div>
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -88,32 +97,27 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔒 Login Guard + Fetch Live Earnings
-onAuthStateChanged(auth, async (user)=>{
-  if(!user) return location.replace("login.html");
-
-  const snap = await getDoc(doc(db,"liveEarnings",user.uid));
-  if(snap.exists()){
-    const data = snap.data();
-    document.getElementById("totalIncome").innerText = `Total Daily Earnings: $${data.totalDailyIncome || 0}`;
-
-    const nftList = document.getElementById("nftList");
-    nftList.innerHTML = "";
-
-    data.nfts.forEach(nft=>{
-      nftList.innerHTML += `
-      <div class="nft">
-        <img src="images/${nft.name.replace(/\s+/g,'_')}.png" alt="${nft.name}">
-        <h3>${nft.name}</h3>
-        <p>Daily Income: $${nft.dailyIncome}</p>
-        <p>Category: ${nft.category}</p>
-      </div>
-      `;
-    });
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    window.location.replace("login.html");
+    return;
   }
-});
 
-// Logout on pressing topbar (optional)
+  async function fetchEarnings(){
+    const snap = await getDoc(doc(db,"users",user.uid));
+    if(!snap.exists()) return;
+
+    const data = snap.data();
+    document.getElementById("liveEarnings").innerText =
+      "$" + (data.liveEarnings || 0).toFixed(2);
+
+    document.getElementById("totalEarnings").innerText =
+      "$" + (data.totalEarnings || 0).toFixed(2);
+  }
+
+  fetchEarnings();
+  setInterval(fetchEarnings, 1000);
+});
 </script>
 
 </body>
