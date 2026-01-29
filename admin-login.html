@@ -70,7 +70,7 @@ firebase.initializeApp({
 const ADMIN_EMAIL = "mysupernft@gmail.com";
 const msg = document.getElementById("msg");
 
-/* Optional: If already logged-in admin, go straight to dashboard */
+/* 🔐 If already logged-in admin, auto redirect */
 firebase.auth().onAuthStateChanged(user => {
   if(user && user.email.toLowerCase() === ADMIN_EMAIL){
     window.location.replace("admin-dashboard.html");
