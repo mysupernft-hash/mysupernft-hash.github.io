@@ -7,12 +7,12 @@
 <link rel="stylesheet" href="assets/style.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="assets/script.js"></script>
 </head>
 <body>
 
 <header>SuperNFT Admin Dashboard</header>
-
 <nav>
 <a href="admin-dashboard.html">Dashboard</a>
 <a href="admin-users.html">Users</a>
@@ -25,7 +25,7 @@
 <div class="main">
 <h2>Welcome Admin</h2>
 <div>
-  <p>📊 Dashboard Stats (Example)</p>
+  <p>📊 Dashboard Stats</p>
   <ul>
     <li>Total Users: <span id="totalUsers">0</span></li>
     <li>Total NFTs: <span id="totalNFTs">0</span></li>
@@ -36,16 +36,18 @@
 </div>
 
 <script>
+protectAdminPage(); // 🔹 Must call on all admin pages
+
 const db = firebase.firestore();
 
-// Example stats fetch
+// Example stats
 db.collection("users").get().then(snap=>document.getElementById("totalUsers").innerText=snap.size);
 db.collection("nfts").get().then(snap=>document.getElementById("totalNFTs").innerText=snap.size);
 db.collection("deposits").get().then(snap=>{
-  let total=0; snap.forEach(doc=>total+=doc.data().amount); document.getElementById("totalDeposits").innerText=total;
+  let total=0; snap.forEach(doc=>total+=doc.data().amount||0); document.getElementById("totalDeposits").innerText=total;
 });
 db.collection("withdraws").get().then(snap=>{
-  let total=0; snap.forEach(doc=>total+=doc.data().amount); document.getElementById("totalWithdraws").innerText=total;
+  let total=0; snap.forEach(doc=>total+=doc.data().amount||0); document.getElementById("totalWithdraws").innerText=total;
 });
 </script>
 
