@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Referral Stats</title>
+<style>
+body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;min-height:100vh;flex-direction:column;}
+.wrapper{display:flex;flex:1;}
+.sidebar{width:220px;background:#1a1a1a;display:flex;flex-direction:column;padding:20px 0;}
+.sidebar h2{text-align:center;margin-bottom:20px;}
+.sidebar a{color:#FFD700;text-decoration:none;padding:12px 20px;display:block;margin:5px 0;}
+.sidebar a:hover{background:#333;color:#fff;}
+.main{flex:1;padding:20px;overflow-y:auto;}
+footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;flex-shrink:0;width:100%;position:sticky;bottom:0;}
+footer div:hover{color:#fff;cursor:pointer;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #333;}
+th{background:#222;}
+tr:hover{background:#333;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="sidebar">
+    <h2>Admin</h2>
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="admin-nfts.html">NFTs</a>
+    <a href="admin-users.html">Users</a>
+    <a href="admin-deposits.html">Deposits</a>
+    <a href="admin-referrals.html">Referral Stats</a>
+    <a href="#" onclick="logout()">Logout</a>
+  </div>
+
+  <div class="main">
+    <h2>Referral Code Stats</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>User Email</th>
+          <th>Referral Code Used</th>
+          <th>Code Owner</th>
+          <th>Bonus Amount</th>
+          <th>Claimed At</th>
+        </tr>
+      </thead>
+      <tbody id="refTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <div>📁 Investments</div>
+  <div>💳 Wallet</div>
+  <div>💸 Withdraw</div>
+  <div>💹 Live Earnings</div>
+  <div>👤 My Account</div>
+</footer>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.firebasestorage.app",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:014d5ab680859db4512fa9",
+measurementId: "G-BME7FWT355"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+const ADMIN_EMAIL="admin@supernft.com";
+
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// Check admin login
+auth.onAuthStateChanged(user=>{
+  if(!user || user.email!==ADMIN_EMAIL) window.location.href="admin-login.html";
+  else loadReferralStats();
+});
+
+function logout(){
+  auth.signOut().then(()=>window.location.href="admin-login.html");
+}
+
+// Load Referral Stats
+async function loadReferralStats(){
+  const refTable=document.getElementById("refTable");
+  refTable.innerHTML="";
+
+  const usersSnap=await db.collection("users").where("referralCodeUsed", "!=", null).get();
+  for(const doc of usersSnap.docs){
+    const userData=doc.data();
+    const code = userData.referralCodeUsed;
+    let ownerEmail = "Unknown";
+
+    // Find owner of referral code
+    const ownerSnap = await db.collection("users").where("referralCode", "==", code).get();
+    ownerSnap.forEach(o=>{
+      ownerEmail = o.data().email;
+    });
+
+    const claimedAt = userData.referralClaimedAt || "-";
+    const bonusAmount = 5;
+
+    refTable.innerHTML += `<tr>
+      <td>${userData.email}</td>
+      <td>${code}</td>
+      <td>${ownerEmail}</td>
+      <td>$${bonusAmount}</td>
+      <td>${claimedAt}</td>
+    </tr>`;
+  }
+}
+</script>
+
+</body>
+</html>
