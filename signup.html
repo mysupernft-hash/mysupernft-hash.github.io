@@ -23,6 +23,7 @@ a{color:#FFD700;text-decoration:none;}
   <input type="password" id="password" placeholder="Password" required>
   <input type="text" id="referral" placeholder="Referral Code" required>
   <button id="signupBtn">Sign Up</button>
+
   <div class="options">
     <a href="login.html">Login</a>
     <a href="forgot.html">Forgot Password?</a>
@@ -43,30 +44,30 @@ const firebaseConfig = {
   messagingSenderId: "278097730700",
   appId: "1:278097730700:web:6ba9892334456fd8512fa9"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+/* 🔹 Signup Function */
 async function signup() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   const referral = document.getElementById("referral").value.trim().toUpperCase();
 
-  if(!email || !password || !referral){
+  if (!email || !password || !referral) {
     alert("All fields are required");
     return;
   }
 
-  // ✅ Check referral code in Firestore
+  // ✅ Referral Verification
   const refSnap = await getDoc(doc(db, "referrals", referral));
-  if(!refSnap.exists()){
+  if (!refSnap.exists()) {
     alert("Invalid referral code");
     return;
   }
 
   try {
-    // ✅ Create user in Firebase Auth
+    // ✅ Create User
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
 
@@ -82,17 +83,17 @@ async function signup() {
       totalDeposit: 0
     });
 
-    // ✅ Optionally update referral document ownerUid
+    // ✅ Update referral ownerUid
     await setDoc(doc(db, "referrals", referral), {
       ownerUid: uid,
       active: true,
       createdAt: serverTimestamp()
-    }, { merge:true });
+    }, { merge: true });
 
     // ✅ Redirect to verification page
     window.location.href = "verification.html";
 
-  } catch(error) {
+  } catch (error) {
     console.error(error);
     alert(error.message);
   }
