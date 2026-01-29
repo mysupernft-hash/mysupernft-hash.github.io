@@ -7,16 +7,18 @@ firebase.initializeApp({
 
 const ADMIN_EMAIL = "mysupernft@gmail.com";
 
-// Protect admin pages
-firebase.auth().onAuthStateChanged(user => {
-  if (!user || user.email.toLowerCase() !== ADMIN_EMAIL) {
-    window.location.replace("admin-login.html");
-  }
-});
-
-// Logout function
-function logout() {
-  firebase.auth().signOut().then(() => {
-    window.location.replace("admin-login.html");
+// Protect Admin Pages
+function protectAdminPage(){
+  firebase.auth().onAuthStateChanged(user=>{
+    if(user && user.email.toLowerCase() === ADMIN_EMAIL){
+      // Admin logged in, allow page
+    } else {
+      window.location.replace("admin-login.html");
+    }
   });
+}
+
+// Logout
+function logout(){
+  firebase.auth().signOut().then(()=>window.location.replace("admin-login.html"));
 }
