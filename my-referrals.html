@@ -3,61 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Referrals & Earnings</title>
+<title>My Referrals & Earnings | SuperNFT</title>
 <style>
-body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;flex-direction:column;min-height:100vh;}
-.main{flex:1;padding:20px;}
-input, button{padding:10px;margin:5px 0;border-radius:5px;border:none;outline:none;}
-button{background:#FFD700;color:#000;font-weight:bold;cursor:pointer;}
+body {
+  margin:0;
+  font-family:Arial;
+  color:#FFD700;
+  background:#0d0d0d;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+.main{
+  flex:1;
+  padding:20px;
+}
+input, button{
+  padding:10px;
+  margin:5px 0;
+  border-radius:5px;
+  border:none;
+  outline:none;
+}
+button{
+  background:#FFD700;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
 button:hover{background:#e6c200;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #333;}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+th, td{
+  padding:12px;
+  text-align:left;
+  border-bottom:1px solid #333;
+}
 th{background:#222;}
 tr:hover{background:#333;}
-footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;position:sticky;bottom:0;width:100%;}
-footer div:hover{color:#fff;cursor:pointer;}
+footer{
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  background:#1a1a1a;
+  color:#FFD700;
+  padding:12px 0;
+  position:sticky;
+  bottom:0;
+  width:100%;
+  cursor:pointer;
+}
+footer div:hover{color:#fff;}
 </style>
+
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 </head>
 <body>
 
 <div class="main">
 <h2>My Referrals & Earnings</h2>
 <p>Your Referral Code: <span id="myCode">Loading...</span></p>
+
 <h3>Users Joined With Your Code:</h3>
 <table>
   <thead>
     <tr>
       <th>User Email</th>
-      <th>Claimed Bonus</th>
-      <th>Claimed At</th>
+      <th>Bonus Earned</th>
+      <th>Joined At</th>
     </tr>
   </thead>
   <tbody id="refUsersTable"></tbody>
 </table>
+
 <p>Total Earnings from Referrals: $<span id="totalEarnings">0</span></p>
 </div>
 
 <footer>
-<div>📁 Investments</div>
-<div>💳 Wallet</div>
-<div>💸 Withdraw</div>
-<div>💹 Live Earnings</div>
-<div>👤 My Account</div>
+  <div onclick="window.location.href='dashboard.html'">📁 Investments</div>
+  <div onclick="window.location.href='wallet.html'">💳 Wallet</div>
+  <div onclick="window.location.href='withdraw.html'">💸 Withdraw</div>
+  <div onclick="window.location.href='live-earnings.html'">💹 Live Earnings</div>
+  <div onclick="window.location.href='my-account.html'">👤 My Account</div>
+  <div onclick="window.location.href='my-referrals.html'">👥 My Referrals</div>
 </footer>
 
 <script>
 const firebaseConfig = {
-apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain: "supernft-5b952.firebaseapp.com",
-projectId: "supernft-5b952",
-storageBucket: "supernft-5b952.firebasestorage.app",
-messagingSenderId: "278097730700",
-appId: "1:278097730700:web:014d5ab680859db4512fa9",
-measurementId: "G-BME7FWT355"
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.firebasestorage.app",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:014d5ab680859db4512fa9",
+  measurementId: "G-BME7FWT355"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -65,8 +113,10 @@ const db = firebase.firestore();
 let currentUser;
 let myCode = "";
 
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); // ✅ Back/Refresh safe
+
 auth.onAuthStateChanged(async user=>{
-  if(!user) window.location.href="signup.html";
+  if(!user) window.location.href="signup.html"; // redirect if not logged in
   else {
     currentUser = user;
     const userDoc = await db.collection("users").doc(currentUser.uid).get();
@@ -90,13 +140,13 @@ function loadReferralUsers(){
       totalEarnings = 0;
       snapshot.forEach(doc=>{
         const data = doc.data();
-        const claimedAt = data.referralClaimedAt
+        const joinedAt = data.referralClaimedAt
           ? new Date(data.referralClaimedAt.seconds*1000).toLocaleString()
           : "-";
         table.innerHTML += `<tr>
           <td>${data.email}</td>
           <td>$5</td>
-          <td>${claimedAt}</td>
+          <td>${joinedAt}</td>
         </tr>`;
         totalEarnings += 5;
       });
