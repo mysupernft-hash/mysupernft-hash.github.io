@@ -1,171 +1,173 @@
-/* General body */
-body {
+/* -------------------------------
+   General Reset & Body
+---------------------------------*/
+html, body {
+  height: 100%;
   margin: 0;
-  font-family: 'Arial', sans-serif;
-  background: #0b0f1a;
-  color: #ffffff;
-}
-
-/* Top navbar */
-.topbar {
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: #FFD700;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 15px 25px;
-  background: #111827;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  flex-direction: column;
 }
 
-.topbar h1 {
-  font-size: 20px;
-  margin: 0;
+/* -------------------------------
+   Main Content
+---------------------------------*/
+.main-content {
+  flex: 1; /* expands to fill space above footer */
+  padding: 20px;
 }
 
-.hamburger {
-  font-size: 26px;
-  cursor: pointer;
-}
-
-/* Sidebar menu */
+/* -------------------------------
+   Sidebar
+---------------------------------*/
 .sidebar {
   position: fixed;
   top: 0;
-  left: -260px; /* hidden initially */
-  width: 260px;
-  height: 100%;
-  background: #111827;
-  padding: 20px;
-  transition: 0.3s;
-  overflow-y: auto;
-  z-index: 200;
-}
-
-.sidebar.show {
   left: 0;
-}
-
-.sidebar h2 {
-  color: #38bdf8;
-  text-align: center;
-  margin-bottom: 20px;
+  width: 220px;
+  height: 100%;
+  background: #1a1a1a;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .sidebar ul li {
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
-.sidebar ul li a {
-  color: white;
-  text-decoration: none;
-  padding: 10px 15px;
+.sidebar ul li a,
+.sidebar ul li button {
   display: block;
-  border-radius: 8px;
-  transition: 0.3s;
-}
-
-.sidebar ul li a:hover {
-  background: #38bdf8;
-  color: #0b0f1a;
-}
-
-/* Main content */
-.main {
-  margin-left: 0;
-  padding: 25px;
-  transition: margin-left 0.3s;
-}
-
-.main.shift {
-  margin-left: 260px;
-}
-
-/* Category buttons */
-.category-buttons {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 25px;
-}
-
-.category-buttons button {
-  padding: 8px 18px;
+  color: #FFD700;
+  text-decoration: none;
+  padding: 12px 20px;
   border: none;
-  border-radius: 20px;
-  background: #38bdf8;
-  color: #0b0f1a;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.category-buttons button:hover,
-.category-buttons button.active {
-  background: #00e5ff;
-}
-
-/* NFT container */
-.nft-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-}
-
-/* NFT cards */
-.nft-card {
-  background: #111827;
-  border-radius: 12px;
-  width: 300px;
-  text-align: center;
-  padding: 15px;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.nft-card img {
+  background: none;
   width: 100%;
-  border-radius: 12px;
-  margin-bottom: 12px;
+  text-align: left;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
 }
 
-.nft-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+.sidebar ul li a:hover,
+.sidebar ul li button:hover {
+  background: #FFD700;
+  color: #000;
 }
 
-.nft-card p {
-  margin: 5px 0;
-  font-size: 14px;
+/* Active menu highlight */
+.sidebar ul li a.active {
+  background: #FFD700;
+  color: #000;
+  font-weight: bold;
 }
 
-/* Buy button */
-.nft-card button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background: #38bdf8;
+/* -------------------------------
+   Buttons
+---------------------------------*/
+button {
+  padding: 12px 20px;
+  background: #FFD700;
   border: none;
+  color: #000;
+  font-weight: bold;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: bold;
-  color: #0b0f1a;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 
-.nft-card button:hover {
-  background: #00e5ff;
+button:hover {
+  background: #e0c200;
 }
 
-/* Responsive for mobile */
-@media screen and (max-width: 650px) {
-  .nft-card {
-    width: 90%;
+/* -------------------------------
+   Inputs
+---------------------------------*/
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: none;
+  background: #272727;
+  color: #FFD700;
+}
+
+/* -------------------------------
+   Tables / Lists
+---------------------------------*/
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table, th, td {
+  border: 1px solid #333;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+}
+
+/* -------------------------------
+   Footer (Sticky)
+---------------------------------*/
+footer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #1a1a1a;
+  color: #FFD700;
+  padding: 12px 0;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  font-size: 18px;
+}
+
+footer div:hover {
+  color: #fff;
+  cursor: pointer;
+}
+
+/* -------------------------------
+   Responsive
+---------------------------------*/
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+    padding-top: 10px;
+  }
+
+  .sidebar ul li a,
+  .sidebar ul li button {
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+
+  footer {
+    font-size: 14px;
   }
 }
