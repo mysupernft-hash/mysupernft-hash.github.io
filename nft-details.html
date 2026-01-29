@@ -3,74 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Details</title>
+<title>NFT Details - SuperNFT</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
-.container{max-width:500px;margin:20px auto;padding:15px;background:#1a1a1a;border-radius:12px;}
-img{width:100%;border-radius:8px;}
-h1,h2,p{margin:5px 0;}
-.profit-box{background:#272727;padding:10px;margin:10px 0;border-radius:8px;}
-button{background:#FFD700;color:#000;border:none;padding:10px 15px;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.2s;}
-button:hover{background:#e0c200;}
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: #FFD700;
+}
+
+.main-content {
+  padding: 20px;
+  padding-bottom: 80px; /* for sticky footer */
+}
+
+.nft-details {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #1a1a1a;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.nft-details h2 {
+  margin-bottom: 10px;
+}
+
+.nft-details p {
+  margin: 8px 0;
+  font-size: 18px;
+}
+
+button {
+  padding: 12px 20px;
+  background: #FFD700;
+  border: none;
+  color: #000;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 15px;
+}
+
+button:hover {
+  background: #e0c200;
+}
+
+#message {
+  margin-top: 15px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Footer */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #1a1a1a;
+  color: #FFD700;
+  z-index: 999;
+  font-size: 18px;
+}
+
+footer div:hover {
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .nft-details {
+    margin: 20px;
+  }
+  footer {
+    font-size: 14px;
+  }
+}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <h1 id="nftTitle">NFT Details</h1>
-  <img id="nftImage" src="" alt="NFT Image">
-  <p id="nftCategory"></p>
-  <p id="nftPrice"></p>
-
-  <div class="profit-box" id="profitBox"></div>
-
-  <button onclick="goBack()">Back to Dashboard</button>
+<div class="main-content">
+  <div class="nft-details">
+    <h2 id="nftName">Starter NFT #1</h2>
+    <p>Category: <span id="nftCategory">starter</span></p>
+    <p>Price: <span id="nftPrice">10</span> Coins</p>
+    <button id="buyBtn">Buy NFT</button>
+    <div id="message"></div>
+  </div>
 </div>
 
-<script>
-// Get selected NFT from localStorage
-const nft = JSON.parse(localStorage.getItem('selectedNFT'));
-if(!nft){
-  alert('No NFT selected'); 
-  window.location.href='dashboard.html';
-}
+<footer>
+  <div>👤 My Account</div>
+  <div>📁 Investments</div>
+  <div>💳 Wallet</div>
+  <div>💸 Withdraw</div>
+  <div>💹 Live</div>
+</footer>
 
-document.getElementById('nftImage').src = nft.img;
-document.getElementById('nftCategory').innerText = "Category: "+nft.cat;
-document.getElementById('nftPrice').innerText = "Invest: $"+nft.price;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Profit calculations
-function calculateProfit(price){
-  let dailyPerc = 0;
-  if(price<=50) dailyPerc = 0.02;       // 2%
-  else if(price<=100) dailyPerc = 0.025; // 2.5%
-  else if(price<=300) dailyPerc = 0.033; // 3.3%
-  else if(price<=499) dailyPerc = 0.05;  // 5%
-  else if(price<=699) dailyPerc = 0.05;  // 5%
-  else dailyPerc = 0.10;                 // 10%
+// 🔹 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
 
-  const daily = price*dailyPerc;
-  const weekly = daily*7;
-  const monthly = daily*30;
-  const yearly = daily*365;
-  const totalPayout = yearly + price;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  return {daily, weekly, monthly, yearly, totalPayout};
-}
+const buyBtn = document.getElementById("buyBtn");
+const message = document.getElementById("message");
 
-const profit = calculateProfit(nft.price);
+buyBtn.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    message.style.color = "#ff4444";
+    message.textContent = "Please login first!";
+    return;
+  }
 
-// Display profit
-document.getElementById('profitBox').innerHTML = `
-<h2>Profit Breakdown</h2>
-<p>• Daily Profit: $${profit.daily.toFixed(2)} (${(profit.daily/nft.price*100).toFixed(1)}%)</p>
-<p>• Weekly Profit: $${profit.weekly.toFixed(2)} (${(profit.weekly/nft.price*100).toFixed(1)}%)</p>
-<p>• Monthly Profit: $${profit.monthly.toFixed(2)} (${(profit.monthly/nft.price*100).toFixed(1)}%)</p>
-<p>• Yearly Profit: $${profit.yearly.toFixed(2)} (${(profit.yearly/nft.price*100).toFixed(1)}%)</p>
-<p>• Total Payout: At the end of the year, you would have $${profit.totalPayout.toFixed(2)}</p>
-`;
+  const userRef = doc(db, "users", user.uid);
+  const nftPrice = Number(document.getElementById("nftPrice").textContent);
+  const nftName = document.getElementById("nftName").textContent;
 
-function goBack(){ window.location.href='dashboard.html'; }
+  const userSnap = await getDoc(userRef);
+  const walletBalance = userSnap.data().walletBalance || 0;
+
+  if (walletBalance >= nftPrice) {
+    // Deduct price and add NFT
+    await updateDoc(userRef, {
+      walletBalance: walletBalance - nftPrice,
+      ownedNFTs: arrayUnion(nftName)
+    });
+    message.style.color = "#00ff00";
+    message.textContent = "✅ Done! NFT purchased successfully.";
+  } else {
+    message.style.color = "#ff4444";
+    message.textContent = "❌ Insufficient balance!";
+  }
+});
 </script>
+
 </body>
 </html>
