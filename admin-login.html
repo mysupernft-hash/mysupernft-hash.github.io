@@ -2,110 +2,56 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Login | SuperNFT</title>
+<title>Admin Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#0d0d0d;
-  font-family:Arial;
-  color:#FFD700;
-}
-.box{
-  background:#1a1a1a;
-  padding:30px;
-  width:320px;
-  border-radius:10px;
-  text-align:center;
-}
-input{
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border:none;
-  border-radius:5px;
-}
-button{
-  width:100%;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
-  border:none;
-  border-radius:5px;
-  font-weight:bold;
-  cursor:pointer;
-}
-button:hover{background:#e6c200;}
-.msg{margin-top:10px;font-size:14px;}
-</style>
-
+<link rel="stylesheet" href="assets/style.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
-
 <body>
-
-<div class="box">
+<div style="text-align:center;margin-top:100px;">
   <h2>Admin Login</h2>
-  <input type="email" id="email" placeholder="Admin Email" value="mysupernft@gmail.com">
-  <input type="password" id="password" placeholder="Password">
+  <input type="email" id="email" value="mysupernft@gmail.com"><br><br>
+  <input type="password" id="password"><br><br>
   <button onclick="login()">Login</button>
-  <div class="msg" id="msg"></div>
+  <p id="msg"></p>
 </div>
 
 <script>
-/* Firebase Config */
+const msg = document.getElementById("msg");
+const ADMIN_EMAIL = "mysupernft@gmail.com";
+
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
 });
 
-const ADMIN_EMAIL = "mysupernft@gmail.com";
-const msg = document.getElementById("msg");
-
-/* 🔐 If already logged-in, redirect to dashboard */
-firebase.auth().onAuthStateChanged(user => {
+// Auto redirect if already logged in
+firebase.auth().onAuthStateChanged(user=>{
   if(user && user.email.toLowerCase() === ADMIN_EMAIL){
     window.location.replace("admin-dashboard.html");
   }
 });
 
-/* Login Function */
 function login(){
   const email = document.getElementById("email").value.trim().toLowerCase();
   const pass = document.getElementById("password").value;
-
-  if(!email || !pass){
-    msg.innerText = "Enter email & password";
-    return;
-  }
-
-  msg.innerText = "Logging in...";
+  if(!email || !pass){ msg.innerText="Enter email & password"; return; }
 
   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .then(() => firebase.auth().signInWithEmailAndPassword(email, pass))
-    .then(res => {
-      // ✅ Wait for Firebase to confirm user session
-      firebase.auth().onAuthStateChanged(user => {
-        if(user && user.email.toLowerCase() === ADMIN_EMAIL){
-          window.location.replace("admin-dashboard.html"); // safe redirect
+    .then(()=> firebase.auth().signInWithEmailAndPassword(email, pass))
+    .then(res=>{
+      firebase.auth().onAuthStateChanged(user=>{
+        if(user && user.email.toLowerCase()===ADMIN_EMAIL){
+          window.location.replace("admin-dashboard.html");
         } else {
-          msg.innerText = "Access denied";
+          msg.innerText="Access denied";
           firebase.auth().signOut();
         }
       });
-    })
-    .catch(err => {
-      msg.innerText = err.message;
-    });
+    }).catch(err=>msg.innerText=err.message);
 }
 </script>
-
 </body>
 </html>
