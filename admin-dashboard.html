@@ -1,334 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SuperNFT Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Admin Dashboard</title>
+<style>
+body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;min-height:100vh;flex-direction:column;}
+.wrapper{display:flex;flex:1;}
+.sidebar{width:220px;background:#1a1a1a;display:flex;flex-direction:column;padding:20px 0;}
+.sidebar h2{text-align:center;margin-bottom:20px;}
+.sidebar a{color:#FFD700;text-decoration:none;padding:12px 20px;display:block;margin:5px 0;}
+.sidebar a:hover{background:#333;color:#fff;}
+.main{flex:1;padding:20px;overflow-y:auto;}
+footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;flex-shrink:0;width:100%;position:sticky;bottom:0;}
+footer div:hover{color:#fff;cursor:pointer;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #333;}
+th{background:#222;}
+tr:hover{background:#333;}
+button{padding:6px 12px;background:#FFD700;border:none;border-radius:5px;cursor:pointer;color:#000;font-weight:bold;margin:2px;}
+</style>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <style>
-    /* Reset */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-
-    body { display: flex; min-height: 100vh; background: #0d0d0d; color: #FFD700; }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: #1a1a1a;
-      display: flex;
-      flex-direction: column;
-      padding: 20px 0;
-    }
-
-    .sidebar h2 { text-align: center; margin-bottom: 20px; }
-    .sidebar a {
-      padding: 12px 20px;
-      color: #FFD700;
-      text-decoration: none;
-      display: block;
-      transition: 0.2s;
-    }
-    .sidebar a:hover { background: #333; color: #fff; }
-
-    /* Main Content */
-    .main { flex: 1; padding: 20px; overflow-y: auto; }
-
-    .stats { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; }
-    .card {
-      flex: 1 1 150px;
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-    }
-    .card h3 { font-size: 20px; margin-bottom: 10px; }
-    .card p { font-size: 24px; font-weight: bold; }
-
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
-    th { background: #222; }
-    tr:hover { background: #333; }
-
-    /* Buttons */
-    button {
-      background: #FFD700;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-      color: #000;
-      font-weight: bold;
-    }
-
-    /* Footer */
-    footer {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background: #1a1a1a;
-      color: #FFD700;
-      padding: 12px 0;
-      position: sticky;
-      bottom: 0;
-      width: 100%;
-      font-size: 18px;
-    }
-    footer div:hover { color: #fff; cursor: pointer; }
-  </style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-
 <body>
 
+<div class="wrapper">
   <!-- Sidebar -->
   <div class="sidebar">
     <h2>Admin</h2>
-    <a href="#stats">Dashboard</a>
-    <a href="#nfts">Manage NFTs</a>
-    <a href="#users">Users & Referrals</a>
-    <a href="#withdraws">Withdraw Requests</a>
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="admin-nfts.html">NFTs</a>
+    <a href="admin-users.html">Users</a>
+    <a href="admin-withdraw.html">Withdraws</a>
+    <a href="admin-deposits.html">Deposits</a>
     <a href="#" onclick="logout()">Logout</a>
   </div>
 
-  <!-- Main Content -->
+  <!-- Main content -->
   <div class="main">
-
-    <!-- Stats -->
-    <div class="stats" id="stats">
-      <div class="card">
-        <h3>Total Users</h3>
-        <p id="totalUsers">0</p>
-      </div>
-      <div class="card">
-        <h3>Total NFTs</h3>
-        <p id="totalNFTs">0</p>
-      </div>
-      <div class="card">
-        <h3>Total Referrals</h3>
-        <p id="totalReferrals">0</p>
-      </div>
-      <div class="card">
-        <h3>Total Earnings</h3>
-        <p id="totalEarnings">0</p>
-      </div>
-    </div>
-
-    <!-- Manage NFTs -->
-    <div id="nfts">
-      <h2>Manage NFTs</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Daily Income</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="nftTable"></tbody>
-      </table>
-      <h3>Add New NFT</h3>
-      <input id="nftName" placeholder="Name" />
-      <input id="nftCategory" placeholder="Category" />
-      <input id="nftPrice" type="number" placeholder="Price" />
-      <input id="nftIncome" type="number" placeholder="Daily Income" />
-      <button onclick="addNFT()">Add NFT</button>
-    </div>
-
-    <!-- Users & Referrals -->
-    <div id="users">
-      <h2>Users & Referrals</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Referral Code</th>
-            <th>Referred Users</th>
-          </tr>
-        </thead>
-        <tbody id="userTable"></tbody>
-      </table>
-    </div>
-
-    <!-- Withdraw Requests -->
-    <div id="withdraws">
-      <h2>Withdraw Requests</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>User Email</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="withdrawTable"></tbody>
-      </table>
-    </div>
-
+    <h2>Welcome Admin!</h2>
+    <p id="welcomeMsg">Loading...</p>
+    <h3>Quick Stats</h3>
+    <table>
+      <thead>
+        <tr><th>Collection</th><th>Count</th></tr>
+      </thead>
+      <tbody id="statsTable"></tbody>
+    </table>
   </div>
+</div>
 
-  <!-- Footer -->
-  <footer>
-    <div>📁 Investments</div>
-    <div>💳 Wallet</div>
-    <div>💸 Withdraw</div>
-    <div>💹 Live Earnings</div>
-    <div>👤 My Account</div>
-  </footer>
+<footer>
+  <div>📁 Investments</div>
+  <div>💳 Wallet</div>
+  <div>💸 Withdraw</div>
+  <div>💹 Live Earnings</div>
+  <div>👤 My Account</div>
+</footer>
 
-  <!-- JS -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-      authDomain: "supernft-5b952.firebaseapp.com",
-      projectId: "supernft-5b952",
-      storageBucket: "supernft-5b952.firebasestorage.app",
-      messagingSenderId: "278097730700",
-      appId: "1:278097730700:web:014d5ab680859db4512fa9",
-      measurementId: "G-BME7FWT355"
-    };
+<script>
+// 🔹 Firebase Config
+const firebaseConfig = {
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.firebasestorage.app",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:014d5ab680859db4512fa9",
+measurementId: "G-BME7FWT355"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+const ADMIN_EMAIL="admin@supernft.com";
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+// 🔹 Keep admin logged in (persistent)
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-    // 🔹 Admin email for testing (Frontend-only)
-    const ADMIN_EMAIL = "admin@supernft.com";
+// 🔹 Check admin auth on load
+auth.onAuthStateChanged(async user=>{
+  if(!user || user.email !== ADMIN_EMAIL){
+    window.location.href="admin-login.html";
+  } else {
+    document.getElementById("welcomeMsg").innerText = "Hello, " + user.email;
+    loadStats();
+  }
+});
 
-    // Check login
-    auth.onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "admin-login.html";
-      } else if (user.email !== ADMIN_EMAIL) {
-        auth.signOut();
-        alert("Access denied. Admin only.");
-        window.location.href = "admin-login.html";
-      } else {
-        loadStats();
-        loadNFTs();
-        loadUsers();
-        loadWithdraws();
-      }
-    });
+// 🔹 Logout function
+function logout(){
+  auth.signOut().then(()=> window.location.href="admin-login.html");
+}
 
-    // Logout
-    function logout() {
-      auth.signOut().then(() => window.location.href = "admin-login.html");
-    }
+// 🔹 Load Quick Stats
+async function loadStats(){
+  const statsTable=document.getElementById("statsTable");
+  statsTable.innerHTML="";
+  
+  const nftsSnap=await db.collection("nfts").get();
+  const usersSnap=await db.collection("users").get();
+  const depositsSnap=await db.collection("users").get(); // deposits stored in users
 
-    // Load Stats
-    async function loadStats() {
-      const usersSnap = await db.collection("users").get();
-      document.getElementById("totalUsers").innerText = usersSnap.size;
+  statsTable.innerHTML+=`<tr><td>Total NFTs</td><td>${nftsSnap.size}</td></tr>`;
+  statsTable.innerHTML+=`<tr><td>Total Users</td><td>${usersSnap.size}</td></tr>`;
 
-      const nftsSnap = await db.collection("nfts").get();
-      document.getElementById("totalNFTs").innerText = nftsSnap.size;
-
-      const referralsSnap = await db.collection("referrals").get();
-      document.getElementById("totalReferrals").innerText = referralsSnap.size;
-
-      // Total earnings = sum of all users' investment amounts
-      let total = 0;
-      usersSnap.forEach(u => {
-        if (u.data().investment) total += u.data().investment;
-      });
-      document.getElementById("totalEarnings").innerText = total;
-    }
-
-    // Load NFTs
-    async function loadNFTs() {
-      const nftTable = document.getElementById("nftTable");
-      nftTable.innerHTML = "";
-      const snapshot = await db.collection("nfts").get();
-      snapshot.forEach(doc => {
-        const nft = doc.data();
-        nftTable.innerHTML += `<tr>
-          <td>${nft.name}</td>
-          <td>${nft.category}</td>
-          <td>${nft.price}</td>
-          <td>${nft.dailyIncome}</td>
-          <td><button onclick="deleteNFT('${doc.id}')">Delete</button></td>
-        </tr>`;
-      });
-    }
-
-    // Add NFT
-    async function addNFT() {
-      const name = document.getElementById("nftName").value;
-      const category = document.getElementById("nftCategory").value;
-      const price = parseFloat(document.getElementById("nftPrice").value);
-      const income = parseFloat(document.getElementById("nftIncome").value);
-
-      if (!name || !category || !price || !income) { alert("All fields required"); return; }
-
-      await db.collection("nfts").add({
-        name, category, price, dailyIncome: income
-      });
-
-      loadNFTs();
-      document.getElementById("nftName").value = "";
-      document.getElementById("nftCategory").value = "";
-      document.getElementById("nftPrice").value = "";
-      document.getElementById("nftIncome").value = "";
-    }
-
-    // Delete NFT
-    async function deleteNFT(id) {
-      if (confirm("Are you sure to delete this NFT?")) {
-        await db.collection("nfts").doc(id).delete();
-        loadNFTs();
-      }
-    }
-
-    // Load Users & Referrals
-    async function loadUsers() {
-      const userTable = document.getElementById("userTable");
-      userTable.innerHTML = "";
-      const usersSnap = await db.collection("users").get();
-      for (const u of usersSnap.docs) {
-        const user = u.data();
-        let referred = [];
-        const refSnap = await db.collection("users").where("referralCodeUsed", "==", u.data().referralCode).get();
-        refSnap.forEach(r => referred.push(r.data().email));
-        userTable.innerHTML += `<tr>
-          <td>${user.email}</td>
-          <td>${user.referralCode || ""}</td>
-          <td>${referred.join(", ")}</td>
-        </tr>`;
-      }
-    }
-
-    // Load Withdraws
-    async function loadWithdraws() {
-      const withdrawTable = document.getElementById("withdrawTable");
-      withdrawTable.innerHTML = "";
-      const snap = await db.collection("withdraws").get();
-      snap.forEach(doc => {
-        const w = doc.data();
-        withdrawTable.innerHTML += `<tr>
-          <td>${w.userEmail}</td>
-          <td>${w.amount}</td>
-          <td>${w.status}</td>
-          <td>
-            ${w.status === "pending" ? `<button onclick="updateWithdraw('${doc.id}','approved')">Approve</button>
-            <button onclick="updateWithdraw('${doc.id}','rejected')">Reject</button>` : ""}
-          </td>
-        </tr>`;
-      });
-    }
-
-    async function updateWithdraw(id, status) {
-      await db.collection("withdraws").doc(id).update({ status });
-      loadWithdraws();
-    }
-  </script>
+  let totalDeposits = 0;
+  depositsSnap.forEach(doc=>{
+    const d = doc.data().deposit || 0;
+    totalDeposits += d;
+  });
+  statsTable.innerHTML+=`<tr><td>Total Deposits</td><td>$${totalDeposits}</td></tr>`;
+}
+</script>
 
 </body>
 </html>
