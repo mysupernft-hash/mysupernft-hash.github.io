@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claim Referral Bonus</title>
+<style>
+body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;flex-direction:column;min-height:100vh;}
+.main{flex:1;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+input{padding:12px;width:250px;margin:10px 0;border-radius:6px;border:none;outline:none;}
+button{padding:12px 20px;background:#FFD700;color:#000;font-weight:bold;border:none;border-radius:6px;cursor:pointer;}
+button:hover{background:#e6c200;}
+p{margin-top:10px;font-size:16px;}
+footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;position:sticky;bottom:0;width:100%;}
+footer div:hover{color:#fff;cursor:pointer;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="main">
+<h2>Claim Your $5 Referral Bonus</h2>
+<input type="text" id="refCode" placeholder="Enter Referral Code" />
+<button onclick="claimBonus()">Claim Bonus</button>
+<p id="msg"></p>
+</div>
+
+<footer>
+<div>📁 Investments</div>
+<div>💳 Wallet</div>
+<div>💸 Withdraw</div>
+<div>💹 Live Earnings</div>
+<div>👤 My Account</div>
+</footer>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.firebasestorage.app",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:014d5ab680859db4512fa9",
+measurementId: "G-BME7FWT355"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser;
+
+auth.onAuthStateChanged(user=>{
+  if(!user) window.location.href="signup.html";
+  else currentUser = user;
+});
+
+async function claimBonus(){
+  const msg = document.getElementById("msg");
+  const code = document.getElementById("refCode").value.trim();
+  if(!code){msg.innerText="Please enter a referral code!"; return;}
+
+  try{
+    const userDoc = await db.collection("users").doc(currentUser.uid).get();
+    const userData = userDoc.data();
+
+    if(userData.referralCodeUsed){
+      msg.innerText="❌ You have already used a referral code!";
+      return;
+    }
+
+    // Check if referral code exists
+    const refDoc = await db.collection("referrals").doc(code).get();
+    if(!refDoc.exists || !refDoc.data().active){
+      msg.innerText="❌ Invalid referral code!";
+      return;
+    }
+
+    // Add $5 bonus and mark code as used
+    await db.collection("users").doc(currentUser.uid).update({
+      deposit: (userData.deposit || 0) + 5,
+      referralCodeUsed: code
+    });
+
+    msg.innerText="✅ $5 added to your account!";
+
+  }catch(err){
+    console.error(err);
+    msg.innerText="❌ Error occurred. Try again.";
+  }
+}
+</script>
+</body>
+</html>
