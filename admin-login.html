@@ -70,7 +70,7 @@ firebase.initializeApp({
 const ADMIN_EMAIL = "mysupernft@gmail.com";
 const msg = document.getElementById("msg");
 
-/* 🔐 Optional: Already logged-in → auto dashboard */
+/* Optional: If already logged-in admin, go straight to dashboard */
 firebase.auth().onAuthStateChanged(user => {
   if(user && user.email.toLowerCase() === ADMIN_EMAIL){
     window.location.replace("admin-dashboard.html");
@@ -91,8 +91,8 @@ function login(){
 
   firebase.auth()
     .setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .then(()=> firebase.auth().signInWithEmailAndPassword(email, pass))
-    .then(res=>{
+    .then(() => firebase.auth().signInWithEmailAndPassword(email, pass))
+    .then(res => {
       if(res.user.email.toLowerCase() !== ADMIN_EMAIL){
         msg.innerText = "Access denied";
         firebase.auth().signOut();
@@ -100,7 +100,7 @@ function login(){
       }
       window.location.replace("admin-dashboard.html");
     })
-    .catch(err=>{
+    .catch(err => {
       msg.innerText = err.message;
     });
 }
