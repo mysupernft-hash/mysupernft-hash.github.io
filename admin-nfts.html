@@ -2,188 +2,113 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin - NFT Assign/Remove</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Admin NFTs</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0b0f1a;
-  color:#fff;
-}
-header{
-  background:#111827;
-  padding:15px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-header h1{font-size:18px;margin:0}
-header button{
-  background:#ef4444;
-  border:none;
-  padding:8px 14px;
-  border-radius:6px;
-  color:#fff;
-  cursor:pointer;
-}
-
-.container{padding:20px}
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
-}
-th,td{
-  border:1px solid #1f2937;
-  padding:10px;
-}
-th{background:#111827}
-
-button.assign{
-  background:#38bdf8;
-  border:none;
-  padding:6px 12px;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:bold;
-  color:#000;
-}
-button.remove{
-  background:#ef4444;
-  border:none;
-  padding:6px 12px;
-  border-radius:6px;
-  cursor:pointer;
-  font-weight:bold;
-  color:#fff;
-}
+body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;}
+.sidebar{width:220px;background:#1a1a1a;display:flex;flex-direction:column;padding:20px 0;}
+.sidebar h2{text-align:center;margin-bottom:20px;}
+.sidebar a{color:#FFD700;text-decoration:none;padding:12px 20px;display:block;margin:5px 0;}
+.sidebar a:hover{background:#333;color:#fff;}
+.main{flex:1;padding:20px;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #333;}
+th{background:#222;}
+tr:hover{background:#333;}
+button{padding:6px 12px;background:#FFD700;border:none;border-radius:5px;cursor:pointer;color:#000;font-weight:bold;margin:2px;}
+input{padding:6px;margin:5px;}
+footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;position:sticky;bottom:0;width:100%;}
+footer div:hover{color:#fff;cursor:pointer;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-
 <body>
 
-<header>
-  <h1>Admin – NFT Assign / Remove</h1>
-  <button id="logoutBtn">Logout</button>
-</header>
-
-<div class="container">
-  <table>
-    <thead>
-      <tr>
-        <th>User Email</th>
-        <th>Owned NFTs</th>
-        <th>Assign NFT</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody id="nftTable">
-      <tr><td colspan="4">Loading users...</td></tr>
-    </tbody>
-  </table>
+<div class="sidebar">
+<h2>Admin</h2>
+<a href="admin-nfts.html">NFTs</a>
+<a href="admin-users.html">Users</a>
+<a href="admin-withdraw.html">Withdraws</a>
+<a href="admin-deposits.html">Deposits</a>
+<a href="admin-login.html" onclick="logout()">Logout</a>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+<div class="main">
+<h2>Manage NFTs</h2>
+<table>
+<thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Daily Income</th><th>Action</th></tr></thead>
+<tbody id="nftTable"></tbody>
+</table>
+<h3>Add New NFT</h3>
+<input id="nftName" placeholder="Name"/>
+<input id="nftCategory" placeholder="Category"/>
+<input id="nftPrice" type="number" placeholder="Price"/>
+<input id="nftIncome" type="number" placeholder="Daily Income"/>
+<button onclick="addNFT()">Add NFT</button>
+</div>
 
-/* 🔥 FIREBASE CONFIG */
+<footer>
+<div>📁 Investments</div>
+<div>💳 Wallet</div>
+<div>💸 Withdraw</div>
+<div>💹 Live Earnings</div>
+<div>👤 My Account</div>
+</footer>
+
+<script>
 const firebaseConfig = {
-  apiKey: "AIzaSyDdTprqsuAaDiDDoK7K6tHAyabfyPs5DTk",
-  authDomain: "mysuper-nft.firebaseapp.com",
-  projectId: "mysuper-nft",
-  storageBucket: "mysuper-nft.firebasestorage.app",
-  messagingSenderId: "1061978771986",
-  appId: "1:1061978771986:web:ef0302af5bb02c2cd0fecb"
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.firebasestorage.app",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:014d5ab680859db4512fa9",
+measurementId: "G-BME7FWT355"
 };
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(); const db=firebase.firestore();
+const ADMIN_EMAIL="admin@supernft.com";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* 🔐 ADMIN GUARD */
-onAuthStateChanged(auth, async user=>{
-  if(!user) location.replace("admin-login.html");
-  const adminSnap = await getDocs(collection(db,"admin"));
-  // simple check (optional better with getDoc by UID)
+auth.onAuthStateChanged(user=>{
+  if(!user||user.email!==ADMIN_EMAIL){auth.signOut(); window.location.href="admin-login.html";}
+  else{loadNFTs();}
 });
 
-/* 🔄 LOAD USERS */
-const table = document.getElementById("nftTable");
+function logout(){auth.signOut();}
 
-async function loadUsers(){
-  table.innerHTML = "";
-  const snap = await getDocs(collection(db,"users"));
-  snap.forEach(u=>{
-    const data = u.data();
-    const uid = u.id;
-
-    const nftsOwned = data.nfts ? data.nfts.join(", ") : "None";
-
-    table.innerHTML += `
-      <tr>
-        <td>${data.email}</td>
-        <td>${nftsOwned}</td>
-        <td><input type="text" id="nft-${uid}" placeholder="NFT Name"></td>
-        <td>
-          <button class="assign" onclick="assignNFT('${uid}')">Assign</button>
-          <button class="remove" onclick="removeNFT('${uid}')">Remove</button>
-        </td>
-      </tr>
-    `;
+async function loadNFTs(){
+  const nftTable=document.getElementById("nftTable");
+  nftTable.innerHTML="";
+  const snapshot=await db.collection("nfts").get();
+  snapshot.forEach(doc=>{
+    const nft=doc.data();
+    nftTable.innerHTML+=`<tr>
+      <td>${nft.name}</td>
+      <td>${nft.category}</td>
+      <td>${nft.price}</td>
+      <td>${nft.dailyIncome}</td>
+      <td><button onclick="deleteNFT('${doc.id}')">Delete</button></td>
+    </tr>`;
   });
 }
 
-/* 💎 ASSIGN NFT */
-window.assignNFT = async (uid)=>{
-  const nftName = document.getElementById(`nft-${uid}`).value.trim();
-  if(!nftName){ alert("Enter NFT name"); return; }
+async function addNFT(){
+  const name=document.getElementById("nftName").value;
+  const category=document.getElementById("nftCategory").value;
+  const price=parseFloat(document.getElementById("nftPrice").value);
+  const income=parseFloat(document.getElementById("nftIncome").value);
+  if(!name||!category||!price||!income){alert("All fields required"); return;}
+  await db.collection("nfts").add({name, category, price, dailyIncome: income});
+  document.getElementById("nftName").value="";
+  document.getElementById("nftCategory").value="";
+  document.getElementById("nftPrice").value="";
+  document.getElementById("nftIncome").value="";
+  loadNFTs();
+}
 
-  const userRef = doc(db,"users",uid);
-  const userSnap = await getDocs(collection(db,"users"));
-  const userDoc = await doc(db,"users",uid).get();
-
-  const userData = (await userRef.get()).data();
-  let nfts = userData.nfts || [];
-
-  if(nfts.includes(nftName)){
-    alert("User already has this NFT");
-    return;
-  }
-
-  nfts.push(nftName);
-  await updateDoc(userRef,{ nfts });
-
-  alert("NFT assigned ✅");
-  loadUsers();
-};
-
-/* ❌ REMOVE NFT */
-window.removeNFT = async (uid)=>{
-  const nftName = document.getElementById(`nft-${uid}`).value.trim();
-  if(!nftName){ alert("Enter NFT name"); return; }
-
-  const userRef = doc(db,"users",uid);
-  const userDoc = await userRef.get();
-  let nfts = userDoc.data().nfts || [];
-
-  nfts = nfts.filter(n => n !== nftName);
-  await updateDoc(userRef,{ nfts });
-
-  alert("NFT removed ❌");
-  loadUsers();
-};
-
-/* 🔄 INIT */
-loadUsers();
-
-/* 🚪 LOGOUT */
-document.getElementById("logoutBtn").onclick = ()=>{
-  signOut(auth).then(()=>location.replace("admin-login.html"));
-};
+async function deleteNFT(id){if(confirm("Delete this NFT?")){await db.collection("nfts").doc(id).delete(); loadNFTs();}}
 </script>
 
 </body>
