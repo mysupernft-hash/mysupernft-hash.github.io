@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Referrals & Earnings</title>
+<style>
+body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;flex-direction:column;min-height:100vh;}
+.main{flex:1;padding:20px;}
+input, button{padding:10px;margin:5px 0;border-radius:5px;border:none;outline:none;}
+button{background:#FFD700;color:#000;font-weight:bold;cursor:pointer;}
+button:hover{background:#e6c200;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #333;}
+th{background:#222;}
+tr:hover{background:#333;}
+footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;position:sticky;bottom:0;width:100%;}
+footer div:hover{color:#fff;cursor:pointer;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="main">
+<h2>My Referrals & Earnings</h2>
+<p>Your Referral Code: <span id="myCode">Loading...</span></p>
+<h3>Users Joined With Your Code:</h3>
+<table>
+  <thead>
+    <tr>
+      <th>User Email</th>
+      <th>Claimed Bonus</th>
+      <th>Claimed At</th>
+    </tr>
+  </thead>
+  <tbody id="refUsersTable"></tbody>
+</table>
+<p>Total Earnings from Referrals: $<span id="totalEarnings">0</span></p>
+</div>
+
+<footer>
+<div>📁 Investments</div>
+<div>💳 Wallet</div>
+<div>💸 Withdraw</div>
+<div>💹 Live Earnings</div>
+<div>👤 My Account</div>
+</footer>
+
+<script>
+const firebaseConfig = {
+apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain: "supernft-5b952.firebaseapp.com",
+projectId: "supernft-5b952",
+storageBucket: "supernft-5b952.firebasestorage.app",
+messagingSenderId: "278097730700",
+appId: "1:278097730700:web:014d5ab680859db4512fa9",
+measurementId: "G-BME7FWT355"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser;
+let myCode = "";
+
+auth.onAuthStateChanged(async user=>{
+  if(!user) window.location.href="signup.html";
+  else {
+    currentUser = user;
+    const userDoc = await db.collection("users").doc(currentUser.uid).get();
+    const userData = userDoc.data();
+    myCode = userData.referralCode || "Not assigned";
+    document.getElementById("myCode").innerText = myCode;
+    loadReferralUsers();
+  }
+});
+
+function loadReferralUsers(){
+  const table = document.getElementById("refUsersTable");
+  const totalEarningsSpan = document.getElementById("totalEarnings");
+  table.innerHTML = "";
+  let totalEarnings = 0;
+
+  db.collection("users")
+    .where("referralCodeUsed","==",myCode)
+    .onSnapshot(snapshot=>{
+      table.innerHTML = "";
+      totalEarnings = 0;
+      snapshot.forEach(doc=>{
+        const data = doc.data();
+        const claimedAt = data.referralClaimedAt
+          ? new Date(data.referralClaimedAt.seconds*1000).toLocaleString()
+          : "-";
+        table.innerHTML += `<tr>
+          <td>${data.email}</td>
+          <td>$5</td>
+          <td>${claimedAt}</td>
+        </tr>`;
+        totalEarnings += 5;
+      });
+      totalEarningsSpan.innerText = totalEarnings;
+    });
+}
+</script>
+</body>
+</html>
