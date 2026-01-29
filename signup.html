@@ -35,7 +35,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* Firebase Config */
+// 🔹 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -48,6 +48,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// 🔹 Signup function
 async function signup() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -59,18 +60,18 @@ async function signup() {
   }
 
   try {
-    // Referral verification
+    // ✅ Referral verification
     const refSnap = await getDoc(doc(db, "referrals", referral));
     if (!refSnap.exists()) {
       alert("Invalid referral code");
       return;
     }
 
-    // Create user in Firebase Auth
+    // ✅ Create user in Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
 
-    // Add user document to Firestore
+    // ✅ Create Firestore document after auth
     await setDoc(doc(db, "users", uid), {
       email: email,
       referral: referral,
@@ -82,17 +83,17 @@ async function signup() {
       totalDeposit: 0
     });
 
-    // Update referral ownerUid
+    // ✅ Update referral document ownerUid
     await setDoc(doc(db, "referrals", referral), {
       ownerUid: uid,
       active: true,
       createdAt: serverTimestamp()
     }, { merge: true });
 
-    // Send verification email
+    // ✅ Send verification email
     await sendEmailVerification(userCredential.user);
 
-    // Redirect to verification page
+    // ✅ Redirect to verification page
     window.location.href = "verification.html";
 
   } catch (error) {
@@ -101,6 +102,7 @@ async function signup() {
   }
 }
 
+// 🔹 Attach click
 document.getElementById("signupBtn").addEventListener("click", signup);
 window.signup = signup;
 </script>
