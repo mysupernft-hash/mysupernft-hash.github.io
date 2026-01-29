@@ -4,18 +4,10 @@
 <meta charset="UTF-8">
 <title>Admin Dashboard | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-body{margin:0;font-family:Arial;background:#0d0d0d;color:#FFD700;}
-header{background:#1a1a1a;padding:15px;text-align:center;font-size:24px;}
-nav{display:flex;background:#1a1a1a;}
-nav a{flex:1;padding:12px;text-decoration:none;color:#FFD700;text-align:center;}
-nav a:hover{background:#333;}
-.main{padding:20px;}
-button.logout{padding:10px 15px;background:#FFD700;color:#000;border:none;border-radius:5px;cursor:pointer;}
-</style>
-
+<link rel="stylesheet" href="assets/style.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="assets/script.js"></script>
 </head>
 <body>
 
@@ -32,32 +24,29 @@ button.logout{padding:10px 15px;background:#FFD700;color:#000;border:none;border
 
 <div class="main">
 <h2>Welcome Admin</h2>
-<p>Use the menu above to navigate.</p>
+<div>
+  <p>📊 Dashboard Stats (Example)</p>
+  <ul>
+    <li>Total Users: <span id="totalUsers">0</span></li>
+    <li>Total NFTs: <span id="totalNFTs">0</span></li>
+    <li>Total Deposits: $<span id="totalDeposits">0</span></li>
+    <li>Total Withdraws: $<span id="totalWithdraws">0</span></li>
+  </ul>
+</div>
 </div>
 
 <script>
-/* Firebase Config */
-firebase.initializeApp({
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+const db = firebase.firestore();
+
+// Example stats fetch
+db.collection("users").get().then(snap=>document.getElementById("totalUsers").innerText=snap.size);
+db.collection("nfts").get().then(snap=>document.getElementById("totalNFTs").innerText=snap.size);
+db.collection("deposits").get().then(snap=>{
+  let total=0; snap.forEach(doc=>total+=doc.data().amount); document.getElementById("totalDeposits").innerText=total;
 });
-
-const ADMIN_EMAIL = "mysupernft@gmail.com";
-
-/* 🔒 Protect Admin Pages */
-firebase.auth().onAuthStateChanged(user=>{
-  if(!user || user.email.toLowerCase() !== ADMIN_EMAIL){
-    window.location.replace("admin-login.html");
-  }
+db.collection("withdraws").get().then(snap=>{
+  let total=0; snap.forEach(doc=>total+=doc.data().amount); document.getElementById("totalWithdraws").innerText=total;
 });
-
-/* 🔐 Logout */
-function logout(){
-  firebase.auth().signOut().then(()=>{
-    window.location.replace("admin-login.html");
-  });
-}
 </script>
 
 </body>
