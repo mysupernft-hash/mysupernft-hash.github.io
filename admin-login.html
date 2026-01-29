@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Login</title>
+<title>Admin Login | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -40,6 +40,7 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
+button:hover{background:#e6c200;}
 .msg{margin-top:10px;font-size:14px;}
 </style>
 
@@ -69,7 +70,14 @@ firebase.initializeApp({
 const ADMIN_EMAIL = "mysupernft@gmail.com";
 const msg = document.getElementById("msg");
 
-/* 🔐 ONE‑TIME LOGIN */
+/* 🔐 Optional: Already logged-in → auto dashboard */
+firebase.auth().onAuthStateChanged(user => {
+  if(user && user.email.toLowerCase() === ADMIN_EMAIL){
+    window.location.replace("admin-dashboard.html");
+  }
+});
+
+/* Login function */
 function login(){
   const email = document.getElementById("email").value.trim().toLowerCase();
   const pass = document.getElementById("password").value;
@@ -83,8 +91,8 @@ function login(){
 
   firebase.auth()
     .setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .then(() => firebase.auth().signInWithEmailAndPassword(email, pass))
-    .then(res => {
+    .then(()=> firebase.auth().signInWithEmailAndPassword(email, pass))
+    .then(res=>{
       if(res.user.email.toLowerCase() !== ADMIN_EMAIL){
         msg.innerText = "Access denied";
         firebase.auth().signOut();
@@ -92,7 +100,7 @@ function login(){
       }
       window.location.replace("admin-dashboard.html");
     })
-    .catch(err => {
+    .catch(err=>{
       msg.innerText = err.message;
     });
 }
