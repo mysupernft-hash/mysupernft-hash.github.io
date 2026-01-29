@@ -3,34 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT - My Team</title>
+<title>My Team - SuperNFT</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;}
-.topbar{position:fixed;top:0;left:0;width:100%;height:60px;background:#111827;display:flex;align-items:center;padding:0 20px;z-index:1001;}
-.topbar h1{color:#38bdf8;font-size:18px;}
-.main{margin-top:60px;padding:15px;}
-.team-member{
-  background:#111827;
-  padding:10px;
-  margin-bottom:10px;
-  border-radius:10px;
-}
-.team-member h3{margin:0 0 5px 0;color:#38bdf8;}
-.team-member p{margin:0;font-size:14px;}
+body {margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
+.container{max-width:600px;margin:50px auto;padding:20px;background:#1a1a1a;border-radius:12px;}
+h2{text-align:center;margin-bottom:20px;}
+ul{list-style:none;padding:0;}
+li{padding:10px;border-bottom:1px solid #333;}
 </style>
 </head>
 <body>
 
-<div class="topbar"><h1>My Team</h1></div>
-<div class="main" id="teamList">
-  <!-- Team members will be loaded here -->
+<div class="container">
+  <h2>My Team</h2>
+  <p>Your Referral Code: <strong id="userReferralCode">Loading...</strong></p>
+  <ul id="teamList">
+    <li>Loading team...</li>
+  </ul>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// 🔹 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -39,35 +36,56 @@ const firebaseConfig = {
   messagingSenderId: "278097730700",
   appId: "1:278097730700:web:6ba9892334456fd8512fa9"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-onAuthStateChanged(auth, async (user)=>{
-  if(!user) return location.replace("login.html");
+// 🔹 Load My Team
+async function loadMyTeam(user) {
+  const uid = user.uid;
 
-  const snap = await getDoc(doc(db,"team",user.uid));
+  // 🔹 Get user's referral code
+  const referralsSnap = await getDocs(collection(db, "referrals"));
+  let myCode = null;
+  referralsSnap.forEach(docSnap => {
+    if (docSnap.data().ownerUid === uid) myCode = docSnap.id;
+  });
+
+  document.getElementById("userReferralCode").innerText = myCode || "You have no referral code yet";
+
+  if (!myCode) {
+    document.getElementById("teamList").innerHTML = "<li>No users joined via your referral yet.</li>";
+    return;
+  }
+
+  // 🔹 Get referred users
+  const refDoc = await getDoc(doc(db, "referrals", myCode));
+  const referredUIDs = refDoc.data().referredUsers || [];
+
   const teamList = document.getElementById("teamList");
   teamList.innerHTML = "";
 
-  if(snap.exists()){
-    const data = snap.data();
-    if(data.teamMembers.length === 0){
-      teamList.innerHTML = "<p>No team members yet.</p>";
-      return;
-    }
+  if (referredUIDs.length === 0) {
+    teamList.innerHTML = "<li>No users joined via your referral yet.</li>";
+    return;
+  }
 
-    data.teamMembers.forEach(member=>{
-      teamList.innerHTML += `
-        <div class="team-member">
-          <h3>${member.name} (Level ${member.level})</h3>
-          <p>Email: ${member.email}</p>
-        </div>
-      `;
-    });
+  for (let userUID of referredUIDs) {
+    const userDoc = await getDoc(doc(db, "users", userUID));
+    if (userDoc.exists()) {
+      const li = document.createElement("li");
+      li.textContent = userDoc.data().email;
+      teamList.appendChild(li);
+    }
+  }
+}
+
+// 🔹 Auth check
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loadMyTeam(user);
   } else {
-    teamList.innerHTML = "<p>No team data found.</p>";
+    document.getElementById("teamList").innerHTML = "<li>Please login to view your team.</li>";
   }
 });
 </script>
