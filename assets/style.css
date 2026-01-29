@@ -38,14 +38,14 @@ table th, table td {
   padding: 8px;
   text-align: left;
 }
-button.logout {
-  padding: 10px 15px;
-  background: #FFD700;
-  color: #000;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+button {
+  padding: 5px 10px;
+  margin-right:5px;
+  cursor:pointer;
+  border:none;
+  border-radius:5px;
+  background:#FFD700;
+  color:#000;
 }
-button.logout:hover {
-  background: #e6c200;
-}
+button:hover { background:#e6c200; }
+button.logout { float:right; }
