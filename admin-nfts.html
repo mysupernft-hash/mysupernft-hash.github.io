@@ -2,113 +2,125 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Admin NFTs | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin NFTs</title>
-<style>
-body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;}
-.sidebar{width:220px;background:#1a1a1a;display:flex;flex-direction:column;padding:20px 0;}
-.sidebar h2{text-align:center;margin-bottom:20px;}
-.sidebar a{color:#FFD700;text-decoration:none;padding:12px 20px;display:block;margin:5px 0;}
-.sidebar a:hover{background:#333;color:#fff;}
-.main{flex:1;padding:20px;overflow-y:auto;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #333;}
-th{background:#222;}
-tr:hover{background:#333;}
-button{padding:6px 12px;background:#FFD700;border:none;border-radius:5px;cursor:pointer;color:#000;font-weight:bold;margin:2px;}
-input{padding:6px;margin:5px;}
-footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;position:sticky;bottom:0;width:100%;}
-footer div:hover{color:#fff;cursor:pointer;}
-</style>
+<link rel="stylesheet" href="assets/style.css">
+
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script src="assets/script.js"></script>
 </head>
 <body>
 
-<div class="sidebar">
-<h2>Admin</h2>
-<a href="admin-nfts.html">NFTs</a>
-<a href="admin-users.html">Users</a>
-<a href="admin-withdraw.html">Withdraws</a>
-<a href="admin-deposits.html">Deposits</a>
-<a href="admin-login.html" onclick="logout()">Logout</a>
-</div>
+<header>Admin NFTs</header>
+<nav>
+  <a href="admin-dashboard.html">Dashboard</a>
+  <a href="admin-users.html">Users</a>
+  <a href="admin-nfts.html">NFTs</a>
+  <a href="admin-deposits.html">Deposits</a>
+  <a href="admin-withdraw.html">Withdraw</a>
+  <a href="#" class="logout" onclick="logout()">Logout</a>
+</nav>
 
 <div class="main">
-<h2>Manage NFTs</h2>
-<table>
-<thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Daily Income</th><th>Action</th></tr></thead>
-<tbody id="nftTable"></tbody>
-</table>
-<h3>Add New NFT</h3>
-<input id="nftName" placeholder="Name"/>
-<input id="nftCategory" placeholder="Category"/>
-<input id="nftPrice" type="number" placeholder="Price"/>
-<input id="nftIncome" type="number" placeholder="Daily Income"/>
-<button onclick="addNFT()">Add NFT</button>
+<h2>All NFTs</h2>
+
+<!-- Add NFT Form -->
+<div>
+  <input type="text" id="nftName" placeholder="NFT Name">
+  <input type="text" id="nftCategory" placeholder="Category">
+  <input type="number" id="nftPrice" placeholder="Price">
+  <input type="number" id="nftIncome" placeholder="Daily Income">
+  <button onclick="addNFT()">Add NFT</button>
 </div>
 
-<footer>
-<div>📁 Investments</div>
-<div>💳 Wallet</div>
-<div>💸 Withdraw</div>
-<div>💹 Live Earnings</div>
-<div>👤 My Account</div>
-</footer>
+<table id="nftsTable">
+<thead>
+<tr>
+<th>Name</th>
+<th>Category</th>
+<th>Price</th>
+<th>Daily Income</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
 
 <script>
-const firebaseConfig = {
-apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain: "supernft-5b952.firebaseapp.com",
-projectId: "supernft-5b952",
-storageBucket: "supernft-5b952.firebasestorage.app",
-messagingSenderId: "278097730700",
-appId: "1:278097730700:web:014d5ab680859db4512fa9",
-measurementId: "G-BME7FWT355"
-};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(); const db=firebase.firestore();
-const ADMIN_EMAIL="admin@supernft.com";
+protectAdminPage(); // 🔹 Must call for auth protection
 
-auth.onAuthStateChanged(user=>{
-  if(!user||user.email!==ADMIN_EMAIL){auth.signOut(); window.location.href="admin-login.html";}
-  else{loadNFTs();}
-});
+const db = firebase.firestore();
+const nftsTable = document.getElementById("nftsTable").getElementsByTagName("tbody")[0];
 
-function logout(){auth.signOut();}
+// 🔹 Load NFTs
+function loadNFTs(){
+  nftsTable.innerHTML = "";
+  db.collection("nfts").get().then(snapshot=>{
+    snapshot.forEach(doc=>{
+      const n = doc.data();
+      const row = nftsTable.insertRow();
+      row.insertCell(0).innerText = n.name || "";
+      row.insertCell(1).innerText = n.category || "";
+      row.insertCell(2).innerText = n.price || 0;
+      row.insertCell(3).innerText = n.dailyIncome || 0;
 
-async function loadNFTs(){
-  const nftTable=document.getElementById("nftTable");
-  nftTable.innerHTML="";
-  const snapshot=await db.collection("nfts").get();
-  snapshot.forEach(doc=>{
-    const nft=doc.data();
-    nftTable.innerHTML+=`<tr>
-      <td>${nft.name}</td>
-      <td>${nft.category}</td>
-      <td>${nft.price}</td>
-      <td>${nft.dailyIncome}</td>
-      <td><button onclick="deleteNFT('${doc.id}')">Delete</button></td>
-    </tr>`;
+      const actionsCell = row.insertCell(4);
+
+      // Edit Button
+      const editBtn = document.createElement("button");
+      editBtn.innerText = "Edit";
+      editBtn.onclick = ()=>{
+        const newName = prompt("NFT Name", n.name);
+        const newCategory = prompt("Category", n.category);
+        const newPrice = parseFloat(prompt("Price", n.price));
+        const newIncome = parseFloat(prompt("Daily Income", n.dailyIncome));
+        db.collection("nfts").doc(doc.id).update({
+          name:newName,
+          category:newCategory,
+          price:newPrice,
+          dailyIncome:newIncome
+        }).then(()=>{ alert("NFT updated"); loadNFTs(); });
+      };
+      actionsCell.appendChild(editBtn);
+
+      // Delete Button
+      const delBtn = document.createElement("button");
+      delBtn.innerText = "Delete";
+      delBtn.onclick = ()=>{
+        if(confirm("Delete this NFT?")){
+          db.collection("nfts").doc(doc.id).delete().then(()=>{ alert("NFT deleted"); loadNFTs(); });
+        }
+      };
+      actionsCell.appendChild(delBtn);
+    });
   });
 }
 
-async function addNFT(){
-  const name=document.getElementById("nftName").value;
-  const category=document.getElementById("nftCategory").value;
-  const price=parseFloat(document.getElementById("nftPrice").value);
-  const income=parseFloat(document.getElementById("nftIncome").value);
-  if(!name||!category||!price||!income){alert("All fields required"); return;}
-  await db.collection("nfts").add({name, category, price, dailyIncome: income});
-  document.getElementById("nftName").value="";
-  document.getElementById("nftCategory").value="";
-  document.getElementById("nftPrice").value="";
-  document.getElementById("nftIncome").value="";
-  loadNFTs();
+// 🔹 Add NFT
+function addNFT(){
+  const name = document.getElementById("nftName").value.trim();
+  const category = document.getElementById("nftCategory").value.trim();
+  const price = parseFloat(document.getElementById("nftPrice").value) || 0;
+  const dailyIncome = parseFloat(document.getElementById("nftIncome").value) || 0;
+
+  if(!name || !category){ alert("Enter name and category"); return; }
+
+  db.collection("nfts").add({name, category, price, dailyIncome})
+    .then(()=>{ alert("NFT added"); loadNFTs(); 
+      document.getElementById("nftName").value="";
+      document.getElementById("nftCategory").value="";
+      document.getElementById("nftPrice").value="";
+      document.getElementById("nftIncome").value="";
+    });
 }
 
-async function deleteNFT(id){if(confirm("Delete this NFT?")){await db.collection("nfts").doc(id).delete(); loadNFTs();}}
+// Initial load
+loadNFTs();
 </script>
 
 </body>
