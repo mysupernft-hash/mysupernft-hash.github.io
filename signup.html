@@ -4,43 +4,55 @@
 <meta charset="UTF-8">
 <title>SuperNFT Signup</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
+  margin:0;
+  font-family:Arial, sans-serif;
   background:#0f0f0f;
   color:#FFD700;
-  font-family:Arial;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
 }
 .box{
+  width:100%;
+  max-width:380px;
   background:#1a1a1a;
   padding:25px;
   border-radius:12px;
-  width:100%;
-  max-width:350px;
 }
-input,button{
+h2{text-align:center;margin-bottom:20px;}
+input{
   width:100%;
   padding:12px;
-  margin:8px 0;
-  border-radius:6px;
+  margin-bottom:12px;
+  border-radius:8px;
   border:none;
+  outline:none;
 }
-input{background:#111;color:#FFD700}
 button{
+  width:100%;
+  padding:12px;
   background:#FFD700;
-  color:#000;
+  border:none;
+  border-radius:8px;
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{background:#e6c200}
-a{color:#FFD700;font-size:14px}
+button:hover{background:#e6c200;}
+.links{
+  text-align:center;
+  margin-top:12px;
+  font-size:14px;
+}
+.links a{color:#FFD700;text-decoration:none;}
 </style>
 </head>
 
 <body>
+
 <div class="box">
   <h2>Create Account</h2>
 
@@ -48,21 +60,19 @@ a{color:#FFD700;font-size:14px}
   <input type="password" id="password" placeholder="Password" required>
   <input type="text" id="referral" placeholder="Referral Code" required>
 
-  <button onclick="signup()">Sign Up</button>
+  <button id="signupBtn">Sign Up</button>
 
-  <p style="text-align:center">
-    <a href="login.html">Already have account? Login</a>
-  </p>
+  <div class="links">
+    <p><a href="login.html">Already have an account? Login</a></p>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs, doc, setDoc } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config (same as dashboard) */
+/* 🔥 Firebase Config (SAME AS DASHBOARD) */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -76,7 +86,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔐 SIGNUP FUNCTION */
+/* 🔹 Signup Function */
 async function signup(){
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -87,44 +97,39 @@ async function signup(){
     return;
   }
 
-  /* ✅ Verify referral code */
-  const q = query(collection(db,"users"), where("referralCode","==",referral));
-  const snap = await getDocs(q);
-
-  if(snap.empty){
-    alert("Invalid referral code");
-    return;
-  }
-
   try{
+    /* 🔹 Verify Referral Code */
+    const refSnap = await getDoc(doc(db,"referrals", referral));
+    if(!refSnap.exists()){
+      alert("Invalid referral code");
+      return;
+    }
+
+    /* 🔹 Create User */
     const cred = await createUserWithEmailAndPassword(auth,email,password);
-    const uid = cred.user.uid;
 
-    const myReferral = "SNFT" + uid.slice(0,6).toUpperCase();
-
-    await setDoc(doc(db,"users",uid),{
+    /* 🔹 Save User Data */
+    await setDoc(doc(db,"users",cred.user.uid),{
       email: email,
-      referralCode: myReferral,
-      referredBy: referral,
+      referralUsed: referral,
       walletBalance: 0,
       totalDeposit: 0,
       dailyIncome: 0,
       liveEarnings: 0,
-      nfts: [],
-      createdAt: Date.now()
+      createdAt: new Date()
     });
 
-    await sendEmailVerification(cred.user);
-
+    /* 🔥 Redirect to Verification Page */
     window.location.href = "verification.html";
-  }
-  catch(err){
+
+  }catch(err){
     alert(err.message);
   }
 }
 
-/* 🔥 VERY IMPORTANT LINE */
-window.signup = signup;
+/* 🔥 BUTTON FIX (IMPORTANT) */
+document.getElementById("signupBtn").addEventListener("click", signup);
 </script>
+
 </body>
 </html>
