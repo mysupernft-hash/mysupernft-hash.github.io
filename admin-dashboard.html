@@ -2,125 +2,41 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Admin Dashboard | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Admin Dashboard</title>
 <style>
-body{margin:0;font-family:Arial;color:#FFD700;background:#0d0d0d;display:flex;min-height:100vh;flex-direction:column;}
-.wrapper{display:flex;flex:1;}
-.sidebar{width:220px;background:#1a1a1a;display:flex;flex-direction:column;padding:20px 0;}
-.sidebar h2{text-align:center;margin-bottom:20px;}
-.sidebar a{color:#FFD700;text-decoration:none;padding:12px 20px;display:block;margin:5px 0;}
-.sidebar a:hover{background:#333;color:#fff;}
-.main{flex:1;padding:20px;overflow-y:auto;}
-footer{display:flex;justify-content:space-around;align-items:center;background:#1a1a1a;color:#FFD700;padding:12px 0;flex-shrink:0;width:100%;position:sticky;bottom:0;}
-footer div:hover{color:#fff;cursor:pointer;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{padding:12px;text-align:left;border-bottom:1px solid #333;}
-th{background:#222;}
-tr:hover{background:#333;}
-button{padding:6px 12px;background:#FFD700;border:none;border-radius:5px;cursor:pointer;color:#000;font-weight:bold;margin:2px;}
+body{margin:0;font-family:Arial;background:#0d0d0d;color:#FFD700;}
+header{background:#1a1a1a;padding:15px;text-align:center;font-size:24px;}
+nav{display:flex;background:#1a1a1a;}
+nav a{flex:1;padding:12px;text-decoration:none;color:#FFD700;text-align:center;}
+nav a:hover{background:#333;}
+.main{padding:20px;}
+button.logout{padding:10px 15px;background:#FFD700;color:#000;border:none;border-radius:5px;cursor:pointer;}
 </style>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-<div class="wrapper">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>Admin</h2>
-    <a href="admin-dashboard.html">Dashboard</a>
-    <a href="admin-nfts.html">NFTs</a>
-    <a href="admin-users.html">Users</a>
-    <a href="admin-withdraw.html">Withdraws</a>
-    <a href="admin-deposits.html">Deposits</a>
-    <a href="#" onclick="logout()">Logout</a>
-  </div>
+<header>SuperNFT Admin Dashboard</header>
 
-  <!-- Main content -->
-  <div class="main">
-    <h2>Welcome Admin!</h2>
-    <p id="welcomeMsg">Loading...</p>
-    <h3>Quick Stats</h3>
-    <table>
-      <thead>
-        <tr><th>Collection</th><th>Count</th></tr>
-      </thead>
-      <tbody id="statsTable"></tbody>
-    </table>
-  </div>
+<nav>
+<a href="admin-dashboard.html">Dashboard</a>
+<a href="admin-users.html">Users</a>
+<a href="admin-nfts.html">NFTs</a>
+<a href="admin-deposits.html">Deposits</a>
+<a href="admin-withdraw.html">Withdraw</a>
+<a href="#" class="logout" onclick="logout()">Logout</a>
+</nav>
+
+<div class="main">
+<h2>Welcome Admin</h2>
+<p>Use the menu above to navigate.</p>
 </div>
 
-<footer>
-  <div>📁 Investments</div>
-  <div>💳 Wallet</div>
-  <div>💸 Withdraw</div>
-  <div>💹 Live Earnings</div>
-  <div>👤 My Account</div>
-</footer>
-
 <script>
-// 🔹 Firebase Config
-const firebaseConfig = {
-apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain: "supernft-5b952.firebaseapp.com",
-projectId: "supernft-5b952",
-storageBucket: "supernft-5b952.firebasestorage.app",
-messagingSenderId: "278097730700",
-appId: "1:278097730700:web:014d5ab680859db4512fa9",
-measurementId: "G-BME7FWT355"
-};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
-const ADMIN_EMAIL="admin@supernft.com";
-
-// 🔹 Keep admin logged in (persistent)
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-// 🔹 Check admin auth on load
-auth.onAuthStateChanged(async user=>{
-  if(!user || user.email !== ADMIN_EMAIL){
-    window.location.href="admin-login.html";
-  } else {
-    document.getElementById("welcomeMsg").innerText = "Hello, " + user.email;
-    loadStats();
-  }
-});
-
-// 🔹 Logout function
-function logout(){
-  auth.signOut().then(()=> window.location.href="admin-login.html");
-}
-
-// 🔹 Load Quick Stats
-async function loadStats(){
-  const statsTable=document.getElementById("statsTable");
-  statsTable.innerHTML="";
-  
-  const nftsSnap=await db.collection("nfts").get();
-  const usersSnap=await db.collection("users").get();
-  const depositsSnap=await db.collection("users").get(); // deposits stored in users
-
-  statsTable.innerHTML+=`<tr><td>Total NFTs</td><td>${nftsSnap.size}</td></tr>`;
-  statsTable.innerHTML+=`<tr><td>Total Users</td><td>${usersSnap.size}</td></tr>`;
-
-  let totalDeposits = 0;
-  depositsSnap.forEach(doc=>{
-    const d = doc.data().deposit || 0;
-    totalDeposits += d;
-  });
-  statsTable.innerHTML+=`<tr><td>Total Deposits</td><td>$${totalDeposits}</td></tr>`;
-}
-</script>
-
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-<script>
+/* Firebase Config */
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -129,12 +45,19 @@ firebase.initializeApp({
 
 const ADMIN_EMAIL = "mysupernft@gmail.com";
 
-/* 🔒 ADMIN PROTECTION */
+/* 🔒 Protect Admin Pages */
 firebase.auth().onAuthStateChanged(user=>{
   if(!user || user.email.toLowerCase() !== ADMIN_EMAIL){
     window.location.replace("admin-login.html");
   }
 });
+
+/* 🔐 Logout */
+function logout(){
+  firebase.auth().signOut().then(()=>{
+    window.location.replace("admin-login.html");
+  });
+}
 </script>
 
 </body>
