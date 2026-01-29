@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Signup</title>
 <style>
-body {margin:0; font-family:Arial,sans-serif; background:#0f0f0f; color:#FFD700;}
-.container {max-width:400px; margin:80px auto; padding:20px; background:#1a1a1a; border-radius:12px;}
-h2 {text-align:center; margin-bottom:20px;}
-input {width:100%; padding:10px; margin:8px 0; border-radius:6px; border:none;}
-button {width:100%; padding:12px; margin-top:12px; background:#FFD700; color:#000; border:none; font-weight:bold; border-radius:6px; cursor:pointer;}
-button:hover {background:#e0c200;}
-.options {display:flex; justify-content:space-between; margin-top:10px;}
-a {color:#FFD700; text-decoration:none;}
+body {margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
+.container{max-width:400px;margin:80px auto;padding:20px;background:#1a1a1a;border-radius:12px;}
+h2{text-align:center;margin-bottom:20px;}
+input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;}
+button{width:100%;padding:12px;margin-top:12px;background:#FFD700;color:#000;border:none;font-weight:bold;border-radius:6px;cursor:pointer;}
+button:hover{background:#e0c200;}
+.options{display:flex;justify-content:space-between;margin-top:10px;}
+a{color:#FFD700;text-decoration:none;}
 </style>
 </head>
 <body>
@@ -23,7 +23,6 @@ a {color:#FFD700; text-decoration:none;}
   <input type="password" id="password" placeholder="Password" required>
   <input type="text" id="referral" placeholder="Referral Code" required>
   <button id="signupBtn">Sign Up</button>
-
   <div class="options">
     <a href="login.html">Login</a>
     <a href="forgot.html">Forgot Password?</a>
@@ -35,7 +34,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔹 Firebase Config */
+/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -44,24 +43,24 @@ const firebaseConfig = {
   messagingSenderId: "278097730700",
   appId: "1:278097730700:web:6ba9892334456fd8512fa9"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔹 Signup Function */
 async function signup() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
   const referral = document.getElementById("referral").value.trim().toUpperCase();
 
-  if (!email || !password || !referral) {
-    alert("All fields required");
+  if(!email || !password || !referral){
+    alert("All fields are required");
     return;
   }
 
-  // ✅ Check referral in Firestore
+  // ✅ Check referral code in Firestore
   const refSnap = await getDoc(doc(db, "referrals", referral));
-  if (!refSnap.exists()) {
+  if(!refSnap.exists()){
     alert("Invalid referral code");
     return;
   }
@@ -83,25 +82,25 @@ async function signup() {
       totalDeposit: 0
     });
 
-    // ✅ Optional: Save ownerUid in referral document
+    // ✅ Optionally update referral document ownerUid
     await setDoc(doc(db, "referrals", referral), {
       ownerUid: uid,
       active: true,
       createdAt: serverTimestamp()
-    }, { merge: true });
+    }, { merge:true });
 
     // ✅ Redirect to verification page
     window.location.href = "verification.html";
 
-  } catch (error) {
+  } catch(error) {
     console.error(error);
     alert(error.message);
   }
 }
 
-/* 🔹 Bind button */
 document.getElementById("signupBtn").addEventListener("click", signup);
 window.signup = signup;
 </script>
+
 </body>
 </html>
