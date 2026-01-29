@@ -8,7 +8,7 @@
 body {margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
 .container{max-width:400px;margin:80px auto;padding:20px;background:#1a1a1a;border-radius:12px;}
 h2{text-align:center;margin-bottom:20px;}
-input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;}
+input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:none;background:#272727;color:#FFD700;}
 button{width:100%;padding:12px;margin-top:12px;background:#FFD700;color:#000;border:none;font-weight:bold;border-radius:6px;cursor:pointer;}
 button:hover{background:#e0c200;}
 .options{display:flex;justify-content:space-between;margin-top:10px;}
@@ -35,7 +35,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* Firebase Config */
+/* 🔹 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -60,18 +60,18 @@ async function signup() {
   }
 
   try {
-    // ✅ Referral Verification
+    // ✅ Referral verification
     const refSnap = await getDoc(doc(db, "referrals", referral));
     if (!refSnap.exists()) {
       alert("Invalid referral code");
       return;
     }
 
-    // ✅ Create User
+    // ✅ Create user with Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
 
-    // ✅ Save user in Firestore
+    // ✅ Add user document to Firestore
     await setDoc(doc(db, "users", uid), {
       email: email,
       referral: referral,
@@ -83,7 +83,7 @@ async function signup() {
       totalDeposit: 0
     });
 
-    // ✅ Update referral ownerUid
+    // ✅ Update referral ownerUid (optional)
     await setDoc(doc(db, "referrals", referral), {
       ownerUid: uid,
       active: true,
@@ -99,8 +99,10 @@ async function signup() {
   }
 }
 
+/* 🔹 Attach click event to button */
 document.getElementById("signupBtn").addEventListener("click", signup);
 window.signup = signup;
+
 </script>
 
 </body>
