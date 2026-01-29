@@ -21,7 +21,7 @@ a{color:#FFD700;text-decoration:none;}
   <h2>Sign Up</h2>
   <input type="text" id="email" placeholder="Email" required>
   <input type="password" id="password" placeholder="Password" required>
-  <input type="text" id="referral" placeholder="Referral Code" required>
+  <input type="text" id="referral" placeholder="Referral Code (Optional)">
   <button id="signupBtn">Sign Up</button>
 
   <div class="options">
@@ -52,29 +52,33 @@ const db = getFirestore(app);
 async function signup() {
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const referral = document.getElementById("referral").value.trim().toUpperCase();
+  let referral = document.getElementById("referral").value.trim().toUpperCase();
 
-  if (!email || !password || !referral) {
-    alert("All fields are required");
+  if (!email || !password) {
+    alert("Email and password are required");
     return;
   }
 
   try {
-    // 🔹 Referral verification
-    const refSnap = await getDoc(doc(db, "referrals", referral));
-    if (!refSnap.exists()) {
-      alert("Invalid referral code");
-      return;
+    // 🔹 Referral verification only if code entered
+    if (referral) {
+      const refSnap = await getDoc(doc(db, "referrals", referral));
+      if (!refSnap.exists()) {
+        alert("Invalid referral code");
+        return;
+      }
+    } else {
+      referral = null; // no referral
     }
 
     // 🔹 Firebase Auth signup
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
 
-    // 🔹 Firestore users doc create
+    // 🔹 Firestore user doc
     await setDoc(doc(db, "users", uid), {
       email: email,
-      referral: referral,
+      referral: referral, // null if empty
       createdAt: serverTimestamp(),
       role: "user",
       walletBalance: 0,
@@ -83,18 +87,20 @@ async function signup() {
       totalDeposit: 0
     });
 
-    // 🔹 Update referral ownerUid (optional)
-    await setDoc(doc(db, "referrals", referral), {
-      ownerUid: uid,
-      active: true,
-      createdAt: serverTimestamp()
-    }, { merge: true });
+    // 🔹 Update referral ownerUid if referral exists
+    if (referral) {
+      await setDoc(doc(db, "referrals", referral), {
+        ownerUid: uid,
+        active: true,
+        createdAt: serverTimestamp()
+      }, { merge: true });
+    }
 
     // 🔹 Send verification email
     await sendEmailVerification(userCredential.user);
 
     // 🔹 Redirect to verification page
-    window.location.href = "verification.html"; // ✅ Correct place
+    window.location.href = "verification.html";
 
   } catch (error) {
     if (error.code === "auth/email-already-in-use") {
