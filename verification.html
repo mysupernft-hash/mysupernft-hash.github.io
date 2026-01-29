@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Verification</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;text-align:center;padding-top:100px;}
+button{padding:12px 20px;background:#FFD700;color:#000;border:none;border-radius:6px;cursor:pointer;}
+button:hover{background:#e0c200;}
+</style>
+</head>
+<body>
+<h2>Verify your email</h2>
+<p>Please check your inbox and click the verification link.</p>
+<button id="resendBtn">Resend Verification Email</button>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+document.getElementById("resendBtn").addEventListener("click", async () => {
+  if (auth.currentUser) {
+    await sendEmailVerification(auth.currentUser);
+    alert("Verification email sent again!");
+  } else {
+    alert("No logged-in user");
+  }
+});
+</script>
+</body>
+</html>
