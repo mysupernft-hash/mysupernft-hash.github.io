@@ -4,107 +4,119 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Deposit | SuperNFT</title>
-
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:#0f0f0f;
+  font-family:Arial;
   color:#FFD700;
+  background:#0d0d0d;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
 }
-header{
+.main{flex:1;padding:20px;}
+input, button{padding:10px;margin:5px 0;border-radius:5px;border:none;outline:none;}
+button{background:#FFD700;color:#000;font-weight:bold;cursor:pointer;}
+button:hover{background:#e6c200;}
+footer{
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  background:#1a1a1a;
+  color:#FFD700;
+  padding:12px 0;
   position:sticky;
-  top:0;
-  background:#1a1a1a;
-  padding:12px 16px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
+  bottom:0;
+  width:100%;
 }
-.container{
-  padding:20px;
-}
-.card{
-  background:#1a1a1a;
-  border-radius:12px;
-  padding:20px;
-  margin-bottom:20px;
-  text-align:center;
-}
-.card h2{
-  margin:0 0 12px;
-  font-size:18px;
-}
-.qr-img{
-  width:200px;
-  height:200px;
-  margin:10px auto;
-  border-radius:12px;
-  border:2px solid #FFD700;
-}
-.wallet-address{
-  background:#272727;
-  padding:12px;
-  border-radius:8px;
-  font-size:16px;
-  margin-top:10px;
-  word-break: break-all;
-}
-.copy-btn{
-  margin-top:10px;
-  padding:10px 15px;
-  background:#FFD700;
-  color:#000;
-  border:none;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
-}
-.back-btn{
-  display:block;
-  margin-top:20px;
-  padding:12px;
-  background:#272727;
-  color:#FFD700;
-  text-align:center;
-  border-radius:8px;
-  text-decoration:none;
-}
-.note{
-  font-size:13px;
-  opacity:0.8;
-  margin-top:10px;
-}
+footer div:hover{color:#fff;cursor:pointer;}
+.qr-img{max-width:250px;margin-top:10px;}
 </style>
-</head>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
 <body>
 
-<header>Deposit</header>
+<div class="main">
+<h2>Deposit Funds</h2>
 
-<div class="container">
+<p>Your Deposit QR:</p>
+<img src="images/binance-qr.png" alt="Binance QR" class="qr-img" id="qrCode">
 
-  <div class="card">
-    <h2>Send to Binance Wallet</h2>
-    <img src="images/binance-qr.png" alt="Binance QR" class="qr-img">
-    <div class="wallet-address" id="walletAddress">bc1qexampleaddresshere1234567890</div>
-    <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
-    <div class="note">Scan QR or copy wallet address</div>
-  </div>
+<p>Enter Amount to Deposit:</p>
+<input type="number" id="depositAmount" placeholder="Amount in $" min="1">
+<button onclick="makeDeposit()">Deposit</button>
 
-  <a href="dashboard.html" class="back-btn">⬅ Back to Dashboard</a>
+<h3>Your Balance: $<span id="balance">0</span></h3>
 </div>
 
+<footer>
+  <div onclick="window.location.href='dashboard.html'">📁 Investments</div>
+  <div onclick="window.location.href='wallet.html'">💳 Wallet</div>
+  <div onclick="window.location.href='withdraw.html'">💸 Withdraw</div>
+  <div onclick="window.location.href='live-earnings.html'">💹 Live Earnings</div>
+  <div onclick="window.location.href='my-account.html'">👤 My Account</div>
+  <div onclick="window.location.href='my-referrals.html'">👥 My Referrals</div>
+</footer>
+
 <script>
-function copyAddress(){
-  const address = document.getElementById("walletAddress").innerText;
-  navigator.clipboard.writeText(address).then(()=>{
-    alert("Wallet address copied to clipboard ✅");
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.firebasestorage.app",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:014d5ab680859db4512fa9",
+  measurementId: "G-BME7FWT355"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser;
+
+// 🔒 Protect page
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+auth.onAuthStateChanged(user=>{
+  if(!user) window.location.href="signup.html";
+  else{
+    currentUser = user;
+    loadBalance();
+  }
+});
+
+// 🔹 Load User Balance
+function loadBalance(){
+  db.collection("users").doc(currentUser.uid).get()
+    .then(doc=>{
+      const data = doc.data();
+      document.getElementById("balance").innerText = data.balance || 0;
+    });
+}
+
+// 🔹 Deposit Function
+function makeDeposit(){
+  const amount = parseFloat(document.getElementById("depositAmount").value);
+  if(!amount || amount <= 0){ alert("Enter valid amount"); return; }
+
+  const userRef = db.collection("users").doc(currentUser.uid);
+  db.runTransaction(async transaction=>{
+    const doc = await transaction.get(userRef);
+    const newBalance = (doc.data().balance || 0) + amount;
+    transaction.update(userRef, { balance: newBalance });
+  }).then(()=>{
+    alert("Deposit successful!");
+    loadBalance();
+    document.getElementById("depositAmount").value = "";
   }).catch(err=>{
-    alert("Failed to copy. Try manually.");
+    console.error(err);
+    alert("Deposit failed!");
   });
 }
 </script>
-
 </body>
 </html>
