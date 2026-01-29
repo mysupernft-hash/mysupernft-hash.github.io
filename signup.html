@@ -83,7 +83,7 @@ async function signup() {
       totalDeposit: 0
     });
 
-    // ✅ Update referral ownerUid (optional)
+    // ✅ Update referral ownerUid
     await setDoc(doc(db, "referrals", referral), {
       ownerUid: uid,
       active: true,
