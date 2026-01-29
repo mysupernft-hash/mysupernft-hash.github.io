@@ -44,7 +44,6 @@ button:hover{background:#e6c200;}
 .msg{margin-top:10px;font-size:14px;}
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
@@ -60,7 +59,7 @@ button:hover{background:#e6c200;}
 </div>
 
 <script>
-/* Firebase config */
+/* Firebase Config */
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -70,14 +69,14 @@ firebase.initializeApp({
 const ADMIN_EMAIL = "mysupernft@gmail.com";
 const msg = document.getElementById("msg");
 
-/* 🔐 If already logged-in admin, auto redirect */
+/* 🔐 If already logged-in, redirect to dashboard */
 firebase.auth().onAuthStateChanged(user => {
   if(user && user.email.toLowerCase() === ADMIN_EMAIL){
     window.location.replace("admin-dashboard.html");
   }
 });
 
-/* Login function */
+/* Login Function */
 function login(){
   const email = document.getElementById("email").value.trim().toLowerCase();
   const pass = document.getElementById("password").value;
@@ -89,16 +88,18 @@ function login(){
 
   msg.innerText = "Logging in...";
 
-  firebase.auth()
-    .setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
     .then(() => firebase.auth().signInWithEmailAndPassword(email, pass))
     .then(res => {
-      if(res.user.email.toLowerCase() !== ADMIN_EMAIL){
-        msg.innerText = "Access denied";
-        firebase.auth().signOut();
-        return;
-      }
-      window.location.replace("admin-dashboard.html");
+      // ✅ Wait for Firebase to confirm user session
+      firebase.auth().onAuthStateChanged(user => {
+        if(user && user.email.toLowerCase() === ADMIN_EMAIL){
+          window.location.replace("admin-dashboard.html"); // safe redirect
+        } else {
+          msg.innerText = "Access denied";
+          firebase.auth().signOut();
+        }
+      });
     })
     .catch(err => {
       msg.innerText = err.message;
