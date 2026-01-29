@@ -59,14 +59,14 @@ async function signup() {
     return;
   }
 
-  // ✅ Referral Verification
-  const refSnap = await getDoc(doc(db, "referrals", referral));
-  if (!refSnap.exists()) {
-    alert("Invalid referral code");
-    return;
-  }
-
   try {
+    // ✅ Referral Verification
+    const refSnap = await getDoc(doc(db, "referrals", referral));
+    if (!refSnap.exists()) {
+      alert("Invalid referral code");
+      return;
+    }
+
     // ✅ Create User
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
