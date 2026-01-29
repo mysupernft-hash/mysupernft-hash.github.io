@@ -102,14 +102,20 @@ footer div:hover{color:#e0c200;}
 <h2 style="margin-left:20px;">Earnings (Last 7 Days)</h2>
 <canvas id="earningsChart" width="400" height="200"></canvas>
 
-<footer>
-  <div>👤 My Account</div>
-  <div>📁 Investments</div>
-  <div>💳 Wallet</div>
-  <div>💸 Withdraw</div>
-  <div>💹 Live Earnings</div>
-</footer>
+<body>
+  <div class="main-content">
+    <!-- Your page content goes here -->
+  </div>
 
+  <footer>
+    <div>📁 Investments</div>
+    <div>💳 Wallet</div>
+    <div>💸 Withdraw</div>
+    <div>💹 Live Earnings</div>
+    <div>👤 My Account</div>
+  </footer>
+</body>
+  
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
