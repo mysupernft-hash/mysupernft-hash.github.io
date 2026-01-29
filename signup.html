@@ -60,18 +60,18 @@ async function signup() {
   }
 
   try {
-    // ✅ Referral verification
+    // 🔹 Referral verification
     const refSnap = await getDoc(doc(db, "referrals", referral));
     if (!refSnap.exists()) {
       alert("Invalid referral code");
       return;
     }
 
-    // ✅ Create user in Firebase Auth
+    // 🔹 Firebase Auth signup
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = userCredential.user.uid;
 
-    // ✅ Create Firestore document after auth
+    // 🔹 Firestore users doc create
     await setDoc(doc(db, "users", uid), {
       email: email,
       referral: referral,
@@ -83,22 +83,26 @@ async function signup() {
       totalDeposit: 0
     });
 
-    // ✅ Update referral document ownerUid
+    // 🔹 Update referral ownerUid (optional)
     await setDoc(doc(db, "referrals", referral), {
       ownerUid: uid,
       active: true,
       createdAt: serverTimestamp()
     }, { merge: true });
 
-    // ✅ Send verification email
+    // 🔹 Send verification email
     await sendEmailVerification(userCredential.user);
 
-    // ✅ Redirect to verification page
-    window.location.href = "verification.html";
+    // 🔹 Redirect to verification page
+    window.location.href = "verification.html"; // ✅ Correct place
 
   } catch (error) {
+    if (error.code === "auth/email-already-in-use") {
+      alert("This email is already registered. Please login.");
+    } else {
+      alert(error.message);
+    }
     console.error(error);
-    alert(error.message);
   }
 }
 
