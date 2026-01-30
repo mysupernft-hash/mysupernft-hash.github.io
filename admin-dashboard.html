@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard | SuperNFT</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SuperNFT Admin Dashboard</title>
 
 <style>
 body{
@@ -11,9 +11,6 @@ body{
   font-family:Arial;
   background:#0d0d0d;
   color:#FFD700;
-  display:flex;
-  flex-direction:column;
-  min-height:100vh;
 }
 
 header{
@@ -24,32 +21,41 @@ header{
   font-weight:bold;
 }
 
-.main{
-  flex:1;
-  padding:20px;
-}
-
-.card{
-  background:#1a1a1a;
+.container{
   padding:15px;
-  border-radius:8px;
-  margin-bottom:15px;
+  overflow-x:auto;
 }
 
-footer{
-  display:flex;
-  justify-content:space-around;
+table{
+  border-collapse:collapse;
+  width:100%;
   background:#1a1a1a;
-  padding:12px 0;
-  flex-wrap:wrap;
 }
 
-footer div{
+th, td{
+  border:1px solid #333;
+  padding:6px;
+  text-align:center;
+}
+
+input, select{
+  width:100%;
+  padding:5px;
+  background:#222;
+  color:#FFD700;
+  border:none;
+}
+
+button{
+  background:#FFD700;
+  border:none;
+  padding:6px 10px;
   cursor:pointer;
+  font-weight:bold;
 }
 
-footer div:hover{
-  color:#fff;
+button:hover{
+  background:#e6c200;
 }
 </style>
 
@@ -59,42 +65,42 @@ footer div:hover{
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 </head>
+
 <body>
 
-<header>SuperNFT Dashboard</header>
+<header>SuperNFT Admin Panel</header>
 
-<div class="main">
+<div class="container">
 
-<div class="card">
-<h3>Welcome</h3>
-<p id="userEmail">Loading...</p>
+<h2>Users Management</h2>
+
+<table id="usersTable">
+<thead>
+<tr>
+<th>UID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Daily Income</th>
+<th>Live Earnings</th>
+<th>Deposit</th>
+<th>Withdraw</th>
+<th>Wallet Balance</th>
+<th>NFT Count</th>
+<th>Status</th>
+<th>Save</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+</table>
+
 </div>
-
-<div class="card">
-<h3>Your Balance</h3>
-<h2>$<span id="balance">0</span></h2>
-</div>
-
-<div class="card">
-<h3>Your Investments</h3>
-<p>Active NFTs: <span id="nfts">0</span></p>
-</div>
-
-</div>
-
-<footer>
-  <div onclick="location.href='dashboard.html'">📁 Investments</div>
-  <div onclick="location.href='deposit.html'">💰 Deposit</div>
-  <div onclick="location.href='withdraw.html'">💸 Withdraw</div>
-  <div onclick="location.href='live-earnings.html'">💹 Earnings</div>
-  <div onclick="location.href='my-account.html'">👤 Account</div>
-</footer>
 
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
+  projectId: "supernft-5b952"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -102,26 +108,80 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+/* Protect admin page */
 auth.onAuthStateChanged(user=>{
   if(!user){
-    location.href="signup.html";
-    return;
+    window.location.href="signup.html";
+  } else {
+    loadUsers();
   }
-
-  document.getElementById("userEmail").innerText = user.email;
-
-  db.collection("users").doc(user.uid).get()
-  .then(doc=>{
-    if(doc.exists){
-      const data = doc.data();
-      document.getElementById("balance").innerText =
-        data.balance || 0;
-
-      document.getElementById("nfts").innerText =
-        data.nfts || 0;
-    }
-  });
 });
+
+/* Load users */
+function loadUsers(){
+const tbody = document.querySelector("#usersTable tbody");
+tbody.innerHTML="Loading...";
+
+db.collection("users").get().then(snapshot=>{
+tbody.innerHTML="";
+
+snapshot.forEach(doc=>{
+const u = doc.data();
+const uid = doc.id;
+
+const row = document.createElement("tr");
+
+row.innerHTML = `
+<td>${uid}</td>
+
+<td><input value="${u.name||''}" id="name_${uid}"></td>
+
+<td>${u.email||''}</td>
+
+<td><input type="number" value="${u.dailyIncome||0}" id="daily_${uid}"></td>
+
+<td><input type="number" value="${u.liveEarnings||0}" id="live_${uid}"></td>
+
+<td><input type="number" value="${u.deposit||0}" id="dep_${uid}"></td>
+
+<td><input type="number" value="${u.withdraw||0}" id="with_${uid}"></td>
+
+<td><input type="number" value="${u.balance||0}" id="bal_${uid}"></td>
+
+<td><input type="number" value="${u.nfts||0}" id="nft_${uid}"></td>
+
+<td>
+<select id="ban_${uid}">
+<option value="false" ${!u.banned?"selected":""}>Active</option>
+<option value="true" ${u.banned?"selected":""}>Banned</option>
+</select>
+</td>
+
+<td>
+<button onclick="saveUser('${uid}')">Save</button>
+</td>
+`;
+
+tbody.appendChild(row);
+});
+});
+}
+
+/* Save changes */
+function saveUser(uid){
+db.collection("users").doc(uid).update({
+name: document.getElementById(`name_${uid}`).value,
+dailyIncome: Number(document.getElementById(`daily_${uid}`).value),
+liveEarnings: Number(document.getElementById(`live_${uid}`).value),
+deposit: Number(document.getElementById(`dep_${uid}`).value),
+withdraw: Number(document.getElementById(`with_${uid}`).value),
+balance: Number(document.getElementById(`bal_${uid}`).value),
+nfts: Number(document.getElementById(`nft_${uid}`).value),
+banned: document.getElementById(`ban_${uid}`).value==="true"
+}).then(()=>{
+alert("User updated successfully");
+});
+}
 </script>
 
 </body>
