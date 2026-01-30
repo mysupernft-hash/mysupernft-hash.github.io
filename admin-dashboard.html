@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SuperNFT Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | SuperNFT</title>
 
 <style>
 body{
@@ -11,6 +11,9 @@ body{
   font-family:Arial;
   background:#0d0d0d;
   color:#FFD700;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
 }
 
 header{
@@ -18,38 +21,35 @@ header{
   padding:15px;
   text-align:center;
   font-size:20px;
+  font-weight:bold;
 }
 
-.container{
-  padding:15px;
+.main{
+  flex:1;
+  padding:20px;
 }
 
 .card{
   background:#1a1a1a;
-  margin-bottom:12px;
-  padding:12px;
+  padding:15px;
   border-radius:8px;
+  margin-bottom:15px;
 }
 
-input,select{
-  padding:6px;
-  margin:4px 0;
-  border:none;
-  border-radius:4px;
-  width:100%;
+footer{
+  display:flex;
+  justify-content:space-around;
+  background:#1a1a1a;
+  padding:12px 0;
+  flex-wrap:wrap;
 }
 
-button{
-  padding:8px;
-  border:none;
-  border-radius:5px;
-  background:#FFD700;
-  font-weight:bold;
+footer div{
   cursor:pointer;
 }
 
-button:hover{
-  background:#e6c200;
+footer div:hover{
+  color:#fff;
 }
 </style>
 
@@ -61,18 +61,40 @@ button:hover{
 </head>
 <body>
 
-<header>SuperNFT Admin Control Panel</header>
+<header>SuperNFT Dashboard</header>
 
-<div class="container">
-<h3>All Users</h3>
-<div id="usersList">Loading...</div>
+<div class="main">
+
+<div class="card">
+<h3>Welcome</h3>
+<p id="userEmail">Loading...</p>
 </div>
+
+<div class="card">
+<h3>Your Balance</h3>
+<h2>$<span id="balance">0</span></h2>
+</div>
+
+<div class="card">
+<h3>Your Investments</h3>
+<p>Active NFTs: <span id="nfts">0</span></p>
+</div>
+
+</div>
+
+<footer>
+  <div onclick="location.href='dashboard.html'">📁 Investments</div>
+  <div onclick="location.href='deposit.html'">💰 Deposit</div>
+  <div onclick="location.href='withdraw.html'">💸 Withdraw</div>
+  <div onclick="location.href='live-earnings.html'">💹 Earnings</div>
+  <div onclick="location.href='my-account.html'">👤 Account</div>
+</footer>
 
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+  projectId: "supernft-5b952",
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -82,95 +104,24 @@ const db = firebase.firestore();
 
 auth.onAuthStateChanged(user=>{
   if(!user){
-    location.href="login.html";
+    location.href="signup.html";
     return;
   }
 
-  db.collection("users").doc(user.uid).get().then(doc=>{
-    if(!doc.exists || !doc.data().isAdmin){
-      alert("Access denied");
-      location.href="dashboard.html";
-    } else {
-      loadUsers();
+  document.getElementById("userEmail").innerText = user.email;
+
+  db.collection("users").doc(user.uid).get()
+  .then(doc=>{
+    if(doc.exists){
+      const data = doc.data();
+      document.getElementById("balance").innerText =
+        data.balance || 0;
+
+      document.getElementById("nfts").innerText =
+        data.nfts || 0;
     }
   });
 });
-
-function loadUsers(){
-  const container = document.getElementById("usersList");
-  container.innerHTML = "";
-
-  db.collection("users").get().then(snapshot=>{
-    snapshot.forEach(doc=>{
-      const u = doc.data();
-      const uid = doc.id;
-
-      const div = document.createElement("div");
-      div.className="card";
-
-      div.innerHTML = `
-        <b>User ID:</b> ${uid}<br>
-
-        Name:
-        <input id="name_${uid}" value="${u.name || ""}">
-
-        Email:
-        <input id="email_${uid}" value="${u.email || ""}">
-
-        Balance:
-        <input type="number" id="bal_${uid}" value="${u.balance || 0}">
-
-        Role:
-        <select id="role_${uid}">
-          <option value="false" ${!u.isAdmin?"selected":""}>User</option>
-          <option value="true" ${u.isAdmin?"selected":""}>Admin</option>
-        </select>
-
-        Account Status:
-        <select id="ban_${uid}">
-          <option value="false" ${!u.banned?"selected":""}>Active</option>
-          <option value="true" ${u.banned?"selected":""}>Banned</option>
-        </select>
-
-        <button onclick="saveUser('${uid}')">
-          Save Changes
-        </button>
-      `;
-
-      container.appendChild(div);
-    });
-  });
-}
-
-function saveUser(uid){
-  const name =
-    document.getElementById("name_"+uid).value;
-
-  const email =
-    document.getElementById("email_"+uid).value;
-
-  const balance =
-    parseFloat(document.getElementById("bal_"+uid).value) || 0;
-
-  const isAdmin =
-    document.getElementById("role_"+uid).value === "true";
-
-  const banned =
-    document.getElementById("ban_"+uid).value === "true";
-
-  db.collection("users").doc(uid).update({
-    name,
-    email,
-    balance,
-    isAdmin,
-    banned
-  })
-  .then(()=> alert("User updated"))
-  .catch(err=>{
-    console.error(err);
-    alert("Update failed");
-  });
-}
 </script>
 
 </body>
