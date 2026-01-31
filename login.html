@@ -147,5 +147,31 @@ window.login = login;
 window.forgotPassword = forgotPassword;
 </script>
 
+  <script>
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    const userRef = firebase.firestore().collection("users").doc(user.uid);
+
+    userRef.get().then(docSnapshot => {
+      if (!docSnapshot.exists) {
+        userRef.set({
+          email: user.email,
+          name: user.displayName || "",
+          balance: 0,
+          deposit: 0,
+          withdraw: 0,
+          dailyIncome: 0,
+          liveEarnings: 0,
+          nfts: 0,
+          banned: false,
+          isAdmin: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    });
+  }
+});
+</script>
+
 </body>
 </html>
