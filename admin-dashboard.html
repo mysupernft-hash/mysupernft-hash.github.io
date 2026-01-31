@@ -1,102 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <title>SuperNFT Admin Panel</title>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0d0d0d;
-  color:#FFD700;
-}
-header{
-  background:#111;
-  padding:15px;
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-}
-.container{
-  padding:15px;
-  overflow-x:auto;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-  background:#1a1a1a;
-}
-th, td{
-  border:1px solid #333;
-  padding:6px;
-  text-align:center;
-}
-th{
-  background:#111;
-}
-input, select{
-  width:100%;
-  padding:5px;
-  background:#222;
-  color:#FFD700;
-  border:none;
-}
-button{
-  background:#FFD700;
-  color:#000;
-  padding:5px 10px;
-  border:none;
-  cursor:pointer;
-  font-weight:bold;
-}
-button:hover{
-  background:#e6c200;
-}
-.loading{
-  text-align:center;
-  padding:20px;
-}
-</style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
+  <style>
+    body { background:#0d0d0d; color:#FFD700; font-family:Arial; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { border:1px solid #333; padding:6px; }
+    input { width:100%; background:#222; color:#FFD700; border:none; }
+    button { background:#FFD700; color:#000; font-weight:bold; }
+  </style>
 </head>
+
 <body>
+<h2>SuperNFT Admin Panel</h2>
 
-<header>SuperNFT Admin Panel</header>
-
-<div class="container">
-
-<table id="usersTable">
-<thead>
-<tr>
-<th>UID</th>
-<th>Name</th>
-<th>Email</th>
-<th>Daily Income</th>
-<th>Live Earnings</th>
-<th>Deposit</th>
-<th>Withdraw</th>
-<th>Wallet Balance</th>
-<th>NFTs</th>
-<th>Status</th>
-<th>Save</th>
-</tr>
-</thead>
-<tbody>
-<tr><td colspan="11" class="loading">Loading users...</td></tr>
-</tbody>
+<table id="users">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Balance</th>
+      <th>Daily</th>
+      <th>Save</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
 </table>
 
-</div>
-
 <script>
-/* 🔥 FIREBASE CONFIG (YOUR PROJECT) */
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -106,92 +42,49 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* 🔐 ADMIN AUTH CHECK */
-auth.onAuthStateChanged(async user=>{
-  if(!user){
-    alert("Please login as admin");
-    window.location.href="login.html";
+auth.onAuthStateChanged(async user => {
+  console.log("AUTH USER:", user?.uid);
+
+  if (!user) {
+    alert("Login required");
     return;
   }
 
-  const adminDoc = await db.collection("users").doc(user.uid).get();
+  const doc = await db.collection("users").doc(user.uid).get();
+  console.log("ADMIN DOC:", doc.data());
 
-  if(!adminDoc.exists || !adminDoc.data().isAdmin){
+  if (!doc.exists || doc.data().isAdmin !== true) {
     alert("Access denied");
-    window.location.href="dashboard.html";
     return;
   }
 
   loadUsers();
 });
 
-/* 📥 LOAD USERS */
-function loadUsers(){
-  const tbody = document.querySelector("#usersTable tbody");
-  tbody.innerHTML = "<tr><td colspan='11' class='loading'>Loading users...</td></tr>";
+function loadUsers() {
+  const tbody = document.querySelector("#users tbody");
+  tbody.innerHTML = "";
 
-  db.collection("users").get()
-    .then(snapshot=>{
-      tbody.innerHTML = "";
-
-      if(snapshot.empty){
-        tbody.innerHTML = "<tr><td colspan='11'>No users found</td></tr>";
-        return;
-      }
-
-      snapshot.forEach(doc=>{
-        const u = doc.data();
-        const uid = doc.id;
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-<td>${uid}</td>
-<td><input id="name_${uid}" value="${u.name||''}"></td>
-<td>${u.email||''}</td>
-<td><input type="number" id="daily_${uid}" value="${u.dailyIncome||0}"></td>
-<td><input type="number" id="live_${uid}" value="${u.liveEarnings||0}"></td>
-<td><input type="number" id="dep_${uid}" value="${u.deposit||0}"></td>
-<td><input type="number" id="with_${uid}" value="${u.withdraw||0}"></td>
-<td><input type="number" id="bal_${uid}" value="${u.balance||0}"></td>
-<td><input type="number" id="nft_${uid}" value="${u.nfts||0}"></td>
-<td>
-<select id="ban_${uid}">
-<option value="false" ${!u.banned?"selected":""}>Active</option>
-<option value="true" ${u.banned?"selected":""}>Banned</option>
-</select>
-</td>
-<td>
-<button onclick="saveUser('${uid}')">Save</button>
-</td>
-`;
-        tbody.appendChild(tr);
-      });
-    })
-    .catch(err=>{
-      console.error(err);
-      alert("Firestore read error. Check rules.");
+  db.collection("users").get().then(snap => {
+    snap.forEach(d => {
+      const u = d.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${u.email}</td>
+          <td><input id="b_${d.id}" value="${u.balance||0}"></td>
+          <td><input id="d_${d.id}" value="${u.dailyIncome||0}"></td>
+          <td><button onclick="save('${d.id}')">Save</button></td>
+        </tr>`;
     });
+  });
 }
 
-/* 💾 SAVE USER */
-function saveUser(uid){
-  db.collection("users").doc(uid).update({
-    name: document.getElementById(`name_${uid}`).value,
-    dailyIncome: Number(document.getElementById(`daily_${uid}`).value),
-    liveEarnings: Number(document.getElementById(`live_${uid}`).value),
-    deposit: Number(document.getElementById(`dep_${uid}`).value),
-    withdraw: Number(document.getElementById(`with_${uid}`).value),
-    balance: Number(document.getElementById(`bal_${uid}`).value),
-    nfts: Number(document.getElementById(`nft_${uid}`).value),
-    banned: document.getElementById(`ban_${uid}`).value === "true"
-  }).then(()=>{
-    alert("User updated successfully");
-  }).catch(err=>{
-    console.error(err);
-    alert("Update failed");
+function save(id){
+  db.collection("users").doc(id).update({
+    balance: Number(document.getElementById("b_"+id).value),
+    dailyIncome: Number(document.getElementById("d_"+id).value)
   });
 }
 </script>
-
 </body>
 </html>
