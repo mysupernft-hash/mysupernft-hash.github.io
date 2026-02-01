@@ -1,90 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>SuperNFT Admin Panel</title>
+<meta charset="UTF-8">
+<title>SuperNFT Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+body{
+  font-family: Arial;
+  background:#0d0d0d;
+  color:#FFD700;
+  margin:0;
+}
+h2{padding:15px;text-align:center;}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
+}
+th{
+  background:#111;
+}
+input{
+  width:80px;
+  padding:4px;
+}
+button{
+  background:#FFD700;
+  border:none;
+  padding:5px 10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+button.ban{background:red;color:white;}
+button.unban{background:green;color:white;}
+.loader{
+  text-align:center;
+  padding:30px;
+}
+</style>
 
-  <style>
-    body { background:#0d0d0d; color:#FFD700; font-family:Arial; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { border:1px solid #333; padding:6px; }
-    input { width:100%; background:#222; color:#FFD700; border:none; }
-    button { background:#FFD700; color:#000; font-weight:bold; }
-  </style>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
-<h2>SuperNFT Admin Panel</h2>
 
-<table id="users">
-  <thead>
-    <tr>
-      <th>Email</th>
-      <th>Balance</th>
-      <th>Daily</th>
-      <th>Save</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
+<h2>🔥 SuperNFT Admin Dashboard</h2>
+<div id="status" class="loader">Loading admin data...</div>
+
+<table id="usersTable" style="display:none;">
+<thead>
+<tr>
+  <th>Email</th>
+  <th>Balance</th>
+  <th>Daily Income</th>
+  <th>Banned</th>
+  <th>Save</th>
+</tr>
+</thead>
+<tbody id="usersBody"></tbody>
 </table>
 
 <script>
-firebase.initializeApp({
+// 🔥 Firebase config (same jo tum use kar rahe ho)
+const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
-});
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.firebasestorage.app",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:014d5ab680859db4512fa9"
+};
 
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-auth.onAuthStateChanged(async user => {
-  console.log("AUTH USER:", user?.uid);
-
-  if (!user) {
-    alert("Login required");
+// 🔐 Admin check
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    window.location.href="login.html";
     return;
   }
 
-  const doc = await db.collection("users").doc(user.uid).get();
-  console.log("ADMIN DOC:", doc.data());
+  const adminDoc = await db.collection("users").doc(user.uid).get();
 
-  if (!doc.exists || doc.data().isAdmin !== true) {
-    alert("Access denied");
+  if(!adminDoc.exists || adminDoc.data().isAdmin !== true){
+    document.body.innerHTML="<h2 style='color:red;text-align:center'>Access Denied</h2>";
     return;
   }
 
+  document.getElementById("status").innerText="Loading users...";
   loadUsers();
 });
 
-function loadUsers() {
-  const tbody = document.querySelector("#users tbody");
-  tbody.innerHTML = "";
+// 📥 Load all users
+function loadUsers(){
+  db.collection("users").onSnapshot(snapshot=>{
+    const tbody = document.getElementById("usersBody");
+    tbody.innerHTML="";
 
-  db.collection("users").get().then(snap => {
-    snap.forEach(d => {
-      const u = d.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${u.email}</td>
-          <td><input id="b_${d.id}" value="${u.balance||0}"></td>
-          <td><input id="d_${d.id}" value="${u.dailyIncome||0}"></td>
-          <td><button onclick="save('${d.id}')">Save</button></td>
-        </tr>`;
+    snapshot.forEach(doc=>{
+      const u = doc.data();
+      if(u.isAdmin) return; // admin hide
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${u.email || ""}</td>
+        <td><input id="bal-${doc.id}" value="${u.balance || 0}"></td>
+        <td><input id="daily-${doc.id}" value="${u.dailyIncome || 0}"></td>
+        <td>${u.banned ? "YES" : "NO"}</td>
+        <td>
+          <button onclick="saveUser('${doc.id}')">Save</button>
+          <button class="${u.banned ? 'unban':'ban'}"
+            onclick="toggleBan('${doc.id}', ${u.banned})">
+            ${u.banned ? 'Unban':'Ban'}
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
     });
+
+    document.getElementById("status").style.display="none";
+    document.getElementById("usersTable").style.display="table";
   });
 }
 
-function save(id){
-  db.collection("users").doc(id).update({
-    balance: Number(document.getElementById("b_"+id).value),
-    dailyIncome: Number(document.getElementById("d_"+id).value)
+// 💾 Save user
+function saveUser(uid){
+  const balance = parseFloat(document.getElementById("bal-"+uid).value) || 0;
+  const daily = parseFloat(document.getElementById("daily-"+uid).value) || 0;
+
+  db.collection("users").doc(uid).update({
+    balance: balance,
+    dailyIncome: daily
+  }).then(()=>{
+    alert("User updated");
+  });
+}
+
+// 🚫 Ban / Unban
+function toggleBan(uid,current){
+  db.collection("users").doc(uid).update({
+    banned: !current
   });
 }
 </script>
+
 </body>
 </html>
