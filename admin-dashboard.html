@@ -2,20 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel | SuperNFT</title>
+<title>SuperNFT Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   background:#0d0d0d;
   color:#FFD700;
 }
-h2{margin:10px 0}
-#loader{
-  padding:40px;
+h1{
   text-align:center;
+  margin:15px 0;
+}
+#loader{
+  text-align:center;
+  padding:40px;
 }
 table{
   width:100%;
@@ -57,11 +60,11 @@ button:hover{background:#e6c200}
 
 <body>
 
-<h1 style="text-align:center">👑 SuperNFT Admin Panel</h1>
+<h1>👑 SuperNFT Admin Dashboard</h1>
 
 <div id="loader">Checking admin access...</div>
 
-<div id="admin" style="display:none;padding:15px;">
+<div id="dashboard" style="display:none;padding:10px;">
 <table>
 <thead>
 <tr>
@@ -78,12 +81,12 @@ button:hover{background:#e6c200}
   <th>Save</th>
 </tr>
 </thead>
-<tbody id="users"></tbody>
+<tbody id="usersTable"></tbody>
 </table>
 </div>
 
 <script>
-// 🔹 FIREBASE CONFIG (YOUR PROJECT)
+// ================= FIREBASE CONFIG =================
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -97,36 +100,30 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* ======================
-   ADMIN AUTH CHECK
-====================== */
+// ================= ADMIN CHECK =================
 auth.onAuthStateChanged(async user=>{
   if(!user){
-    alert("Login required");
-    window.location.href="login.html";
+    window.location.href = "login.html";
     return;
   }
 
-  const adminRef = db.collection("users").doc(user.uid);
-  const snap = await adminRef.get();
+  const adminDoc = await db.collection("users").doc(user.uid).get();
 
-  if(!snap.exists || snap.data().isAdmin !== true){
+  if(!adminDoc.exists || adminDoc.data().isAdmin !== true){
     alert("Access denied");
     auth.signOut();
-    window.location.href="login.html";
+    window.location.href = "login.html";
     return;
   }
 
   document.getElementById("loader").style.display="none";
-  document.getElementById("admin").style.display="block";
+  document.getElementById("dashboard").style.display="block";
   loadUsers();
 });
 
-/* ======================
-   LOAD ALL USERS
-====================== */
+// ================= LOAD USERS =================
 function loadUsers(){
-  const tbody = document.getElementById("users");
+  const tbody = document.getElementById("usersTable");
 
   db.collection("users").onSnapshot(snapshot=>{
     tbody.innerHTML="";
@@ -137,7 +134,6 @@ function loadUsers(){
       tbody.innerHTML += `
       <tr>
         <td>${u.email || ""}</td>
-
         <td><input id="bal_${uid}" value="${u.balance||0}"></td>
         <td><input id="daily_${uid}" value="${u.dailyIncome||0}"></td>
         <td><input id="live_${uid}" value="${u.liveEarnings||0}"></td>
@@ -146,46 +142,41 @@ function loadUsers(){
         <td><input id="ref_${uid}" value="${u.referralEarnings||0}"></td>
         <td><input id="team_${uid}" value="${u.myTeam||0}"></td>
         <td><input id="level_${uid}" value="${u.level||1}"></td>
-
         <td>
           ${u.banned
-            ? `<button class="unban" onclick="banUser('${uid}',false)">Unban</button>`
-            : `<button class="ban" onclick="banUser('${uid}',true)">Ban</button>`
+            ? `<button class="unban" onclick="setBan('${uid}',false)">Unban</button>`
+            : `<button class="ban" onclick="setBan('${uid}',true)">Ban</button>`
           }
         </td>
-
         <td>
           <button onclick="saveUser('${uid}')">Save</button>
         </td>
-      </tr>`;
+      </tr>
+      `;
     });
   });
 }
 
-/* ======================
-   SAVE USER DATA
-====================== */
+// ================= SAVE USER =================
 function saveUser(uid){
   db.collection("users").doc(uid).update({
-    balance:Number(document.getElementById("bal_"+uid).value),
-    dailyIncome:Number(document.getElementById("daily_"+uid).value),
-    liveEarnings:Number(document.getElementById("live_"+uid).value),
-    deposit:Number(document.getElementById("dep_"+uid).value),
-    withdraw:Number(document.getElementById("with_"+uid).value),
-    referralEarnings:Number(document.getElementById("ref_"+uid).value),
-    myTeam:Number(document.getElementById("team_"+uid).value),
-    level:Number(document.getElementById("level_"+uid).value)
+    balance: Number(document.getElementById("bal_"+uid).value),
+    dailyIncome: Number(document.getElementById("daily_"+uid).value),
+    liveEarnings: Number(document.getElementById("live_"+uid).value),
+    deposit: Number(document.getElementById("dep_"+uid).value),
+    withdraw: Number(document.getElementById("with_"+uid).value),
+    referralEarnings: Number(document.getElementById("ref_"+uid).value),
+    myTeam: Number(document.getElementById("team_"+uid).value),
+    level: Number(document.getElementById("level_"+uid).value)
   }).then(()=>{
-    alert("Saved");
+    alert("User updated");
   });
 }
 
-/* ======================
-   BAN / UNBAN
-====================== */
-function banUser(uid,state){
+// ================= BAN / UNBAN =================
+function setBan(uid,state){
   db.collection("users").doc(uid).update({
-    banned:state
+    banned: state
   });
 }
 </script>
