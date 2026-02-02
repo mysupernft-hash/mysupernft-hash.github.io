@@ -1,46 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin Dashboard</title>
+<title>Admin Dashboard | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-  font-family: Arial;
+  margin:0;
+  font-family:Arial;
   background:#0d0d0d;
   color:#FFD700;
-  margin:0;
 }
-h2{padding:15px;text-align:center;}
+h2{margin:0 0 15px}
 table{
   width:100%;
   border-collapse:collapse;
+  font-size:13px;
 }
 th,td{
   border:1px solid #333;
-  padding:8px;
+  padding:6px;
   text-align:center;
 }
 th{
   background:#111;
+  position:sticky;
+  top:0;
 }
 input{
-  width:80px;
+  width:85px;
   padding:4px;
+  background:#000;
+  color:#FFD700;
+  border:1px solid #555;
 }
 button{
+  padding:5px 8px;
   background:#FFD700;
   border:none;
-  padding:5px 10px;
   cursor:pointer;
   font-weight:bold;
 }
-button.ban{background:red;color:white;}
-button.unban{background:green;color:white;}
-.loader{
-  text-align:center;
+button:hover{background:#e6c200}
+.ban{background:red;color:#fff}
+.unban{background:green;color:#fff}
+#loader{
   padding:30px;
+  text-align:center;
+}
+.wrapper{
+  padding:15px;
+  overflow-x:auto;
 }
 </style>
 
@@ -52,29 +63,38 @@ button.unban{background:green;color:white;}
 
 <body>
 
-<h2>🔥 SuperNFT Admin Dashboard</h2>
-<div id="status" class="loader">Loading admin data...</div>
+<div id="loader">Checking admin access...</div>
 
-<table id="usersTable" style="display:none;">
-<thead>
-<tr>
-  <th>Email</th>
-  <th>Balance</th>
-  <th>Daily Income</th>
-  <th>Banned</th>
-  <th>Save</th>
-</tr>
-</thead>
-<tbody id="usersBody"></tbody>
-</table>
+<div id="adminContent" style="display:none;" class="wrapper">
+  <h2>👑 SuperNFT Admin Dashboard</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Balance</th>
+        <th>Daily</th>
+        <th>Live</th>
+        <th>Deposit</th>
+        <th>Withdraw</th>
+        <th>Referral $</th>
+        <th>My Team</th>
+        <th>Level</th>
+        <th>Status</th>
+        <th>Save</th>
+      </tr>
+    </thead>
+    <tbody id="usersTable"></tbody>
+  </table>
+</div>
 
 <script>
-// 🔥 Firebase config (same jo tum use kar rahe ho)
+// 🔹 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.firebasestorage.app",
+  storageBucket: "supernft-5b952.appspot.com",
   messagingSenderId: "278097730700",
   appId: "1:278097730700:web:014d5ab680859db4512fa9"
 };
@@ -83,75 +103,97 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// 🔐 Admin check
+/* =========================
+   🔐 ADMIN AUTH CHECK
+========================= */
 auth.onAuthStateChanged(async user=>{
   if(!user){
     window.location.href="login.html";
     return;
   }
 
-  const adminDoc = await db.collection("users").doc(user.uid).get();
+  const ref = db.collection("users").doc(user.uid);
+  const snap = await ref.get();
 
-  if(!adminDoc.exists || adminDoc.data().isAdmin !== true){
-    document.body.innerHTML="<h2 style='color:red;text-align:center'>Access Denied</h2>";
+  if(!snap.exists || snap.data().isAdmin !== true){
+    alert("Access denied");
+    auth.signOut();
+    window.location.href="login.html";
     return;
   }
 
-  document.getElementById("status").innerText="Loading users...";
-  loadUsers();
+  document.getElementById("loader").style.display="none";
+  document.getElementById("adminContent").style.display="block";
+  loadAllUsers();
 });
 
-// 📥 Load all users
-function loadUsers(){
-  db.collection("users").onSnapshot(snapshot=>{
-    const tbody = document.getElementById("usersBody");
-    tbody.innerHTML="";
+/* =========================
+   📊 LOAD ALL USERS
+========================= */
+function loadAllUsers(){
+  const table = document.getElementById("usersTable");
 
+  db.collection("users").onSnapshot(snapshot=>{
+    table.innerHTML="";
     snapshot.forEach(doc=>{
       const u = doc.data();
-      if(u.isAdmin) return; // admin hide
+      const uid = doc.id;
 
-      const tr = document.createElement("tr");
-
-      tr.innerHTML = `
+      table.innerHTML += `
+      <tr>
         <td>${u.email || ""}</td>
-        <td><input id="bal-${doc.id}" value="${u.balance || 0}"></td>
-        <td><input id="daily-${doc.id}" value="${u.dailyIncome || 0}"></td>
-        <td>${u.banned ? "YES" : "NO"}</td>
+
+        <td><input id="bal_${uid}" value="${u.balance || 0}"></td>
+        <td><input id="daily_${uid}" value="${u.dailyIncome || 0}"></td>
+        <td><input id="live_${uid}" value="${u.liveEarnings || 0}"></td>
+        <td><input id="dep_${uid}" value="${u.deposit || 0}"></td>
+        <td><input id="with_${uid}" value="${u.withdraw || 0}"></td>
+
+        <td><input id="ref_${uid}" value="${u.referralEarnings || 0}"></td>
+        <td><input id="team_${uid}" value="${u.myTeam || 0}"></td>
+        <td><input id="level_${uid}" value="${u.level || 1}"></td>
+
         <td>
-          <button onclick="saveUser('${doc.id}')">Save</button>
-          <button class="${u.banned ? 'unban':'ban'}"
-            onclick="toggleBan('${doc.id}', ${u.banned})">
-            ${u.banned ? 'Unban':'Ban'}
-          </button>
+          ${u.banned
+            ? `<button class="unban" onclick="setBan('${uid}',false)">Unban</button>`
+            : `<button class="ban" onclick="setBan('${uid}',true)">Ban</button>`
+          }
         </td>
+
+        <td>
+          <button onclick="saveUser('${uid}')">Save</button>
+        </td>
+      </tr>
       `;
-
-      tbody.appendChild(tr);
     });
-
-    document.getElementById("status").style.display="none";
-    document.getElementById("usersTable").style.display="table";
   });
 }
 
-// 💾 Save user
+/* =========================
+   💾 SAVE USER
+========================= */
 function saveUser(uid){
-  const balance = parseFloat(document.getElementById("bal-"+uid).value) || 0;
-  const daily = parseFloat(document.getElementById("daily-"+uid).value) || 0;
-
   db.collection("users").doc(uid).update({
-    balance: balance,
-    dailyIncome: daily
+    balance: Number(document.getElementById("bal_"+uid).value),
+    dailyIncome: Number(document.getElementById("daily_"+uid).value),
+    liveEarnings: Number(document.getElementById("live_"+uid).value),
+    deposit: Number(document.getElementById("dep_"+uid).value),
+    withdraw: Number(document.getElementById("with_"+uid).value),
+
+    referralEarnings: Number(document.getElementById("ref_"+uid).value),
+    myTeam: Number(document.getElementById("team_"+uid).value),
+    level: Number(document.getElementById("level_"+uid).value),
   }).then(()=>{
-    alert("User updated");
+    alert("User updated successfully");
   });
 }
 
-// 🚫 Ban / Unban
-function toggleBan(uid,current){
+/* =========================
+   🚫 BAN / UNBAN
+========================= */
+function setBan(uid,state){
   db.collection("users").doc(uid).update({
-    banned: !current
+    banned: state
   });
 }
 </script>
