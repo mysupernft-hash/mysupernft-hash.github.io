@@ -53,7 +53,7 @@ footer div:hover{color:#e0c200;}
 <div id="sidebar">
   <h2>Menu</h2>
   <button onclick="openPage('account')">👤 My Account</button>
-  <button onclick="openPage('referrals')">👤 My Referrals</button>
+  <button onclick="openPage('referral')">👤 My Referrals</button>
   <button onclick="openPage('investments')">📁 My Investments</button>
   <button onclick="openPage('wallet')">💳 Wallet</button>
   <button onclick="openPage('withdraw')">💸 Withdraw</button>
@@ -140,7 +140,9 @@ function logout(){signOut(auth).then(()=>window.location.replace("login.html"));
 window.openPage = function(page){
   switch(page){
     case "account": window.location.href="account.html"; break;
-    case "referral": window.location.href="my-referrals.html"; break;
+    case "referral":
+  window.location.href = "my-referrals.html";
+  break;
     case "investments": window.location.href="my-investments.html"; break;
     case "wallet": window.location.href="wallet.html"; break;
     case "deposit": window.location.href="deposit.html"; break;
