@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Use Referral Code | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  background:#0d0d0d;
+  color:#FFD700;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.box{
+  background:#111;
+  padding:25px;
+  border-radius:10px;
+  width:300px;
+  text-align:center;
+}
+input,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:5px;
+  border:none;
+}
+button{
+  background:#FFD700;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+<div class="box">
+  <h3>🎁 Use Referral Code</h3>
+  <input id="code" placeholder="Enter referral code">
+  <button onclick="applyCode()">Apply Code</button>
+  <p id="msg"></p>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser;
+
+auth.onAuthStateChanged(u=>{
+  if(!u) location.href="login.html";
+  currentUser = u;
+});
+
+async function applyCode(){
+  const code = document.getElementById("code").value.trim();
+  if(!code) return;
+
+  const userRef = db.collection("users").doc(currentUser.uid);
+  const userDoc = await userRef.get();
+
+  if(userDoc.data().referralUsed){
+    msg("Referral already used ❌");
+    return;
+  }
+
+  // 🔍 Find referrer
+  const refSnap = await db.collection("users")
+    .where("referralCode","==",code).get();
+
+  if(refSnap.empty){
+    msg("Invalid referral code ❌");
+    return;
+  }
+
+  const referrerDoc = refSnap.docs[0];
+  if(referrerDoc.id === currentUser.uid){
+    msg("You cannot use your own code ❌");
+    return;
+  }
+
+  // 💰 Transaction
+  await db.runTransaction(async t=>{
+    const referrerRef = db.collection("users").doc(referrerDoc.id);
+
+    const u = await t.get(userRef);
+    const r = await t.get(referrerRef);
+
+    t.update(userRef,{
+      balance:(u.data().balance||0)+5,
+      referralUsed:true,
+      referredBy:referrerDoc.id
+    });
+
+    t.update(referrerRef,{
+      balance:(r.data().balance||0)+5,
+      referralEarnings:(r.data().referralEarnings||0)+5
+    });
+  });
+
+  msg("✅ $5 added to both users!");
+}
+
+function msg(t){
+  document.getElementById("msg").innerText = t;
+}
+</script>
+
+</body>
+</html>
