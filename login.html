@@ -162,6 +162,9 @@ firebase.auth().onAuthStateChanged(user => {
           withdraw: 0,
           dailyIncome: 0,
           liveEarnings: 0,
+          referralCode: user.uid.substring(0,6).toUpperCase(),
+referralUsed: false,
+referralEarnings: 0
           nfts: 0,
           banned: false,
           isAdmin: false,
