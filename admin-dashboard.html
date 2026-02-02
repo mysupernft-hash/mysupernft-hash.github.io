@@ -1,177 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Dashboard | SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>Admin Login | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0d0d0d;
-  color:#FFD700;
-}
-h2{margin:10px}
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  border:1px solid #333;
-  padding:6px;
-  text-align:center;
-}
-th{
-  background:#1a1a1a;
-}
-input{
-  width:80px;
-  padding:4px;
-  background:#111;
-  color:#FFD700;
-  border:1px solid #444;
-}
-button{
-  padding:5px 10px;
-  cursor:pointer;
-  background:#FFD700;
-  border:none;
-  font-weight:bold;
-}
-button:hover{opacity:0.8}
-.ban{background:red;color:#fff}
-.unban{background:green;color:#fff}
-.logout{
-  position:fixed;
-  top:10px;
-  right:10px;
-}
+body{background:#0d0d0d;color:#FFD700;font-family:Arial;
+display:flex;justify-content:center;align-items:center;height:100vh}
+.box{background:#111;padding:25px;width:300px;border-radius:10px}
+input,button{width:100%;padding:10px;margin:8px 0}
+button{background:#FFD700;border:none;font-weight:bold}
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
-
-<button class="logout" onclick="logout()">Logout</button>
-<h2>Admin Dashboard – Users Control</h2>
-
-<table>
-<thead>
-<tr>
-<th>Email</th>
-<th>Balance</th>
-<th>Daily</th>
-<th>Live</th>
-<th>Deposit</th>
-<th>Withdraw</th>
-<th>Referral</th>
-<th>Level</th>
-<th>Status</th>
-<th>Save</th>
-</tr>
-</thead>
-<tbody id="usersTable"></tbody>
-</table>
+<div class="box">
+<h2>Admin Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+</div>
 
 <script>
-// 🔥 Firebase Config (same as website)
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
+const firebaseConfig={
+ apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+ authDomain:"supernft-5b952.firebaseapp.com",
+ projectId:"supernft-5b952"
 };
 firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// 🔒 ADMIN CHECK
-auth.onAuthStateChanged(async user=>{
-  if(!user){
-    location.href="login.html";
-    return;
-  }
-
-  const doc = await db.collection("users").doc(user.uid).get();
-  if(!doc.exists || doc.data().isAdmin !== true){
-    document.body.innerHTML="<h2>Access Denied</h2>";
-    return;
-  }
-
-  loadUsers();
-});
-
-// 🔹 LOAD ALL USERS
-function loadUsers(){
-  db.collection("users").orderBy("createdAt","desc")
-    .onSnapshot(snapshot=>{
-      let html="";
-      snapshot.forEach(doc=>{
-        const u=doc.data();
-        html+=`
-<tr>
-<td>${u.email||""}</td>
-<td><input id="bal_${doc.id}" value="${u.balance||0}"></td>
-<td><input id="daily_${doc.id}" value="${u.dailyIncome||0}"></td>
-<td><input id="live_${doc.id}" value="${u.liveEarnings||0}"></td>
-<td><input id="dep_${doc.id}" value="${u.deposit||0}"></td>
-<td><input id="with_${doc.id}" value="${u.withdraw||0}"></td>
-<td><input id="ref_${doc.id}" value="${u.referralEarnings||0}"></td>
-<td><input id="lvl_${doc.id}" value="${u.level||1}"></td>
-<td>
-<button class="${u.banned?'unban':'ban'}"
-onclick="toggleBan('${doc.id}',${u.banned})">
-${u.banned?'Unban':'Ban'}
-</button>
-</td>
-<td>
-<button onclick="saveUser('${doc.id}')">Save</button>
-</td>
-</tr>`;
-      });
-      document.getElementById("usersTable").innerHTML=html;
-    });
-}
-
-// 💾 SAVE USER DATA
-function saveUser(uid){
-  const data={
-    balance: +val("bal",uid),
-    dailyIncome: +val("daily",uid),
-    liveEarnings: +val("live",uid),
-    deposit: +val("dep",uid),
-    withdraw: +val("with",uid),
-    referralEarnings: +val("ref",uid),
-    level: +val("lvl",uid)
-  };
-  db.collection("users").doc(uid).update(data)
-    .then(()=>alert("Saved"));
-}
-
-// 🚫 BAN / UNBAN
-function toggleBan(uid,status){
-  db.collection("users").doc(uid).update({
-    banned: !status
-  });
-}
-
-// 🔹 helper
-function val(prefix,id){
-  return document.getElementById(`${prefix}_${id}`).value || 0;
-}
-
-// 🔓 LOGOUT
-function logout(){
-  auth.signOut();
-  location.href="login.html";
+function login(){
+ msg.innerText="Checking...";
+ auth.signInWithEmailAndPassword(email.value,password.value)
+ .then(res=>db.collection("users").doc(res.user.uid).get())
+ .then(doc=>{
+   if(!doc.exists || doc.data().isAdmin!==true){
+     auth.signOut();
+     msg.innerText="Access denied";
+     return;
+   }
+   location.href="admin-dashboard.html";
+ })
+ .catch(e=>msg.innerText=e.message);
 }
 </script>
-
 </body>
 </html>
