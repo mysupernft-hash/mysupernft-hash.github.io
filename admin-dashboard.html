@@ -1,54 +1,232 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Login | SuperNFT</title>
+<meta charset="UTF-8">
+<title>Admin Dashboard | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{background:#0d0d0d;color:#FFD700;font-family:Arial;
-display:flex;justify-content:center;align-items:center;height:100vh}
-.box{background:#111;padding:25px;width:300px;border-radius:10px}
-input,button{width:100%;padding:10px;margin:8px 0}
-button{background:#FFD700;border:none;font-weight:bold}
+body{
+  margin:0;
+  background:#0d0d0d;
+  color:#FFD700;
+  font-family:Arial;
+}
+header{
+  padding:15px;
+  background:#111;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+button{
+  background:#FFD700;
+  border:none;
+  padding:6px 10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+th,td{
+  border:1px solid #333;
+  padding:6px;
+  text-align:center;
+}
+th{background:#1a1a1a}
+input{
+  width:70px;
+  background:#111;
+  color:#FFD700;
+  border:1px solid #444;
+}
+.ban{background:red;color:#fff}
+.unban{background:green;color:#fff}
 </style>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
-<div class="box">
-<h2>Admin Login</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<p id="msg"></p>
-</div>
+
+<header>
+  <h2>SuperNFT – Admin Dashboard</h2>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<h3 style="padding:10px">Users</h3>
+
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Balance</th>
+<th>Daily</th>
+<th>Live</th>
+<th>Deposit</th>
+<th>Withdraw</th>
+<th>Referral</th>
+<th>Level</th>
+<th>Status</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody id="usersTable"></tbody>
+</table>
+
+<h3 style="padding:10px">Withdraw Requests</h3>
+
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Amount</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="withdrawTable"></tbody>
+</table>
 
 <script>
-const firebaseConfig={
- apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
- authDomain:"supernft-5b952.firebaseapp.com",
- projectId:"supernft-5b952"
+// 🔹 FIREBASE CONFIG (same everywhere)
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
 };
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
 
-function login(){
- msg.innerText="Checking...";
- auth.signInWithEmailAndPassword(email.value,password.value)
- .then(res=>db.collection("users").doc(res.user.uid).get())
- .then(doc=>{
-   if(!doc.exists || doc.data().isAdmin!==true){
-     auth.signOut();
-     msg.innerText="Access denied";
-     return;
-   }
-   location.href="admin-dashboard.html";
- })
- .catch(e=>msg.innerText=e.message);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// 🔐 ADMIN AUTH CHECK (ONLY isAdmin)
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    location.href="admin-login.html";
+    return;
+  }
+
+  const snap = await db.collection("users").doc(user.uid).get();
+
+  if(!snap.exists || snap.data().isAdmin !== true){
+    document.body.innerHTML =
+      "<h2 style='color:red;text-align:center;margin-top:40px'>Access Denied</h2>";
+    return;
+  }
+
+  // ✅ ADMIN VERIFIED
+  loadUsers();
+  loadWithdraws();
+});
+
+// 🔹 LOAD USERS
+function loadUsers(){
+  db.collection("users").onSnapshot(snap=>{
+    let html="";
+    snap.forEach(doc=>{
+      const u = doc.data();
+      html += `
+<tr>
+<td>${u.email || ""}</td>
+<td><input id="b${doc.id}" value="${u.balance||0}"></td>
+<td><input id="d${doc.id}" value="${u.dailyIncome||0}"></td>
+<td><input id="l${doc.id}" value="${u.liveEarnings||0}"></td>
+<td><input id="dp${doc.id}" value="${u.deposit||0}"></td>
+<td><input id="w${doc.id}" value="${u.withdraw||0}"></td>
+<td><input id="r${doc.id}" value="${u.referralEarnings||0}"></td>
+<td><input id="lv${doc.id}" value="${u.level||1}"></td>
+<td>
+<button class="${u.banned?'unban':'ban'}"
+onclick="toggleBan('${doc.id}',${u.banned})">
+${u.banned?'Unban':'Ban'}
+</button>
+</td>
+<td>
+<button onclick="saveUser('${doc.id}')">Save</button>
+</td>
+</tr>`;
+    });
+    usersTable.innerHTML = html;
+  });
+}
+
+// 🔹 SAVE USER DATA
+function saveUser(id){
+  db.collection("users").doc(id).update({
+    balance: Number(val("b",id)),
+    dailyIncome: Number(val("d",id)),
+    liveEarnings: Number(val("l",id)),
+    deposit: Number(val("dp",id)),
+    withdraw: Number(val("w",id)),
+    referralEarnings: Number(val("r",id)),
+    level: Number(val("lv",id))
+  });
+}
+
+function val(p,id){
+  return document.getElementById(p+id).value || 0;
+}
+
+// 🔹 BAN / UNBAN
+function toggleBan(id,status){
+  db.collection("users").doc(id).update({banned: !status});
+}
+
+// 🔹 WITHDRAW REQUESTS
+function loadWithdraws(){
+  db.collection("withdrawRequests")
+    .orderBy("createdAt","desc")
+    .onSnapshot(snap=>{
+      let html="";
+      snap.forEach(doc=>{
+        const w = doc.data();
+        html += `
+<tr>
+<td>${w.email}</td>
+<td>${w.amount}</td>
+<td>${w.status}</td>
+<td>
+${w.status==="pending" ? `
+<button onclick="approve('${doc.id}')">Approve</button>
+<button onclick="reject('${doc.id}','${w.uid}',${w.amount})">Reject</button>
+` : "-"}
+</td>
+</tr>`;
+      });
+      withdrawTable.innerHTML = html;
+    });
+}
+
+// 🔹 APPROVE / REJECT
+function approve(id){
+  db.collection("withdrawRequests").doc(id).update({status:"approved"});
+}
+
+function reject(id,uid,amt){
+  const userRef = db.collection("users").doc(uid);
+  db.runTransaction(async t=>{
+    const snap = await t.get(userRef);
+    t.update(userRef,{
+      balance: (snap.data().balance||0) + amt
+    });
+    t.update(db.collection("withdrawRequests").doc(id),
+      {status:"rejected"});
+  });
+}
+
+// 🔹 LOGOUT
+function logout(){
+  auth.signOut();
+  location.href="admin-login.html";
 }
 </script>
+
 </body>
 </html>
