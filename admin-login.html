@@ -2,95 +2,47 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Login | SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Login - SuperNFT</title>
 
-<style>
-body{
-  margin:0;
-  background:#0d0d0d;
-  color:#FFD700;
-  font-family:Arial;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-.box{
-  background:#111;
-  padding:25px;
-  width:320px;
-  border-radius:10px;
-  text-align:center;
-}
-input,button{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-}
-input{
-  background:#000;
-  border:1px solid #444;
-  color:#FFD700;
-}
-button{
-  background:#FFD700;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
-</style>
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body { background:#0d0d0d; color:#ffd700; font-family:Arial; text-align:center }
+input { padding:10px; margin:5px; width:250px }
+button { padding:10px 20px; background:#ffd700; border:none; cursor:pointer }
+</style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>Admin Login</h2>
-  <input id="email" type="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button type="button" onclick="login()">Login</button>
-  <p id="msg"></p>
-</div>
+<h2>Admin Login</h2>
+
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+<button onclick="login()">Login</button>
+
+<p id="msg"></p>
 
 <script>
-// 🔹 Firebase config (same as everywhere)
-const firebaseConfig = {
+firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
-};
-firebase.initializeApp(firebaseConfig);
+});
 
 const auth = firebase.auth();
-const db   = firebase.firestore();
 
 function login(){
-  const emailVal = document.getElementById("email").value;
-  const passVal  = document.getElementById("password").value;
-  const msg      = document.getElementById("msg");
+  const email = document.getElementById("email").value;
+  const pass  = document.getElementById("password").value;
 
-  msg.innerText = "Checking admin...";
-
-  auth.signInWithEmailAndPassword(emailVal, passVal)
-    .then(res=>{
-      return db.collection("users").doc(res.user.uid).get();
-    })
-    .then(doc=>{
-      if(!doc.exists || doc.data().isAdmin !== true){
-        auth.signOut();
-        msg.innerText = "Access denied (not admin)";
-        return;
-      }
-      // ✅ SUCCESS
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
       window.location.href = "admin-dashboard.html";
     })
-    .catch(err=>{
-      msg.innerText = err.message;
+    .catch(err => {
+      document.getElementById("msg").innerText = err.message;
     });
 }
 </script>
