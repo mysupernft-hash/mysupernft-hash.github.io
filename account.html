@@ -1,194 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>My Account – SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Account - SuperNFT</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#020617;
-  color:white
-}
-header{
-  text-align:center;
-  padding:15px;
-  font-size:22px;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b0b0b;
+  color: #ffd700;
 }
 
-.nav{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  padding:10px;
-  flex-wrap:wrap
-}
-.nav a{
-  padding:8px 18px;
-  border-radius:20px;
-  border:1px solid #38bdf8;
-  color:#38bdf8;
-  text-decoration:none;
-  font-weight:bold
+.container {
+  max-width: 500px;
+  margin: 40px auto;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 0 15px rgba(255,215,0,0.1);
 }
 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:15px;
-  padding:15px
-}
-.box{
-  background:#0f172a;
-  padding:15px;
-  border-radius:14px;
-  text-align:center
-}
-.box h3{
-  margin:0;
-  font-size:14px;
-  color:#cbd5f5
-}
-.box b{
-  display:block;
-  margin-top:6px;
-  font-size:18px;
-  color:#38bdf8
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-.section-title{
-  padding:10px 15px;
-  font-weight:bold;
-  color:#38bdf8
+.row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #222;
 }
 
-.team{
-  padding:15px
-}
-.team div{
-  background:#0f172a;
-  padding:10px;
-  border-radius:12px;
-  margin-bottom:10px;
-  display:flex;
-  justify-content:space-between
+.row span {
+  color: #aaa;
 }
 
-button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#38bdf8;
-  color:#020617;
-  font-weight:bold;
-  font-size:15px;
-  margin:15px
+.value {
+  font-weight: bold;
+}
+
+.status-active {
+  color: #00ff88;
+}
+
+.status-banned {
+  color: #ff4444;
+}
+
+.logout {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  background: #ffd700;
+  color: #000;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
 }
 </style>
 </head>
 
 <body>
 
-<header>👤 My Account</header>
+<div class="container">
+  <h2>My Account</h2>
 
-<div class="nav">
-  <a href="dashboard.html">🏠 Dashboard</a>
-  <a href="withdraw.html">💸 Withdraw</a>
-</div>
-
-<!-- WALLET SUMMARY -->
-<div class="grid">
-  <div class="box">
-    <h3>Wallet Balance</h3>
-    <b id="wallet">$0.0000</b>
+  <div class="row"><span>Email</span><div class="value" id="email">---</div></div>
+  <div class="row"><span>User ID</span><div class="value" id="uid">---</div></div>
+  <div class="row"><span>Wallet Balance</span><div class="value">$<span id="balance">0</span></div></div>
+  <div class="row"><span>Daily Income</span><div class="value">$<span id="daily">0</span></div></div>
+  <div class="row"><span>Referral Earnings</span><div class="value">$<span id="referral">0</span></div></div>
+  <div class="row"><span>Level</span><div class="value" id="level">1</div></div>
+  <div class="row">
+    <span>Account Status</span>
+    <div class="value" id="status">---</div>
   </div>
 
-  <div class="box">
-    <h3>Daily Income</h3>
-    <b id="daily">$0.00</b>
-  </div>
-
-  <div class="box">
-    <h3>Total Income</h3>
-    <b id="total">$0.0000</b>
-  </div>
-
-  <div class="box">
-    <h3>Active NFTs</h3>
-    <b id="nfts">0</b>
-  </div>
+  <button class="logout" onclick="logout()">Logout</button>
 </div>
-
-<!-- TEAM -->
-<div class="section-title">👥 My Team</div>
-<div class="team">
-  <div><span>Total Members</span><b id="teamTotal">0</b></div>
-  <div><span>Valid Members</span><b id="teamValid">0</b></div>
-  <div><span>Community Rewards</span><b>$0</b></div>
-</div>
-
-<!-- ORDERS -->
-<div class="section-title">📦 My Orders</div>
-<div class="team">
-  <div><span>Total Orders</span><b id="orders">0</b></div>
-  <div><span>Active</span><b id="activeOrders">0</b></div>
-</div>
-
-<button onclick="goWithdraw()">Withdraw Funds</button>
 
 <script>
-/* ===== LOAD DATA ===== */
-function loadAccount(){
-  const data = JSON.parse(localStorage.getItem("myNFTs")) || [];
+firebase.initializeApp({
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
+});
 
-  let daily = 0;
-  let total = 0;
-  let wallet = 0;
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
-  data.forEach(n=>{
-    daily += n.daily;
-    const seconds = (Date.now() - n.boughtAt) / 1000;
-    const earned = seconds * (n.daily / 86400);
-    wallet += earned;
-    total += earned;
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  document.getElementById("email").innerText = user.email;
+  document.getElementById("uid").innerText   = user.uid;
+
+  db.collection("users").doc(user.uid).get().then(doc => {
+    if (!doc.exists) return;
+
+    const u = doc.data();
+
+    document.getElementById("balance").innerText  = u.balance || 0;
+    document.getElementById("daily").innerText    = u.dailyIncome || 0;
+    document.getElementById("referral").innerText = u.referralEarnings || 0;
+    document.getElementById("level").innerText    = u.level || 1;
+
+    const statusEl = document.getElementById("status");
+    if (u.banned === true) {
+      statusEl.innerText = "BANNED";
+      statusEl.className = "value status-banned";
+    } else {
+      statusEl.innerText = "ACTIVE";
+      statusEl.className = "value status-active";
+    }
   });
+});
 
-  document.getElementById("daily").innerText =
-    "$" + daily.toFixed(2);
-
-  document.getElementById("wallet").innerText =
-    "$" + wallet.toFixed(4);
-
-  document.getElementById("total").innerText =
-    "$" + total.toFixed(4);
-
-  document.getElementById("nfts").innerText =
-    data.length;
-
-  document.getElementById("orders").innerText =
-    data.length;
-
-  document.getElementById("activeOrders").innerText =
-    data.length;
-
-  /* TEAM (demo for now) */
-  document.getElementById("teamTotal").innerText =
-    localStorage.getItem("teamTotal") || 0;
-
-  document.getElementById("teamValid").innerText =
-    localStorage.getItem("teamValid") || 0;
-}
-
-setInterval(loadAccount,1000);
-loadAccount();
-
-function goWithdraw(){
-  window.location.href="withdraw.html";
+function logout(){
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
 }
 </script>
 
