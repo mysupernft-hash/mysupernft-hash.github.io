@@ -1,82 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Admin Dashboard | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0d0d0d;
-  color:#fff;
-}
-h2{margin:15px}
-#loader{
-  padding:40px;
-  text-align:center;
-  font-size:20px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th,td{
-  border:1px solid #333;
-  padding:8px;
-  text-align:center;
-}
-th{
-  background:#1a1a1a;
-}
-input{
-  width:90px;
-  padding:5px;
-  background:#111;
-  color:#fff;
-  border:1px solid #444;
-}
-button{
-  padding:6px 10px;
-  background:#FFD700;
-  border:none;
-  cursor:pointer;
-  font-weight:bold;
-}
-button:hover{background:#e6c200}
-.logout{
-  position:fixed;
-  top:10px;
-  right:10px;
-}
-</style>
-
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0d0d0d;
+  color: #FFD700;
+}
+h2 { padding: 20px; margin:0 }
+#loader {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}
+th {
+  background: #111;
+}
+input {
+  width: 90px;
+  padding: 4px;
+}
+button {
+  padding: 6px 10px;
+  cursor: pointer;
+  background: #FFD700;
+  border: none;
+  font-weight: bold;
+}
+button:hover {
+  background: #e6c200;
+}
+</style>
 </head>
 
 <body>
 
-<button class="logout" onclick="logout()">Logout</button>
-
-<h2>Admin Dashboard</h2>
-
 <div id="loader">Checking admin access...</div>
 
 <div id="adminContent" style="display:none">
+  <h2>Admin Dashboard – Users</h2>
+
   <table>
     <thead>
       <tr>
         <th>Email</th>
         <th>Balance</th>
-        <th>Daily</th>
-        <th>Referral</th>
-        <th>Deposit</th>
-        <th>Withdraw</th>
-        <th>Ban</th>
+        <th>Daily Income</th>
+        <th>Referral Balance</th>
+        <th>Level</th>
+        <th>Banned</th>
         <th>Save</th>
       </tr>
     </thead>
@@ -85,7 +76,7 @@ button:hover{background:#e6c200}
 </div>
 
 <script>
-/* 🔥 FIREBASE CONFIG */
+/* 🔧 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -99,74 +90,88 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* 🔐 ADMIN CHECK */
-auth.onAuthStateChanged(user=>{
-  if(!user){
-    window.location.href="admin-login.html";
+/* 🔐 ADMIN AUTH CHECK */
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "admin-login.html";
     return;
   }
 
-  db.collection("admin").doc(user.uid).get().then(doc=>{
-    if(!doc.exists || doc.data().isAdmin !== true){
-      alert("Access denied (not admin)");
-      auth.signOut();
-      return;
-    }
+  // 🔥 ADMIN COLLECTION CHECK (IMPORTANT)
+  db.collection("admin").doc(user.uid).get()
+    .then(doc => {
 
-    document.getElementById("loader").style.display="none";
-    document.getElementById("adminContent").style.display="block";
-    loadUsers();
-  });
+      if (!doc.exists) {
+        alert("Access denied (admin record missing)");
+        auth.signOut();
+        return;
+      }
+
+      const adminData = doc.data();
+
+      if (adminData.isAdmin !== true) {
+        alert("Access denied (not admin)");
+        auth.signOut();
+        return;
+      }
+
+      // ✅ ADMIN VERIFIED
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("adminContent").style.display = "block";
+      loadUsers();
+
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Admin check failed");
+    });
 });
 
-/* 📥 LOAD USERS */
-function loadUsers(){
-  db.collection("admin").get().then(snapshot=>{
-    const tbody = document.getElementById("usersTable");
-    tbody.innerHTML = "";
+/* 👥 LOAD ALL USERS */
+function loadUsers() {
+  db.collection("users").get().then(snapshot => {
+    const table = document.getElementById("usersTable");
+    table.innerHTML = "";
 
-    snapshot.forEach(doc=>{
+    snapshot.forEach(doc => {
       const u = doc.data();
-      const tr = document.createElement("tr");
+      const uid = doc.id;
 
-      tr.innerHTML = `
-        <td>${u.email || ""}</td>
-        <td><input id="bal_${doc.id}" value="${u.balance||0}"></td>
-        <td><input id="daily_${doc.id}" value="${u.dailyIncome||0}"></td>
-        <td><input id="ref_${doc.id}" value="${u.referralEarnings||0}"></td>
-        <td><input id="dep_${doc.id}" value="${u.deposit||0}"></td>
-        <td><input id="with_${doc.id}" value="${u.withdraw||0}"></td>
-        <td>
-          <input type="checkbox" id="ban_${doc.id}" ${u.banned?"checked":""}>
-        </td>
-        <td>
-          <button onclick="saveUser('${doc.id}')">Save</button>
-        </td>
+      table.innerHTML += `
+        <tr>
+          <td>${u.email || ""}</td>
+          <td><input id="bal_${uid}" value="${u.balance || 0}"></td>
+          <td><input id="daily_${uid}" value="${u.dailyIncome || 0}"></td>
+          <td><input id="ref_${uid}" value="${u.referralEarnings || 0}"></td>
+          <td><input id="lvl_${uid}" value="${u.level || 1}"></td>
+          <td>
+            <select id="ban_${uid}">
+              <option value="false" ${u.banned ? "" : "selected"}>No</option>
+              <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
+            </select>
+          </td>
+          <td>
+            <button onclick="saveUser('${uid}')">Save</button>
+          </td>
+        </tr>
       `;
-      tbody.appendChild(tr);
     });
   });
 }
 
-/* 💾 SAVE USER */
-function saveUser(uid){
-  db.collection("admin").doc(uid).update({
-    balance: Number(document.getElementById("bal_"+uid).value),
-    dailyIncome: Number(document.getElementById("daily_"+uid).value),
-    referralEarnings: Number(document.getElementById("ref_"+uid).value),
-    deposit: Number(document.getElementById("dep_"+uid).value),
-    withdraw: Number(document.getElementById("with_"+uid).value),
-    banned: document.getElementById("ban_"+uid).checked
-  }).then(()=>{
-    alert("User updated");
-  });
-}
+/* 💾 SAVE USER DATA */
+function saveUser(uid) {
+  const data = {
+    balance: Number(document.getElementById("bal_" + uid).value),
+    dailyIncome: Number(document.getElementById("daily_" + uid).value),
+    referralEarnings: Number(document.getElementById("ref_" + uid).value),
+    level: Number(document.getElementById("lvl_" + uid).value),
+    banned: document.getElementById("ban_" + uid).value === "true"
+  };
 
-/* 🚪 LOGOUT */
-function logout(){
-  auth.signOut().then(()=>{
-    window.location.href="admin-login.html";
-  });
+  db.collection("users").doc(uid).update(data)
+    .then(() => alert("User updated"))
+    .catch(err => alert("Error saving user"));
 }
 </script>
 
