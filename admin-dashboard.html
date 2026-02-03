@@ -3,48 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <title>Admin Dashboard | SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
+  font-family:Arial, sans-serif;
   background:#0d0d0d;
-  color:#FFD700;
-  font-family:Arial;
+  color:#fff;
 }
-header{
-  padding:15px;
-  background:#111;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-button{
-  background:#FFD700;
-  border:none;
-  padding:6px 10px;
-  font-weight:bold;
-  cursor:pointer;
+h2{margin:15px}
+#loader{
+  padding:40px;
+  text-align:center;
+  font-size:20px;
 }
 table{
   width:100%;
   border-collapse:collapse;
-  font-size:13px;
 }
 th,td{
   border:1px solid #333;
-  padding:6px;
+  padding:8px;
   text-align:center;
 }
-th{background:#1a1a1a}
+th{
+  background:#1a1a1a;
+}
 input{
-  width:70px;
+  width:90px;
+  padding:5px;
   background:#111;
-  color:#FFD700;
+  color:#fff;
   border:1px solid #444;
 }
-.ban{background:red;color:#fff}
-.unban{background:green;color:#fff}
+button{
+  padding:6px 10px;
+  background:#FFD700;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+button:hover{background:#e6c200}
+.logout{
+  position:fixed;
+  top:10px;
+  right:10px;
+}
 </style>
 
 <!-- Firebase -->
@@ -55,176 +60,113 @@ input{
 
 <body>
 
-<header>
-  <h2>SuperNFT – Admin Dashboard</h2>
-  <button onclick="logout()">Logout</button>
-</header>
+<button class="logout" onclick="logout()">Logout</button>
 
-<h3 style="padding:10px">Users</h3>
+<h2>Admin Dashboard</h2>
 
-<table>
-<thead>
-<tr>
-<th>Email</th>
-<th>Balance</th>
-<th>Daily</th>
-<th>Live</th>
-<th>Deposit</th>
-<th>Withdraw</th>
-<th>Referral</th>
-<th>Level</th>
-<th>Status</th>
-<th>Save</th>
-</tr>
-</thead>
-<tbody id="usersTable"></tbody>
-</table>
+<div id="loader">Checking admin access...</div>
 
-<h3 style="padding:10px">Withdraw Requests</h3>
-
-<table>
-<thead>
-<tr>
-<th>Email</th>
-<th>Amount</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody id="withdrawTable"></tbody>
-</table>
+<div id="adminContent" style="display:none">
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Balance</th>
+        <th>Daily</th>
+        <th>Referral</th>
+        <th>Deposit</th>
+        <th>Withdraw</th>
+        <th>Ban</th>
+        <th>Save</th>
+      </tr>
+    </thead>
+    <tbody id="usersTable"></tbody>
+  </table>
+</div>
 
 <script>
-// 🔹 FIREBASE CONFIG (same everywhere)
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+  projectId: "supernft-5b952",
+  storageBucket: "supernft-5b952.appspot.com",
+  messagingSenderId: "278097730700",
+  appId: "1:278097730700:web:014d5ab680859db4512fa9"
 };
+
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 
-// 🔐 ADMIN AUTH CHECK (ONLY isAdmin)
-auth.onAuthStateChanged(async user=>{
+/* 🔐 ADMIN CHECK */
+auth.onAuthStateChanged(user=>{
   if(!user){
-    location.href="admin-login.html";
+    window.location.href="admin-login.html";
     return;
   }
 
-  const snap = await db.collection("users").doc(user.uid).get();
+  db.collection("users").doc(user.uid).get().then(doc=>{
+    if(!doc.exists || doc.data().isAdmin !== true){
+      alert("Access denied (not admin)");
+      auth.signOut();
+      return;
+    }
 
-  if(!snap.exists || snap.data().isAdmin !== true){
-    document.body.innerHTML =
-      "<h2 style='color:red;text-align:center;margin-top:40px'>Access Denied</h2>";
-    return;
-  }
-
-  // ✅ ADMIN VERIFIED
-  loadUsers();
-  loadWithdraws();
+    document.getElementById("loader").style.display="none";
+    document.getElementById("adminContent").style.display="block";
+    loadUsers();
+  });
 });
 
-// 🔹 LOAD USERS
+/* 📥 LOAD USERS */
 function loadUsers(){
-  db.collection("users").onSnapshot(snap=>{
-    let html="";
-    snap.forEach(doc=>{
+  db.collection("users").get().then(snapshot=>{
+    const tbody = document.getElementById("usersTable");
+    tbody.innerHTML = "";
+
+    snapshot.forEach(doc=>{
       const u = doc.data();
-      html += `
-<tr>
-<td>${u.email || ""}</td>
-<td><input id="b${doc.id}" value="${u.balance||0}"></td>
-<td><input id="d${doc.id}" value="${u.dailyIncome||0}"></td>
-<td><input id="l${doc.id}" value="${u.liveEarnings||0}"></td>
-<td><input id="dp${doc.id}" value="${u.deposit||0}"></td>
-<td><input id="w${doc.id}" value="${u.withdraw||0}"></td>
-<td><input id="r${doc.id}" value="${u.referralEarnings||0}"></td>
-<td><input id="lv${doc.id}" value="${u.level||1}"></td>
-<td>
-<button class="${u.banned?'unban':'ban'}"
-onclick="toggleBan('${doc.id}',${u.banned})">
-${u.banned?'Unban':'Ban'}
-</button>
-</td>
-<td>
-<button onclick="saveUser('${doc.id}')">Save</button>
-</td>
-</tr>`;
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${u.email || ""}</td>
+        <td><input id="bal_${doc.id}" value="${u.balance||0}"></td>
+        <td><input id="daily_${doc.id}" value="${u.dailyIncome||0}"></td>
+        <td><input id="ref_${doc.id}" value="${u.referralEarnings||0}"></td>
+        <td><input id="dep_${doc.id}" value="${u.deposit||0}"></td>
+        <td><input id="with_${doc.id}" value="${u.withdraw||0}"></td>
+        <td>
+          <input type="checkbox" id="ban_${doc.id}" ${u.banned?"checked":""}>
+        </td>
+        <td>
+          <button onclick="saveUser('${doc.id}')">Save</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
     });
-    usersTable.innerHTML = html;
   });
 }
 
-// 🔹 SAVE USER DATA
-function saveUser(id){
-  db.collection("users").doc(id).update({
-    balance: Number(val("b",id)),
-    dailyIncome: Number(val("d",id)),
-    liveEarnings: Number(val("l",id)),
-    deposit: Number(val("dp",id)),
-    withdraw: Number(val("w",id)),
-    referralEarnings: Number(val("r",id)),
-    level: Number(val("lv",id))
+/* 💾 SAVE USER */
+function saveUser(uid){
+  db.collection("users").doc(uid).update({
+    balance: Number(document.getElementById("bal_"+uid).value),
+    dailyIncome: Number(document.getElementById("daily_"+uid).value),
+    referralEarnings: Number(document.getElementById("ref_"+uid).value),
+    deposit: Number(document.getElementById("dep_"+uid).value),
+    withdraw: Number(document.getElementById("with_"+uid).value),
+    banned: document.getElementById("ban_"+uid).checked
+  }).then(()=>{
+    alert("User updated");
   });
 }
 
-function val(p,id){
-  return document.getElementById(p+id).value || 0;
-}
-
-// 🔹 BAN / UNBAN
-function toggleBan(id,status){
-  db.collection("users").doc(id).update({banned: !status});
-}
-
-// 🔹 WITHDRAW REQUESTS
-function loadWithdraws(){
-  db.collection("withdrawRequests")
-    .orderBy("createdAt","desc")
-    .onSnapshot(snap=>{
-      let html="";
-      snap.forEach(doc=>{
-        const w = doc.data();
-        html += `
-<tr>
-<td>${w.email}</td>
-<td>${w.amount}</td>
-<td>${w.status}</td>
-<td>
-${w.status==="pending" ? `
-<button onclick="approve('${doc.id}')">Approve</button>
-<button onclick="reject('${doc.id}','${w.uid}',${w.amount})">Reject</button>
-` : "-"}
-</td>
-</tr>`;
-      });
-      withdrawTable.innerHTML = html;
-    });
-}
-
-// 🔹 APPROVE / REJECT
-function approve(id){
-  db.collection("withdrawRequests").doc(id).update({status:"approved"});
-}
-
-function reject(id,uid,amt){
-  const userRef = db.collection("users").doc(uid);
-  db.runTransaction(async t=>{
-    const snap = await t.get(userRef);
-    t.update(userRef,{
-      balance: (snap.data().balance||0) + amt
-    });
-    t.update(db.collection("withdrawRequests").doc(id),
-      {status:"rejected"});
-  });
-}
-
-// 🔹 LOGOUT
+/* 🚪 LOGOUT */
 function logout(){
-  auth.signOut();
-  location.href="admin-login.html";
+  auth.signOut().then(()=>{
+    window.location.href="admin-login.html";
+  });
 }
 </script>
 
