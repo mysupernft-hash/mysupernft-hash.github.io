@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>SuperNFT Admin Dashboard</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -14,7 +13,7 @@ body { background:#0d0d0d; color:#ffd700; font-family:Arial }
 table { width:100%; border-collapse:collapse; margin-top:20px }
 th,td { border:1px solid #333; padding:8px; text-align:center }
 th { background:#111 }
-input, select { width:90px }
+input, select { width:90px; padding:4px; }
 button { padding:6px 12px; background:#ffd700; border:none; cursor:pointer }
 </style>
 </head>
@@ -43,7 +42,7 @@ button { padding:6px 12px; background:#ffd700; border:none; cursor:pointer }
 </div>
 
 <script>
-/* 🔥 FIREBASE CONFIG */
+// 🔧 FIREBASE CONFIG
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -53,16 +52,14 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-/* 🔐 ADMIN AUTH CHECK (ADMIN + USERS FALLBACK) */
+// 🔐 ADMIN AUTH CHECK
 auth.onAuthStateChanged(user => {
   if (!user) {
     document.getElementById("status").innerText = "Not logged in";
     return;
   }
 
-  console.log("Logged UID:", user.uid);
-
-  // 1️⃣ CHECK admin COLLECTION
+  // ❗ double admin check
   db.collection("admin").doc(user.uid).get().then(adminDoc => {
 
     if (adminDoc.exists && adminDoc.data().isAdmin === true) {
@@ -70,9 +67,7 @@ auth.onAuthStateChanged(user => {
       return;
     }
 
-    // 2️⃣ FALLBACK: CHECK users COLLECTION
     db.collection("users").doc(user.uid).get().then(userDoc => {
-
       if (userDoc.exists && userDoc.data().isAdmin === true) {
         allowAdmin();
         return;
@@ -84,51 +79,48 @@ auth.onAuthStateChanged(user => {
 
   }).catch(err => {
     console.error(err);
-    document.getElementById("status").innerText =
-      "Admin check error";
+    document.getElementById("status").innerText = "Admin check error";
   });
 });
 
-/* ✅ ADMIN ALLOWED */
+// ✅ SHOW DASHBOARD
 function allowAdmin() {
   document.getElementById("status").style.display = "none";
   document.getElementById("panel").style.display  = "block";
   loadUsers();
 }
 
-/* 👥 LOAD ALL USERS */
+// 👥 LOAD ALL USERS
 function loadUsers(){
-  db.collection("users").get().then(snapshot => {
+  db.collection("users").get().then(snap => {
     let html = "";
-
-    snapshot.forEach(doc => {
+    snap.forEach(doc => {
       const u = doc.data();
+      const uid = doc.id;
 
       html += `
       <tr>
         <td>${u.email || ""}</td>
-        <td><input id="bal_${doc.id}" value="${u.balance || 0}"></td>
-        <td><input id="day_${doc.id}" value="${u.dailyIncome || 0}"></td>
-        <td><input id="ref_${doc.id}" value="${u.referralEarnings || 0}"></td>
-        <td><input id="lvl_${doc.id}" value="${u.level || 1}"></td>
+        <td><input id="bal_${uid}" value="${u.balance||0}"></td>
+        <td><input id="day_${uid}" value="${u.dailyIncome||0}"></td>
+        <td><input id="ref_${uid}" value="${u.referralEarnings||0}"></td>
+        <td><input id="lvl_${uid}" value="${u.level||1}"></td>
         <td>
-          <select id="ban_${doc.id}">
-            <option value="false" ${u.banned ? "" : "selected"}>No</option>
-            <option value="true"  ${u.banned ? "selected" : ""}>Yes</option>
+          <select id="ban_${uid}">
+            <option value="false" ${u.banned?"":"selected"}>No</option>
+            <option value="true"  ${u.banned?"selected":""}>Yes</option>
           </select>
         </td>
         <td>
-          <button onclick="saveUser('${doc.id}')">Save</button>
+          <button onclick="saveUser('${uid}')">Save</button>
         </td>
-      </tr>
-      `;
+      </tr>`;
     });
-
     document.getElementById("users").innerHTML = html;
   });
 }
 
-/* 💾 SAVE USER DATA */
+// 💾 SAVE USER DATA
 function saveUser(uid){
   db.collection("users").doc(uid).update({
     balance: Number(document.getElementById("bal_"+uid).value),
@@ -137,9 +129,8 @@ function saveUser(uid){
     level: Number(document.getElementById("lvl_"+uid).value),
     banned: document.getElementById("ban_"+uid).value === "true"
   }).then(() => {
-    alert("User updated successfully");
+    alert("User updated");
   }).catch(err => {
-    alert("Error saving user");
     console.error(err);
   });
 }
