@@ -106,7 +106,7 @@ auth.onAuthStateChanged(user=>{
     return;
   }
 
-  db.collection("users").doc(user.uid).get().then(doc=>{
+  db.collection("admin").doc(user.uid).get().then(doc=>{
     if(!doc.exists || doc.data().isAdmin !== true){
       alert("Access denied (not admin)");
       auth.signOut();
@@ -121,7 +121,7 @@ auth.onAuthStateChanged(user=>{
 
 /* 📥 LOAD USERS */
 function loadUsers(){
-  db.collection("users").get().then(snapshot=>{
+  db.collection("admin").get().then(snapshot=>{
     const tbody = document.getElementById("usersTable");
     tbody.innerHTML = "";
 
@@ -150,7 +150,7 @@ function loadUsers(){
 
 /* 💾 SAVE USER */
 function saveUser(uid){
-  db.collection("users").doc(uid).update({
+  db.collection("admin").doc(uid).update({
     balance: Number(document.getElementById("bal_"+uid).value),
     dailyIncome: Number(document.getElementById("daily_"+uid).value),
     referralEarnings: Number(document.getElementById("ref_"+uid).value),
