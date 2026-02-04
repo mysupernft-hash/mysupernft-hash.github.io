@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Referrals | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
@@ -13,9 +13,9 @@ body{
   color:#FFD700;
 }
 header{
-  background:#1a1a1a;
-  padding:14px;
+  padding:15px;
   text-align:center;
+  background:#1a1a1a;
   font-size:20px;
   font-weight:bold;
 }
@@ -24,26 +24,28 @@ header{
 }
 .card{
   background:#1a1a1a;
-  border-radius:12px;
   padding:15px;
+  border-radius:10px;
   margin-bottom:12px;
 }
-.card strong{
-  display:block;
+.email{
   font-size:15px;
 }
-.empty{
+.small{
+  font-size:12px;
+  opacity:0.8;
+}
+.loading{
   text-align:center;
-  margin-top:40px;
-  color:#999;
+  margin-top:50px;
 }
 .back{
   display:block;
-  margin-top:20px;
+  margin:20px;
   padding:12px;
   background:#272727;
-  text-align:center;
   color:#FFD700;
+  text-align:center;
   border-radius:8px;
   text-decoration:none;
 }
@@ -54,8 +56,8 @@ header{
 
 <header>My Referrals</header>
 
-<div class="container" id="referralList">
-  <div class="empty">Loading...</div>
+<div class="container" id="list">
+  <div class="loading">Loading referrals...</div>
 </div>
 
 <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
@@ -63,51 +65,60 @@ header{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase config */
+/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+  projectId: "supernft-5b952"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const listDiv = document.getElementById("referralList");
+const list = document.getElementById("list");
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
+/* ✅ WAIT FOR AUTH FIRST */
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
     window.location.href = "login.html";
     return;
   }
 
-  const refCol = collection(db, "users", user.uid, "referrals");
+  try{
+    const refCol = collection(db,"users",user.uid,"referrals");
+    const snap = await getDocs(refCol);
 
-  onSnapshot(refCol, (snap) => {
-    listDiv.innerHTML = "";
+    list.innerHTML = "";
 
-    if (snap.empty) {
-      listDiv.innerHTML = `<div class="empty">No referrals yet</div>`;
+    if(snap.empty){
+      list.innerHTML = "<div class='loading'>No referrals yet</div>";
       return;
     }
 
-    snap.forEach(doc => {
+    snap.forEach(doc=>{
       const d = doc.data();
-      listDiv.innerHTML += `
+      list.innerHTML += `
         <div class="card">
-          <strong>${d.email || "Unknown user"}</strong>
-          <span>Joined: ${new Date(d.joinedAt.seconds * 1000).toLocaleDateString()}</span><br>
-          <span>Reward: $${d.reward || 0}</span>
+          <div class="email">${d.email || "Unknown user"}</div>
+          <div class="small">
+            Reward: $${d.reward || 0}<br>
+            Joined: ${d.joinedAt?.toDate().toLocaleDateString() || ""}
+          </div>
         </div>
       `;
     });
-  });
+
+  }catch(err){
+    console.error(err);
+    list.innerHTML = "<div class='loading'>⚠️ Failed to load referrals</div>";
+  }
 });
 </script>
 
