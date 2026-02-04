@@ -54,6 +54,7 @@ footer div:hover{color:#e0c200;}
   <h2>Menu</h2>
   <button onclick="openPage('account')">👤 My Account</button>
   <button onclick="openPage('referral')">💹 My Referrals</button>
+  <button onclick="openPage('useReferral')">🎁 Use Referral Code</button>
   <button onclick="openPage('investments')">📁 My Investments</button>
   <button onclick="openPage('wallet')">💳 Wallet</button>
   <button onclick="openPage('withdraw')">💸 Withdraw</button>
@@ -143,6 +144,9 @@ window.openPage = function(page){
     case "referral":
   window.location.href = "my-referrals.html";
   break;
+      case "useReferral":
+      window.location.href = "use-referral.html";
+      break;
     case "investments": window.location.href="my-investments.html"; break;
     case "wallet": window.location.href="wallet.html"; break;
     case "deposit": window.location.href="deposit.html"; break;
