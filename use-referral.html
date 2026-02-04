@@ -2,66 +2,68 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Use Referral Code | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   background:#0d0d0d;
   color:#FFD700;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
+  margin:0;
 }
-
 .box{
   background:#111;
-  padding:25px;
-  border-radius:12px;
+  padding:30px;
+  border-radius:14px;
   width:320px;
   text-align:center;
-  box-shadow:0 0 20px #000;
+  box-shadow:0 0 25px rgba(255,215,0,0.15);
 }
-
-h3{margin-bottom:10px}
-
+h3{
+  margin-bottom:15px;
+}
 input{
   width:100%;
   padding:12px;
-  margin-top:10px;
-  border-radius:6px;
+  border-radius:8px;
   border:none;
-  background:#272727;
+  background:#222;
   color:#FFD700;
+  font-size:15px;
 }
-
 button{
   width:100%;
   padding:12px;
-  margin-top:12px;
-  border-radius:6px;
+  margin-top:15px;
+  border-radius:8px;
   border:none;
   background:#FFD700;
   color:#000;
   font-weight:bold;
   cursor:pointer;
 }
-
-button:hover{background:#e0c200}
-
+button:hover{
+  background:#e6c200;
+}
 #msg{
   margin-top:15px;
-  padding:12px;
-  border-radius:10px;
-  display:none;
-  font-weight:bold;
-  line-height:1.4;
+  font-size:14px;
+  min-height:22px;
+}
+.success{
+  color:#00ff99;
+}
+.error{
+  color:#ff4d4d;
 }
 </style>
 
-<!-- Firebase -->
+<!-- Firebase compat (stable with your project) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -73,11 +75,11 @@ button:hover{background:#e0c200}
   <h3>🎁 Use Referral Code</h3>
   <input id="code" placeholder="Enter referral code">
   <button onclick="applyCode()">Apply Code</button>
-  <div id="msg"></div>
+  <p id="msg"></p>
 </div>
 
 <script>
-/* 🔥 Firebase Config */
+/* 🔥 Firebase config */
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -86,91 +88,84 @@ firebase.initializeApp({
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-let currentUser;
+
+let currentUser = null;
 
 /* 🔐 Auth check */
 auth.onAuthStateChanged(user=>{
   if(!user){
-    location.href="login.html";
-    return;
+    showMsg("⚠️ Please login first", "error");
+    setTimeout(()=>location.href="login.html",1500);
+  }else{
+    currentUser = user;
   }
-  currentUser = user;
 });
 
-/* 💬 Message UI */
-function showMessage(text, type="success"){
+/* 💬 message helper */
+function showMsg(text,type){
   const el = document.getElementById("msg");
-  el.style.display = "block";
-  el.innerHTML = text;
-
-  if(type === "success"){
-    el.style.background = "#00ff99";
-    el.style.color = "#000";
-    el.style.boxShadow = "0 0 15px #00ff99";
-  }else{
-    el.style.background = "#ff4444";
-    el.style.color = "#fff";
-    el.style.boxShadow = "0 0 15px #ff4444";
-  }
+  el.className = type;
+  el.innerText = text;
 }
 
-/* 🎯 Apply Referral */
+/* 🚀 Apply referral */
 async function applyCode(){
   const code = document.getElementById("code").value.trim().toUpperCase();
+
   if(!code){
-    showMessage("⚠️ Please enter a referral code", "error");
+    showMsg("❌ Please enter a referral code", "error");
     return;
   }
 
-  const userRef = db.collection("users").doc(currentUser.uid);
-  const userDoc = await userRef.get();
+  showMsg("⏳ Checking referral code...", "");
 
-  if(userDoc.data().referralUsed){
-    showMessage("⚠️ Referral already used. You can use only once.", "error");
-    return;
-  }
+  try{
+    const userRef = db.collection("users").doc(currentUser.uid);
+    const userSnap = await userRef.get();
 
-  // 🔍 Find referrer
-  const snap = await db.collection("users")
-    .where("referralCode","==",code)
-    .get();
+    if(userSnap.exists && userSnap.data().referralUsed){
+      showMsg("❌ You already used a referral code", "error");
+      return;
+    }
 
-  if(snap.empty){
-    showMessage("❌ Invalid referral code. Try again.", "error");
-    return;
-  }
+    const refSnap = await db.collection("users")
+      .where("referralCode","==",code).get();
 
-  const referrerDoc = snap.docs[0];
-  if(referrerDoc.id === currentUser.uid){
-    showMessage("❌ You cannot use your own referral code.", "error");
-    return;
-  }
+    if(refSnap.empty){
+      showMsg("❌ Invalid referral code", "error");
+      return;
+    }
 
-  // 💰 Transaction
-  await db.runTransaction(async t=>{
-    const referrerRef = db.collection("users").doc(referrerDoc.id);
+    const refDoc = refSnap.docs[0];
+    if(refDoc.id === currentUser.uid){
+      showMsg("❌ You can’t use your own code", "error");
+      return;
+    }
 
-    const u = await t.get(userRef);
-    const r = await t.get(referrerRef);
+    /* 💰 reward */
+    await db.runTransaction(async(t)=>{
+      const rRef = db.collection("users").doc(refDoc.id);
+      const u = await t.get(userRef);
+      const r = await t.get(rRef);
 
-    t.update(userRef,{
-      walletBalance:(u.data().walletBalance||0) + 5,
-      referralUsed:true,
-      referredBy:referrerDoc.id
+      t.update(userRef,{
+        walletBalance:(u.data().walletBalance||0)+5,
+        referralUsed:true,
+        referredBy:refDoc.id
+      });
+
+      t.update(rRef,{
+        walletBalance:(r.data().walletBalance||0)+5,
+        referralEarnings:(r.data().referralEarnings||0)+5
+      });
     });
 
-    t.update(referrerRef,{
-      walletBalance:(r.data().walletBalance||0) + 5,
-      referralEarnings:(r.data().referralEarnings||0) + 5
-    });
-  });
+    showMsg("🎉 Congratulations!\n💰 $5 added to your wallet", "success");
 
-  showMessage(
-    "🎉 <b>Congratulations!</b><br>" +
-    "Referral code applied successfully 🚀<br>" +
-    "<span style='font-size:15px'>💰 <b>$5 added to your wallet</b></span>",
-    "success"
-  );
+  }catch(e){
+    console.error(e);
+    showMsg("⚠️ Something went wrong. Try again.", "error");
+  }
 }
 </script>
 
