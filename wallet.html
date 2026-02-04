@@ -54,6 +54,7 @@ button{
   border-radius:8px;
   font-size:16px;
   font-weight:bold;
+  cursor:pointer;
 }
 .back-btn{
   display:block;
@@ -81,8 +82,14 @@ button{
 
   <div class="card">
     <h2>Wallet Summary</h2>
-    <div class="row"><span>Total Deposit</span><span id="totalDeposit">$0</span></div>
-    <div class="row"><span>Total Earnings</span><span id="totalEarnings">$0</span></div>
+    <div class="row">
+      <span>Total Deposit</span>
+      <span id="totalDeposit">$0</span>
+    </div>
+    <div class="row">
+      <span>Total Earnings</span>
+      <span id="totalEarnings">$0</span>
+    </div>
   </div>
 
   <div class="card">
@@ -97,8 +104,9 @@ button{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -112,21 +120,34 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
+/* 🔹 Auth check + realtime wallet sync */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
     window.location.replace("login.html");
     return;
   }
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(snap.exists()){
+
+  const userRef = doc(db, "users", user.uid);
+
+  // 🔥 Real-time update (admin edit, referral reward, etc.)
+  onSnapshot(userRef, (snap) => {
+    if (!snap.exists()) return;
+
     const d = snap.data();
-    document.getElementById("walletBalance").innerText = "$" + (d.wallet || 0);
-    document.getElementById("totalDeposit").innerText = "$" + (d.totalDeposit || 0);
-    document.getElementById("totalEarnings").innerText = "$" + (d.totalEarnings || 0);
-  }
+
+    const walletBalance = d.walletBalance ?? 0;
+    const totalDeposit = d.totalDeposit ?? 0;
+    const totalEarnings =
+      (d.liveEarnings ?? 0) + (d.referralEarnings ?? 0);
+
+    document.getElementById("walletBalance").innerText = "$" + walletBalance;
+    document.getElementById("totalDeposit").innerText = "$" + totalDeposit;
+    document.getElementById("totalEarnings").innerText = "$" + totalEarnings;
+  });
 });
 
-window.goWithdraw = function(){
+/* 🔹 Withdraw redirect */
+window.goWithdraw = function () {
   window.location.href = "withdraw.html";
 };
 </script>
