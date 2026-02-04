@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Use Referral Code | SuperNFT</title>
@@ -7,9 +7,10 @@
 
 <style>
 body{
+  margin:0;
   background:#0d0d0d;
   color:#FFD700;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -18,22 +19,37 @@ body{
 .box{
   background:#111;
   padding:25px;
-  border-radius:10px;
-  width:300px;
+  border-radius:12px;
+  width:320px;
   text-align:center;
+  border:1px solid #FFD700;
 }
-input,button{
+h3{margin-top:0}
+input{
   width:100%;
-  padding:10px;
+  padding:12px;
   margin-top:10px;
-  border-radius:5px;
+  border-radius:6px;
   border:none;
+  background:#272727;
+  color:#FFD700;
+  text-align:center;
+  font-size:16px;
 }
 button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border-radius:6px;
+  border:none;
   background:#FFD700;
+  color:#000;
   font-weight:bold;
+  font-size:16px;
   cursor:pointer;
 }
+button:hover{background:#e0c200}
+#msg{margin-top:12px;font-size:14px}
 </style>
 
 <!-- Firebase -->
@@ -48,78 +64,96 @@ button{
   <h3>🎁 Use Referral Code</h3>
   <input id="code" placeholder="Enter referral code">
   <button onclick="applyCode()">Apply Code</button>
-  <p id="msg"></p>
+  <div id="msg"></div>
 </div>
 
 <script>
-const firebaseConfig = {
+/* 🔥 Firebase Config */
+firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
-};
-firebase.initializeApp(firebaseConfig);
+});
 
 const auth = firebase.auth();
 const db = firebase.firestore();
+let currentUser = null;
 
-let currentUser;
-
-auth.onAuthStateChanged(u=>{
-  if(!u) location.href="login.html";
-  currentUser = u;
+/* 🔐 Auth check */
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+  currentUser = user;
 });
 
+/* ✅ APPLY REFERRAL */
 async function applyCode(){
-  const code = document.getElementById("code").value.trim();
-  if(!code) return;
+  const code = document.getElementById("code").value.trim().toUpperCase();
+  const msgBox = document.getElementById("msg");
+  msgBox.innerText = "";
+
+  if(!code){
+    msgBox.innerText = "Enter referral code ❌";
+    return;
+  }
 
   const userRef = db.collection("users").doc(currentUser.uid);
   const userDoc = await userRef.get();
 
-  if(userDoc.data().referralUsed){
-    msg("Referral already used ❌");
+  if(userDoc.data().referralUsed === true){
+    msgBox.innerText = "Referral already used ❌";
     return;
   }
 
-  // 🔍 Find referrer
+  // 🔍 Find referrer by referralCode
   const refSnap = await db.collection("users")
-    .where("referralCode","==",code).get();
+    .where("referralCode","==",code)
+    .limit(1)
+    .get();
 
   if(refSnap.empty){
-    msg("Invalid referral code ❌");
+    msgBox.innerText = "Invalid referral code ❌";
     return;
   }
 
   const referrerDoc = refSnap.docs[0];
+
   if(referrerDoc.id === currentUser.uid){
-    msg("You cannot use your own code ❌");
+    msgBox.innerText = "You cannot use your own code ❌";
     return;
   }
 
-  // 💰 Transaction
-  await db.runTransaction(async t=>{
-    const referrerRef = db.collection("users").doc(referrerDoc.id);
+  try{
+    await db.runTransaction(async (t)=>{
+      const u = await t.get(userRef);
+      const r = await t.get(referrerDoc.ref);
 
-    const u = await t.get(userRef);
-    const r = await t.get(referrerRef);
+      const userWallet = u.data().walletBalance || 0;
+      const refWallet  = r.data().walletBalance || 0;
 
-    t.update(userRef,{
-      balance:(u.data().balance||0)+5,
-      referralUsed:true,
-      referredBy:referrerDoc.id
+      // ✅ USER B → $5
+      t.update(userRef,{
+        walletBalance: userWallet + 5,
+        referralUsed: true,
+        referredBy: referrerDoc.id
+      });
+
+      // ✅ USER A → 20% of $5 = $1
+      t.update(referrerDoc.ref,{
+        walletBalance: refWallet + 1,
+        referralEarnings: (r.data().referralEarnings || 0) + 1
+      });
     });
 
-    t.update(referrerRef,{
-      balance:(r.data().balance||0)+5,
-      referralEarnings:(r.data().referralEarnings||0)+5
-    });
-  });
+    msgBox.innerText = "✅ Success! $5 added to wallet";
+    document.getElementById("code").value = "";
 
-  msg("✅ $5 added to both users!");
-}
-
-function msg(t){
-  document.getElementById("msg").innerText = t;
+  }catch(e){
+    console.error(e);
+    msgBox.innerText = "Something went wrong ❌";
+  }
 }
 </script>
 
