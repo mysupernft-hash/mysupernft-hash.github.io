@@ -3,156 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Referrals & Earnings | SuperNFT</title>
+<title>My Referrals | SuperNFT</title>
+
 <style>
-body {
+body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
   color:#FFD700;
-  background:#0d0d0d;
-  display:flex;
-  flex-direction:column;
-  min-height:100vh;
 }
-.main{
-  flex:1;
+header{
+  background:#1a1a1a;
+  padding:14px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+.container{
   padding:20px;
 }
-input, button{
-  padding:10px;
-  margin:5px 0;
-  border-radius:5px;
-  border:none;
-  outline:none;
-}
-button{
-  background:#FFD700;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer;
-}
-button:hover{background:#e6c200;}
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
-}
-th, td{
-  padding:12px;
-  text-align:left;
-  border-bottom:1px solid #333;
-}
-th{background:#222;}
-tr:hover{background:#333;}
-footer{
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
+.card{
   background:#1a1a1a;
-  color:#FFD700;
-  padding:12px 0;
-  position:sticky;
-  bottom:0;
-  width:100%;
-  cursor:pointer;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:12px;
 }
-footer div:hover{color:#fff;}
+.card strong{
+  display:block;
+  font-size:15px;
+}
+.empty{
+  text-align:center;
+  margin-top:40px;
+  color:#999;
+}
+.back{
+  display:block;
+  margin-top:20px;
+  padding:12px;
+  background:#272727;
+  text-align:center;
+  color:#FFD700;
+  border-radius:8px;
+  text-decoration:none;
+}
 </style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 </head>
+
 <body>
 
-<div class="main">
-<h2>My Referrals & Earnings</h2>
-<p>Your Referral Code: <span id="myCode">Loading...</span></p>
+<header>My Referrals</header>
 
-<h3>Users Joined With Your Code:</h3>
-<table>
-  <thead>
-    <tr>
-      <th>User Email</th>
-      <th>Bonus Earned</th>
-      <th>Joined At</th>
-    </tr>
-  </thead>
-  <tbody id="refUsersTable"></tbody>
-</table>
-
-<p>Total Earnings from Referrals: $<span id="totalEarnings">0</span></p>
+<div class="container" id="referralList">
+  <div class="empty">Loading...</div>
 </div>
 
-<footer>
-  <div onclick="window.location.href='dashboard.html'">📁 Investments</div>
-  <div onclick="window.location.href='wallet.html'">💳 Wallet</div>
-  <div onclick="window.location.href='withdraw.html'">💸 Withdraw</div>
-  <div onclick="window.location.href='live-earnings.html'">💹 Live Earnings</div>
-  <div onclick="window.location.href='my-account.html'">👤 My Account</div>
-  <div onclick="window.location.href='my-referrals.html'">👥 My Referrals</div>
-</footer>
+<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* 🔥 Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.firebasestorage.app",
+  storageBucket: "supernft-5b952.appspot.com",
   messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:014d5ab680859db4512fa9",
-  measurementId: "G-BME7FWT355"
+  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-let currentUser;
-let myCode = "";
+const listDiv = document.getElementById("referralList");
 
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); // ✅ Back/Refresh safe
-
-auth.onAuthStateChanged(async user=>{
-  if(!user) window.location.href="signup.html"; // redirect if not logged in
-  else {
-    currentUser = user;
-    const userDoc = await db.collection("users").doc(currentUser.uid).get();
-    const userData = userDoc.data();
-    myCode = userData.referralCode || "Not assigned";
-    document.getElementById("myCode").innerText = myCode;
-    loadReferralUsers();
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
   }
-});
 
-function loadReferralUsers(){
-  const table = document.getElementById("refUsersTable");
-  const totalEarningsSpan = document.getElementById("totalEarnings");
-  table.innerHTML = "";
-  let totalEarnings = 0;
+  const refCol = collection(db, "users", user.uid, "referrals");
 
-  db.collection("users")
-    .where("referralCodeUsed","==",myCode)
-    .onSnapshot(snapshot=>{
-      table.innerHTML = "";
-      totalEarnings = 0;
-      snapshot.forEach(doc=>{
-        const data = doc.data();
-        const joinedAt = data.referralClaimedAt
-          ? new Date(data.referralClaimedAt.seconds*1000).toLocaleString()
-          : "-";
-        table.innerHTML += `<tr>
-          <td>${data.email}</td>
-          <td>$5</td>
-          <td>${joinedAt}</td>
-        </tr>`;
-        totalEarnings += 5;
-      });
-      totalEarningsSpan.innerText = totalEarnings;
+  onSnapshot(refCol, (snap) => {
+    listDiv.innerHTML = "";
+
+    if (snap.empty) {
+      listDiv.innerHTML = `<div class="empty">No referrals yet</div>`;
+      return;
+    }
+
+    snap.forEach(doc => {
+      const d = doc.data();
+      listDiv.innerHTML += `
+        <div class="card">
+          <strong>${d.email || "Unknown user"}</strong>
+          <span>Joined: ${new Date(d.joinedAt.seconds * 1000).toLocaleDateString()}</span><br>
+          <span>Reward: $${d.reward || 0}</span>
+        </div>
+      `;
     });
-}
+  });
+});
 </script>
+
 </body>
 </html>
