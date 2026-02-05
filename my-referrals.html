@@ -1,22 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Referrals | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Referrals | SuperNFT</title>
 
 <style>
 body{
   margin:0;
+  font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
-  font-family:Arial;
 }
 header{
   padding:15px;
   text-align:center;
-  font-size:20px;
   background:#1a1a1a;
+  font-size:20px;
+  font-weight:bold;
 }
 .container{
   padding:20px;
@@ -25,9 +26,21 @@ header{
   background:#1a1a1a;
   padding:15px;
   border-radius:10px;
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
-.small{font-size:13px;color:#aaa;}
+.small{font-size:13px;color:#ccc;}
+.loading{text-align:center;margin-top:40px;}
+.error{color:red;text-align:center;}
+.back{
+  display:block;
+  margin-top:20px;
+  text-align:center;
+  background:#272727;
+  padding:12px;
+  border-radius:8px;
+  color:#FFD700;
+  text-decoration:none;
+}
 </style>
 </head>
 
@@ -36,15 +49,19 @@ header{
 <header>My Referrals</header>
 
 <div class="container" id="list">
-  <p>Loading...</p>
+  <div class="loading">Loading referrals...</div>
 </div>
+
+<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 <script type="module">
 import { initializeApp } from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, getDocs } from
+import {
+  getFirestore, collection, getDocs
+} from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -57,22 +74,22 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-onAuthStateChanged(auth, async(user)=>{
+const list = document.getElementById("list");
+
+onAuthStateChanged(auth, async (user)=>{
   if(!user){
     location.href="login.html";
     return;
   }
 
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
   try{
-    const snap = await getDocs(
-      collection(db, "users", user.uid, "referrals")
-    );
+    const refCol = collection(db,"users",user.uid,"referrals");
+    const snap = await getDocs(refCol);
+
+    list.innerHTML = "";
 
     if(snap.empty){
-      list.innerHTML = "<p>No referrals yet</p>";
+      list.innerHTML = "<p class='small'>No referrals yet.</p>";
       return;
     }
 
@@ -80,18 +97,19 @@ onAuthStateChanged(auth, async(user)=>{
       const d = doc.data();
       list.innerHTML += `
         <div class="card">
-          <b>${d.email}</b><br>
-          <span class="small">
+          <b>${d.email}</b>
+          <div class="small">
             Reward: $${d.reward}<br>
-            Joined: ${d.joinedAt?.toDate().toDateString()}
-          </span>
+            Joined: ${d.joinedAt?.toDate().toLocaleDateString()}
+          </div>
         </div>
       `;
     });
 
-  }catch(e){
-    list.innerHTML = "<p>❌ Failed to load referrals</p>";
-    console.error(e);
+  }catch(err){
+    console.error(err);
+    list.innerHTML =
+      "<p class='error'>Failed to load referrals</p>";
   }
 });
 </script>
