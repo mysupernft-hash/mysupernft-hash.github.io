@@ -34,15 +34,20 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
+button:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+}
 #msg{margin-top:15px;font-size:14px}
 </style>
 </head>
 
 <body>
+
 <div class="box">
   <h3>🎁 Use Referral Code</h3>
   <input id="code" placeholder="Enter referral code">
-  <button id="applyBtn">Apply Code</button>
+  <button id="applyBtn" onclick="applyCode()" disabled>Apply Code</button>
   <div id="msg"></div>
 </div>
 
@@ -50,10 +55,18 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, runTransaction,
-  serverTimestamp, query, where, collection, getDocs
+  getFirestore,
+  doc,
+  getDoc,
+  runTransaction,
+  serverTimestamp,
+  query,
+  where,
+  collection,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -64,21 +77,29 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentUser;
+let currentUser = null;
+const btn = document.getElementById("applyBtn");
+const msg = document.getElementById("msg");
 
+/* ✅ Wait for auth */
 onAuthStateChanged(auth, user=>{
   if(!user){
-    location.href="login.html";
+    location.href = "login.html";
     return;
   }
   currentUser = user;
+  btn.disabled = false;
 });
 
-document.getElementById("applyBtn").onclick = async () => {
+/* 🚀 Apply Referral Code */
+window.applyCode = async function(){
   const code = document.getElementById("code").value.trim().toUpperCase();
-  const msg = document.getElementById("msg");
-
   msg.innerText = "";
+
+  if(!currentUser){
+    msg.innerText = "⏳ Please wait...";
+    return;
+  }
 
   if(!code){
     msg.innerText = "❌ Enter referral code";
@@ -90,16 +111,16 @@ document.getElementById("applyBtn").onclick = async () => {
     const userSnap = await getDoc(userRef);
 
     if(!userSnap.exists()){
-      msg.innerText="❌ User record missing";
+      msg.innerText = "❌ User data missing";
       return;
     }
 
     if(userSnap.data().referralUsed === true){
-      msg.innerText="⚠️ You already used a referral code";
+      msg.innerText = "⚠️ Referral already used";
       return;
     }
 
-    // find owner
+    /* 🔍 Find referral owner */
     const q = query(
       collection(db,"users"),
       where("referralCode","==",code)
@@ -107,31 +128,32 @@ document.getElementById("applyBtn").onclick = async () => {
     const snap = await getDocs(q);
 
     if(snap.empty){
-      msg.innerText="❌ Invalid referral code";
+      msg.innerText = "❌ Invalid referral code";
       return;
     }
 
     const ownerDoc = snap.docs[0];
+
     if(ownerDoc.id === currentUser.uid){
-      msg.innerText="❌ You cannot use your own code";
+      msg.innerText = "❌ You cannot use your own code";
       return;
     }
 
-    await runTransaction(db, async (t) => {
+    /* 💥 Atomic Transaction */
+    await runTransaction(db, async (t)=>{
       const ownerRef = doc(db,"users",ownerDoc.id);
-
       const u = await t.get(userRef);
       const o = await t.get(ownerRef);
 
       t.update(userRef,{
-        walletBalance:(u.data().walletBalance||0)+5,
-        referralUsed:true,
-        referredByCode:code
+        walletBalance: (u.data().walletBalance || 0) + 5,
+        referralUsed: true,
+        referredByCode: code
       });
 
       t.update(ownerRef,{
-        walletBalance:(o.data().walletBalance||0)+5,
-        referralEarnings:(o.data().referralEarnings||0)+5
+        walletBalance: (o.data().walletBalance || 0) + 5,
+        referralEarnings: (o.data().referralEarnings || 0) + 5
       });
 
       t.set(
@@ -147,14 +169,15 @@ document.getElementById("applyBtn").onclick = async () => {
     msg.innerHTML = `
       🎉 <b>Congratulations!</b><br>
       💰 $5 added to your wallet<br>
-      🚀 Enjoy SuperNFT Rewards
+      🚀 Enjoy SuperNFT Rewards!
     `;
 
-  }catch(err){
-    console.error(err);
-    msg.innerText="⚠️ Something went wrong. Try again.";
+  }catch(error){
+    console.error("Referral error:", error);
+    msg.innerText = "⚠️ Something went wrong. Try again.";
   }
 };
 </script>
+
 </body>
 </html>
