@@ -8,14 +8,14 @@
 <style>
 body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
   background:#0f0f0f;
   color:#FFD700;
 }
 header{
-  padding:15px;
-  text-align:center;
   background:#1a1a1a;
+  padding:14px;
+  text-align:center;
   font-size:20px;
   font-weight:bold;
 }
@@ -24,21 +24,35 @@ header{
 }
 .card{
   background:#1a1a1a;
+  border-radius:12px;
   padding:15px;
-  border-radius:10px;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
-.small{font-size:13px;color:#ccc;}
-.loading{text-align:center;margin-top:40px;}
-.error{color:red;text-align:center;}
+.loading{
+  text-align:center;
+  margin-top:40px;
+  font-size:16px;
+}
+.email{
+  font-size:14px;
+}
+.reward{
+  font-weight:bold;
+  margin-top:6px;
+}
+.date{
+  font-size:12px;
+  color:#ccc;
+  margin-top:4px;
+}
 .back{
   display:block;
   margin-top:20px;
-  text-align:center;
-  background:#272727;
   padding:12px;
-  border-radius:8px;
+  background:#272727;
   color:#FFD700;
+  text-align:center;
+  border-radius:8px;
   text-decoration:none;
 }
 </style>
@@ -48,22 +62,25 @@ header{
 
 <header>My Referrals</header>
 
-<div class="container" id="list">
-  <div class="loading">Loading referrals...</div>
+<div class="container">
+  <div id="status" class="loading">Loading referrals...</div>
+  <div id="list"></div>
+
+  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 </div>
 
-<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
-
 <script type="module">
-import { initializeApp } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, collection, getDocs
-} from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔥 Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -74,42 +91,52 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const list = document.getElementById("list");
+const statusEl = document.getElementById("status");
+const listEl = document.getElementById("list");
 
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    location.href="login.html";
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "login.html";
     return;
   }
 
-  try{
-    const refCol = collection(db,"users",user.uid,"referrals");
-    const snap = await getDocs(refCol);
+  try {
+    const refCol = collection(db, "users", user.uid, "referrals");
+    const q = query(refCol, orderBy("joinedAt", "desc"));
+    const snap = await getDocs(q);
 
-    list.innerHTML = "";
+    statusEl.style.display = "none";
 
-    if(snap.empty){
-      list.innerHTML = "<p class='small'>No referrals yet.</p>";
+    if (snap.empty) {
+      statusEl.style.display = "block";
+      statusEl.innerText = "😔 No referrals yet";
       return;
     }
 
-    snap.forEach(doc=>{
-      const d = doc.data();
-      list.innerHTML += `
-        <div class="card">
-          <b>${d.email}</b>
-          <div class="small">
-            Reward: $${d.reward}<br>
-            Joined: ${d.joinedAt?.toDate().toLocaleDateString()}
-          </div>
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <div class="email">${d.email || "Unknown email"}</div>
+        <div class="reward">💰 Reward: $${d.reward || 0}</div>
+        <div class="date">
+          Joined: ${
+            d.joinedAt
+              ? new Date(d.joinedAt.seconds * 1000).toLocaleString()
+              : "—"
+          }
         </div>
       `;
+
+      listEl.appendChild(div);
     });
 
-  }catch(err){
+  } catch (err) {
     console.error(err);
-    list.innerHTML =
-      "<p class='error'>Failed to load referrals</p>";
+    statusEl.innerText = "❌ Failed to load referrals";
   }
 });
 </script>
