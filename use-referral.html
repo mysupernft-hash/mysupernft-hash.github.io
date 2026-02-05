@@ -36,6 +36,15 @@ button{
 }
 #msg{margin-top:15px;font-size:14px}
 </style>
+</head>
+
+<body>
+<div class="box">
+  <h3>🎁 Use Referral Code</h3>
+  <input id="code" placeholder="Enter referral code">
+  <button id="applyBtn">Apply Code</button>
+  <div id="msg"></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -65,9 +74,11 @@ onAuthStateChanged(auth, user=>{
   currentUser = user;
 });
 
-window.applyCode = async function(){
+document.getElementById("applyBtn").onclick = async () => {
   const code = document.getElementById("code").value.trim().toUpperCase();
   const msg = document.getElementById("msg");
+
+  msg.innerText = "";
 
   if(!code){
     msg.innerText = "❌ Enter referral code";
@@ -79,16 +90,16 @@ window.applyCode = async function(){
     const userSnap = await getDoc(userRef);
 
     if(!userSnap.exists()){
-      msg.innerText="❌ User data missing";
+      msg.innerText="❌ User record missing";
       return;
     }
 
     if(userSnap.data().referralUsed === true){
-      msg.innerText="⚠️ Referral already used";
+      msg.innerText="⚠️ You already used a referral code";
       return;
     }
 
-    // 🔍 find referral owner
+    // find owner
     const q = query(
       collection(db,"users"),
       where("referralCode","==",code)
@@ -106,8 +117,7 @@ window.applyCode = async function(){
       return;
     }
 
-    // 💥 TRANSACTION
-    await runTransaction(db, async(t)=>{
+    await runTransaction(db, async (t) => {
       const ownerRef = doc(db,"users",ownerDoc.id);
 
       const u = await t.get(userRef);
@@ -137,23 +147,14 @@ window.applyCode = async function(){
     msg.innerHTML = `
       🎉 <b>Congratulations!</b><br>
       💰 $5 added to your wallet<br>
-      🚀 Enjoy SuperNFT
+      🚀 Enjoy SuperNFT Rewards
     `;
 
   }catch(err){
     console.error(err);
     msg.innerText="⚠️ Something went wrong. Try again.";
   }
-}
+};
 </script>
-</head>
-
-<body>
-<div class="box">
-  <h3>🎁 Use Referral Code</h3>
-  <input id="code" placeholder="Enter referral code">
-  <button onclick="applyCode()">Apply Code</button>
-  <div id="msg"></div>
-</div>
 </body>
 </html>
