@@ -3,179 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Use Referral | SuperNFT</title>
+<title>Use Referral Code</title>
 
 <style>
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0f0f0f;
+  background:#0d0d0d;
   color:#FFD700;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-.container{
-  max-width:420px;
-  margin:80px auto;
-  background:#1a1a1a;
-  padding:20px;
+.box{
+  background:#111;
+  padding:25px;
   border-radius:12px;
+  width:320px;
+  text-align:center;
 }
-h2{text-align:center;margin-bottom:15px;}
-input{
+input,button{
   width:100%;
   padding:12px;
-  margin:10px 0;
-  border:none;
+  margin-top:10px;
   border-radius:6px;
-  background:#272727;
-  color:#FFD700;
+  border:none;
 }
 button{
-  width:100%;
-  padding:12px;
   background:#FFD700;
-  color:#000;
-  border:none;
-  border-radius:8px;
   font-weight:bold;
-  font-size:16px;
   cursor:pointer;
 }
-button:hover{background:#e0c200;}
-.msg{
-  margin-top:15px;
-  text-align:center;
-  font-weight:bold;
-}
-.success{color:#00ff99;}
-.error{color:#ff4d4d;}
+#msg{margin-top:15px;font-weight:bold}
 </style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
 
-<div class="container">
-  <h2>Use Referral Code</h2>
-
-  <input type="text" id="refCode" placeholder="Enter Referral Code (SNFTxxxxxx)">
-  <button id="applyBtn">Apply Code</button>
-
-  <div id="message" class="msg"></div>
+<div class="box">
+  <h3>🎁 Use Referral Code</h3>
+  <input id="code" placeholder="Enter referral code">
+  <button onclick="applyCode()">Apply Code</button>
+  <div id="msg"></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc,
-  serverTimestamp,
-  increment
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-/* 🔥 Firebase Config */
-const firebaseConfig = {
+<script>
+firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const msg = document.getElementById("message");
-const btn = document.getElementById("applyBtn");
-
-let currentUser = null;
-
-onAuthStateChanged(auth, user=>{
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
-  currentUser = user;
+  projectId: "supernft-5b952"
 });
 
-/* 🚀 APPLY REFERRAL */
-btn.addEventListener("click", async ()=>{
-  msg.innerHTML="";
-  msg.className="msg";
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  const code = document.getElementById("refCode").value.trim().toUpperCase();
-  if(!code){
-    msg.innerHTML="⚠️ Enter referral code";
-    msg.classList.add("error");
-    return;
-  }
+let user;
+
+auth.onAuthStateChanged(u=>{
+  if(!u) location.href="login.html";
+  user = u;
+});
+
+async function applyCode(){
+  const msgBox = document.getElementById("msg");
+  msgBox.innerText = "";
 
   try{
-    const userRef = doc(db,"users",currentUser.uid);
-    const userSnap = await getDoc(userRef);
-    if(!userSnap.exists()) throw "User not found";
+    const code = document.getElementById("code").value.trim().toUpperCase();
+    if(!code) return;
 
-    const userData = userSnap.data();
+    const userRef = db.collection("users").doc(user.uid);
+    const userSnap = await userRef.get();
 
-    /* ❌ already used */
-    if(userData.referralUsed === true){
-      msg.innerHTML="⚠️ Referral already used";
-      msg.classList.add("error");
+    if(!userSnap.exists) throw "User doc missing";
+
+    if(userSnap.data().referralUsed === true){
+      msgBox.innerText = "⚠️ Referral already used";
       return;
     }
 
-    /* 🔎 check code */
-    const refSnap = await getDoc(doc(db,"referrals",code));
-    if(!refSnap.exists()){
-      msg.innerHTML="❌ Invalid referral code";
-      msg.classList.add("error");
+    const refSnap = await db.collection("users")
+      .where("referralCode","==",code).limit(1).get();
+
+    if(refSnap.empty){
+      msgBox.innerText = "❌ Invalid referral code";
       return;
     }
 
-    const ownerUid = refSnap.data().ownerUid;
-
-    /* ❌ self referral */
-    if(ownerUid === currentUser.uid){
-      msg.innerHTML="❌ You cannot use your own code";
-      msg.classList.add("error");
+    const refDoc = refSnap.docs[0];
+    if(refDoc.id === user.uid){
+      msgBox.innerText = "❌ You cannot use your own code";
       return;
     }
 
-    /* 💰 CREDIT USER B */
-    await updateDoc(userRef,{
-      walletBalance: increment(5),
-      referralUsed: true,
-      referredByCode: code
+    await db.runTransaction(async t=>{
+      const refOwnerRef = db.collection("users").doc(refDoc.id);
+
+      const u = await t.get(userRef);
+      const r = await t.get(refOwnerRef);
+
+      t.update(userRef,{
+        walletBalance:(u.data().walletBalance||0)+5,
+        referralUsed:true
+      });
+
+      t.update(refOwnerRef,{
+        walletBalance:(r.data().walletBalance||0)+5,
+        referralEarnings:(r.data().referralEarnings||0)+5
+      });
+
+      t.set(
+        refOwnerRef.collection("referrals").doc(user.uid),
+        {
+          email:user.email,
+          reward:5,
+          joinedAt:firebase.firestore.FieldValue.serverTimestamp()
+        }
+      );
     });
 
-    /* 💰 CREDIT USER A */
-    await updateDoc(doc(db,"users",ownerUid),{
-      walletBalance: increment(5)
-    });
-
-    /* 📜 SAVE HISTORY (My Referrals) */
-    await setDoc(
-      doc(db,"users",ownerUid,"referrals",currentUser.uid),
-      {
-        email: currentUser.email,
-        reward: 5,
-        joinedAt: serverTimestamp()
-      }
-    );
-
-    msg.innerHTML = `
-      🎉 Congratulations!<br>
-      💰 $5 added to your wallet<br>
-      🚀 Enjoy SuperNFT Rewards!
-    `;
-    msg.classList.add("success");
+    msgBox.innerText =
+      "🎉 Congratulations!\n💰 $5 added to your wallet\n🚀 Enjoy SuperNFT";
 
   }catch(err){
     console.error(err);
-    msg.innerHTML="⚠️ Something went wrong. Try again.";
-    msg.classList.add("error");
+    document.getElementById("msg").innerText =
+      "⚠️ Something went wrong. Try again.";
   }
-});
+}
 </script>
 
 </body>
