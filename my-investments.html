@@ -44,10 +44,16 @@ header{
   font-size:14px;
   color:#d4af37;
 }
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:6px;
+  font-size:14px;
+}
 .badge{
   display:inline-block;
-  margin-top:10px;
-  padding:6px 14px;
+  margin-top:12px;
+  padding:6px 16px;
   border-radius:20px;
   background:#FFD700;
   color:#000;
@@ -89,13 +95,9 @@ import {
   collection,
   query,
   orderBy,
-  getDocs,
-  doc,
-  updateDoc,
-  serverTimestamp
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -108,34 +110,15 @@ const db = getFirestore(app);
 
 const list = document.getElementById("investmentList");
 
-/* 🧮 LIVE EARNING CALCULATOR */
-function calculateLiveEarnings(daily, current, lastUpdated){
-  const now = Date.now();
-  const last = lastUpdated ? lastUpdated.toMillis() : now;
-  const secondsPassed = (now - last) / 1000;
-
-  const perSecond = daily / 86400;
-  return current + (secondsPassed * perSecond);
-}
-
-/* 🔐 Auth Check */
 onAuthStateChanged(auth, async(user)=>{
   if(!user){
     window.location.href = "login.html";
     return;
   }
 
-  loadInvestments(user.uid);
-
-  // ⏱ Auto live earning update (every 10 sec)
-  setInterval(()=>updateLiveEarnings(user.uid), 10000);
-});
-
-/* 📥 LOAD INVESTMENTS */
-async function loadInvestments(uid){
   try{
     const q = query(
-      collection(db, "users", uid, "investments"),
+      collection(db, "users", user.uid, "investments"),
       orderBy("purchasedAt", "desc")
     );
 
@@ -147,20 +130,37 @@ async function loadInvestments(uid){
       return;
     }
 
-    snap.forEach(docSnap=>{
-      const d = docSnap.data();
+    snap.forEach(doc=>{
+      const d = doc.data();
       const date = d.purchasedAt
         ? d.purchasedAt.toDate().toLocaleDateString()
-        : "";
+        : "-";
 
       list.innerHTML += `
         <div class="card">
           <img src="${d.image || 'https://via.placeholder.com/400x250'}">
           <h3>${d.name}</h3>
-          <p>💰 Price: $${d.price}</p>
-          <p>📈 Daily Income: $${d.dailyIncome}</p>
-          <p>⚡ Live Earnings: $${(d.liveEarnings || 0).toFixed(4)}</p>
-          <p>📅 Purchased: ${date}</p>
+
+          <div class="row">
+            <span>💰 Price</span>
+            <span>$${d.price}</span>
+          </div>
+
+          <div class="row">
+            <span>📈 Daily Income</span>
+            <span>$${d.dailyIncome || 0}</span>
+          </div>
+
+          <div class="row">
+            <span>🔥 Live Earnings</span>
+            <span>$${d.liveEarnings || 0}</span>
+          </div>
+
+          <div class="row">
+            <span>📅 Purchased</span>
+            <span>${date}</span>
+          </div>
+
           <span class="badge">ACTIVE</span>
         </div>
       `;
@@ -170,33 +170,7 @@ async function loadInvestments(uid){
     console.error(err);
     list.innerHTML = `<div class="empty">Failed to load investments</div>`;
   }
-}
-
-/* 🔁 UPDATE LIVE EARNINGS */
-async function updateLiveEarnings(uid){
-  const snap = await getDocs(
-    collection(db, "users", uid, "investments")
-  );
-
-  snap.forEach(async(inv)=>{
-    const d = inv.data();
-    if(!d.dailyIncome) return;
-
-    const newEarning = calculateLiveEarnings(
-      d.dailyIncome,
-      d.liveEarnings || 0,
-      d.lastUpdated
-    );
-
-    await updateDoc(
-      doc(db, "users", uid, "investments", inv.id),
-      {
-        liveEarnings: Number(newEarning.toFixed(4)),
-        lastUpdated: serverTimestamp()
-      }
-    );
-  });
-}
+});
 </script>
 
 </body>
