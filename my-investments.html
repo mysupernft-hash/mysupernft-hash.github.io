@@ -12,7 +12,6 @@ body{
   background:#0b0b0b;
   color:#FFD700;
 }
-
 header{
   background:#111;
   padding:16px;
@@ -21,38 +20,23 @@ header{
   font-weight:bold;
   border-bottom:1px solid #222;
 }
+.container{ padding:20px; }
 
-.container{
-  padding:20px;
-}
-
-/* 🔒 VIEW ONLY CARD */
 .card{
   background:#141414;
   border-radius:14px;
   padding:15px;
   margin-bottom:20px;
   box-shadow:0 0 15px rgba(255,215,0,0.08);
-  pointer-events:none; /* ⛔ disable all clicks */
+  cursor:pointer;
 }
-
 .card img{
   width:100%;
   border-radius:12px;
   margin-bottom:12px;
-  pointer-events:none; /* ⛔ image click disabled */
 }
-
-.card h3{
-  margin:6px 0;
-  font-size:18px;
-}
-
-.card p{
-  margin:4px 0;
-  font-size:14px;
-  color:#d4af37;
-}
+.card h3{ margin:6px 0; font-size:18px; }
+.card p{ margin:4px 0; font-size:14px; color:#d4af37; }
 
 .badge{
   display:inline-block;
@@ -69,7 +53,6 @@ header{
   text-align:center;
   margin-top:70px;
   color:#777;
-  font-size:15px;
 }
 
 .back{
@@ -78,7 +61,6 @@ header{
   margin:30px 0 10px;
   color:#FFD700;
   text-decoration:none;
-  font-size:15px;
 }
 </style>
 </head>
@@ -104,7 +86,6 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -114,20 +95,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
 const list = document.getElementById("investmentList");
 
-/* 🔐 Auth Check */
 onAuthStateChanged(auth, async(user)=>{
   if(!user){
-    window.location.href = "login.html";
+    location.href="login.html";
     return;
   }
 
   try{
     const q = query(
-      collection(db, "users", user.uid, "investments"),
-      orderBy("purchasedAt", "desc")
+      collection(db,"users",user.uid,"investments"),
+      orderBy("purchasedAt","desc")
     );
 
     const snap = await getDocs(q);
@@ -140,28 +119,28 @@ onAuthStateChanged(auth, async(user)=>{
 
     snap.forEach(doc=>{
       const d = doc.data();
-      const date = d.purchasedAt
-        ? d.purchasedAt.toDate().toLocaleDateString()
-        : "-";
+      const date = d.purchasedAt?.toDate().toLocaleDateString() || "";
 
       list.innerHTML += `
-        <div class="card">
-          <img src="${d.image || ''}">
-          <h3>${d.name || 'NFT'}</h3>
-          <p>💰 Price: $${d.price || 0}</p>
-          <p>📈 Daily Income: $${d.dailyIncome || 0}</p>
-          <p>⚡ Live Earnings: $${d.liveEarnings || 0}</p>
+        <div class="card" onclick="openDetails('${d.nftId}')">
+          <img src="${d.image}">
+          <h3>${d.name}</h3>
+          <p>💰 Price: $${d.price}</p>
           <p>📅 Purchased: ${date}</p>
           <span class="badge">ACTIVE</span>
         </div>
       `;
     });
 
-  }catch(err){
-    console.error(err);
+  }catch(e){
+    console.error(e);
     list.innerHTML = `<div class="empty">Failed to load investments</div>`;
   }
 });
+
+window.openDetails = function(id){
+  window.location.href = "nft-details.html?id=" + id;
+}
 </script>
 
 </body>
