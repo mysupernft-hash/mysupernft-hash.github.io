@@ -29,7 +29,7 @@ button { padding:6px 12px; background:#ffd700; border:none; cursor:pointer }
 <thead>
 <tr>
 <th>Email</th>
-<th>Balance</th>
+<th>Wallet</th>
 <th>Daily</th>
 <th>Referral</th>
 <th>Level</th>
@@ -51,26 +51,26 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// 🔐 ADMIN CHECK
-auth.onAuthStateChanged(user => {
+/* 🔐 ADMIN CHECK (FIXED) */
+auth.onAuthStateChanged(async user => {
   if (!user) {
-    window.location.href = "admin-login.html";
+    location.href = "admin-login.html";
     return;
   }
 
-  db.collection("admin").doc(user.uid).get().then(doc => {
-    if (!doc.exists) {
-      document.getElementById("status").innerText = "Access denied (not admin)";
-      return;
-    }
+  const snap = await db.collection("users").doc(user.uid).get();
 
-    document.getElementById("status").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-    loadUsers();
-  });
+  if (!snap.exists || snap.data().role !== "admin") {
+    document.getElementById("status").innerText = "❌ Access denied (Not Admin)";
+    return;
+  }
+
+  document.getElementById("status").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+  loadUsers();
 });
 
-// 👥 LOAD USERS
+/* 👥 LOAD USERS */
 function loadUsers(){
   db.collection("users").get().then(snap => {
     let html = "";
@@ -78,15 +78,15 @@ function loadUsers(){
       const u = doc.data();
       html += `
       <tr>
-        <td>${u.email||""}</td>
-        <td><input id="b_${doc.id}" value="${u.balance||0}"></td>
-        <td><input id="d_${doc.id}" value="${u.dailyIncome||0}"></td>
-        <td><input id="r_${doc.id}" value="${u.referralEarnings||0}"></td>
-        <td><input id="l_${doc.id}" value="${u.level||1}"></td>
+        <td>${u.email || ""}</td>
+        <td><input id="w_${doc.id}" value="${u.walletBalance || 0}"></td>
+        <td><input id="d_${doc.id}" value="${u.dailyIncome || 0}"></td>
+        <td><input id="r_${doc.id}" value="${u.referralEarnings || 0}"></td>
+        <td><input id="l_${doc.id}" value="${u.level || 1}"></td>
         <td>
           <select id="ban_${doc.id}">
-            <option value="false" ${u.banned?"":"selected"}>No</option>
-            <option value="true" ${u.banned?"selected":""}>Yes</option>
+            <option value="false" ${u.banned ? "" : "selected"}>No</option>
+            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
           </select>
         </td>
         <td><button onclick="saveUser('${doc.id}')">Save</button></td>
@@ -96,15 +96,17 @@ function loadUsers(){
   });
 }
 
-// 💾 SAVE USER
+/* 💾 SAVE USER */
 function saveUser(uid){
   db.collection("users").doc(uid).update({
-    balance: Number(document.getElementById("b_"+uid).value),
+    walletBalance: Number(document.getElementById("w_"+uid).value),
     dailyIncome: Number(document.getElementById("d_"+uid).value),
     referralEarnings: Number(document.getElementById("r_"+uid).value),
     level: Number(document.getElementById("l_"+uid).value),
     banned: document.getElementById("ban_"+uid).value === "true"
-  }).then(()=>alert("Saved"));
+  }).then(()=>{
+    alert("✅ Saved successfully");
+  });
 }
 </script>
 
