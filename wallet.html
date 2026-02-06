@@ -16,7 +16,7 @@ header{
   position:sticky;
   top:0;
   background:#1a1a1a;
-  padding:12px 16px;
+  padding:14px;
   text-align:center;
   font-size:20px;
   font-weight:bold;
@@ -46,7 +46,7 @@ header{
 }
 button{
   width:100%;
-  margin-top:15px;
+  margin-top:12px;
   padding:12px;
   background:#FFD700;
   color:#000;
@@ -55,6 +55,10 @@ button{
   font-size:16px;
   font-weight:bold;
   cursor:pointer;
+}
+button.secondary{
+  background:#272727;
+  color:#FFD700;
 }
 .back-btn{
   display:block;
@@ -90,11 +94,16 @@ button{
       <span>Total Earnings</span>
       <span id="totalEarnings">$0</span>
     </div>
+    <div class="row">
+      <span>NFTs Owned</span>
+      <span id="nfts">0</span>
+    </div>
   </div>
 
   <div class="card">
     <h2>Actions</h2>
-    <button onclick="goWithdraw()">Withdraw</button>
+    <button onclick="buyNFT()">Buy NFT ($10)</button>
+    <button class="secondary" onclick="requestWithdraw()">Withdraw</button>
   </div>
 
   <a href="dashboard.html" class="back-btn">⬅ Back to Dashboard</a>
@@ -104,9 +113,12 @@ button{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFirestore, doc, getDoc,
+  updateDoc, increment,
+  collection, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -120,35 +132,67 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔹 Auth check + realtime wallet sync */
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.replace("login.html");
+let userData;
+let userRef;
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    location.href="login.html";
     return;
   }
 
-  const userRef = doc(db, "users", user.uid);
+  userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
 
-  // 🔥 Real-time update (admin edit, referral reward, etc.)
-  onSnapshot(userRef, (snap) => {
-    if (!snap.exists()) return;
+  if(!snap.exists()) return;
 
-    const d = snap.data();
+  userData = snap.data();
 
-    const walletBalance = d.walletBalance ?? 0;
-    const totalDeposit = d.totalDeposit ?? 0;
-    const totalEarnings =
-      (d.liveEarnings ?? 0) + (d.referralEarnings ?? 0);
+  document.getElementById("walletBalance").innerText =
+    "$" + (userData.walletBalance || 0);
 
-    document.getElementById("walletBalance").innerText = "$" + walletBalance;
-    document.getElementById("totalDeposit").innerText = "$" + totalDeposit;
-    document.getElementById("totalEarnings").innerText = "$" + totalEarnings;
-  });
+  document.getElementById("totalDeposit").innerText =
+    "$" + (userData.totalDeposit || 0);
+
+  document.getElementById("totalEarnings").innerText =
+    "$" + (userData.referralEarnings || 0);
+
+  document.getElementById("nfts").innerText =
+    userData.nfts || 0;
 });
 
-/* 🔹 Withdraw redirect */
-window.goWithdraw = function () {
-  window.location.href = "withdraw.html";
+/* 🪙 BUY NFT */
+window.buyNFT = async function(){
+  if((userData.walletBalance || 0) < 10){
+    alert("❌ Minimum $10 required to buy NFT");
+    return;
+  }
+
+  await updateDoc(userRef,{
+    walletBalance: increment(-10),
+    nfts: increment(1)
+  });
+
+  alert("🎉 NFT purchased successfully!");
+  location.reload();
+};
+
+/* 💸 WITHDRAW REQUEST → ADMIN */
+window.requestWithdraw = async function(){
+  if((userData.walletBalance || 0) <= 0){
+    alert("❌ Wallet balance is zero");
+    return;
+  }
+
+  await addDoc(collection(db,"withdrawRequests"),{
+    uid: auth.currentUser.uid,
+    email: auth.currentUser.email,
+    amount: userData.walletBalance,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  alert("📩 Withdraw request sent to admin!");
 };
 </script>
 
