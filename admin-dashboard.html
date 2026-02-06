@@ -9,35 +9,12 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body {
-  background:#0d0d0d;
-  color:#ffd700;
-  font-family:Arial;
-}
-table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
-}
-th,td {
-  border:1px solid #333;
-  padding:8px;
-  text-align:center;
-}
-th { background:#111; }
-input,select {
-  width:90px;
-  background:#000;
-  color:#ffd700;
-  border:1px solid #333;
-}
-button {
-  padding:6px 12px;
-  background:#ffd700;
-  border:none;
-  cursor:pointer;
-  font-weight:bold;
-}
+body { background:#0d0d0d; color:#ffd700; font-family:Arial }
+table { width:100%; border-collapse:collapse; margin-top:20px }
+th,td { border:1px solid #333; padding:8px; text-align:center }
+th { background:#111 }
+input,select { width:90px }
+button { padding:6px 12px; background:#ffd700; border:none; cursor:pointer }
 </style>
 </head>
 
@@ -46,22 +23,22 @@ button {
 <h2 id="status">Checking admin access...</h2>
 
 <div id="panel" style="display:none">
-  <h2>Admin Dashboard</h2>
+<h2>Admin Dashboard</h2>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Balance</th>
-        <th>Daily</th>
-        <th>Referral</th>
-        <th>Level</th>
-        <th>Banned</th>
-        <th>Save</th>
-      </tr>
-    </thead>
-    <tbody id="users"></tbody>
-  </table>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Balance</th>
+<th>Daily</th>
+<th>Referral</th>
+<th>Level</th>
+<th>Banned</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody id="users"></tbody>
+</table>
 </div>
 
 <script>
@@ -74,26 +51,26 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-/* 🔐 ADMIN CHECK — CORRECT WAY */
-auth.onAuthStateChanged(async user => {
+// 🔐 ADMIN CHECK
+auth.onAuthStateChanged(user => {
   if (!user) {
-    location.href = "admin-login.html";
+    window.location.href = "admin-login.html";
     return;
   }
 
-  const userDoc = await db.collection("users").doc(user.uid).get();
+  db.collection("admin").doc(user.uid).get().then(doc => {
+    if (!doc.exists) {
+      document.getElementById("status").innerText = "Access denied (not admin)";
+      return;
+    }
 
-  if (!userDoc.exists || userDoc.data().isAdmin !== true) {
-    document.getElementById("status").innerText = "❌ Access denied (Not Admin)";
-    return;
-  }
-
-  document.getElementById("status").style.display = "none";
-  document.getElementById("panel").style.display = "block";
-  loadUsers();
+    document.getElementById("status").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    loadUsers();
+  });
 });
 
-/* 👥 LOAD USERS */
+// 👥 LOAD USERS
 function loadUsers(){
   db.collection("users").get().then(snap => {
     let html = "";
@@ -101,15 +78,15 @@ function loadUsers(){
       const u = doc.data();
       html += `
       <tr>
-        <td>${u.email || ""}</td>
-        <td><input id="b_${doc.id}" value="${u.balance || 0}"></td>
-        <td><input id="d_${doc.id}" value="${u.dailyIncome || 0}"></td>
-        <td><input id="r_${doc.id}" value="${u.referralEarnings || 0}"></td>
-        <td><input id="l_${doc.id}" value="${u.level || 1}"></td>
+        <td>${u.email||""}</td>
+        <td><input id="b_${doc.id}" value="${u.balance||0}"></td>
+        <td><input id="d_${doc.id}" value="${u.dailyIncome||0}"></td>
+        <td><input id="r_${doc.id}" value="${u.referralEarnings||0}"></td>
+        <td><input id="l_${doc.id}" value="${u.level||1}"></td>
         <td>
           <select id="ban_${doc.id}">
-            <option value="false" ${u.banned ? "" : "selected"}>No</option>
-            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
+            <option value="false" ${u.banned?"":"selected"}>No</option>
+            <option value="true" ${u.banned?"selected":""}>Yes</option>
           </select>
         </td>
         <td><button onclick="saveUser('${doc.id}')">Save</button></td>
@@ -119,7 +96,7 @@ function loadUsers(){
   });
 }
 
-/* 💾 SAVE USER */
+// 💾 SAVE USER
 function saveUser(uid){
   db.collection("users").doc(uid).update({
     balance: Number(document.getElementById("b_"+uid).value),
@@ -127,9 +104,7 @@ function saveUser(uid){
     referralEarnings: Number(document.getElementById("r_"+uid).value),
     level: Number(document.getElementById("l_"+uid).value),
     banned: document.getElementById("ban_"+uid).value === "true"
-  }).then(()=>{
-    alert("✅ Saved");
-  });
+  }).then(()=>alert("Saved"));
 }
 </script>
 
