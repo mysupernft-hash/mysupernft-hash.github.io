@@ -5,7 +5,7 @@
 <title>SuperNFT Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase compat -->
+<!-- Firebase v9 compat -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -15,10 +15,9 @@ body{
   background:#0d0d0d;
   color:#ffd700;
   font-family:Arial;
-  margin:0;
   padding:20px;
 }
-h2{text-align:center}
+h2{margin-bottom:10px}
 table{
   width:100%;
   border-collapse:collapse;
@@ -29,25 +28,25 @@ th,td{
   padding:8px;
   text-align:center;
 }
-th{background:#111}
+th{
+  background:#111;
+}
 input,select{
   width:90px;
-  padding:4px;
-  background:#000;
+  background:#111;
   color:#ffd700;
-  border:1px solid #444;
+  border:1px solid #333;
+  padding:5px;
 }
 button{
-  padding:6px 14px;
   background:#ffd700;
+  color:#000;
   border:none;
+  padding:6px 12px;
   cursor:pointer;
   font-weight:bold;
 }
-#status{
-  text-align:center;
-  margin-top:50px;
-}
+#panel{display:none}
 </style>
 </head>
 
@@ -55,8 +54,8 @@ button{
 
 <h2 id="status">Checking admin access...</h2>
 
-<div id="panel" style="display:none">
-  <h2>🛡 SuperNFT Admin Dashboard</h2>
+<div id="panel">
+  <h2>🛠 SuperNFT Admin Dashboard</h2>
 
   <table>
     <thead>
@@ -75,7 +74,7 @@ button{
 </div>
 
 <script>
-/* 🔥 FIREBASE INIT */
+// 🔥 FIREBASE INIT
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -85,7 +84,7 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-/* 🔐 ADMIN CHECK */
+// 🔐 ADMIN CHECK (USERS.isAdmin)
 auth.onAuthStateChanged(async user=>{
   if(!user){
     location.href="admin-login.html";
@@ -95,61 +94,61 @@ auth.onAuthStateChanged(async user=>{
   try{
     const snap = await db.collection("users").doc(user.uid).get();
 
-    if(!snap.exists || snap.data().role !== "admin"){
+    if(!snap.exists || snap.data().isAdmin !== true){
       document.getElementById("status").innerText =
         "❌ Access denied (Not Admin)";
       return;
     }
 
+    // ✅ ADMIN OK
     document.getElementById("status").style.display="none";
     document.getElementById("panel").style.display="block";
     loadUsers();
 
-  }catch(err){
-    console.error(err);
-    document.getElementById("status").innerText="Error loading admin";
+  }catch(e){
+    document.getElementById("status").innerText =
+      "❌ Error checking admin";
   }
 });
 
-/* 👥 LOAD USERS */
+// 👥 LOAD ALL USERS
 function loadUsers(){
-  db.collection("users").get().then(snap=>{
+  db.collection("users").get().then(qs=>{
     let html="";
-    snap.forEach(doc=>{
+    qs.forEach(doc=>{
       const u = doc.data();
       html += `
       <tr>
-        <td>${u.email||""}</td>
-        <td><input id="b_${doc.id}" value="${u.walletBalance||0}"></td>
-        <td><input id="d_${doc.id}" value="${u.dailyIncome||0}"></td>
-        <td><input id="r_${doc.id}" value="${u.referralEarnings||0}"></td>
-        <td><input id="l_${doc.id}" value="${u.level||1}"></td>
+        <td>${u.email || ""}</td>
+        <td><input id="w_${doc.id}" value="${u.walletBalance || 0}"></td>
+        <td><input id="d_${doc.id}" value="${u.dailyIncome || 0}"></td>
+        <td><input id="r_${doc.id}" value="${u.referralEarnings || 0}"></td>
+        <td><input id="l_${doc.id}" value="${u.level || 1}"></td>
         <td>
-          <select id="ban_${doc.id}">
-            <option value="false" ${!u.banned?"selected":""}>No</option>
-            <option value="true" ${u.banned?"selected":""}>Yes</option>
+          <select id="b_${doc.id}">
+            <option value="false" ${u.banned ? "" : "selected"}>No</option>
+            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
           </select>
         </td>
         <td>
           <button onclick="saveUser('${doc.id}')">Save</button>
         </td>
-      </tr>
-      `;
+      </tr>`;
     });
     document.getElementById("users").innerHTML = html;
   });
 }
 
-/* 💾 SAVE USER */
+// 💾 SAVE USER DATA
 function saveUser(uid){
   db.collection("users").doc(uid).update({
-    walletBalance: Number(document.getElementById("b_"+uid).value),
+    walletBalance: Number(document.getElementById("w_"+uid).value),
     dailyIncome: Number(document.getElementById("d_"+uid).value),
     referralEarnings: Number(document.getElementById("r_"+uid).value),
     level: Number(document.getElementById("l_"+uid).value),
-    banned: document.getElementById("ban_"+uid).value === "true"
+    banned: document.getElementById("b_"+uid).value === "true"
   }).then(()=>{
-    alert("✅ Saved successfully");
+    alert("✅ User updated");
   });
 }
 </script>
