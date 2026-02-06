@@ -12,6 +12,7 @@ body{
   background:#0b0b0b;
   color:#FFD700;
 }
+
 header{
   background:#111;
   padding:16px;
@@ -20,30 +21,39 @@ header{
   font-weight:bold;
   border-bottom:1px solid #222;
 }
+
 .container{
   padding:20px;
 }
+
+/* 🔒 VIEW ONLY CARD */
 .card{
   background:#141414;
   border-radius:14px;
   padding:15px;
   margin-bottom:20px;
   box-shadow:0 0 15px rgba(255,215,0,0.08);
+  pointer-events:none; /* ⛔ disable all clicks */
 }
+
 .card img{
   width:100%;
   border-radius:12px;
   margin-bottom:12px;
+  pointer-events:none; /* ⛔ image click disabled */
 }
+
 .card h3{
   margin:6px 0;
   font-size:18px;
 }
+
 .card p{
   margin:4px 0;
   font-size:14px;
   color:#d4af37;
 }
+
 .badge{
   display:inline-block;
   margin-top:10px;
@@ -54,12 +64,14 @@ header{
   font-size:12px;
   font-weight:bold;
 }
+
 .empty{
   text-align:center;
   margin-top:70px;
   color:#777;
   font-size:15px;
 }
+
 .back{
   display:block;
   text-align:center;
@@ -130,13 +142,15 @@ onAuthStateChanged(auth, async(user)=>{
       const d = doc.data();
       const date = d.purchasedAt
         ? d.purchasedAt.toDate().toLocaleDateString()
-        : "";
+        : "-";
 
       list.innerHTML += `
         <div class="card">
-          <img src="${d.image}">
-          <h3>${d.name}</h3>
-          <p>💰 Price: $${d.price}</p>
+          <img src="${d.image || ''}">
+          <h3>${d.name || 'NFT'}</h3>
+          <p>💰 Price: $${d.price || 0}</p>
+          <p>📈 Daily Income: $${d.dailyIncome || 0}</p>
+          <p>⚡ Live Earnings: $${d.liveEarnings || 0}</p>
           <p>📅 Purchased: ${date}</p>
           <span class="badge">ACTIVE</span>
         </div>
