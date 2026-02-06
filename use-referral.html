@@ -34,11 +34,11 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button:disabled{
-  opacity:0.6;
-  cursor:not-allowed;
+#msg{
+  margin-top:15px;
+  font-size:14px;
+  line-height:1.4;
 }
-#msg{margin-top:15px;font-size:14px}
 </style>
 </head>
 
@@ -47,7 +47,7 @@ button:disabled{
 <div class="box">
   <h3>🎁 Use Referral Code</h3>
   <input id="code" placeholder="Enter referral code">
-  <button id="applyBtn" onclick="applyCode()" disabled>Apply Code</button>
+  <button onclick="applyCode()">Apply Code</button>
   <div id="msg"></div>
 </div>
 
@@ -55,18 +55,11 @@ button:disabled{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore,
-  doc,
-  getDoc,
-  runTransaction,
-  serverTimestamp,
-  query,
-  where,
-  collection,
-  getDocs
+  getFirestore, doc, getDoc, updateDoc, setDoc,
+  serverTimestamp, query, where, collection, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config */
+/* 🔥 Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -78,49 +71,45 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentUser = null;
-const btn = document.getElementById("applyBtn");
-const msg = document.getElementById("msg");
 
-/* ✅ Wait for auth */
+/* 🔐 Auth check */
 onAuthStateChanged(auth, user=>{
   if(!user){
     location.href = "login.html";
     return;
   }
   currentUser = user;
-  btn.disabled = false;
 });
 
-/* 🚀 Apply Referral Code */
+/* 🚀 APPLY REFERRAL */
 window.applyCode = async function(){
   const code = document.getElementById("code").value.trim().toUpperCase();
+  const msg  = document.getElementById("msg");
   msg.innerText = "";
 
-  if(!currentUser){
-    msg.innerText = "⏳ Please wait...";
-    return;
-  }
-
   if(!code){
-    msg.innerText = "❌ Enter referral code";
+    msg.innerText = "❌ Please enter referral code";
     return;
   }
 
   try{
-    const userRef = doc(db,"users",currentUser.uid);
+    /* 🔹 Current user */
+    const userRef  = doc(db,"users",currentUser.uid);
     const userSnap = await getDoc(userRef);
 
     if(!userSnap.exists()){
-      msg.innerText = "❌ User data missing";
+      msg.innerText = "❌ User profile not found";
       return;
     }
 
-    if(userSnap.data().referralUsed === true){
-      msg.innerText = "⚠️ Referral already used";
+    const userData = userSnap.data();
+
+    if(userData.referralUsed === true){
+      msg.innerText = "⚠️ You already used a referral code";
       return;
     }
 
-    /* 🔍 Find referral owner */
+    /* 🔍 Find owner by referralCode */
     const q = query(
       collection(db,"users"),
       where("referralCode","==",code)
@@ -139,41 +128,41 @@ window.applyCode = async function(){
       return;
     }
 
-    /* 💥 Atomic Transaction */
-    await runTransaction(db, async (t)=>{
-      const ownerRef = doc(db,"users",ownerDoc.id);
-      const u = await t.get(userRef);
-      const o = await t.get(ownerRef);
+    const ownerRef  = doc(db,"users",ownerDoc.id);
+    const ownerData = ownerDoc.data();
 
-      t.update(userRef,{
-        walletBalance: (u.data().walletBalance || 0) + 5,
-        referralUsed: true,
-        referredByCode: code
-      });
-
-      t.update(ownerRef,{
-        walletBalance: (o.data().walletBalance || 0) + 5,
-        referralEarnings: (o.data().referralEarnings || 0) + 5
-      });
-
-      t.set(
-        doc(db,"users",ownerDoc.id,"referrals",currentUser.uid),
-        {
-          email: currentUser.email,
-          reward: 5,
-          joinedAt: serverTimestamp()
-        }
-      );
+    /* ✅ STEP 1: update USER B */
+    await updateDoc(userRef,{
+      walletBalance: (userData.walletBalance || 0) + 5,
+      referralUsed: true,
+      referredByCode: code
     });
 
+    /* ✅ STEP 2: update USER A */
+    await updateDoc(ownerRef,{
+      walletBalance: (ownerData.walletBalance || 0) + 5,
+      referralEarnings: (ownerData.referralEarnings || 0) + 5
+    });
+
+    /* ✅ STEP 3: referral history (NO transaction = NO rule issue) */
+    await setDoc(
+      doc(db,"users",ownerDoc.id,"referrals",currentUser.uid),
+      {
+        email: currentUser.email,
+        reward: 5,
+        joinedAt: serverTimestamp()
+      }
+    );
+
+    /* 🎉 SUCCESS MESSAGE */
     msg.innerHTML = `
       🎉 <b>Congratulations!</b><br>
-      💰 $5 added to your wallet<br>
+      💰 $5 has been added to your wallet<br>
       🚀 Enjoy SuperNFT Rewards!
     `;
 
-  }catch(error){
-    console.error("Referral error:", error);
+  }catch(err){
+    console.error("Referral error:", err);
     msg.innerText = "⚠️ Something went wrong. Try again.";
   }
 };
