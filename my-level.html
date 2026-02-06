@@ -2,64 +2,245 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Level - SuperNFT</title>
+<title>My Level | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#020617;color:white;}
-header{position:sticky;top:0;background:#0d1117;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;}
-header h1{color:#38bdf8;}
-#menuToggle{font-size:28px;cursor:pointer;}
-.menu{position:fixed;left:-250px;top:0;width:250px;height:100%;background:#111827;padding-top:60px;transition:0.3s;display:flex;flex-direction:column;z-index:999;}
-.menu.open{left:0;}
-.menu a{color:#38bdf8;text-decoration:none;padding:12px 20px;display:block;border-bottom:1px solid #1e293b;}
-.menu a:hover{background:#1f2937;}
-#overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:900;}
-.container{padding:20px;}
-h2{margin-bottom:15px;color:#38bdf8;}
-.level-box{background:#0f172a;padding:15px;border-radius:12px;margin-bottom:10px;}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0b0b0b;
+  color:#FFD700;
+}
+header{
+  background:#111;
+  padding:16px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  border-bottom:1px solid #222;
+}
+.container{
+  padding:20px;
+}
+.card{
+  background:#141414;
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 0 15px rgba(255,215,0,0.08);
+}
+.center{
+  text-align:center;
+}
+.level-name{
+  font-size:28px;
+  font-weight:bold;
+  margin:10px 0;
+}
+.badge{
+  display:inline-block;
+  padding:6px 16px;
+  border-radius:20px;
+  background:#FFD700;
+  color:#000;
+  font-size:13px;
+  font-weight:bold;
+}
+.stat{
+  margin-top:10px;
+  font-size:15px;
+  color:#d4af37;
+}
+.progress-box{
+  background:#1f1f1f;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:15px;
+}
+.progress{
+  height:14px;
+  background:#FFD700;
+  width:0%;
+}
+.small{
+  margin-top:10px;
+  font-size:13px;
+  color:#999;
+}
+
+/* LEVEL TABLE */
+.level-table{
+  width:100%;
+  margin-top:10px;
+}
+.level-row{
+  display:grid;
+  grid-template-columns: 1fr 2fr 2fr;
+  padding:16px 12px;
+  border-bottom:1px solid #222;
+  align-items:center;
+  font-size:16px;
+}
+.level-row.head{
+  font-weight:bold;
+  background:#1c1c1c;
+  border-radius:10px;
+}
+.level-row .lvl{
+  font-size:24px;
+  font-weight:bold;
+}
+.level-row .title{
+  font-weight:bold;
+  font-size:18px;
+}
+
+/* COLORS */
+.bronze{ color:#cd7f32; }
+.silver{ color:#c0c0c0; }
+.gold{ color:#FFD700; }
+.platinum{ color:#e5e4e2; }
+.sapphire{ color:#4fc3f7; }
+.emerald{ color:#2ecc71; }
+.ruby{ color:#e74c3c; }
+.elite{ color:#ffb347; }
+.diamond{ color:#7ee8fa; }
+
+.back{
+  display:block;
+  text-align:center;
+  margin:30px 0 10px;
+  color:#FFD700;
+  text-decoration:none;
+  font-size:15px;
+}
 </style>
 </head>
+
 <body>
 
-<header>
-  <div id="menuToggle">&#9776;</div>
-  <h1>My Level</h1>
-</header>
-
-<div id="overlay"></div>
-
-<div id="sideMenu" class="menu">
-  <a href="dashboard.html">🏠 Dashboard</a>
-  <a href="account.html">👤 My Account</a>
-  <a href="my-investments.html">📁 My Investments</a>
-  <a href="wallet.html">💳 Wallet</a>
-  <a href="withdraw.html">💸 Withdraw</a>
-  <a href="live-earnings.html">💹 Live Earnings</a>
-  <a href="admin.html">🛡 Admin</a>
-  <a href="my-team.html">👥 My Team</a>
-  <a href="my-level.html">📊 My Level</a>
-  <a href="calculator.html">📈 Calculator</a>
-  <a href="settings.html">⚙️ Settings</a>
-  <a href="#" id="logoutBtn">🔒 Logout</a>
-</div>
+<header>🏆 My Level</header>
 
 <div class="container">
-  <h2>My Level & Rank Bonuses</h2>
-  <div class="level-box">You are at Level 0</div>
+
+  <!-- CURRENT LEVEL -->
+  <div class="card center">
+    <div class="level-name" id="levelName">Loading...</div>
+    <div class="badge" id="levelBadge">---</div>
+
+    <div class="stat">👥 Total Referrals: <b id="refCount">0</b></div>
+    <div class="stat">💰 Referral Earnings: $<b id="refEarn">0</b></div>
+
+    <div class="progress-box">
+      <div class="progress" id="progressBar"></div>
+    </div>
+    <div class="small" id="nextInfo">Calculating...</div>
+  </div>
+
+  <!-- LEVEL STRUCTURE -->
+  <div class="card">
+    <h2>🏆 Level Structure</h2>
+
+    <div class="level-table">
+      <div class="level-row head">
+        <div>Level</div>
+        <div>Requirement</div>
+        <div>Title</div>
+      </div>
+
+      <div class="level-row"><div class="lvl">1</div><div>0 Referrals</div><div class="title">Starter</div></div>
+      <div class="level-row"><div class="lvl">2</div><div>3 Referrals</div><div class="title bronze">Bronze</div></div>
+      <div class="level-row"><div class="lvl">3</div><div>7 Referrals</div><div class="title silver">Silver</div></div>
+      <div class="level-row"><div class="lvl">4</div><div>15 Referrals</div><div class="title gold">Gold</div></div>
+      <div class="level-row"><div class="lvl">5</div><div>25 Referrals</div><div class="title platinum">Platinum</div></div>
+      <div class="level-row"><div class="lvl">6</div><div>35 Referrals</div><div class="title sapphire">Sapphire</div></div>
+      <div class="level-row"><div class="lvl">7</div><div>50 Referrals</div><div class="title emerald">Emerald</div></div>
+      <div class="level-row"><div class="lvl">8</div><div>65 Referrals</div><div class="title ruby">Ruby</div></div>
+      <div class="level-row"><div class="lvl">9</div><div>80 Referrals</div><div class="title elite">Elite</div></div>
+      <div class="level-row"><div class="lvl">10</div><div>100 Referrals</div><div class="title diamond">Diamond</div></div>
+    </div>
+  </div>
+
 </div>
 
-<script>
-const menuToggle = document.getElementById("menuToggle");
-const sideMenu = document.getElementById("sideMenu");
-const overlay = document.getElementById("overlay");
-menuToggle.onclick = ()=>{
-  sideMenu.classList.toggle("open");
-  overlay.style.display = sideMenu.classList.contains("open") ? "block" : "none";
-}
-overlay.onclick = ()=>{
-  sideMenu.classList.remove("open");
-  overlay.style.display = "none";
-}
+<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* LEVEL DATA */
+const levels = [
+  {name:"Starter", min:0},
+  {name:"Bronze", min:3},
+  {name:"Silver", min:7},
+  {name:"Gold", min:15},
+  {name:"Platinum", min:25},
+  {name:"Sapphire", min:35},
+  {name:"Emerald", min:50},
+  {name:"Ruby", min:65},
+  {name:"Elite", min:80},
+  {name:"Diamond", min:100}
+];
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+
+  try{
+    const refSnap = await getDocs(collection(db,"users",user.uid,"referrals"));
+    const refCount = refSnap.size;
+
+    const userSnap = await getDoc(doc(db,"users",user.uid));
+    const refEarn = userSnap.exists() ? (userSnap.data().referralEarnings || 0) : 0;
+
+    let current = levels[0];
+    let next = null;
+
+    for(let i=0;i<levels.length;i++){
+      if(refCount >= levels[i].min){
+        current = levels[i];
+        next = levels[i+1] || null;
+      }
+    }
+
+    let percent = 100;
+    let nextText = "🎉 Max level reached";
+
+    if(next){
+      const needed = next.min - current.min;
+      const done = refCount - current.min;
+      percent = Math.min(100, Math.floor((done / needed) * 100));
+      nextText = `Next Level (${next.name}) in ${next.min - refCount} referrals`;
+    }
+
+    document.getElementById("levelName").innerText = current.name;
+    document.getElementById("levelBadge").innerText = "LEVEL " + (levels.indexOf(current)+1);
+    document.getElementById("refCount").innerText = refCount;
+    document.getElementById("refEarn").innerText = refEarn;
+    document.getElementById("progressBar").style.width = percent + "%";
+    document.getElementById("nextInfo").innerText = nextText;
+
+  }catch(e){
+    console.error(e);
+    document.getElementById("levelName").innerText = "Error loading level";
+  }
+});
 </script>
+
 </body>
 </html>
