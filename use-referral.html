@@ -37,7 +37,7 @@ button{
 #msg{
   margin-top:15px;
   font-size:14px;
-  line-height:1.4;
+  line-height:1.5;
 }
 </style>
 </head>
@@ -47,8 +47,8 @@ button{
 <div class="box">
   <h3>🎁 Use Referral Code</h3>
   <input id="code" placeholder="Enter referral code">
-  <button onclick="applyCode()">Apply Code</button>
-  <div id="msg"></div>
+  <button id="applyBtn" disabled>Apply Code</button>
+  <div id="msg">⏳ Loading user...</div>
 </div>
 
 <script type="module">
@@ -59,7 +59,7 @@ import {
   serverTimestamp, query, where, collection, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase */
+/* Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -71,45 +71,47 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let currentUser = null;
+const btn = document.getElementById("applyBtn");
+const msg = document.getElementById("msg");
 
-/* 🔐 Auth check */
+/* AUTH READY */
 onAuthStateChanged(auth, user=>{
   if(!user){
-    location.href = "login.html";
+    location.href="login.html";
     return;
   }
   currentUser = user;
+  btn.disabled = false;
+  msg.innerText = "";
 });
 
-/* 🚀 APPLY REFERRAL */
-window.applyCode = async function(){
+/* APPLY CODE */
+btn.onclick = async () => {
   const code = document.getElementById("code").value.trim().toUpperCase();
-  const msg  = document.getElementById("msg");
   msg.innerText = "";
 
   if(!code){
-    msg.innerText = "❌ Please enter referral code";
+    msg.innerText = "❌ Enter referral code";
     return;
   }
 
   try{
-    /* 🔹 Current user */
-    const userRef  = doc(db,"users",currentUser.uid);
+    const userRef = doc(db,"users",currentUser.uid);
     const userSnap = await getDoc(userRef);
 
     if(!userSnap.exists()){
-      msg.innerText = "❌ User profile not found";
+      msg.innerText="❌ User data missing";
       return;
     }
 
     const userData = userSnap.data();
 
     if(userData.referralUsed === true){
-      msg.innerText = "⚠️ You already used a referral code";
+      msg.innerText="⚠️ Referral already used";
       return;
     }
 
-    /* 🔍 Find owner by referralCode */
+    /* FIND OWNER */
     const q = query(
       collection(db,"users"),
       where("referralCode","==",code)
@@ -117,34 +119,35 @@ window.applyCode = async function(){
     const snap = await getDocs(q);
 
     if(snap.empty){
-      msg.innerText = "❌ Invalid referral code";
+      msg.innerText="❌ Invalid referral code";
       return;
     }
 
     const ownerDoc = snap.docs[0];
 
     if(ownerDoc.id === currentUser.uid){
-      msg.innerText = "❌ You cannot use your own code";
+      msg.innerText="❌ You cannot use your own code";
       return;
     }
 
-    const ownerRef  = doc(db,"users",ownerDoc.id);
-    const ownerData = ownerDoc.data();
+    const ownerRef = doc(db,"users",ownerDoc.id);
+    const ownerSnap = await getDoc(ownerRef);
+    const ownerData = ownerSnap.data() || {};
 
-    /* ✅ STEP 1: update USER B */
+    /* UPDATE USER B */
     await updateDoc(userRef,{
       walletBalance: (userData.walletBalance || 0) + 5,
       referralUsed: true,
       referredByCode: code
     });
 
-    /* ✅ STEP 2: update USER A */
+    /* UPDATE USER A (SAFE DEFAULTS) */
     await updateDoc(ownerRef,{
       walletBalance: (ownerData.walletBalance || 0) + 5,
       referralEarnings: (ownerData.referralEarnings || 0) + 5
     });
 
-    /* ✅ STEP 3: referral history (NO transaction = NO rule issue) */
+    /* REFERRAL HISTORY */
     await setDoc(
       doc(db,"users",ownerDoc.id,"referrals",currentUser.uid),
       {
@@ -154,16 +157,16 @@ window.applyCode = async function(){
       }
     );
 
-    /* 🎉 SUCCESS MESSAGE */
     msg.innerHTML = `
       🎉 <b>Congratulations!</b><br>
-      💰 $5 has been added to your wallet<br>
-      🚀 Enjoy SuperNFT Rewards!
+      💰 $5 added to your wallet<br>
+      🤝 Referral successful
     `;
+    btn.disabled = true;
 
   }catch(err){
-    console.error("Referral error:", err);
-    msg.innerText = "⚠️ Something went wrong. Try again.";
+    console.error(err);
+    msg.innerText="⚠️ Something went wrong. Try again.";
   }
 };
 </script>
