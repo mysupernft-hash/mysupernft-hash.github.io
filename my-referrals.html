@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>My Referrals | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Referral Code | SuperNFT</title>
 
 <style>
 body{
@@ -20,74 +20,93 @@ header{
   font-weight:bold;
 }
 .container{
-  max-width:420px;
-  margin:40px auto;
   padding:20px;
 }
 .card{
   background:#1a1a1a;
-  padding:20px;
   border-radius:12px;
-  text-align:center;
-}
-.code-box{
-  background:#272727;
   padding:15px;
-  margin:15px 0;
-  font-size:22px;
-  font-weight:bold;
-  border-radius:8px;
-  letter-spacing:2px;
+  margin-bottom:15px;
 }
-button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#FFD700;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer;
+.card h3{
+  margin:0 0 8px;
+  font-size:16px;
 }
-.msg{
-  margin-top:15px;
-  text-align:center;
+.big{
+  font-size:26px;
+  font-weight:bold;
+}
+.list{
+  margin-top:10px;
+}
+.item{
+  padding:10px;
+  border-bottom:1px solid #272727;
   font-size:14px;
+}
+.item:last-child{
+  border-bottom:none;
+}
+.small{
+  font-size:12px;
+  opacity:0.8;
 }
 .back{
   display:block;
-  margin-top:20px;
   text-align:center;
-  text-decoration:none;
+  margin-top:20px;
+  padding:12px;
+  background:#272727;
+  border-radius:8px;
   color:#FFD700;
+  text-decoration:none;
 }
 </style>
 </head>
 
 <body>
 
-<header>My Referral Code</header>
+<header>👥 My Referrals</header>
 
 <div class="container">
+
+  <!-- 🔹 Referral Code -->
   <div class="card">
-    <p>Invite friends & earn rewards</p>
-
-    <div class="code-box" id="refCode">Loading...</div>
-
-    <button onclick="copyCode()">Copy Referral Code</button>
-
-    <div class="msg" id="msg"></div>
+    <h3>Your Referral Code</h3>
+    <div class="big" id="refCode">---</div>
   </div>
 
-  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+  <!-- 🔹 Stats -->
+  <div class="card">
+    <h3>Total Referrals</h3>
+    <div class="big" id="totalRef">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Total Referral Earnings</h3>
+    <div class="big">$<span id="totalEarn">0</span></div>
+  </div>
+
+  <!-- 🔹 History -->
+  <div class="card">
+    <h3>Referral History</h3>
+    <div class="list" id="refList">
+      <div class="small">Loading...</div>
+    </div>
+  </div>
+
+  <a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
+
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFirestore, doc, getDoc,
+  collection, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -98,31 +117,48 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const refBox = document.getElementById("refCode");
-const msg = document.getElementById("msg");
-
-onAuthStateChanged(auth, async (user)=>{
+onAuthStateChanged(auth, async user=>{
   if(!user){
-    window.location.href = "login.html";
+    location.href="login.html";
     return;
   }
 
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(snap.exists()){
-    const data = snap.data();
-    refBox.innerText = data.referralCode || "NOT SET";
-  }else{
-    refBox.innerText = "User data missing";
+  // 🔹 USER MAIN DATA
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+
+  if(!snap.exists()) return;
+
+  const data = snap.data();
+  document.getElementById("refCode").innerText = data.referralCode || "---";
+  document.getElementById("totalEarn").innerText = data.referralEarnings || 0;
+
+  // 🔹 REFERRALS LIST
+  const refCol = collection(db,"users",user.uid,"referrals");
+  const refSnap = await getDocs(refCol);
+
+  document.getElementById("totalRef").innerText = refSnap.size;
+
+  const list = document.getElementById("refList");
+  list.innerHTML = "";
+
+  if(refSnap.empty){
+    list.innerHTML = `<div class="small">No referrals yet</div>`;
+    return;
   }
+
+  refSnap.forEach(doc=>{
+    const r = doc.data();
+    const date = r.joinedAt?.toDate().toLocaleDateString() || "-";
+
+    list.innerHTML += `
+      <div class="item">
+        <div>${r.email || "User"}</div>
+        <div class="small">Joined: ${date} • Reward: $${r.reward}</div>
+      </div>
+    `;
+  });
 });
-
-window.copyCode = function(){
-  const text = refBox.innerText;
-  if(!text || text==="Loading...") return;
-
-  navigator.clipboard.writeText(text);
-  msg.innerText = "✅ Referral code copied!";
-};
 </script>
 
 </body>
