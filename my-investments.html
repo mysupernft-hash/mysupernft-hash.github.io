@@ -12,6 +12,8 @@ body{
   background:#0b0b0b;
   color:#FFD700;
 }
+
+/* Header */
 header{
   background:#111;
   padding:16px;
@@ -20,24 +22,43 @@ header{
   font-weight:bold;
   border-bottom:1px solid #222;
 }
-.container{ padding:20px; }
 
+/* Container */
+.container{
+  padding:20px;
+}
+
+/* Card */
 .card{
   background:#141414;
   border-radius:14px;
   padding:15px;
   margin-bottom:20px;
   box-shadow:0 0 15px rgba(255,215,0,0.08);
+  cursor:default;              /* ✅ no click */
 }
+
+/* Image */
 .card img{
   width:100%;
   border-radius:12px;
   margin-bottom:12px;
-  pointer-events:none; /* ❌ image click disabled */
+  pointer-events:none;         /* ✅ image click disabled */
 }
-.card h3{ margin:6px 0; font-size:18px; }
-.card p{ margin:4px 0; font-size:14px; color:#d4af37; }
 
+/* Text */
+.card h3{
+  margin:6px 0;
+  font-size:18px;
+}
+
+.card p{
+  margin:4px 0;
+  font-size:14px;
+  color:#d4af37;
+}
+
+/* Badge */
 .badge{
   display:inline-block;
   margin-top:10px;
@@ -49,18 +70,21 @@ header{
   font-weight:bold;
 }
 
+/* Empty */
 .empty{
   text-align:center;
   margin-top:70px;
   color:#777;
 }
 
+/* Back button */
 .back{
   display:block;
   text-align:center;
   margin:30px 0 10px;
   color:#FFD700;
   text-decoration:none;
+  font-size:15px;
 }
 </style>
 </head>
@@ -73,6 +97,7 @@ header{
   <div class="empty">Loading investments...</div>
 </div>
 
+<!-- ✅ ONLY working navigation -->
 <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 <script type="module">
@@ -86,6 +111,7 @@ import {
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -95,31 +121,35 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 const list = document.getElementById("investmentList");
 
-onAuthStateChanged(auth, async(user)=>{
+/* Auth Check */
+onAuthStateChanged(auth, async (user) => {
   if(!user){
-    location.href="login.html";
+    window.location.replace("login.html");
     return;
   }
 
   try{
     const q = query(
-      collection(db,"users",user.uid,"investments"),
-      orderBy("purchasedAt","desc")
+      collection(db, "users", user.uid, "investments"),
+      orderBy("purchasedAt", "desc")
     );
 
     const snap = await getDocs(q);
     list.innerHTML = "";
 
     if(snap.empty){
-      list.innerHTML = `<div class="empty">No investment yet</div>`;
+      list.innerHTML = `<div class="empty">No investments yet</div>`;
       return;
     }
 
-    snap.forEach(doc=>{
+    snap.forEach(doc => {
       const d = doc.data();
-      const date = d.purchasedAt?.toDate().toLocaleDateString() || "";
+      const date = d.purchasedAt
+        ? d.purchasedAt.toDate().toLocaleDateString()
+        : "";
 
       list.innerHTML += `
         <div class="card">
@@ -132,8 +162,8 @@ onAuthStateChanged(auth, async(user)=>{
       `;
     });
 
-  }catch(e){
-    console.error(e);
+  }catch(err){
+    console.error(err);
     list.innerHTML = `<div class="empty">Failed to load investments</div>`;
   }
 });
