@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My Investments | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFT Details | SuperNFT</title>
 
 <style>
 body{
@@ -23,121 +23,84 @@ header{
 .container{
   padding:20px;
 }
-.card{
+.nft-card{
   background:#141414;
-  border-radius:14px;
-  padding:15px;
-  margin-bottom:18px;
-  box-shadow:0 0 12px rgba(255,215,0,0.08);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 0 15px rgba(255,215,0,0.1);
 }
-.card img{
+.nft-card img{
   width:100%;
-  border-radius:12px;
-  margin-bottom:12px;
+  border-radius:14px;
+  margin-bottom:15px;
 }
-.card h3{
+.nft-card h2{
+  margin:10px 0 6px;
+  font-size:20px;
+}
+.nft-card p{
   margin:6px 0;
-  font-size:18px;
+  font-size:15px;
+  color:#d4af37;
 }
-.card p{
-  margin:4px 0;
-  font-size:14px;
-  color:#c9b037;
-}
-.badge{
-  display:inline-block;
-  margin-top:8px;
-  padding:6px 12px;
-  border-radius:20px;
+.buy-btn{
+  width:100%;
+  margin-top:15px;
+  padding:14px;
   background:#FFD700;
   color:#000;
-  font-size:12px;
+  border:none;
+  border-radius:30px;
+  font-size:16px;
   font-weight:bold;
+  cursor:pointer;
 }
-.empty{
-  text-align:center;
-  margin-top:60px;
-  color:#777;
+.buy-btn:hover{
+  background:#e0c200;
 }
 .back{
   display:block;
   text-align:center;
-  margin:25px 0 10px;
+  margin-top:25px;
   color:#FFD700;
   text-decoration:none;
-  font-size:15px;
 }
 </style>
 </head>
 
 <body>
 
-<header>💼 My Investments</header>
+<header>🖼 NFT Details</header>
 
-<div class="container" id="list">
-  <div class="empty">Loading investments...</div>
+<div class="container">
+  <div class="nft-card">
+    <img id="nftImage" src="">
+    <h2 id="nftName">NFT Name</h2>
+    <p>💰 Price: $<span id="nftPrice">0</span></p>
+    <p>📆 Validity: 365 Days</p>
+    <p>💹 Daily Income: Dynamic</p>
+
+    <button class="buy-btn" onclick="buyNFT()">Buy NFT</button>
+  </div>
+
+  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 </div>
 
-<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+<script>
+/* Load NFT Data */
+const img = localStorage.getItem("nftImage");
+const name = localStorage.getItem("nftName");
+const price = localStorage.getItem("nftPrice");
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+if(img) document.getElementById("nftImage").src = img;
+if(name) document.getElementById("nftName").innerText = name;
+if(price) document.getElementById("nftPrice").innerText = price;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const list = document.getElementById("list");
-
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    location.href="login.html";
-    return;
-  }
-
-  const q = query(
-    collection(db,"users",user.uid,"investments"),
-    orderBy("purchasedAt","desc")
-  );
-
-  const snap = await getDocs(q);
-
-  if(snap.empty){
-    list.innerHTML = `<div class="empty">No investments yet</div>`;
-    return;
-  }
-
-  list.innerHTML = "";
-
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const date = d.purchasedAt?.toDate().toLocaleDateString() || "";
-
-    list.innerHTML += `
-      <div class="card">
-        <img src="${d.image}">
-        <h3>${d.name}</h3>
-        <p>💰 Invested: $${d.price}</p>
-        <p>📅 Date: ${date}</p>
-        <span class="badge">ACTIVE</span>
-      </div>
-    `;
-  });
-});
+/* Buy NFT */
+function buyNFT(){
+  alert("🎉 Congratulations! NFT Purchased Successfully");
+  window.location.href = "my-investments.html";
+}
 </script>
 
 </body>
