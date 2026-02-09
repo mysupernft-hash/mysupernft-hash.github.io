@@ -1,3 +1,5 @@
+Isme deposit live earnings daily income wallet balance sahi se kaam kre update krdo
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -225,41 +227,54 @@ onAuthStateChanged(auth,async user=>{
     document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
   }
 
-                   // 🔥 REAL LIVE EARNINGS ENGINE (PER SECOND)
-let perSecondIncome = 0;
-let liveEarnings = 0;
-let walletBalance = 0;
-
-const snapData = snap.data();
-const dailyIncome = snapData.dailyIncome || 0;
-
-// daily → per second
-perSecondIncome = dailyIncome / 86400;
-
-liveEarnings = snapData.liveEarnings || 0;
-walletBalance = snapData.walletBalance || 0;
-
-// UI initial
-document.getElementById("dailyIncome").innerText = `$${dailyIncome.toFixed(2)}`;
-document.getElementById("liveEarnings").innerText = `$${liveEarnings.toFixed(4)}`;
-document.getElementById("walletBalanceP").innerText = `$${walletBalance.toFixed(4)}`;
-document.getElementById("walletBalanceTop").innerText = `$${walletBalance.toFixed(4)}`;
-
-setInterval(async () => {
-  liveEarnings += perSecondIncome;
-  walletBalance += perSecondIncome;
-
-  document.getElementById("liveEarnings").innerText = `$${liveEarnings.toFixed(4)}`;
-  document.getElementById("walletBalanceP").innerText = `$${walletBalance.toFixed(4)}`;
-  document.getElementById("walletBalanceTop").innerText = `$${walletBalance.toFixed(4)}`;
-
-  await updateDoc(userRef,{
-    liveEarnings: liveEarnings,
-    walletBalance: walletBalance
-  });
-
-}, 1000);
+  setInterval(async()=>{
+    const snap2=await getDoc(userRef);
+    if(!snap2.exists()) return;
+    let live=0;
+    (snap2.data().nfts||[]).forEach(nft=>{
+      const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};
+      live+=map[nft]||0;
+    });
+    await updateDoc(userRef,{liveEarnings:live});
+    document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;
+  },5000);
+});
+</script>
+  <script>
+function openPage(page){
+  if(page === 'referrals'){
+    window.location.href = 'my-referrals.html';
+  }
+}
 </script>
 
+  <script>
+firebase.auth().onAuthStateChanged(async user=>{
+  if(!user) return;
+
+  const ref = firebase.firestore().collection("users").doc(user.uid);
+  const doc = await ref.get();
+  const d = doc.data();
+
+  const now = Date.now();
+  const last = d.lastIncomeAt?.toMillis() || now;
+  const hours = (now - last) / (1000*60*60);
+
+  const liveEarnings = ((d.dailyIncome || 0) / 24) * hours;
+
+  document.getElementById("dailyIncome").innerText =
+    d.dailyIncome || 0;
+
+  document.getElementById("liveEarnings").innerText =
+    liveEarnings.toFixed(2);
+
+  document.getElementById("walletBalance").innerText =
+    (d.balance + liveEarnings).toFixed(2);
+
+  document.getElementById("totalDeposit").innerText =
+    d.totalDeposit || 0;
+});
+</script>
+  
 </body>
 </html>
