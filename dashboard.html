@@ -1,3 +1,5 @@
+Isme deposit live earnings daily income wallet balance sahi se kaam kre update krdo
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -246,87 +248,33 @@ function openPage(page){
 }
 </script>
 
-  <!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <script>
+firebase.auth().onAuthStateChanged(async user=>{
+  if(!user) return;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
-};
+  const ref = firebase.firestore().collection("users").doc(user.uid);
+  const doc = await ref.get();
+  const d = doc.data();
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+  const now = Date.now();
+  const last = d.lastIncomeAt?.toMillis() || now;
+  const hours = (now - last) / (1000*60*60);
 
-/* UI */
-const sidebar=document.getElementById("sidebar");
-const overlay=document.getElementById("overlay");
-openMenu.onclick=()=>{sidebar.classList.add("active");overlay.classList.add("active")}
-overlay.onclick=()=>{sidebar.classList.remove("active");overlay.classList.remove("active")}
-window.go=(p)=>location.href=p;
-window.logout=()=>signOut(auth).then(()=>location.href="login.html");
+  const liveEarnings = ((d.dailyIncome || 0) / 24) * hours;
 
-/* AUTH */
-onAuthStateChanged(auth, async user=>{
-  if(!user){location.href="login.html";return}
+  document.getElementById("dailyIncome").innerText =
+    d.dailyIncome || 0;
 
-  const ref = doc(db,"users",user.uid);
-  const snap = await getDoc(ref);
-  if(!snap.exists()) return;
+  document.getElementById("liveEarnings").innerText =
+    liveEarnings.toFixed(2);
 
-  let data = snap.data();
+  document.getElementById("walletBalance").innerText =
+    (d.balance + liveEarnings).toFixed(2);
 
-  let last = data.lastEarningAt?.toMillis() || Date.now();
-  let now = Date.now();
-  let seconds = (now-last)/1000;
-
-  let perSecond = (data.dailyIncome||0)/86400;
-  let earned = perSecond * seconds;
-
-  let live = (data.liveEarnings||0) + earned;
-
-  await updateDoc(ref,{
-    liveEarnings: live,
-    lastEarningAt: serverTimestamp()
-  });
-
-  document.getElementById("dailyIncome").innerText = "$"+(data.dailyIncome||0).toFixed(2);
-  document.getElementById("liveEarnings").innerText = "$"+live.toFixed(4);
-  document.getElementById("totalDeposit").innerText = "$"+(data.totalDeposit||0).toFixed(2);
-  document.getElementById("walletBalance").innerText = "$"+(data.walletBalance||0).toFixed(2);
-  document.getElementById("walletTop").innerText = "$"+(data.walletBalance||0).toFixed(2);
-
-  startLiveCounter(perSecond, live);
-});
-
-/* LIVE COUNTER */
-function startLiveCounter(rate, base){
-  let current = base;
-  setInterval(()=>{
-    current += rate;
-    document.getElementById("liveEarnings").innerText="$"+current.toFixed(4);
-  },1000);
-}
-
-/* CHART */
-new Chart(document.getElementById("chart"),{
-  type:"line",
-  data:{
-    labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
-    datasets:[{
-      label:"Earnings",
-      data:[5,8,6,10,9,12,15],
-      borderColor:"#FFD700",
-      tension:.4
-    }]
-  },
-  options:{plugins:{legend:{display:false}}}
+  document.getElementById("totalDeposit").innerText =
+    d.totalDeposit || 0;
 });
 </script>
-
+  
 </body>
 </html>
