@@ -224,25 +224,9 @@ onAuthStateChanged(auth,async user=>{
     document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
   }
 
-  setInterval(async()=>{
-    const snap2=await getDoc(userRef);
-    if(!snap2.exists()) return;
-    let live=0;
-    (snap2.data().nfts||[]).forEach(nft=>{
-      const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};
-      live+=map[nft]||0;
-    });
-    await updateDoc(userRef,{liveEarnings:live});
-    document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;
-  },5000);
 });
 </script>
-  <script>
-function openPage(page){
-  if(page === 'referrals'){
-    window.location.href = 'my-referrals.html';
-  }
-}
+
 </script>
 
 </body>
