@@ -72,136 +72,73 @@ button:disabled{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, updateDoc,
-  collection, query, where, getDocs,
-  serverTimestamp, increment
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore,doc,getDoc,setDoc,updateDoc,collection,query,where,getDocs,increment }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+ apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+ authDomain:"supernft-5b952.firebaseapp.com",
+ projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-let user = null;
-const msg = document.getElementById("msg");
-const btn = document.getElementById("applyBtn");
+let user;
 
-/* AUTH CHECK */
-onAuthStateChanged(auth, async u=>{
-  if(!u){
-    location.href="login.html";
-    return;
-  }
-  user = u;
+onAuthStateChanged(auth,u=>{
+ if(!u){location="login.html";return;}
+ user=u;
 });
 
-/* APPLY REFERRAL */
-btn.onclick = async ()=>{
+window.applyCode = async()=>{
 
-  if(!user) return;
+ const code=document.getElementById("code").value.trim().toUpperCase();
+ const msg=document.getElementById("msg");
 
-  btn.disabled = true;
-  msg.innerHTML="Checking...";
-  msg.className="";
+ if(!code){msg.innerText="Enter code";return;}
 
-  const code = document.getElementById("code").value.trim().toUpperCase();
-  if(!code){
-    msg.innerHTML="Enter code";
-    msg.className="error";
-    btn.disabled=false;
-    return;
-  }
+ const userRef=doc(db,"users",user.uid);
+ let userSnap=await getDoc(userRef);
 
-  try{
+ if(!userSnap.exists()){
+  await setDoc(userRef,{walletBalance:0,referralUsed:false});
+  userSnap=await getDoc(userRef);
+ }
 
-    const userRef = doc(db,"users",user.uid);
-    let userSnap = await getDoc(userRef);
+ if(userSnap.data().referralUsed){
+  msg.innerText="Already used";
+  return;
+ }
 
-    /* AUTO CREATE USER DOC */
-    if(!userSnap.exists()){
-      await setDoc(userRef,{
-        walletBalance:0,
-        referralUsed:false,
-        createdAt:serverTimestamp()
-      });
-      userSnap = await getDoc(userRef);
-    }
+ const q=query(collection(db,"users"),where("referralCode","==",code));
+ const qSnap=await getDocs(q);
 
-    const userData = userSnap.data();
+ if(qSnap.empty){
+  msg.innerText="Invalid code";
+  return;
+ }
 
-    /* ALREADY USED */
-    if(userData.referralUsed){
-      msg.innerHTML="Referral already used";
-      msg.className="error";
-      btn.disabled=false;
-      return;
-    }
+ const owner=qSnap.docs[0];
+ if(owner.id===user.uid){
+  msg.innerText="Cannot use own code";
+  return;
+ }
 
-    /* FIND OWNER */
-    const q = query(collection(db,"users"),where("referralCode","==",code));
-    const qSnap = await getDocs(q);
+ await updateDoc(userRef,{
+  walletBalance:increment(5),
+  referralUsed:true
+ });
 
-    if(qSnap.empty){
-      msg.innerHTML="Invalid referral code";
-      msg.className="error";
-      btn.disabled=false;
-      return;
-    }
+ await updateDoc(doc(db,"users",owner.id),{
+  walletBalance:increment(5),
+  referralEarnings:increment(5)
+ });
 
-    const ownerDoc = qSnap.docs[0];
-
-    /* SELF CODE */
-    if(ownerDoc.id === user.uid){
-      msg.innerHTML="You cannot use your own code";
-      msg.className="error";
-      btn.disabled=false;
-      return;
-    }
-
-    const ownerRef = doc(db,"users",ownerDoc.id);
-
-    /* REWARD USER */
-    await updateDoc(userRef,{
-      walletBalance: increment(5),
-      referralUsed:true,
-      referredByCode:code
-    });
-
-    /* REWARD OWNER */
-    await updateDoc(ownerRef,{
-      walletBalance: increment(5),
-      referralEarnings: increment(5)
-    });
-
-    /* SAVE HISTORY */
-    await setDoc(
-      doc(db,"users",ownerDoc.id,"referrals",user.uid),
-      {
-        email:user.email,
-        reward:5,
-        joinedAt:serverTimestamp()
-      }
-    );
-
-    msg.innerHTML="🎉 $5 Added Successfully!";
-    msg.className="success";
-
-  }catch(err){
-    console.error(err);
-    msg.innerHTML=err.message;
-    msg.className="error";
-  }
-
-  btn.disabled=false;
-};
+ msg.innerText="Reward Added Successfully";
+}
 
 </script>
 </body>
