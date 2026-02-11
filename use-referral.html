@@ -21,6 +21,7 @@ body{
   border-radius:12px;
   width:320px;
   text-align:center;
+  box-shadow:0 0 15px #000;
 }
 input,button{
   width:100%;
@@ -28,13 +29,21 @@ input,button{
   margin-top:12px;
   border-radius:6px;
   border:none;
+  outline:none;
 }
 button{
   background:#FFD700;
   font-weight:bold;
   cursor:pointer;
 }
-#msg{margin-top:15px;line-height:1.5}
+button:hover{
+  opacity:.9;
+}
+#msg{
+  margin-top:15px;
+  line-height:1.5;
+  font-size:14px;
+}
 </style>
 </head>
 <body>
@@ -47,28 +56,35 @@ button{
 </div>
 
 <script type="module">
+
+/* FIREBASE IMPORTS */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-getFirestore,doc,getDoc,updateDoc,
+getFirestore,doc,getDoc,setDoc,updateDoc,increment,
 collection,query,where,getDocs,serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* CONFIG */
 const firebaseConfig={
  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
  authDomain:"supernft-5b952.firebaseapp.com",
  projectId:"supernft-5b952"
 };
 
+/* INIT */
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
 let currentUser=null;
 
-/* AUTH CHECK */
+/* LOGIN CHECK */
 onAuthStateChanged(auth,user=>{
- if(!user){location.href="login.html";return;}
+ if(!user){
+  location.href="login.html";
+  return;
+ }
  currentUser=user;
 });
 
@@ -76,8 +92,9 @@ onAuthStateChanged(auth,user=>{
 document.getElementById("applyBtn").onclick=async()=>{
 
 const msg=document.getElementById("msg");
-const code=document.getElementById("code").value.trim().toUpperCase();
 msg.innerText="";
+
+const code=document.getElementById("code").value.trim().toUpperCase();
 
 if(!code){
  msg.innerText="❌ Enter referral code";
@@ -86,76 +103,81 @@ if(!code){
 
 try{
 
+/* GET MY PROFILE */
 const myRef=doc(db,"users",currentUser.uid);
 const mySnap=await getDoc(myRef);
 
 if(!mySnap.exists()){
- msg.innerText="⚠️ User profile missing";
+ msg.innerText="⚠️ Profile not found";
  return;
 }
 
 const myData=mySnap.data();
 
-/* already used */
+/* CHECK ALREADY USED */
 if(myData.referralUsed){
- msg.innerText="⚠️ Referral already used";
+ msg.innerText="⚠️ You already used referral";
  return;
 }
 
-/* find owner */
+/* FIND OWNER */
 const q=query(collection(db,"users"),where("referralCode","==",code));
 const qSnap=await getDocs(q);
 
 if(qSnap.empty){
- msg.innerText="❌ Invalid code";
+ msg.innerText="❌ Invalid referral code";
  return;
 }
 
 const ownerDoc=qSnap.docs[0];
 
-/* self referral */
+/* SELF REFERRAL BLOCK */
 if(ownerDoc.id===currentUser.uid){
  msg.innerText="❌ Cannot use your own code";
  return;
 }
 
 const ownerRef=doc(db,"users",ownerDoc.id);
-const ownerSnap=await getDoc(ownerRef);
 
-/* rewards */
+/* REWARD AMOUNT */
 const reward=5;
 
-/* update new user */
+/* UPDATE USER WALLET */
 await updateDoc(myRef,{
- walletBalance:(myData.walletBalance||0)+reward,
+ walletBalance:increment(reward),
  referralUsed:true,
  referredByCode:code
 });
 
-/* update referrer */
+/* UPDATE REFERRER WALLET */
 await updateDoc(ownerRef,{
- walletBalance:(ownerSnap.data().walletBalance||0)+reward,
- referralEarnings:(ownerSnap.data().referralEarnings||0)+reward
+ walletBalance:increment(reward),
+ referralEarnings:increment(reward)
 });
 
-/* save referral history */
-await updateDoc(doc(db,"users",ownerDoc.id,"referrals",currentUser.uid),{
- email:currentUser.email,
- reward:reward,
- joinedAt:serverTimestamp()
-});
+/* SAVE HISTORY */
+await setDoc(
+ doc(db,"users",ownerDoc.id,"referrals",currentUser.uid),
+ {
+  email:currentUser.email,
+  reward:reward,
+  joinedAt:serverTimestamp()
+ }
+);
 
+/* SUCCESS MESSAGE */
 msg.innerHTML=
 `🎉 SUCCESS<br>
-💰 $${reward} added<br>
+💰 $${reward} added to wallet<br>
 🤝 Referrer rewarded`;
 
 }catch(e){
-console.error(e);
-msg.innerText="⚠️ Error: "+e.message;
+ console.error(e);
+ msg.innerText="⚠️ "+e.message;
 }
 
 };
+
 </script>
 </body>
 </html>
