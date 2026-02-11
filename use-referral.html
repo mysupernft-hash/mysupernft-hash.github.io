@@ -40,33 +40,51 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let user;
+let user=null;
 
-onAuthStateChanged(auth,u=>{
-  if(!u){location.href="login.html";return;}
-  user = u;
+onAuthStateChanged(auth,(u)=>{
+  if(!u){
+    location.href="login.html";
+    return;
+  }
+  user=u;
 });
 
 window.applyCode = async ()=>{
+
   const msg = document.getElementById("msg");
   const code = document.getElementById("code").value.trim().toUpperCase();
   msg.innerText="";
 
-  if(!code){msg.innerText="❌ Enter code";return;}
+  if(!user){
+    msg.innerText="⏳ Loading user...";
+    return;
+  }
+
+  if(!code){
+    msg.innerText="❌ Enter code";
+    return;
+  }
 
   try{
+
     const userRef = doc(db,"users",user.uid);
     const userSnap = await getDoc(userRef);
 
-    if(userSnap.data().referralUsed){
+    if(!userSnap.exists()){
+      msg.innerText="❌ User data not found";
+      return;
+    }
+
+    const userData=userSnap.data();
+
+    if(userData.referralUsed){
       msg.innerText="⚠️ Referral already used";
       return;
     }
 
-    const q = query(
-      collection(db,"users"),
-      where("referralCode","==",code)
-    );
+    // find referral owner
+    const q = query(collection(db,"users"), where("referralCode","==",code));
     const qSnap = await getDocs(q);
 
     if(qSnap.empty){
@@ -74,46 +92,47 @@ window.applyCode = async ()=>{
       return;
     }
 
-    const ownerDoc = qSnap.docs[0];
-    if(ownerDoc.id === user.uid){
+    const ownerDoc=qSnap.docs[0];
+
+    if(ownerDoc.id===user.uid){
       msg.innerText="❌ Cannot use your own code";
       return;
     }
 
-    // ✅ UPDATE USER B
+    const ownerRef=doc(db,"users",ownerDoc.id);
+    const ownerData=ownerDoc.data();
+
+    // update user (who applied code)
     await updateDoc(userRef,{
-      walletBalance:(userSnap.data().walletBalance||0)+5,
+      walletBalance:(userData.walletBalance||0)+5,
       referralUsed:true,
       referredByCode:code
     });
 
-    // ✅ UPDATE USER A
-    const ownerRef = doc(db,"users",ownerDoc.id);
-    const ownerSnap = await getDoc(ownerRef);
-
+    // update owner (referrer)
     await updateDoc(ownerRef,{
-      walletBalance:(ownerSnap.data().walletBalance||0)+5,
-      referralEarnings:(ownerSnap.data().referralEarnings||0)+5
+      walletBalance:(ownerData.walletBalance||0)+5,
+      referralEarnings:(ownerData.referralEarnings||0)+5
     });
 
-    // ✅ SAVE HISTORY
+    // save referral history
     await setDoc(
       doc(db,"users",ownerDoc.id,"referrals",user.uid),
       {
-        email:user.email,
+        email:user.email || "",
         reward:5,
         joinedAt:serverTimestamp()
       }
     );
 
-    msg.innerHTML=`🎉 <b>Congratulations!</b><br>
-    💰 $5 added to your wallet<br>
-    🤝 Referrer rewarded`;
+    msg.innerHTML=
+    "🎉 <b>Success!</b><br>$5 added to both wallets";
 
-  }catch(e){
-    console.error(e);
-    msg.innerText="⚠️ Something went wrong. Try again.";
+  }catch(err){
+    console.error("REFERRAL ERROR:",err);
+    msg.innerText="⚠️ Error: "+err.message;
   }
+
 };
 </script>
 </body>
