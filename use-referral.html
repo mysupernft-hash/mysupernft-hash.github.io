@@ -2,34 +2,84 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Use Referral</title>
+<title>Apply Referral</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body{background:#0d0d0d;color:#FFD700;font-family:Arial;
-display:flex;justify-content:center;align-items:center;height:100vh}
-.box{background:#111;padding:25px;border-radius:12px;width:320px;text-align:center}
-input,button{width:100%;padding:12px;margin-top:12px;border-radius:6px;border:none}
-button{background:#FFD700;font-weight:bold;cursor:pointer}
-#msg{margin-top:15px;line-height:1.5}
+body{
+  background:#0d0d0d;
+  color:#FFD700;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0
+}
+.box{
+  background:#111;
+  padding:30px;
+  border-radius:15px;
+  width:330px;
+  text-align:center;
+  box-shadow:0 0 20px rgba(255,215,0,0.2)
+}
+h2{margin-bottom:15px}
+input{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  border-radius:6px;
+  border:none;
+  outline:none;
+  font-size:16px
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border-radius:6px;
+  border:none;
+  font-weight:bold;
+  font-size:16px;
+  background:#FFD700;
+  cursor:pointer;
+  transition:.3s
+}
+button:hover{transform:scale(1.03)}
+button:disabled{
+  background:#777;
+  cursor:not-allowed;
+}
+#msg{
+  margin-top:18px;
+  min-height:22px;
+  font-size:15px
+}
+.success{color:#00ffae}
+.error{color:#ff4d4d}
 </style>
 </head>
 <body>
 
 <div class="box">
-  <h3>🎁 Use Referral Code</h3>
+  <h2>🎁 Apply Referral</h2>
   <input id="code" placeholder="Enter referral code">
-  <button onclick="applyCode()">Apply Code</button>
+  <button id="applyBtn">Apply Code</button>
   <div id="msg"></div>
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc,
-  collection, query, where, getDocs, serverTimestamp
+  collection, query, where, getDocs,
+  serverTimestamp, increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -40,100 +90,119 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let user=null;
+let user = null;
+const msg = document.getElementById("msg");
+const btn = document.getElementById("applyBtn");
 
-onAuthStateChanged(auth,(u)=>{
+/* AUTH CHECK */
+onAuthStateChanged(auth, async u=>{
   if(!u){
     location.href="login.html";
     return;
   }
-  user=u;
+  user = u;
 });
 
-window.applyCode = async ()=>{
+/* APPLY REFERRAL */
+btn.onclick = async ()=>{
 
-  const msg = document.getElementById("msg");
+  if(!user) return;
+
+  btn.disabled = true;
+  msg.innerHTML="Checking...";
+  msg.className="";
+
   const code = document.getElementById("code").value.trim().toUpperCase();
-  msg.innerText="";
-
-  if(!user){
-    msg.innerText="⏳ Loading user...";
-    return;
-  }
-
   if(!code){
-    msg.innerText="❌ Enter code";
+    msg.innerHTML="Enter code";
+    msg.className="error";
+    btn.disabled=false;
     return;
   }
 
   try{
 
     const userRef = doc(db,"users",user.uid);
-    const userSnap = await getDoc(userRef);
+    let userSnap = await getDoc(userRef);
 
+    /* AUTO CREATE USER DOC */
     if(!userSnap.exists()){
-      msg.innerText="❌ User data not found";
-      return;
+      await setDoc(userRef,{
+        walletBalance:0,
+        referralUsed:false,
+        createdAt:serverTimestamp()
+      });
+      userSnap = await getDoc(userRef);
     }
 
-    const userData=userSnap.data();
+    const userData = userSnap.data();
 
+    /* ALREADY USED */
     if(userData.referralUsed){
-      msg.innerText="⚠️ Referral already used";
+      msg.innerHTML="Referral already used";
+      msg.className="error";
+      btn.disabled=false;
       return;
     }
 
-    // find referral owner
-    const q = query(collection(db,"users"), where("referralCode","==",code));
+    /* FIND OWNER */
+    const q = query(collection(db,"users"),where("referralCode","==",code));
     const qSnap = await getDocs(q);
 
     if(qSnap.empty){
-      msg.innerText="❌ Invalid referral code";
+      msg.innerHTML="Invalid referral code";
+      msg.className="error";
+      btn.disabled=false;
       return;
     }
 
-    const ownerDoc=qSnap.docs[0];
+    const ownerDoc = qSnap.docs[0];
 
-    if(ownerDoc.id===user.uid){
-      msg.innerText="❌ Cannot use your own code";
+    /* SELF CODE */
+    if(ownerDoc.id === user.uid){
+      msg.innerHTML="You cannot use your own code";
+      msg.className="error";
+      btn.disabled=false;
       return;
     }
 
-    const ownerRef=doc(db,"users",ownerDoc.id);
-    const ownerData=ownerDoc.data();
+    const ownerRef = doc(db,"users",ownerDoc.id);
 
-    // update user (who applied code)
+    /* REWARD USER */
     await updateDoc(userRef,{
-      walletBalance:(userData.walletBalance||0)+5,
+      walletBalance: increment(5),
       referralUsed:true,
       referredByCode:code
     });
 
-    // update owner (referrer)
+    /* REWARD OWNER */
     await updateDoc(ownerRef,{
-      walletBalance:(ownerData.walletBalance||0)+5,
-      referralEarnings:(ownerData.referralEarnings||0)+5
+      walletBalance: increment(5),
+      referralEarnings: increment(5)
     });
 
-    // save referral history
+    /* SAVE HISTORY */
     await setDoc(
       doc(db,"users",ownerDoc.id,"referrals",user.uid),
       {
-        email:user.email || "",
+        email:user.email,
         reward:5,
         joinedAt:serverTimestamp()
       }
     );
 
-    msg.innerHTML=
-    "🎉 <b>Success!</b><br>$5 added to both wallets";
+    msg.innerHTML="🎉 $5 Added Successfully!";
+    msg.className="success";
 
   }catch(err){
-    console.error("REFERRAL ERROR:",err);
-    msg.innerText="⚠️ Error: "+err.message;
+    console.error(err);
+    msg.innerHTML=err.message;
+    msg.className="error";
   }
 
+  btn.disabled=false;
 };
+
 </script>
 </body>
 </html>
