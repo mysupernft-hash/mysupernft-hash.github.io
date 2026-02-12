@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Use Referral</title>
+<title>NFT Details</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -10,31 +10,46 @@ body{
  background:#0d0d0d;
  color:#FFD700;
  font-family:Arial;
- display:flex;
- justify-content:center;
- align-items:center;
- height:100vh;
+ margin:0;
+ padding:0;
 }
-.box{
+
+.card{
+ max-width:400px;
+ margin:40px auto;
  background:#111;
- padding:25px;
- border-radius:12px;
- width:320px;
+ padding:20px;
+ border-radius:15px;
  text-align:center;
- box-shadow:0 0 15px #000;
+ box-shadow:0 0 20px #000;
 }
-input,button{
+
+img{
  width:100%;
- padding:12px;
- margin-top:12px;
- border-radius:6px;
- border:none;
+ border-radius:12px;
+ margin-bottom:15px;
 }
+
 button{
+ width:100%;
+ padding:14px;
+ border:none;
+ border-radius:8px;
  background:#FFD700;
  font-weight:bold;
  cursor:pointer;
+ margin-top:15px;
 }
+
+button:hover{
+ opacity:.9;
+}
+
+.stat{
+ margin:8px 0;
+ font-size:15px;
+}
+
 #msg{
  margin-top:15px;
  font-size:14px;
@@ -43,11 +58,21 @@ button{
 </head>
 <body>
 
-<div class="box">
-<h3>🎁 Use Referral Code</h3>
-<input id="code" placeholder="Enter referral code">
-<button id="applyBtn">Apply Code</button>
+<div class="card">
+
+<img id="img">
+
+<h2 id="title"></h2>
+
+<div class="stat">💰 Price: $<span id="price"></span></div>
+<div class="stat">📈 Daily Income: $<span id="daily"></span></div>
+<div class="stat">📊 Total Profit: $<span id="profit"></span></div>
+<div class="stat">⏳ Days: <span id="days"></span></div>
+
+<button id="buyBtn">Buy NFT</button>
+
 <div id="msg"></div>
+
 </div>
 
 <script type="module">
@@ -55,10 +80,10 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-getFirestore,doc,getDoc,setDoc,updateDoc,increment,
-collection,query,where,getDocs,runTransaction,serverTimestamp
+getFirestore,doc,getDoc,updateDoc,increment,serverTimestamp,setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔥 YOUR FIREBASE CONFIG */
 const firebaseConfig={
  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
  authDomain:"supernft-5b952.firebaseapp.com",
@@ -69,102 +94,77 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-let currentUser=null;
+let user;
 
-/* LOGIN CHECK + AUTO PROFILE CREATE */
-onAuthStateChanged(auth,async user=>{
- if(!user){
-   location.href="login.html";
-   return;
- }
+/* GET NFT ID FROM URL */
+const id=new URLSearchParams(location.search).get("id");
 
- currentUser=user;
+/* LOGIN CHECK */
+onAuthStateChanged(auth,async u=>{
+ if(!u) return location="login.html";
+ user=u;
 
- const ref=doc(db,"users",user.uid);
- const snap=await getDoc(ref);
+ const nftRef=doc(db,"nfts",id);
+ const nftSnap=await getDoc(nftRef);
 
- if(!snap.exists()){
-   await setDoc(ref,{
-     name:user.displayName || "",
-     email:user.email,
-     walletBalance:0,
-     referralUsed:false,
-     referralEarnings:0,
-     referralCode:user.uid.slice(0,8).toUpperCase(),
-     isAdmin:false,
-     createdAt:serverTimestamp()
-   });
- }
+ if(!nftSnap.exists()) return alert("NFT not found");
+
+ const data=nftSnap.data();
+
+ img.src=data.image;
+ title.innerText=data.name;
+ price.innerText=data.price;
+ daily.innerText=data.dailyIncome;
+ days.innerText=data.days;
+
+ const total=data.dailyIncome*data.days;
+ profit.innerText=total;
 });
 
-/* APPLY REFERRAL */
-document.getElementById("applyBtn").onclick=async()=>{
+/* BUY NFT */
+buyBtn.onclick=async()=>{
 
 const msg=document.getElementById("msg");
 msg.innerText="";
 
-const code=document.getElementById("code").value.trim().toUpperCase();
+try{
 
-if(!code){
- msg.innerText="❌ Enter code";
+const userRef=doc(db,"users",user.uid);
+const userSnap=await getDoc(userRef);
+const userData=userSnap.data();
+
+const nftRef=doc(db,"nfts",id);
+const nftSnap=await getDoc(nftRef);
+const nft=nftSnap.data();
+
+/* CHECK BALANCE */
+if(userData.walletBalance < nft.price){
+ msg.innerText="❌ Not enough balance";
  return;
 }
 
-try{
-
-await runTransaction(db, async (transaction)=>{
-
-const myRef=doc(db,"users",currentUser.uid);
-const mySnap=await transaction.get(myRef);
-
-if(!mySnap.exists()) throw "Profile missing";
-
-if(mySnap.data().referralUsed)
- throw "Already used referral";
-
-const q=query(collection(db,"users"),where("referralCode","==",code));
-const qs=await getDocs(q);
-
-if(qs.empty) throw "Invalid code";
-
-const ownerDoc=qs.docs[0];
-
-if(ownerDoc.id===currentUser.uid)
- throw "Cannot use own code";
-
-const ownerRef=doc(db,"users",ownerDoc.id);
-
-const reward=5;
-
-/* UPDATE USER */
-transaction.update(myRef,{
- walletBalance:increment(reward),
- referralUsed:true,
- referredByCode:code
+/* DEDUCT BALANCE */
+await updateDoc(userRef,{
+ walletBalance:increment(-nft.price)
 });
 
-/* UPDATE OWNER */
-transaction.update(ownerRef,{
- walletBalance:increment(reward),
- referralEarnings:increment(reward)
-});
-
-/* SAVE HISTORY */
-transaction.set(
- doc(db,"users",ownerDoc.id,"referrals",currentUser.uid),
+/* SAVE INVESTMENT */
+await setDoc(
+ doc(db,"users",user.uid,"investments",id),
  {
-  email:currentUser.email,
-  reward,
-  joinedAt:new Date()
+  nftId:id,
+  name:nft.name,
+  price:nft.price,
+  dailyIncome:nft.dailyIncome,
+  days:nft.days,
+  start:serverTimestamp()
  }
 );
 
-});
-
-msg.innerHTML="✅ Referral Applied Successfully";
+msg.innerText="✅ NFT Purchased Successfully";
 
 }catch(e){
-msg.innerText="⚠️ "+e;
+ msg.innerText=e.message;
 }
 
 };
