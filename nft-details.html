@@ -3,56 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <title>NFT Details</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
- background:#0d0d0d;
- color:#FFD700;
- font-family:Arial;
  margin:0;
- padding:0;
+ font-family:Arial,Helvetica,sans-serif;
+ background:#0d1117;
+ color:#fff;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ height:100vh;
 }
 
 .card{
- max-width:400px;
- margin:40px auto;
- background:#111;
+ width:380px;
+ background:#161b22;
+ border-radius:20px;
+ box-shadow:0 0 30px rgba(0,255,255,.2);
  padding:20px;
- border-radius:15px;
  text-align:center;
- box-shadow:0 0 20px #000;
+ animation:fade .6s ease;
+}
+
+@keyframes fade{
+ from{opacity:0; transform:translateY(20px)}
+ to{opacity:1; transform:translateY(0)}
 }
 
 img{
  width:100%;
- border-radius:12px;
+ height:260px;
+ object-fit:cover;
+ border-radius:15px;
  margin-bottom:15px;
+}
+
+.badge{
+ background:#00ffd5;
+ color:#000;
+ padding:5px 12px;
+ border-radius:50px;
+ font-size:13px;
+ display:inline-block;
+ margin-bottom:10px;
+}
+
+h2{margin:5px 0}
+
+.price{
+ font-size:22px;
+ color:#00ffd5;
+ margin:10px 0;
+}
+
+.calc{
+ background:#0d1117;
+ padding:15px;
+ border-radius:12px;
+ margin:15px 0;
 }
 
 button{
  width:100%;
  padding:14px;
  border:none;
- border-radius:8px;
- background:#FFD700;
+ border-radius:12px;
+ font-size:16px;
+ background:linear-gradient(45deg,#00ffd5,#00aaff);
+ color:#000;
  font-weight:bold;
  cursor:pointer;
- margin-top:15px;
+ transition:.3s;
 }
 
 button:hover{
- opacity:.9;
+ transform:scale(1.05);
 }
 
-.stat{
- margin:8px 0;
- font-size:15px;
-}
-
-#msg{
- margin-top:15px;
+.msg{
+ margin-top:10px;
  font-size:14px;
+ color:#00ffd5;
 }
 </style>
 </head>
@@ -62,113 +94,109 @@ button:hover{
 
 <img id="img">
 
-<h2 id="title"></h2>
+<div class="badge" id="cat"></div>
 
-<div class="stat">💰 Price: $<span id="price"></span></div>
-<div class="stat">📈 Daily Income: $<span id="daily"></span></div>
-<div class="stat">📊 Total Profit: $<span id="profit"></span></div>
-<div class="stat">⏳ Days: <span id="days"></span></div>
+<h2 id="name"></h2>
+
+<div class="price" id="price"></div>
+
+<div class="calc">
+Daily Income: <b id="daily"></b><br><br>
+Monthly: <b id="monthly"></b><br>
+Yearly: <b id="yearly"></b>
+</div>
 
 <button id="buyBtn">Buy NFT</button>
 
-<div id="msg"></div>
+<div class="msg" id="msg"></div>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-getFirestore,doc,getDoc,updateDoc,increment,serverTimestamp,setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* 🔥 YOUR FIREBASE CONFIG */
-const firebaseConfig={
+const app=initializeApp({
  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
  authDomain:"supernft-5b952.firebaseapp.com",
  projectId:"supernft-5b952"
-};
+});
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
 const db=getFirestore(app);
+const auth=getAuth(app);
 
-let user;
+const params=new URLSearchParams(location.search);
+const id=params.get("id");
 
-/* GET NFT ID FROM URL */
-const id=new URLSearchParams(location.search).get("id");
-
-/* LOGIN CHECK */
-onAuthStateChanged(auth,async u=>{
- if(!u) return location="login.html";
- user=u;
-
- const nftRef=doc(db,"nfts",id);
- const nftSnap=await getDoc(nftRef);
-
- if(!nftSnap.exists()) return alert("NFT not found");
-
- const data=nftSnap.data();
-
- img.src=data.image;
- title.innerText=data.name;
- price.innerText=data.price;
- daily.innerText=data.dailyIncome;
- days.innerText=data.days;
-
- const total=data.dailyIncome*data.days;
- profit.innerText=total;
-});
-
-/* BUY NFT */
-buyBtn.onclick=async()=>{
-
+const img=document.getElementById("img");
+const nameEl=document.getElementById("name");
+const priceEl=document.getElementById("price");
+const dailyEl=document.getElementById("daily");
+const monthlyEl=document.getElementById("monthly");
+const yearlyEl=document.getElementById("yearly");
+const catEl=document.getElementById("cat");
 const msg=document.getElementById("msg");
-msg.innerText="";
 
-try{
+let nftData=null;
+let user=null;
 
-const userRef=doc(db,"users",user.uid);
-const userSnap=await getDoc(userRef);
-const userData=userSnap.data();
+async function loadNFT(){
 
-const nftRef=doc(db,"nfts",id);
-const nftSnap=await getDoc(nftRef);
-const nft=nftSnap.data();
+ const snap=await getDoc(doc(db,"nfts",id));
 
-/* CHECK BALANCE */
-if(userData.walletBalance < nft.price){
- msg.innerText="❌ Not enough balance";
- return;
-}
-
-/* DEDUCT BALANCE */
-await updateDoc(userRef,{
- walletBalance:increment(-nft.price)
-});
-
-/* SAVE INVESTMENT */
-await setDoc(
- doc(db,"users",user.uid,"investments",id),
- {
-  nftId:id,
-  name:nft.name,
-  price:nft.price,
-  dailyIncome:nft.dailyIncome,
-  days:nft.days,
-  start:serverTimestamp()
+ if(!snap.exists()){
+  msg.innerText="NFT not found";
+  return;
  }
-);
 
-msg.innerText="✅ NFT Purchased Successfully";
+ const data=snap.data();
+ nftData=data;
 
-}catch(e){
- msg.innerText=e.message;
+ img.src=(data.imageURL || "").trim();
+ img.onerror=()=>img.src="https://via.placeholder.com/400x300?text=NFT";
+
+ nameEl.innerText=data.name.trim();
+ priceEl.innerText="$"+data.price;
+ catEl.innerText=data.category;
+
+ dailyEl.innerText="$"+data.dailyIncome;
+
+ monthlyEl.innerText="$"+(data.dailyIncome*30).toFixed(2);
+ yearlyEl.innerText="$"+(data.dailyIncome*365).toFixed(2);
 }
 
+loadNFT();
+
+onAuthStateChanged(auth,u=>user=u);
+
+document.getElementById("buyBtn").onclick=async()=>{
+
+ if(!user){
+  msg.innerText="Login first";
+  return;
+ }
+
+ const ref=doc(db,"users",user.uid);
+ const snap=await getDoc(ref);
+
+ let balance=snap.data().walletBalance||0;
+
+ if(balance<nftData.price){
+  msg.innerText="Insufficient balance";
+  return;
+ }
+
+ await updateDoc(ref,{
+  walletBalance:increment(-nftData.price),
+  dailyIncome:increment(nftData.dailyIncome)
+ });
+
+ msg.innerText="NFT Purchased Successfully";
 };
 
 </script>
+
 </body>
 </html>
