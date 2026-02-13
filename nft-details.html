@@ -1,54 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>NFT Details</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <style>
 body{
  background:#0d0d0d;
  color:#FFD700;
  font-family:Arial;
- text-align:center;
+ margin:0;
  padding:20px;
 }
-.card{
+
+.container{
+ max-width:420px;
+ margin:auto;
  background:#111;
  padding:20px;
- border-radius:15px;
- max-width:400px;
- margin:auto;
- box-shadow:0 0 15px #000;
+ border-radius:14px;
+ box-shadow:0 0 20px #000;
+ text-align:center;
 }
+
 img{
  width:100%;
- border-radius:10px;
+ height:260px;
+ object-fit:cover;
+ border-radius:12px;
+ border:2px solid #FFD700;
  margin-bottom:15px;
+ cursor:pointer;
 }
+
+h2{margin:5px 0;}
+
+.price{
+ font-size:20px;
+ margin:10px 0;
+}
+
+.calc{
+ background:#000;
+ padding:15px;
+ border-radius:10px;
+ margin-top:15px;
+ display:none;
+}
+
+.row{
+ display:flex;
+ justify-content:space-between;
+ margin:6px 0;
+}
+
 button{
+ width:100%;
+ padding:14px;
+ margin-top:15px;
  background:#FFD700;
  border:none;
- padding:12px;
- width:100%;
- font-weight:bold;
  border-radius:8px;
+ font-weight:bold;
  cursor:pointer;
+}
+
+button:hover{
+ opacity:.9;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
+<div class="container">
+
 <img id="img">
 
-<h2 id="name"></h2>
+<h2 id="name">Loading...</h2>
 
-<p>💰 Price: $<span id="price"></span></p>
-<p>📈 Daily: $<span id="daily"></span></p>
-<p>📅 Weekly: $<span id="weekly"></span></p>
-<p>📆 Monthly: $<span id="monthly"></span></p>
-<p>🗓 Yearly: $<span id="yearly"></span></p>
+<div class="price">$<span id="price">0</span></div>
 
 <button id="buyBtn">Buy NFT</button>
+
+<div class="calc" id="calcBox">
+
+<h3>Profit Calculation</h3>
+
+<div class="row"><span>Investment</span><span id="inv"></span></div>
+<div class="row"><span>Daily</span><span id="daily"></span></div>
+<div class="row"><span>Weekly</span><span id="weekly"></span></div>
+<div class="row"><span>Monthly</span><span id="monthly"></span></div>
+<div class="row"><span>Yearly</span><span id="yearly"></span></div>
+
+</div>
+
 </div>
 
 <script type="module">
@@ -56,16 +102,19 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore,doc,getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const app=initializeApp({
+/* FIREBASE CONFIG */
+const firebaseConfig={
  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
  authDomain:"supernft-5b952.firebaseapp.com",
  projectId:"supernft-5b952"
-});
+};
 
+const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* GET NFT ID FROM URL */
-const id=new URLSearchParams(location.search).get("id");
+/* GET ID FROM URL */
+const params=new URLSearchParams(location.search);
+const id=params.get("id");
 
 if(!id){
  alert("NFT not found");
@@ -80,17 +129,44 @@ if(!snap.exists()){
 
 const d=snap.data();
 
-/* SET UI */
-document.getElementById("img").src=d.imageURL.trim();
+/* IMAGE FIX */
+const img=document.getElementById("img");
+let url=(d.imageURL || "").trim();
+
+if(!url || !url.startsWith("http")){
+ img.src="https://via.placeholder.com/400x300?text=NFT";
+}else{
+ img.src=url;
+}
+
+img.onerror=()=>{
+ img.src="https://via.placeholder.com/400x300?text=Image+Not+Found";
+};
+
+/* TEXT */
 document.getElementById("name").innerText=d.name;
 document.getElementById("price").innerText=d.price;
-document.getElementById("daily").innerText=d.dailyIncome;
 
-/* CALCULATIONS */
-document.getElementById("weekly").innerText=(d.dailyIncome*7).toFixed(2);
-document.getElementById("monthly").innerText=(d.dailyIncome*30).toFixed(2);
-document.getElementById("yearly").innerText=(d.dailyIncome*365).toFixed(2);
+/* CALCULATION FUNCTION */
+function showCalc(){
+
+const price=Number(d.price);
+const daily=Number(d.dailyIncome);
+
+document.getElementById("inv").innerText="$"+price;
+document.getElementById("daily").innerText="$"+daily.toFixed(2);
+document.getElementById("weekly").innerText="$"+(daily*7).toFixed(2);
+document.getElementById("monthly").innerText="$"+(daily*30).toFixed(2);
+document.getElementById("yearly").innerText="$"+(daily*365).toFixed(2);
+
+document.getElementById("calcBox").style.display="block";
+}
+
+/* CLICK EVENTS */
+document.getElementById("buyBtn").onclick=showCalc;
+img.onclick=showCalc;
 
 </script>
+
 </body>
 </html>
