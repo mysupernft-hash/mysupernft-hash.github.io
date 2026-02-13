@@ -3,73 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>NFT Details</title>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "YOUR KEY",
-  authDomain: "YOUR DOMAIN",
-  projectId: "YOUR ID",
-  storageBucket: "YOUR",
-  messagingSenderId: "YOUR",
-  appId: "YOUR"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.addEventListener("DOMContentLoaded", async () => {
-
-  const params = new URLSearchParams(window.location.search);
-  const nftId = params.get("id");
-
-  if(!nftId){
-    document.body.innerHTML = "<h2 style='color:white;text-align:center'>NFT Not Found</h2>";
-    return;
-  }
-
-  const ref = doc(db,"nfts",nftId);
-  const snap = await getDoc(ref);
-
-  if(!snap.exists()){
-    document.body.innerHTML = "<h2 style='color:white;text-align:center'>Invalid NFT</h2>";
-    return;
-  }
-
-  const data = snap.data();
-
-  /* ---------- IMAGE FIX ---------- */
-  let image = "";
-
-  if(data.imageUrl){
-    image = data.imageUrl;
-  }
-  else if(data.imageurl){
-    image = data.imageurl;
-  }
-  else{
-    image = `images/${nftId}.png`;
-  }
-
-  /* ---------- CALCULATIONS ---------- */
-  const price = Number(data.price);
-  const daily = Number(data.dailyIncome);
-  const monthly = daily * 30;
-  const yearly = daily * 365;
-
-  /* ---------- SHOW DATA ---------- */
-
-  document.getElementById("img").src = image;
-  document.getElementById("name").innerText = data.name;
-  document.getElementById("price").innerText = "$"+price;
-  document.getElementById("daily").innerText = "$"+daily.toFixed(2);
-  document.getElementById("monthly").innerText = "$"+monthly.toFixed(2);
-  document.getElementById("yearly").innerText = "$"+yearly.toFixed(2);
-
-});
-</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
@@ -87,7 +21,7 @@ body{
   border-radius:15px;
   padding:20px;
   text-align:center;
-  box-shadow:0 0 20px gold;
+  box-shadow:0 0 25px gold;
 }
 
 img{
@@ -101,29 +35,93 @@ h1{
 }
 
 .box{
-  margin:10px 0;
-  padding:10px;
+  margin:12px 0;
+  padding:12px;
   background:#000;
   border:1px solid gold;
   border-radius:10px;
 }
 </style>
 </head>
-
 <body>
 
 <div class="card">
 
 <img id="img" src="">
-
 <h1 id="name">Loading...</h1>
 
 <div class="box">Price: <span id="price"></span></div>
 <div class="box">Daily Income: <span id="daily"></span></div>
+<div class="box">Weekly Income: <span id="weekly"></span></div>
 <div class="box">Monthly Income: <span id="monthly"></span></div>
 <div class="box">Yearly Income: <span id="yearly"></span></div>
 
 </div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* FIREBASE CONFIG */
+const firebaseConfig={
+ apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+ authDomain:"supernft-5b952.firebaseapp.com",
+ projectId:"supernft-5b952"
+};
+
+/* INIT */
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+/* LOAD NFT */
+const params=new URLSearchParams(location.search);
+const id=params.get("id");
+
+if(!id){
+ document.body.innerHTML="<h2 style='color:white;text-align:center'>NFT not found</h2>";
+}
+
+const ref=doc(db,"nfts",id);
+const snap=await getDoc(ref);
+
+if(!snap.exists()){
+ document.body.innerHTML="<h2 style='color:white;text-align:center'>Invalid NFT ID</h2>";
+}
+
+const nft=snap.data();
+
+/* IMAGE FIX */
+let imgURL="";
+
+if(nft.imageURL){
+ imgURL=nft.imageURL.trim();
+}
+else if(nft.imageUrl){
+ imgURL=nft.imageUrl.trim();
+}
+else if(nft.imageurl){
+ imgURL=nft.imageurl.trim();
+}
+
+/* CALCULATIONS */
+const price=Number(nft.price||0);
+const daily=Number(nft.dailyIncome||0);
+
+const weekly=daily*7;
+const monthly=daily*30;
+const yearly=daily*365;
+
+/* SET DATA */
+document.getElementById("img").src=imgURL;
+document.getElementById("name").innerText=nft.name;
+document.getElementById("price").innerText="$"+price;
+document.getElementById("daily").innerText="$"+daily.toFixed(2);
+document.getElementById("weekly").innerText="$"+weekly.toFixed(2);
+document.getElementById("monthly").innerText="$"+monthly.toFixed(2);
+document.getElementById("yearly").innerText="$"+yearly.toFixed(2);
+
+</script>
 
 </body>
 </html>
