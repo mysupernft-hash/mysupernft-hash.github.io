@@ -3,172 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <title>NFT Details</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
- background:#000;
- color:#fff;
- font-family:Arial;
- margin:0;
+  margin:0;
+  font-family:Arial;
+  background:#000;
+  color:#FFD700;
+  text-align:center;
 }
-
-.container{
- padding:20px;
- display:flex;
- justify-content:center;
-}
-
 .card{
- background:#111;
- border:1px solid gold;
- padding:20px;
- border-radius:15px;
- width:350px;
- text-align:center;
- box-shadow:0 0 20px #000;
+  margin:40px auto;
+  padding:20px;
+  width:90%;
+  max-width:420px;
+  border-radius:15px;
+  background:#111;
+  box-shadow:0 0 20px #FFD70055;
 }
-
-.nftImg{
- width:100%;
- height:300px;
- object-fit:cover;
- border-radius:12px;
- margin-bottom:15px;
- border:1px solid gold;
+img{
+  width:100%;
+  border-radius:12px;
+  margin-bottom:15px;
 }
-
-.name{
- font-size:22px;
- margin-bottom:10px;
-}
-
-.price{
- color:gold;
- font-size:20px;
- margin-bottom:15px;
-}
-
-.stats{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:10px;
- margin-bottom:15px;
-}
-
-.stats div{
- background:#000;
- border:1px solid gold;
- padding:10px;
- border-radius:8px;
- font-size:14px;
-}
-
 button{
- background:gold;
- border:none;
- padding:12px;
- width:100%;
- font-weight:bold;
- border-radius:10px;
- cursor:pointer;
- font-size:16px;
+  background:#FFD700;
+  color:#000;
+  border:none;
+  padding:12px 20px;
+  border-radius:10px;
+  font-size:18px;
+  cursor:pointer;
+  margin-top:15px;
 }
-
-button:hover{
- opacity:.9;
-}
-
-.loading{
- text-align:center;
- margin-top:50px;
- color:gold;
+.calc{
+  margin-top:20px;
+  font-size:18px;
+  line-height:1.8;
 }
 </style>
 </head>
 <body>
 
-<div id="app" class="loading">Loading NFT...</div>
+<div class="card">
+  <img id="nftImage">
+  <h2 id="name"></h2>
+  <h3 id="price"></h3>
 
-<script type="module">
+  <div class="calc" id="calc"></div>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore,doc,getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <button onclick="buy()">Buy NFT</button>
+</div>
 
-/* FIREBASE CONFIG */
-const firebaseConfig={
- apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
- authDomain:"supernft-5b952.firebaseapp.com",
- projectId:"supernft-5b952"
+<script>
+const params=new URLSearchParams(location.search);
+const id=params.get("id") || "0458";
+
+/* NFT DATA */
+const nft={
+  price:10,
+  daily:0.2
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+/* IMAGE LOAD */
+document.getElementById("nftImage").src=
+`https://mysupernft-hash.github.io/images/IMG_${id}.png`;
 
-/* GET ID FROM URL */
-const id=new URLSearchParams(location.search).get("id");
+/* NAME + PRICE */
+document.getElementById("name").innerText="Starter NFT #"+id;
+document.getElementById("price").innerText="Price: $"+nft.price;
 
-if(!id){
- document.getElementById("app").innerHTML="NFT not selected";
- throw "No id";
-}
-
-/* FETCH NFT */
-const ref=doc(db,"nfts",id);
-const snap=await getDoc(ref);
-
-if(!snap.exists()){
- document.getElementById("app").innerHTML="NFT not found";
- throw "NFT missing";
-}
-
-const nft=snap.data();
-
-/* IMAGE FIX */
-const image=
- nft.image ||
- nft.imageUrl ||
- nft.imageURL ||
- nft.img ||
- "https://via.placeholder.com/300x300?text=NFT";
-
-/* CALCULATIONS */
-const price=Number(nft.price||0);
-const daily=Number(nft.dailyIncome||0);
+/* CALCULATION */
+const daily=nft.daily;
 const weekly=(daily*7).toFixed(2);
 const monthly=(daily*30).toFixed(2);
 const yearly=(daily*365).toFixed(2);
 
-/* RENDER UI */
-document.getElementById("app").innerHTML=`
-<div class="container">
-
-<div class="card">
-
-<img src="${image}" class="nftImg">
-
-<div class="name">${nft.name||"NFT"}</div>
-
-<div class="price">$${price}</div>
-
-<div class="stats">
-<div>Daily<br>$${daily}</div>
-<div>Weekly<br>$${weekly}</div>
-<div>Monthly<br>$${monthly}</div>
-<div>Yearly<br>$${yearly}</div>
-</div>
-
-<button id="buyBtn">Buy NFT</button>
-
-</div>
-</div>
+document.getElementById("calc").innerHTML=`
+Daily Income: $${daily}<br>
+Weekly Income: $${weekly}<br>
+Monthly Income: $${monthly}<br>
+Yearly Income: $${yearly}
 `;
 
-/* BUY CLICK */
-document.getElementById("buyBtn").onclick=()=>{
- alert("Connect buy system with wallet balance");
-};
-
+function buy(){
+  alert("NFT Purchased Successfully 🚀");
+}
 </script>
+
 </body>
 </html>
