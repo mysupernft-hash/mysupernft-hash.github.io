@@ -2,168 +2,179 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>NFT Details | SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NFT Details</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0d0d0d;
-  color:#FFD700;
-  display:flex;
-  flex-direction:column;
-  min-height:100vh;
+background:#0b0b0b;
+color:#FFD700;
+font-family:Arial;
+margin:0;
+padding:0;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
-.main{
-  flex:1;
-  padding:20px;
+
+.card{
+background:#111;
+padding:25px;
+border-radius:14px;
+width:340px;
+text-align:center;
+box-shadow:0 0 20px #000;
 }
-.nft-box{
-  max-width:420px;
-  margin:auto;
-  background:#1a1a1a;
-  padding:20px;
-  border-radius:10px;
-  text-align:center;
+
+img{
+width:100%;
+height:220px;
+object-fit:cover;
+border-radius:10px;
+margin-bottom:15px;
+background:#000;
 }
-.nft-box img{
-  width:100%;
-  border-radius:10px;
+
+h2{
+margin:5px 0;
 }
+
+.stat{
+background:#0d0d0d;
+padding:10px;
+margin-top:8px;
+border-radius:8px;
+font-size:14px;
+}
+
 button{
-  margin-top:15px;
-  width:100%;
-  padding:14px;
-  background:#FFD700;
-  color:#000;
-  border:none;
-  border-radius:6px;
-  font-weight:bold;
-  font-size:16px;
-  cursor:pointer;
+width:100%;
+margin-top:15px;
+padding:13px;
+border:none;
+border-radius:8px;
+background:#FFD700;
+font-weight:bold;
+cursor:pointer;
 }
-button:hover{background:#e6c200;}
-.msg{margin-top:10px;font-size:15px;}
-footer{
-  display:flex;
-  justify-content:space-around;
-  align-items:center;
-  background:#1a1a1a;
-  color:#FFD700;
-  padding:12px 0;
-  position:sticky;
-  bottom:0;
+
+button:hover{
+opacity:.9;
 }
-footer div:hover{color:#fff;cursor:pointer;}
+
+.loader{
+border:4px solid #222;
+border-top:4px solid #FFD700;
+border-radius:50%;
+width:40px;
+height:40px;
+animation:spin 1s linear infinite;
+margin:20px auto;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg)}
+100%{transform:rotate(360deg)}
+}
+
 </style>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-
 <body>
 
-<div class="main">
-  <div class="nft-box">
-    <img src="https://via.placeholder.com/400x300" alt="NFT">
-    <h2 id="nftName">Starter NFT #1</h2>
-    <p>Price: <b>$<span id="nftPrice">10</span></b></p>
-    <p>Your Balance: $<span id="userBalance">0</span></p>
+<div class="card">
 
-    <button id="buyBtn">Buy NFT</button>
-    <div class="msg" id="msg"></div>
-  </div>
+<div id="loader" class="loader"></div>
+
+<img id="img" style="display:none">
+
+<h2 id="name"></h2>
+<div class="stat" id="price"></div>
+
+<div class="stat" id="daily"></div>
+<div class="stat" id="weekly"></div>
+<div class="stat" id="monthly"></div>
+<div class="stat" id="yearly"></div>
+
+<button id="buyBtn">Buy NFT</button>
+
 </div>
 
-<footer>
-  <div>📁 Investments</div>
-  <div>💳 Wallet</div>
-  <div>💸 Withdraw</div>
-  <div>💹 Live</div>
-  <div>👤 My Account</div>
-</footer>
+<script type="module">
 
-<script>
-// 🔥 Firebase Config (YOUR PROJECT)
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.firebasestorage.app",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:014d5ab680859db4512fa9",
-  measurementId: "G-BME7FWT355"
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* FIREBASE CONFIG */
+const app = initializeApp({
+ apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+ authDomain:"supernft-5b952.firebaseapp.com",
+ projectId:"supernft-5b952"
+});
+
+const db=getFirestore(app);
+
+/* GET NFT ID FROM URL */
+const id=new URLSearchParams(location.search).get("id");
+
+if(!id){
+alert("NFT ID missing");
+throw "";
+}
+
+/* FETCH NFT */
+const snap=await getDoc(doc(db,"nfts",id));
+
+if(!snap.exists()){
+alert("NFT not found");
+throw "";
+}
+
+const data=snap.data();
+
+/* HIDE LOADER */
+document.getElementById("loader").style.display="none";
+
+/* IMAGE LOAD SAFE */
+const img=document.getElementById("img");
+
+let url=(data.imageURL || "").trim();
+
+/* fallback if empty */
+if(!url) url="https://via.placeholder.com/300x200?text=No+Image";
+
+/* handle broken image */
+img.onerror=()=>{
+img.src="https://via.placeholder.com/300x200?text=Image+Error";
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+img.src=url;
+img.style.display="block";
 
-// 🔹 NFT DATA (dynamic bana sakte ho)
-const nftId = "starter_nft_1";
-const nftPrice = 10;
+/* TEXT DATA */
+document.getElementById("name").innerText=data.name || "NFT";
 
-// Elements
-const buyBtn = document.getElementById("buyBtn");
-const msg = document.getElementById("msg");
-const balanceSpan = document.getElementById("userBalance");
+const price=data.price || 0;
+const daily=data.dailyIncome || 0;
 
-// Auth check
-auth.onAuthStateChanged(async user=>{
-  if(!user){
-    window.location.href="signup.html";
-  }else{
-    const userDoc = await db.collection("users").doc(user.uid).get();
-    balanceSpan.innerText = userDoc.data().deposit || 0;
-  }
-});
+document.getElementById("price").innerText=`Price: $${price}`;
+document.getElementById("daily").innerText=`Daily Income: $${daily.toFixed(2)}`;
+document.getElementById("weekly").innerText=`Weekly: $${(daily*7).toFixed(2)}`;
+document.getElementById("monthly").innerText=`Monthly: $${(daily*30).toFixed(2)}`;
+document.getElementById("yearly").innerText=`Yearly: $${(daily*365).toFixed(2)}`;
 
-// Buy NFT
-buyBtn.addEventListener("click", async ()=>{
-  const user = auth.currentUser;
-  if(!user) return;
+/* BUY BUTTON */
+document.getElementById("buyBtn").onclick=()=>{
+alert(
+`Investment = $${price}
 
-  buyBtn.disabled = true;
-  msg.innerText = "Processing...";
+Daily = $${daily}
+Weekly = $${(daily*7).toFixed(2)}
+Monthly = $${(daily*30).toFixed(2)}
+Yearly = $${(daily*365).toFixed(2)}`
+);
+};
 
-  try{
-    const userRef = db.collection("users").doc(user.uid);
-    const snap = await userRef.get();
-    const data = snap.data();
-    const balance = data.deposit || 0;
-
-    if(balance < nftPrice){
-      msg.innerText = "❌ Insufficient Balance";
-      buyBtn.disabled = false;
-      return;
-    }
-
-    // Deduct balance
-    await userRef.update({
-      deposit: balance - nftPrice
-    });
-
-    // Save purchased NFT
-    await userRef.collection("purchasedNFTs").doc(nftId).set({
-      nftId: nftId,
-      price: nftPrice,
-      purchasedAt: new Date()
-    });
-
-    msg.innerText = "✅ NFT Purchased Successfully!";
-    balanceSpan.innerText = balance - nftPrice;
-
-  }catch(err){
-    console.error(err);
-    msg.innerText = "❌ Something went wrong";
-  }
-
-  buyBtn.disabled = false;
-});
 </script>
-
 </body>
 </html>
