@@ -3,106 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <title>NFT Details</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <style>
 body{
- background:#0d0d0d;
- color:#FFD700;
- font-family:Arial;
- margin:0;
+background:#0d0d0d;
+color:#FFD700;
+font-family:Arial;
+margin:0;
+padding:0;
+text-align:center;
 }
 
 .container{
- max-width:420px;
- margin:auto;
- padding:20px;
-}
-
-.card{
- background:#111;
- border-radius:14px;
- padding:20px;
- text-align:center;
- box-shadow:0 0 20px #000;
+max-width:420px;
+margin:30px auto;
+padding:20px;
+background:#111;
+border-radius:14px;
+box-shadow:0 0 20px #000;
 }
 
 img{
- width:100%;
- border-radius:12px;
- margin-bottom:15px;
+width:100%;
+border-radius:12px;
+margin-bottom:15px;
+}
+
+h2{margin:10px 0}
+
+.card{
+background:#181818;
+padding:12px;
+margin-top:10px;
+border-radius:10px;
 }
 
 button{
- width:100%;
- padding:14px;
- margin-top:15px;
- border:none;
- border-radius:8px;
- font-weight:bold;
- background:#FFD700;
- cursor:pointer;
+margin-top:15px;
+padding:12px;
+width:100%;
+border:none;
+border-radius:8px;
+font-weight:bold;
+background:#FFD700;
+cursor:pointer;
 }
 
-button:hover{
- opacity:.9;
+button:hover{opacity:.9}
+
+#live{
+font-size:18px;
+margin-top:10px;
 }
 
 .modal{
- position:fixed;
- inset:0;
- background:#000000c7;
- display:none;
- align-items:center;
- justify-content:center;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.8);
+display:none;
+align-items:center;
+justify-content:center;
 }
 
 .modal-box{
- background:#111;
- padding:25px;
- border-radius:12px;
- width:90%;
- max-width:340px;
- text-align:center;
+background:#111;
+padding:25px;
+border-radius:12px;
+width:320px;
 }
 
 .close{
- background:red;
- margin-top:15px;
+background:red;
+margin-top:10px;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-<div class="card">
 
 <img id="img">
 
 <h2 id="name">Loading...</h2>
 
-<p>💰 Price: $<span id="price"></span></p>
-<p>📦 Category: <span id="cat"></span></p>
-<p>📈 Daily Income: $<span id="daily"></span></p>
+<div class="card">Price: $<span id="price">0</span></div>
+<div class="card">Daily Income: $<span id="daily">0</span></div>
+<div class="card">Weekly Income: $<span id="weekly">0</span></div>
+<div class="card">Monthly Income: $<span id="monthly">0</span></div>
+<div class="card">Yearly Income: $<span id="yearly">0</span></div>
+
+<div id="live">Live Earnings: $0</div>
 
 <button id="buyBtn">Buy NFT</button>
-<button id="calcBtn">View Earnings</button>
 
-</div>
 </div>
 
 <!-- MODAL -->
 <div class="modal" id="modal">
 <div class="modal-box">
 
-<h3>Earnings Calculation</h3>
+<h3>Investment Details</h3>
 
-<p>Daily: $<span id="d"></span></p>
-<p>Weekly: $<span id="w"></span></p>
-<p>Monthly: $<span id="m"></span></p>
-<p>Yearly: $<span id="y"></span></p>
+<div class="card">Investment: $<span id="mPrice"></span></div>
+<div class="card">Daily Profit: $<span id="mDaily"></span></div>
+<div class="card">Weekly Profit: $<span id="mWeekly"></span></div>
+<div class="card">Monthly Profit: $<span id="mMonthly"></span></div>
+<div class="card">Yearly Profit: $<span id="mYearly"></span></div>
 
-<button class="close" onclick="modal.style.display='none'">Close</button>
+<button class="close" onclick="closeModal()">Close</button>
 
 </div>
 </div>
@@ -110,9 +122,9 @@ button:hover{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore,doc,getDoc,updateDoc,increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore,doc,getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* CONFIG */
 const firebaseConfig={
  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
  authDomain:"supernft-5b952.firebaseapp.com",
@@ -121,74 +133,79 @@ const firebaseConfig={
 
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
-const auth=getAuth(app);
-
-let nftData;
-let currentUser;
 
 /* GET NFT ID FROM URL */
-const id=new URLSearchParams(location.search).get("id");
+const params=new URLSearchParams(location.search);
+const id=params.get("id");
 
 /* LOAD NFT */
 async function loadNFT(){
+
+if(!id){
+document.getElementById("name").innerText="Invalid NFT";
+return;
+}
+
+try{
 
 const ref=doc(db,"nfts",id);
 const snap=await getDoc(ref);
 
 if(!snap.exists()){
- alert("NFT not found");
- return;
+document.getElementById("name").innerText="NFT Not Found";
+return;
 }
 
-nftData=snap.data();
+const d=snap.data();
 
-/* UI SET */
-img.src=nftData.imageURL.trim();
-name.innerText=nftData.name;
-price.innerText=nftData.price;
-cat.innerText=nftData.category;
-daily.innerText=nftData.dailyIncome;
+/* FIX IMAGE SPACE BUG */
+const imgUrl=(d.imageURL||"").trim();
+
+/* SET UI */
+document.getElementById("img").src=imgUrl;
+document.getElementById("name").innerText=d.name;
+document.getElementById("price").innerText=d.price;
+
+const daily=d.dailyIncome;
+
+document.getElementById("daily").innerText=daily;
+document.getElementById("weekly").innerText=(daily*7).toFixed(2);
+document.getElementById("monthly").innerText=(daily*30).toFixed(2);
+document.getElementById("yearly").innerText=(daily*365).toFixed(2);
+
+/* MODAL VALUES */
+document.getElementById("mPrice").innerText=d.price;
+document.getElementById("mDaily").innerText=daily;
+document.getElementById("mWeekly").innerText=(daily*7).toFixed(2);
+document.getElementById("mMonthly").innerText=(daily*30).toFixed(2);
+document.getElementById("mYearly").innerText=(daily*365).toFixed(2);
+
+/* LIVE EARNINGS */
+let earned=0;
+
+setInterval(()=>{
+earned+=daily/86400;
+document.getElementById("live").innerText=
+"Live Earnings: $"+earned.toFixed(6);
+},1000);
+
+}catch(e){
+console.log(e);
+document.getElementById("name").innerText="Error loading NFT";
+}
 
 }
 
 loadNFT();
 
-/* LOGIN */
-onAuthStateChanged(auth,u=>{
- if(!u) location.href="login.html";
- else currentUser=u;
-});
-
-/* CALC BUTTON */
-calcBtn.onclick=()=>{
-
-d.innerText=nftData.dailyIncome;
-w.innerText=(nftData.dailyIncome*7).toFixed(2);
-m.innerText=(nftData.dailyIncome*30).toFixed(2);
-y.innerText=(nftData.dailyIncome*365).toFixed(2);
-
-modal.style.display="flex";
-};
-
-/* BUY NFT */
-buyBtn.onclick=async()=>{
-
-const userRef=doc(db,"users",currentUser.uid);
-const userSnap=await getDoc(userRef);
-const user=userSnap.data();
-
-if(user.walletBalance < nftData.price){
- alert("Not enough balance");
- return;
+/* MODAL */
+document.getElementById("buyBtn").onclick=()=>{
+document.getElementById("modal").style.display="flex";
 }
 
-await updateDoc(userRef,{
- walletBalance:increment(-nftData.price),
- dailyIncome:increment(nftData.dailyIncome)
-});
-
-alert("NFT Purchased Successfully");
-};
+window.closeModal=()=>{
+document.getElementById("modal").style.display="none";
+}
 
 </script>
 
