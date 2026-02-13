@@ -2,141 +2,177 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NFT Details</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 body{
-    margin:0;
-    font-family:Arial, Helvetica, sans-serif;
-    background:#0d0d0d;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+ background:#0b0b0b;
+ color:#FFD700;
+ font-family:Arial;
+ margin:0;
+ padding:0;
+}
+
+.container{
+ max-width:420px;
+ margin:auto;
+ padding:20px;
 }
 
 .card{
-    background:#1a1a1a;
-    padding:20px;
-    border-radius:15px;
-    width:320px;
-    text-align:center;
-    box-shadow:0 0 20px rgba(0,255,255,0.2);
+ background:#111;
+ border-radius:15px;
+ padding:20px;
+ text-align:center;
+ box-shadow:0 0 15px #000;
 }
 
 .card img{
-    width:100%;
-    border-radius:12px;
-    margin-bottom:15px;
-}
-
-.title{
-    font-size:22px;
-    font-weight:bold;
-    margin-bottom:10px;
-}
-
-.info{
-    font-size:16px;
-    margin:6px 0;
-    color:#ccc;
+ width:100%;
+ border-radius:12px;
+ margin-bottom:15px;
+ cursor:pointer;
 }
 
 .price{
-    color:#00ffd5;
-    font-size:20px;
-    margin-top:10px;
+ font-size:22px;
+ margin:10px 0;
 }
 
 .btn{
-    margin-top:15px;
-    background:#00ffd5;
-    color:black;
-    border:none;
-    padding:12px;
-    width:100%;
-    border-radius:8px;
-    font-weight:bold;
-    cursor:pointer;
+ background:#FFD700;
+ color:#000;
+ border:none;
+ padding:12px;
+ width:100%;
+ border-radius:10px;
+ font-weight:bold;
+ cursor:pointer;
 }
 
-.btn:hover{
-    background:#00c9aa;
+.modal{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.85);
+ display:none;
+ align-items:center;
+ justify-content:center;
+}
+
+.box{
+ background:#111;
+ padding:20px;
+ border-radius:15px;
+ width:90%;
+ max-width:350px;
+}
+
+.close{
+ float:right;
+ cursor:pointer;
+ font-size:20px;
 }
 </style>
 </head>
-
 <body>
 
-<div class="card" id="nftCard">
-    Loading NFT...
+<div class="container">
+
+<div class="card">
+
+<img id="nftImg">
+
+<h2 id="name"></h2>
+
+<div class="price" id="price"></div>
+
+<div id="daily"></div>
+
+<button class="btn" id="buyBtn">BUY NFT</button>
+
+</div>
 </div>
 
-<script>
-const params=new URLSearchParams(window.location.search);
-const id=params.get("id");
+<!-- POPUP -->
+<div class="modal" id="modal">
+<div class="box">
+<span class="close" onclick="modal.style.display='none'">✖</span>
 
-if(!id){
- document.getElementById("nftCard").innerHTML="<h2>NFT Not Found</h2>";
-}
-else{
+<h3>Profit Calculator</h3>
 
-const nftData={
-"0458":{name:"Starter NFT #1",price:10,daily:0.2},
-"0459":{name:"Starter NFT #2",price:10,daily:0.2},
-"0460":{name:"Starter NFT #3",price:10,daily:0.2},
-"0461":{name:"Starter NFT #4",price:10,daily:0.2},
-"0462":{name:"Starter NFT #5",price:10,daily:0.2},
-"0463":{name:"Starter NFT #6",price:10,daily:0.2},
-"0464":{name:"Starter NFT #7",price:10,daily:0.2},
-"0465":{name:"Starter NFT #8",price:10,daily:0.2},
-"0466":{name:"Starter NFT #9",price:10,daily:0.2},
-"0467":{name:"Starter NFT #10",price:10,daily:0.2},
-"0468":{name:"Starter NFT #11",price:10,daily:0.2},
-"0469":{name:"Starter NFT #12",price:10,daily:0.2},
-"0470":{name:"Starter NFT #13",price:10,daily:0.2},
-"0471":{name:"Starter NFT #14",price:10,daily:0.2},
-"0472":{name:"Starter NFT #15",price:10,daily:0.2},
-"0473":{name:"Starter NFT #16",price:10,daily:0.2},
-"0474":{name:"Starter NFT #17",price:10,daily:0.2},
-"0475":{name:"Starter NFT #18",price:10,daily:0.2},
-"0476":{name:"Starter NFT #19",price:10,daily:0.2},
-"0477":{name:"Starter NFT #20",price:10,daily:0.2},
-"0478":{name:"Starter NFT #21",price:10,daily:0.2},
-"0479":{name:"Starter NFT #22",price:10,daily:0.2},
-"0480":{name:"Starter NFT #23",price:10,daily:0.2},
-"0481":{name:"Starter NFT #24",price:10,daily:0.2},
-"0482":{name:"Starter NFT #25",price:10,daily:0.2},
-"0483":{name:"Starter NFT #26",price:10,daily:0.2},
-"0497":{name:"Starter NFT #27",price:10,daily:0.2},
-"0498":{name:"Starter NFT #28",price:10,daily:0.2},
-"0499":{name:"Starter NFT #29",price:10,daily:0.2},
-"0500":{name:"Starter NFT #30",price:10,daily:0.2},
-"0503":{name:"Starter NFT #31",price:10,daily:0.2},
-"0757":{name:"Starter NFT #32",price:10,daily:0.2}
+<div id="calc"></div>
+
+</div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore,doc,getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+ authDomain:"supernft-5b952.firebaseapp.com",
+ projectId:"supernft-5b952"
 };
 
-const nft=nftData[id];
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
 
-if(!nft){
- document.getElementById("nftCard").innerHTML="<h2>Invalid NFT ID</h2>";
-}
-else{
 
-const img=`https://mysupernft-hash.github.io/images/IMG_${id}.png`;
+/* GET NFT ID FROM URL */
+const id=new URLSearchParams(location.search).get("id");
 
-document.getElementById("nftCard").innerHTML=`
-<img src="${img}" onerror="this.src='https://via.placeholder.com/300x300?text=No+Image'">
-<div class="title">${nft.name}</div>
-<div class="info">Daily Income: $${nft.daily}</div>
-<div class="price">Price: $${nft.price}</div>
-<button class="btn">Buy Now</button>
-`;
+/* IMAGE MAP (github images) */
+const images={
+ nft_001:"images/IMG_0458.png",
+ nft_002:"images/IMG_0459.png",
+ nft_003:"images/IMG_0460.png",
+ nft_004:"images/IMG_0461.png",
+ nft_005:"images/IMG_0462.png",
+ nft_006:"images/IMG_0463.png",
+ nft_007:"images/IMG_0464.png",
+ nft_008:"images/IMG_0465.png"
+};
+
+/* LOAD NFT */
+const snap=await getDoc(doc(db,"nfts",id));
+
+if(!snap.exists()){
+ alert("NFT not found");
 }
+
+const data=snap.data();
+
+/* SET DATA */
+name.innerText=data.name;
+price.innerText="$"+data.price;
+daily.innerText="Daily Income: $"+data.dailyIncome;
+
+/* IMAGE LOAD */
+nftImg.src=images[id] || "images/default.png";
+
+/* CALCULATOR */
+function showCalc(){
+
+ const p=data.price;
+ const d=data.dailyIncome;
+
+ calc.innerHTML=`
+ Investment: $${p}<br><br>
+ Daily: $${d}<br>
+ Weekly: $${(d*7).toFixed(2)}<br>
+ Monthly: $${(d*30).toFixed(2)}<br>
+ Yearly: $${(d*365).toFixed(2)}
+ `;
+
+ modal.style.display="flex";
 }
+
+buyBtn.onclick=showCalc;
+nftImg.onclick=showCalc;
+
 </script>
-
 </body>
 </html>
