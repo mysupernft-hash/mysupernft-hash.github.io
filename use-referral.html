@@ -2,109 +2,185 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Use Referral</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#0f172a;
-    color:#fff;
+  margin:0;
+  background:#000;
+  color:#FFD700;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-
-.container{
-    max-width:500px;
-    margin:40px auto;
-    padding:20px;
-    background:#111827;
-    border-radius:12px;
-    box-shadow:0 0 15px rgba(0,0,0,0.5);
+.box{
+  background:#111;
+  padding:25px;
+  border-radius:15px;
+  width:340px;
+  text-align:center;
+  box-shadow:0 0 25px #000;
 }
-
-h1{
-    text-align:center;
-    margin-bottom:20px;
+input,button{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  border:none;
+  border-radius:8px;
 }
-
-input{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:8px;
-    margin-bottom:15px;
-    font-size:16px;
-}
-
 button{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:8px;
-    background:#22c55e;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
+  background:#FFD700;
+  font-weight:bold;
+  cursor:pointer;
 }
-
-button:hover{
-    background:#16a34a;
+#msg{
+  margin-top:15px;
+  font-size:14px;
 }
-
 .rules{
-    margin-top:25px;
-    background:#020617;
-    padding:15px;
-    border-radius:10px;
-    font-size:14px;
-    line-height:1.6;
-}
-
-.success{
-    color:#4ade80;
-    text-align:center;
-    margin-top:15px;
+  margin-top:20px;
+  text-align:left;
+  font-size:13px;
+  line-height:1.6;
 }
 </style>
 </head>
 <body>
 
-<div class="container">
-<h1>Use Referral Code</h1>
+<div class="box">
 
-<input type="text" id="refInput" placeholder="Enter Referral Code">
+<h2>🎁 Use Referral Code</h2>
 
-<button onclick="applyReferral()">Apply Code</button>
+<input id="code" placeholder="Enter referral code">
+<button id="applyBtn">Apply Code</button>
 
 <div id="msg"></div>
 
 <div class="rules">
-<b>Referral Rules:</b><br><br>
-
-• Signup ke baad referral code apply karna zaroori hai.<br>
-• Referral apply hone par bonus activate hoga.<br>
-• Deposit karne par hi referral commission milega.<br>
-• Fake accounts banane par account block ho sakta hai.<br>
-• Ek user sirf ek referral use kar sakta hai.
+<b>Rules</b><br>
+• Only 1 referral allowed<br>
+• Cannot use own code<br>
+• Bonus credited instantly<br>
+• Fake accounts banned<br>
 </div>
 
 </div>
 
-<script>
-function applyReferral(){
-    let code = document.getElementById("refInput").value.trim();
-    let msg = document.getElementById("msg");
+<script type="module">
 
-    if(code === ""){
-        msg.innerHTML = "<p style='color:red;text-align:center;'>Please enter referral code</p>";
-        return;
-    }
+/* FIREBASE IMPORTS */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+getFirestore,doc,getDoc,updateDoc,increment,
+collection,query,where,getDocs,serverTimestamp,setDoc,runTransaction
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Save locally (temporary demo logic)
-    localStorage.setItem("referralCode", code);
+/* CONFIG */
+const firebaseConfig={
+ apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+ authDomain:"supernft-5b952.firebaseapp.com",
+ projectId:"supernft-5b952"
+};
 
-    msg.innerHTML = "<p class='success'>Referral applied successfully ✔</p>";
+/* INIT */
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let currentUser=null;
+
+/* LOGIN CHECK */
+onAuthStateChanged(auth,user=>{
+ if(!user){
+  location.href="login.html";
+  return;
+ }
+ currentUser=user;
+});
+
+
+/* APPLY REFERRAL */
+document.getElementById("applyBtn").onclick=async()=>{
+
+const msg=document.getElementById("msg");
+msg.innerText="Checking...";
+
+const code=document.getElementById("code").value.trim().toUpperCase();
+
+if(!code){
+ msg.innerText="Enter referral code";
+ return;
 }
+
+try{
+
+await runTransaction(db, async (transaction)=>{
+
+const myRef=doc(db,"users",currentUser.uid);
+const mySnap=await transaction.get(myRef);
+
+if(!mySnap.exists())
+ throw "Profile not found";
+
+const myData=mySnap.data();
+
+/* ALREADY USED */
+if(myData.referralUsed)
+ throw "Referral already used";
+
+/* FIND OWNER */
+const q=query(collection(db,"users"),where("referralCode","==",code));
+const qs=await getDocs(q);
+
+if(qs.empty)
+ throw "Invalid referral code";
+
+const ownerDoc=qs.docs[0];
+
+if(ownerDoc.id===currentUser.uid)
+ throw "Cannot use your own code";
+
+const ownerRef=doc(db,"users",ownerDoc.id);
+
+const reward=5;
+
+/* UPDATE USER */
+transaction.update(myRef,{
+ walletBalance:increment(reward),
+ referralUsed:true,
+ referredByCode:code
+});
+
+/* UPDATE OWNER */
+transaction.update(ownerRef,{
+ walletBalance:increment(reward),
+ referralEarnings:increment(reward)
+});
+
+/* SAVE HISTORY */
+transaction.set(
+ doc(db,"users",ownerDoc.id,"referrals",currentUser.uid),
+ {
+  email:currentUser.email,
+  reward:reward,
+  joinedAt:serverTimestamp()
+ }
+);
+
+});
+
+msg.innerHTML="✅ Referral applied successfully!";
+
+}catch(e){
+msg.innerText="❌ "+e;
+}
+
+};
+
 </script>
 
 </body>
