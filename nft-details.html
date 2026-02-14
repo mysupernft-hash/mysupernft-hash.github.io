@@ -1,45 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>NFT Details</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <style>
 body{
-  margin:0;
-  font-family:Arial;
-  background:#000;
-  color:#fff;
+ background:#0d0d0d;
+ color:#FFD700;
+ font-family:Arial;
+ margin:0;
+ padding:20px;
 }
 
 .card{
-  max-width:400px;
-  margin:40px auto;
-  background:#111;
-  border:1px solid gold;
-  border-radius:15px;
-  padding:20px;
-  text-align:center;
-  box-shadow:0 0 25px gold;
+ max-width:420px;
+ margin:auto;
+ background:#111;
+ padding:20px;
+ border-radius:14px;
+ text-align:center;
+ box-shadow:0 0 25px #000;
 }
 
 img{
-  width:100%;
-  border-radius:12px;
-  margin-bottom:15px;
+ width:100%;
+ border-radius:12px;
+ margin-bottom:15px;
 }
 
-h1{
-  color:gold;
+h2{margin:10px 0}
+
+.stats{
+ background:#0a0a0a;
+ padding:15px;
+ border-radius:10px;
+ margin-top:15px;
+ text-align:left;
+ line-height:1.8;
 }
 
-.box{
-  margin:12px 0;
-  padding:12px;
-  background:#000;
-  border:1px solid gold;
-  border-radius:10px;
+button{
+ width:100%;
+ padding:14px;
+ margin-top:15px;
+ background:#FFD700;
+ border:none;
+ border-radius:8px;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+button:hover{opacity:.9}
+
+#error{
+ color:red;
+ margin-top:15px;
 }
 </style>
 </head>
@@ -47,81 +64,87 @@ h1{
 
 <div class="card">
 
-<img id="img" src="">
-<h1 id="name">Loading...</h1>
+<div id="content">Loading NFT...</div>
 
-<div class="box">Price: <span id="price"></span></div>
-<div class="box">Daily Income: <span id="daily"></span></div>
-<div class="box">Weekly Income: <span id="weekly"></span></div>
-<div class="box">Monthly Income: <span id="monthly"></span></div>
-<div class="box">Yearly Income: <span id="yearly"></span></div>
+<div id="error"></div>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore,doc,getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* FIREBASE CONFIG */
-const firebaseConfig={
+const app=initializeApp({
  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
  authDomain:"supernft-5b952.firebaseapp.com",
  projectId:"supernft-5b952"
-};
+});
 
-/* INIT */
-const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-/* LOAD NFT */
+/* GET NFT ID FROM URL */
 const params=new URLSearchParams(location.search);
 const id=params.get("id");
 
-if(!id){
- document.body.innerHTML="<h2 style='color:white;text-align:center'>NFT not found</h2>";
+/* LOAD NFT */
+async function loadNFT(){
+
+ if(!id){
+  document.getElementById("error").innerText="NFT id missing in URL";
+  return;
+ }
+
+ try{
+
+  const snap=await getDoc(doc(db,"nfts",id));
+
+  if(!snap.exists()){
+   document.getElementById("error").innerText="NFT not found";
+   return;
+  }
+
+  const nft=snap.data();
+
+  /* REMOVE SPACE FROM URL */
+  const img=nft.imageURL.trim();
+
+  /* CALCULATIONS */
+  const price=nft.price;
+  const daily=nft.dailyIncome;
+  const weekly=daily*7;
+  const monthly=daily*30;
+  const yearly=daily*365;
+
+  document.getElementById("content").innerHTML=`
+
+   <img src="${img}" onerror="this.src='https://via.placeholder.com/400x300?text=NFT'">
+
+   <h2>${nft.name}</h2>
+   <p>Category: ${nft.category}</p>
+
+   <div class="stats">
+   💰 Price: $${price}<br>
+   📈 Daily: $${daily}<br>
+   📅 Weekly: $${weekly.toFixed(2)}<br>
+   📆 Monthly: $${monthly.toFixed(2)}<br>
+   🗓 Yearly: $${yearly.toFixed(2)}
+   </div>
+
+   <button onclick="alert('Buy system connect karo')">
+   BUY NFT
+   </button>
+  `;
+
+ }catch(e){
+  document.getElementById("error").innerText=e.message;
+ }
+
 }
 
-const ref=doc(db,"nfts",id);
-const snap=await getDoc(ref);
-
-if(!snap.exists()){
- document.body.innerHTML="<h2 style='color:white;text-align:center'>Invalid NFT ID</h2>";
-}
-
-const nft=snap.data();
-
-/* IMAGE FIX */
-let imgURL="";
-
-if(nft.imageURL){
- imgURL=nft.imageURL.trim();
-}
-else if(nft.imageUrl){
- imgURL=nft.imageUrl.trim();
-}
-else if(nft.imageurl){
- imgURL=nft.imageurl.trim();
-}
-
-/* CALCULATIONS */
-const price=Number(nft.price||0);
-const daily=Number(nft.dailyIncome||0);
-
-const weekly=daily*7;
-const monthly=daily*30;
-const yearly=daily*365;
-
-/* SET DATA */
-document.getElementById("img").src=imgURL;
-document.getElementById("name").innerText=nft.name;
-document.getElementById("price").innerText="$"+price;
-document.getElementById("daily").innerText="$"+daily.toFixed(2);
-document.getElementById("weekly").innerText="$"+weekly.toFixed(2);
-document.getElementById("monthly").innerText="$"+monthly.toFixed(2);
-document.getElementById("yearly").innerText="$"+yearly.toFixed(2);
+loadNFT();
 
 </script>
-
 </body>
 </html>
