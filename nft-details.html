@@ -3,124 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT - NFT Details</title>
+<title>SuperNFT Dashboard</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  color: white;
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
 }
 
-.container {
-  padding: 30px;
-  text-align: center;
+/* Dashboard Header */
+.header{
+    padding:20px;
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    background:rgba(0,0,0,0.6);
+    color:#00eaff;
 }
 
-h1 {
-  margin-bottom: 20px;
-  font-size: 28px;
-  color: #00eaff;
+/* NFT Container */
+.container{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+    padding:40px;
+}
+
+/* NFT Card */
+.card{
+    width:250px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(10px);
+    border-radius:20px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 0 20px rgba(0,255,255,0.2);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
 }
 
 /* NFT Image */
-#nftMainImage {
-  width: 100%;
-  max-width: 500px;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: 0.3s;
+.nft-image{
+    width:100%;
+    border-radius:15px;
+    cursor:pointer;
+    transition:0.3s;
 }
 
-/* Hover effect */
-#nftMainImage:hover {
-  transform: scale(1.05);
+.nft-image:hover{
+    transform:scale(1.05);
 }
 
-/* Modal Fullscreen */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.95);
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
+.card h3{
+    margin:10px 0 5px 0;
 }
 
-.modal img {
-  max-width: 80%;
-  max-height: 80%;
-  border-radius: 15px;
-  animation: zoomIn 0.3s ease;
+.card p{
+    color:#00ffcc;
+    font-weight:bold;
 }
 
-.closeBtn {
-  position: absolute;
-  top: 30px;
-  right: 40px;
-  font-size: 40px;
-  color: white;
-  cursor: pointer;
+/* Fullscreen Modal */
+.modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.95);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+    animation:fadeIn 0.3s ease;
 }
 
-/* Zoom animation */
-@keyframes zoomIn {
-  from { transform: scale(0.7); }
-  to { transform: scale(1); }
+.modal img{
+    max-width:85%;
+    max-height:85%;
+    border-radius:20px;
+    animation:zoomIn 0.3s ease;
+}
+
+/* Close Button */
+.close{
+    position:absolute;
+    top:30px;
+    right:50px;
+    font-size:40px;
+    color:white;
+    cursor:pointer;
+}
+
+/* Animations */
+@keyframes zoomIn{
+    from{transform:scale(0.6);}
+    to{transform:scale(1);}
+}
+
+@keyframes fadeIn{
+    from{opacity:0;}
+    to{opacity:1;}
+}
+
+@media(max-width:768px){
+    .card{
+        width:90%;
+    }
 }
 </style>
 </head>
 
 <body>
 
+<div class="header">
+    SuperNFT Dashboard
+</div>
+
 <div class="container">
 
-  <h1>NFT Details</h1>
+    <div class="card">
+        <img src="images/IMG_0458.png" class="nft-image">
+        <h3>NFT #1</h3>
+        <p>$10</p>
+    </div>
 
-  <!-- NFT Image -->
-  <img id="nftMainImage" src="images/IMG_0458.png" alt="NFT Image">
+    <div class="card">
+        <img src="images/IMG_0459.png" class="nft-image">
+        <h3>NFT #2</h3>
+        <p>$20</p>
+    </div>
 
-  <p style="margin-top: 15px; font-size: 18px; color: #00ffcc;">
-    Click image to view larger
-  </p>
+    <div class="card">
+        <img src="images/IMG_0460.png" class="nft-image">
+        <h3>NFT #3</h3>
+        <p>$30</p>
+    </div>
+
+    <div class="card">
+        <img src="images/IMG_0461.png" class="nft-image">
+        <h3>NFT #4</h3>
+        <p>$40</p>
+    </div>
 
 </div>
 
-<!-- Modal for Fullscreen Image -->
+<!-- Modal -->
 <div class="modal" id="imageModal">
-  <span class="closeBtn" id="closeBtn">&times;</span>
-  <img id="modalImg">
+    <span class="close" id="closeBtn">&times;</span>
+    <img id="modalImg">
 </div>
 
 <script>
-// Modal elements
-var modal = document.getElementById("imageModal");
-var mainImg = document.getElementById("nftMainImage");
-var modalImg = document.getElementById("modalImg");
-var closeBtn = document.getElementById("closeBtn");
+const modal = document.getElementById("imageModal");
+const modalImg = document.getElementById("modalImg");
+const closeBtn = document.getElementById("closeBtn");
 
-// Click Image → open modal
-mainImg.onclick = function() {
-  modal.style.display = "flex";
-  modalImg.src = this.src;
-};
+// 🔥 Important Part (Fixes First Image Bug Forever)
+document.querySelectorAll(".nft-image").forEach(function(image){
+    image.addEventListener("click", function(){
+        modal.style.display = "flex";
+        modalImg.src = this.src; // Current clicked image
+    });
+});
 
-// Close modal
-closeBtn.onclick = function() {
-  modal.style.display = "none";
-}
-
-// Click outside image → close
-window.onclick = function(e) {
-  if (e.target == modal) {
+// Close Button
+closeBtn.addEventListener("click", function(){
     modal.style.display = "none";
-  }
-}
+});
+
+// Click outside image close
+modal.addEventListener("click", function(e){
+    if(e.target === modal){
+        modal.style.display = "none";
+    }
+});
 </script>
 
 </body>
