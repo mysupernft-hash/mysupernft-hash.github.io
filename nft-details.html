@@ -1,179 +1,155 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT - NFT Details</title>
+<title>SuperNFT Dashboard</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: white;
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
 }
 
-.navbar {
-    padding: 15px 30px;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.container{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:30px;
+    padding:40px;
 }
 
-.navbar h2 {
-    margin: 0;
-    color: #00eaff;
+.card{
+    width:250px;
+    background:rgba(255,255,255,0.05);
+    backdrop-filter:blur(10px);
+    border-radius:20px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 0 20px rgba(0,255,255,0.2);
 }
 
-.container {
-    display: flex;
-    justify-content: center;
-    padding: 50px 20px;
+.card img{
+    width:100%;
+    border-radius:15px;
+    cursor:pointer;
+    transition:0.3s;
 }
 
-.card {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 500px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 0 30px rgba(0,255,255,0.2);
+.card img:hover{
+    transform:scale(1.05);
 }
 
-.nft-img {
-    width: 100%;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
-
-.nft-img:hover {
-    transform: scale(1.05);
-}
-
-.price {
-    font-size: 22px;
-    color: #00ffcc;
-    margin: 15px 0;
-}
-
-button {
-    background: linear-gradient(45deg, #00eaff, #00ffcc);
-    border: none;
-    padding: 12px 25px;
-    border-radius: 30px;
-    font-size: 16px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-}
-
-button:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px #00ffcc;
+button{
+    margin-top:10px;
+    padding:10px 20px;
+    border:none;
+    border-radius:25px;
+    background:linear-gradient(45deg,#00eaff,#00ffcc);
+    font-weight:bold;
+    cursor:pointer;
 }
 
 /* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    padding-top: 60px;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.95);
-    animation: fadeIn 0.4s;
+.modal{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.95);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
 }
 
-.modal-content {
-    display: block;
-    margin: auto;
-    max-width: 80%;
-    max-height: 80%;
-    border-radius: 15px;
-    animation: zoomIn 0.4s;
+.modal img{
+    max-width:80%;
+    max-height:80%;
+    border-radius:20px;
 }
 
-.close {
-    position: absolute;
-    top: 30px;
-    right: 50px;
-    font-size: 40px;
-    color: white;
-    cursor: pointer;
-}
-
-@keyframes zoomIn {
-    from {transform: scale(0.6);}
-    to {transform: scale(1);}
-}
-
-@keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
-
-@media(max-width:768px){
-    .card{
-        padding:20px;
-    }
+.close{
+    position:absolute;
+    top:30px;
+    right:40px;
+    font-size:40px;
+    cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="navbar">
-    <h2>SuperNFT</h2>
-    <span>Dashboard</span>
-</div>
-
 <div class="container">
+
+    <!-- NFT 1 -->
     <div class="card">
-        <h1>NFT #1</h1>
-        
-        <!-- NFT Image -->
-        <img src="images/IMG_0458.png" alt="NFT Image" class="nft-img" id="nftImage">
-
-        <div class="price">$10</div>
-
-        <p>This is a premium SuperNFT digital collectible. Limited edition item.</p>
-
-        <button>Buy Now</button>
+        <img src="images/IMG_0458.png" class="nft-image">
+        <h3>NFT #1</h3>
+        <p>$10</p>
+        <button class="buy-btn" data-img="images/IMG_0458.png">Buy NFT</button>
     </div>
+
+    <!-- NFT 2 -->
+    <div class="card">
+        <img src="images/IMG_0459.png" class="nft-image">
+        <h3>NFT #2</h3>
+        <p>$20</p>
+        <button class="buy-btn" data-img="images/IMG_0459.png">Buy NFT</button>
+    </div>
+
+    <!-- NFT 3 -->
+    <div class="card">
+        <img src="images/IMG_0460.png" class="nft-image">
+        <h3>NFT #3</h3>
+        <p>$30</p>
+        <button class="buy-btn" data-img="images/IMG_0460.png">Buy NFT</button>
+    </div>
+
 </div>
 
 <!-- Modal -->
-<div id="imageModal" class="modal">
-    <span class="close">&times;</span>
-    <img class="modal-content" id="modalImg">
+<div class="modal" id="imageModal">
+    <span class="close" id="closeBtn">&times;</span>
+    <img id="modalImg">
 </div>
 
 <script>
 var modal = document.getElementById("imageModal");
-var img = document.getElementById("nftImage");
 var modalImg = document.getElementById("modalImg");
-var closeBtn = document.getElementsByClassName("close")[0];
+var closeBtn = document.getElementById("closeBtn");
 
-img.onclick = function(){
-    modal.style.display = "block";
-    modalImg.src = this.src;
-}
+// Image click event
+document.querySelectorAll(".nft-image").forEach(function(img){
+    img.addEventListener("click", function(){
+        modal.style.display="flex";
+        modalImg.src = this.src;
+    });
+});
 
-closeBtn.onclick = function() {
-    modal.style.display = "none";
-}
+// Buy button click event
+document.querySelectorAll(".buy-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+        var imgSrc = this.getAttribute("data-img");
+        modal.style.display="flex";
+        modalImg.src = imgSrc;
+    });
+});
 
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
+// Close modal
+closeBtn.onclick = function(){
+    modal.style.display="none";
+};
+
+window.onclick = function(e){
+    if(e.target == modal){
+        modal.style.display="none";
     }
-}
+};
 </script>
 
 </body>
