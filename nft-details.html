@@ -76,7 +76,6 @@ header{
 <div class="container">
 
   <img id="nftImage" class="nft-img">
-
   <div class="price" id="price"></div>
 
   <div class="calc-box">
@@ -86,37 +85,36 @@ header{
     <div class="calc-row"><span>Yearly Income:</span><span id="yearly"></span></div>
   </div>
 
-  <button class="buy-btn" onclick="confirmBuy()">Confirm Purchase</button>
+  <button class="buy-btn" onclick="goBack()">Back to Dashboard</button>
 
 </div>
 
 <script>
 
-// Get data from dashboard
-const price = parseFloat(localStorage.getItem("nftPrice")) || 0;
+// Get data from localStorage
+const price = parseFloat(localStorage.getItem("nftPrice"));
 const img = localStorage.getItem("nftImg");
-const dailyIncome = parseFloat(localStorage.getItem("nftDaily")) || 0;
+const dailyIncome = parseFloat(localStorage.getItem("nftDaily"));
 
-// Set image
-if(img){
+// Safety check
+if(!price || !img || !dailyIncome){
+  document.body.innerHTML = "<h2 style='color:#FFD700;margin-top:50px;'>No NFT Selected</h2>";
+} else {
+
   document.getElementById("nftImage").src = img;
+  document.getElementById("price").innerText = "Price: $" + price;
+
+  let weekly = dailyIncome * 7;
+  let monthly = dailyIncome * 30;
+  let yearly = dailyIncome * 365;
+
+  document.getElementById("daily").innerText = "$" + dailyIncome.toFixed(2);
+  document.getElementById("weekly").innerText = "$" + weekly.toFixed(2);
+  document.getElementById("monthly").innerText = "$" + monthly.toFixed(2);
+  document.getElementById("yearly").innerText = "$" + yearly.toFixed(2);
 }
 
-// Set price
-document.getElementById("price").innerText = "Price: $" + price;
-
-// Calculations
-let weekly = dailyIncome * 7;
-let monthly = dailyIncome * 30;
-let yearly = dailyIncome * 365;
-
-document.getElementById("daily").innerText = "$" + dailyIncome.toFixed(2);
-document.getElementById("weekly").innerText = "$" + weekly.toFixed(2);
-document.getElementById("monthly").innerText = "$" + monthly.toFixed(2);
-document.getElementById("yearly").innerText = "$" + yearly.toFixed(2);
-
-function confirmBuy(){
-  alert("NFT Purchase Successful (Demo)");
+function goBack(){
   window.location.href="dashboard.html";
 }
 
