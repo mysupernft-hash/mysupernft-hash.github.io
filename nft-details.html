@@ -3,78 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Dashboard</title>
+<title>SuperNFT NFT Details</title>
 
 <style>
 body{
-  background:#000;
-  color:#d4af37;
-  font-family:Arial;
   margin:0;
+  font-family:Arial;
+  background:#000;
+  color:#FFD700;
+  text-align:center;
 }
 
 header{
   padding:20px;
-  text-align:center;
-  font-size:26px;
-  background:#111;
-  border-bottom:2px solid #d4af37;
+  background:#1a1a1a;
+  font-size:24px;
+  border-bottom:2px solid #FFD700;
 }
 
-.nft-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:20px;
+.container{
   padding:20px;
 }
 
-.nft-card{
-  background:#111;
-  border:2px solid #d4af37;
-  border-radius:12px;
-  padding:10px;
-  text-align:center;
-}
-
-.nft-card img{
-  width:100%;
-  border-radius:10px;
+.nft-img{
+  width:90%;
+  max-width:400px;
+  border-radius:15px;
+  border:3px solid #FFD700;
+  box-shadow:0 0 25px #FFD700;
 }
 
 .price{
-  margin-top:8px;
+  font-size:22px;
+  margin:15px 0;
+}
+
+.calc-box{
+  background:#1a1a1a;
+  border-radius:12px;
+  padding:15px;
+  margin:20px auto;
+  max-width:400px;
+  border:1px solid #FFD700;
+}
+
+.calc-row{
+  display:flex;
+  justify-content:space-between;
+  margin:8px 0;
+}
+
+.buy-btn{
+  background:#FFD700;
+  color:#000;
+  border:none;
+  padding:10px 15px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:15px;
+}
+
+.buy-btn:hover{
+  background:#e6c200;
 }
 </style>
 </head>
 <body>
 
-<header>SuperNFT Dashboard</header>
+<header>SuperNFT NFT Details</header>
 
-<div class="nft-grid" id="nftGrid"></div>
+<div class="container">
+
+  <img id="nftImage" class="nft-img">
+
+  <div class="price" id="price"></div>
+
+  <div class="calc-box">
+    <div class="calc-row"><span>Daily Income:</span><span id="daily"></span></div>
+    <div class="calc-row"><span>Weekly Income:</span><span id="weekly"></span></div>
+    <div class="calc-row"><span>Monthly Income:</span><span id="monthly"></span></div>
+    <div class="calc-row"><span>Yearly Income:</span><span id="yearly"></span></div>
+  </div>
+
+  <button class="buy-btn" onclick="confirmBuy()">Confirm Purchase</button>
+
+</div>
 
 <script>
-const nftData = [];
 
-for(let i=1;i<=30;i++){
-  nftData.push({
-    id:i,
-    img:`IMG_${457+i}.png`, // IMG_0458 to IMG_0487
-    price:i*10
-  });
+// Get data from dashboard
+const price = parseFloat(localStorage.getItem("nftPrice")) || 0;
+const img = localStorage.getItem("nftImg");
+const dailyIncome = parseFloat(localStorage.getItem("nftDaily")) || 0;
+
+// Set image
+if(img){
+  document.getElementById("nftImage").src = img;
 }
 
-const grid = document.getElementById("nftGrid");
+// Set price
+document.getElementById("price").innerText = "Price: $" + price;
 
-nftData.forEach(nft=>{
-  grid.innerHTML += `
-    <div class="nft-card">
-      <a href="nft-details.html?id=${nft.id}">
-        <img src="images/${nft.img}" alt="NFT">
-      </a>
-      <div class="price">Price: $${nft.price}</div>
-    </div>
-  `;
-});
+// Calculations
+let weekly = dailyIncome * 7;
+let monthly = dailyIncome * 30;
+let yearly = dailyIncome * 365;
+
+document.getElementById("daily").innerText = "$" + dailyIncome.toFixed(2);
+document.getElementById("weekly").innerText = "$" + weekly.toFixed(2);
+document.getElementById("monthly").innerText = "$" + monthly.toFixed(2);
+document.getElementById("yearly").innerText = "$" + yearly.toFixed(2);
+
+function confirmBuy(){
+  alert("NFT Purchase Successful (Demo)");
+  window.location.href="dashboard.html";
+}
+
 </script>
 
 </body>
