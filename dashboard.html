@@ -123,12 +123,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952"};
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
+
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-  onAuthStateChanged(auth, async (user) => {
+/* ===============================
+   AUTH + LIVE MINING SYSTEM
+=================================*/
+
+onAuthStateChanged(auth, async (user) => {
+
   if (!user) {
     window.location.replace("login.html");
     return;
@@ -137,18 +147,24 @@ const db=getFirestore(app);
   const userRef = doc(db, "users", user.uid);
   let snap = await getDoc(userRef);
 
+  // 🔹 Create user if not exists
   if (!snap.exists()) {
+    const code = "SNFT" + Math.floor(100000 + Math.random() * 900000);
+
     await setDoc(userRef, {
-      referralCode: "SNFT" + Math.floor(100000 + Math.random() * 900000),
+      referralCode: code,
       totalDeposit: 0,
       walletBalance: 0,
       dailyIncome: 0,
       lastIncomeAt: new Date()
     });
+
     snap = await getDoc(userRef);
   }
 
+  // 🔥 LIVE MINING SYSTEM
   setInterval(async () => {
+
     const s = await getDoc(userRef);
     if (!s.exists()) return;
 
@@ -161,16 +177,18 @@ const db=getFirestore(app);
     const perSecond = (d.dailyIncome || 0) / 86400;
     const live = perSecond * seconds;
 
-    // ✅ 24 hours complete → credit wallet
+    // ✅ 24 HOURS COMPLETE → CREDIT WALLET
     if (seconds >= 86400) {
+
       await updateDoc(userRef, {
         walletBalance: (d.walletBalance || 0) + (d.dailyIncome || 0),
         lastIncomeAt: new Date()
       });
+
       return;
     }
 
-    // ✅ UI update
+    // ✅ UI UPDATE
     document.getElementById("dailyIncome").innerText =
       "$" + (d.dailyIncome || 0).toFixed(2);
 
@@ -193,28 +211,36 @@ const db=getFirestore(app);
       "Referral: " + d.referralCode;
 
   }, 1000);
+
 });
 
-/* Sidebar Toggle */
+/* ===============================
+   SIDEBAR TOGGLE
+=================================*/
+
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
-document.querySelector(".menu-toggle").addEventListener("click",()=>{sidebar.classList.add("active");overlay.classList.add("active");});
-overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay.classList.remove("active");});
 
-/* Logout */
-function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
+document.querySelector(".menu-toggle").addEventListener("click",()=>{
+  sidebar.classList.add("active");
+  overlay.classList.add("active");
+});
 
-/* OpenPage */
+overlay.addEventListener("click",()=>{
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+});
+
+/* ===============================
+   PAGE NAVIGATION
+=================================*/
+
 window.openPage = function(page){
   switch(page){
     case "trading": window.location.href="trading.html"; break;
     case "account": window.location.href="account.html"; break;
-    case "referral":
-  window.location.href = "my-referrals.html";
-  break;
-      case "useReferral":
-      window.location.href = "use-referral.html";
-      break;
+    case "referral": window.location.href="my-referrals.html"; break;
+    case "useReferral": window.location.href="use-referral.html"; break;
     case "investments": window.location.href="my-investments.html"; break;
     case "wallet": window.location.href="wallet.html"; break;
     case "deposit": window.location.href="deposit.html"; break;
@@ -228,42 +254,49 @@ window.openPage = function(page){
   }
 };
 
-/* Stats Boxes Click */
-// ✅ Stats Boxes Click Navigation (FIXED)
-document.getElementById("dailyIncomeBox").onclick = () => {
-  window.location.href = "daily.html";
-};
+/* ===============================
+   NFT SYSTEM
+=================================*/
 
-document.getElementById("liveEarningsBox").onclick = () => {
-  window.location.href = "live-earnings.html";
-};
-
-document.getElementById("depositMoney").onclick = () => {
-  window.location.href = "deposit.html";
-};
-
-document.getElementById("walletBalanceBox").onclick = () => {
-  window.location.href = "wallet.html";
-};
-/* Footer Clicks */
-const footerBtns=document.querySelectorAll("footer div");
-footerBtns[0].addEventListener("click",()=>window.openPage("account")); 
-footerBtns[1].addEventListener("click",()=>window.openPage("investments")); 
-footerBtns[2].addEventListener("click",()=>window.openPage("wallet")); 
-footerBtns[3].addEventListener("click",()=>window.openPage("withdraw")); 
-footerBtns[4].addEventListener("click",()=>window.openPage("live")); 
-
-/* NFT Array */
 const NFTS=[
-{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
+{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
+{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
+{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},
+{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},
+{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},
+{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},
+{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},
+{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},
+{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},
+{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},
+{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},
+{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},
+{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},
+{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},
+{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},
+{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},
+{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},
+{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},
+{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},
+{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},
+{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},
+{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},
+{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},
+{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},
+{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},
+{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},
+{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},
+{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
+{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
+{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
 const nftContainer = document.getElementById("nfts");
 
 window.renderNFT = function(list){
-  nftContainer.innerHTML = "";
+  nftContainer.innerHTML="";
   list.forEach((n,i)=>{
-    nftContainer.innerHTML += `
+    nftContainer.innerHTML+=`
       <div class="nft">
         <img src="${n.img}" onclick="buyNFT(${i})">
         <p>Price $${n.price}</p>
@@ -272,43 +305,12 @@ window.renderNFT = function(list){
         <button onclick="buyNFT(${i})">Buy NFT</button>
       </div>`;
   });
-}
+};
 
 window.renderNFT(NFTS);
 
-window.filterNFT=function(cat){if(cat==="all"){renderNFT(NFTS);return;} renderNFT(NFTS.filter(n=>n.cat===cat))}
 window.buyNFT = function(index){
-  window.location.href = "nft-details.html?id=" + index;
-}
-window.copyReferral=function(){navigator.clipboard.writeText(document.getElementById("referralCode").innerText.split(" ")[1]);alert("Referral Copied")}
+  window.location.href="nft-details.html?id="+index;
+};
 
-/* Firebase Auth + Referral + Stats + Live Earnings */
-onAuthStateChanged(auth,async user=>{
-  if(!user){window.location.replace("login.html");return;}
-  const userRef=doc(db,"users",user.uid);
-  let snap=await getDoc(userRef);
-  if(!snap.exists()){
-    const code="SNFT"+Math.floor(100000+Math.random()*900000);
-    await setDoc(userRef,{referralCode:code,dailyIncome:0,liveEarnings:0,totalDeposit:0,walletBalance:0,nfts:[]});
-    document.getElementById("referralCode").innerText="Referral: "+code;
-  } else {
-    const data=snap.data();
-    if(!data.referralCode){
-      const code="SNFT"+Math.floor(100000+Math.random()*900000);
-      await updateDoc(userRef,{referralCode:code});
-      document.getElementById("referralCode").innerText="Referral: "+code;
-    } else {
-      document.getElementById("referralCode").innerText="Referral: "+data.referralCode;
-    }
-    document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
-    document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
-    document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
-    document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
-    document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
-  }
-
-});
 </script>
-
-</body>
-</html>
