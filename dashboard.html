@@ -176,6 +176,9 @@ onAuthStateChanged(auth, async (user) => {
 
     const perSecond = (d.dailyIncome || 0) / 86400;
     const live = perSecond * seconds;
+    console.log("Daily:", d.dailyIncome);
+console.log("Seconds:", seconds);
+console.log("Live:", live);
 
     // ✅ 24 HOURS COMPLETE → CREDIT WALLET
     if (seconds >= 86400) {
