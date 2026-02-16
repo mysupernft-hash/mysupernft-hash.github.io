@@ -207,6 +207,7 @@ function logout(){signOut(auth).then(()=>window.location.replace("login.html"));
 /* OpenPage */
 window.openPage = function(page){
   switch(page){
+    case "trading": window.location.href="trading.html"; break;
     case "account": window.location.href="account.html"; break;
     case "referral":
   window.location.href = "my-referrals.html";
@@ -216,7 +217,6 @@ window.openPage = function(page){
       break;
     case "investments": window.location.href="my-investments.html"; break;
     case "wallet": window.location.href="wallet.html"; break;
-    case "trading": window.location.href="trading.html"; break;
     case "deposit": window.location.href="deposit.html"; break;
     case "withdraw": window.location.href="withdraw.html"; break;
     case "live": window.location.href="live-earnings.html"; break;
