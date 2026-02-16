@@ -52,6 +52,22 @@ header{
   justify-content:space-between;
   margin:8px 0;
 }
+
+.buy-btn{
+  background:#FFD700;
+  color:#000;
+  border:none;
+  padding:12px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:20px;
+  width:200px;
+}
+
+.buy-btn:hover{
+  background:#e6c200;
+}
 </style>
 </head>
 <body>
@@ -70,52 +86,63 @@ header{
     <div class="calc-row"><span>Yearly Income:</span><span id="yearly"></span></div>
   </div>
 
+  <button class="buy-btn" onclick="buyNFT()">Buy NFT</button>
+
 </div>
 
-<script>
+<script type="module">
 
-// SAME NFT ARRAY AS DASHBOARD
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* SAME NFT ARRAY AS DASHBOARD */
 const NFTS=[
-{cat:"starter",price:10,p:0.2,img:"images/IMG_0458.png"},
-{cat:"starter",price:15,p:0.3,img:"images/IMG_0459.png"},
-{cat:"starter",price:20,p:0.4,img:"images/IMG_0460.png"},
-{cat:"starter",price:25,p:0.5,img:"images/IMG_0461.png"},
-{cat:"starter",price:30,p:0.6,img:"images/IMG_0462.png"},
-{cat:"starter",price:35,p:0.7,img:"images/IMG_0463.png"},
-{cat:"starter",price:40,p:0.8,img:"images/IMG_0464.png"},
-{cat:"starter",price:45,p:0.9,img:"images/IMG_0465.png"},
-{cat:"starter",price:50,p:1,img:"images/IMG_0466.png"},
-{cat:"rising",price:55,p:1.3,img:"images/IMG_0467.png"},
-{cat:"rising",price:60,p:1.5,img:"images/IMG_0468.png"},
-{cat:"rising",price:65,p:1.63,img:"images/IMG_0469.png"},
-{cat:"rising",price:70,p:1.75,img:"images/IMG_0470.png"},
-{cat:"rising",price:75,p:1.88,img:"images/IMG_0471.png"},
-{cat:"rising",price:80,p:2,img:"images/IMG_0472.png"},
-{cat:"rising",price:90,p:2.25,img:"images/IMG_0473.png"},
-{cat:"rising",price:100,p:2.5,img:"images/IMG_0474.png"},
-{cat:"elite",price:150,p:5,img:"images/IMG_0475.png"},
-{cat:"elite",price:200,p:6.6,img:"images/IMG_0476.png"},
-{cat:"elite",price:250,p:8.25,img:"images/IMG_0477.png"},
-{cat:"elite",price:300,p:10,img:"images/IMG_0478.png"},
-{cat:"elite",price:350,p:11.6,img:"images/IMG_0479.png"},
-{cat:"elite",price:400,p:13.3,img:"images/IMG_0480.png"},
-{cat:"elite",price:450,p:15,img:"images/IMG_0481.png"},
-{cat:"legendary",price:499,p:25,img:"images/IMG_0482.png"},
-{cat:"legendary",price:599,p:30,img:"images/IMG_0483.png"},
-{cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},
-{cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
-{cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
-{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
+{price:10,p:0.2,img:"images/IMG_0458.png"},
+{price:15,p:0.3,img:"images/IMG_0459.png"},
+{price:20,p:0.4,img:"images/IMG_0460.png"},
+{price:25,p:0.5,img:"images/IMG_0461.png"},
+{price:30,p:0.6,img:"images/IMG_0462.png"},
+{price:35,p:0.7,img:"images/IMG_0463.png"},
+{price:40,p:0.8,img:"images/IMG_0464.png"},
+{price:45,p:0.9,img:"images/IMG_0465.png"},
+{price:50,p:1,img:"images/IMG_0466.png"},
+{price:55,p:1.3,img:"images/IMG_0467.png"},
+{price:60,p:1.5,img:"images/IMG_0468.png"},
+{price:65,p:1.63,img:"images/IMG_0469.png"},
+{price:70,p:1.75,img:"images/IMG_0470.png"},
+{price:75,p:1.88,img:"images/IMG_0471.png"},
+{price:80,p:2,img:"images/IMG_0472.png"},
+{price:90,p:2.25,img:"images/IMG_0473.png"},
+{price:100,p:2.5,img:"images/IMG_0474.png"},
+{price:150,p:5,img:"images/IMG_0475.png"},
+{price:200,p:6.6,img:"images/IMG_0476.png"},
+{price:250,p:8.25,img:"images/IMG_0477.png"},
+{price:300,p:10,img:"images/IMG_0478.png"},
+{price:350,p:11.6,img:"images/IMG_0479.png"},
+{price:400,p:13.3,img:"images/IMG_0480.png"},
+{price:450,p:15,img:"images/IMG_0481.png"},
+{price:499,p:25,img:"images/IMG_0482.png"},
+{price:599,p:30,img:"images/IMG_0483.png"},
+{price:699,p:40,img:"images/IMG_0497.png"},
+{price:799,p:30,img:"images/IMG_0498.png"},
+{price:899,p:45,img:"images/IMG_0499.png"},
+{price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
-// GET ID FROM URL
 const params = new URLSearchParams(window.location.search);
 let id = parseInt(params.get("id"));
-
-// AUTO FIX INVALID ID
-if(isNaN(id) || id < 0 || id >= NFTS.length){
-  id = 0;
-}
+if(isNaN(id) || id < 0 || id >= NFTS.length){ id = 0; }
 
 const nft = NFTS[id];
 
@@ -125,6 +152,42 @@ document.getElementById("daily").innerText = "$" + nft.p.toFixed(2);
 document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
 document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
 document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
+
+window.buyNFT = async function(){
+
+  const user = auth.currentUser;
+  if(!user){
+    alert("Please login first");
+    return;
+  }
+
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+
+  if(!snap.exists()){
+    alert("User not found");
+    return;
+  }
+
+  const data = snap.data();
+  const wallet = data.walletBalance || 0;
+  const currentDaily = data.dailyIncome || 0;
+
+  if(wallet >= nft.price){
+
+    await updateDoc(userRef,{
+      walletBalance: wallet - nft.price,
+      dailyIncome: currentDaily + nft.p
+    });
+
+    alert("🎉 Purchased Successfully!");
+    window.location.href="dashboard.html";
+
+  } else {
+    alert("❌ Insufficient Balance!");
+  }
+
+}
 
 </script>
 
