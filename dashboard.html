@@ -136,14 +136,58 @@ const db=getFirestore(app);
 /* ===============================
    AUTH + LIVE MINING SYSTEM
 =================================*/
+let currentUser = null;
 
-onAuthStateChanged(auth, async (user) => {
+// 🔥 AUTH LISTENER (ONLY ONE)
+onAuthStateChanged(auth, (user) => {
+  if(user){
+    currentUser = user;
+  } else {
+    currentUser = null;
+  }
+});
 
-  if (!user) {
-    window.location.replace("login.html");
+// 🔥 BUY FUNCTION
+window.buyNFT = async function(){
+
+  if(!currentUser){
+    alert("Please login first");
     return;
   }
 
+  const userRef = doc(db,"users",currentUser.uid);
+  const snap = await getDoc(userRef);
+
+  if(!snap.exists()){
+    alert("User not found");
+    return;
+  }
+
+  const data = snap.data();
+  const wallet = data.walletBalance || 0;
+  const currentDaily = data.dailyIncome || 0;
+
+  if(wallet < nft.price){
+    alert("❌ Insufficient Balance!");
+    return;
+  }
+
+  try{
+    await updateDoc(userRef,{
+      walletBalance: wallet - nft.price,
+      dailyIncome: currentDaily + nft.p,
+      lastIncomeAt: new Date()
+    });
+
+    alert("🎉 Purchased Successfully!");
+    window.location.href="dashboard.html";
+
+  }catch(error){
+    console.error(error);
+    alert("Purchase failed!");
+  }
+
+};
   const userRef = doc(db, "users", user.uid);
   let snap = await getDoc(userRef);
 
