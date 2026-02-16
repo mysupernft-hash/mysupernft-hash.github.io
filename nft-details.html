@@ -108,22 +108,23 @@ const NFTS=[
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
+// GET ID FROM URL
 const params = new URLSearchParams(window.location.search);
-const id = parseInt(params.get("id"));
+let id = parseInt(params.get("id"));
 
+// AUTO FIX INVALID ID
 if(isNaN(id) || id < 0 || id >= NFTS.length){
-  document.body.innerHTML="<h2 style='margin-top:50px;color:#FFD700;'>Invalid NFT ID</h2>";
-} else {
-  const nft = NFTS[id];
-
-  document.getElementById("nftImage").src = nft.img;
-  document.getElementById("price").innerText = "Price: $" + nft.price;
-
-  document.getElementById("daily").innerText = "$" + nft.p.toFixed(2);
-  document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
-  document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
-  document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
+  id = 0;
 }
+
+const nft = NFTS[id];
+
+document.getElementById("nftImage").src = nft.img;
+document.getElementById("price").innerText = "Price: $" + nft.price;
+document.getElementById("daily").innerText = "$" + nft.p.toFixed(2);
+document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
+document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
+document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
 
 </script>
 
