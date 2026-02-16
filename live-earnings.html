@@ -1,123 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Earnings | SuperNFT</title>
+<title>SuperNFT Live Earnings</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
-}
-header{
-  position:sticky;
-  top:0;
-  background:#1a1a1a;
-  padding:12px 16px;
   text-align:center;
-  font-size:20px;
-  font-weight:bold;
 }
+
+header{
+  padding:15px;
+  background:#1a1a1a;
+  font-size:20px;
+  border-bottom:2px solid #FFD700;
+}
+
 .container{
   padding:20px;
 }
-.card{
+
+.box{
   background:#1a1a1a;
-  border-radius:12px;
   padding:20px;
-  margin-bottom:15px;
-  text-align:center;
+  border-radius:12px;
+  margin:20px auto;
+  max-width:400px;
+  border:1px solid #FFD700;
 }
-.card h2{
-  margin:0 0 10px;
-  font-size:18px;
-}
-.card p{
-  margin:0;
-  font-size:28px;
+
+.value{
+  font-size:24px;
   font-weight:bold;
+  margin-top:10px;
 }
-.note{
-  font-size:13px;
-  opacity:0.8;
-  margin-top:8px;
-}
-.back-btn{
-  display:block;
+
+.progress{
   width:100%;
-  margin-top:20px;
-  padding:12px;
+  background:#272727;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:15px;
+}
+
+.progress-bar{
+  height:10px;
+  width:0%;
   background:#FFD700;
-  color:#000;
-  text-align:center;
+  transition:width 1s linear;
+}
+
+button{
+  background:#FFD700;
+  border:none;
+  padding:10px 15px;
   border-radius:8px;
+  color:#000;
   font-weight:bold;
-  text-decoration:none;
+  cursor:pointer;
+  margin-top:20px;
+}
+
+button:hover{
+  background:#e6c200;
 }
 </style>
 </head>
-
 <body>
 
-<header>Live Earnings</header>
+<header>💹 SuperNFT Live Earnings</header>
 
 <div class="container">
-  <div class="card">
-    <h2>Current Live Earnings</h2>
-    <p id="liveEarnings">$0.00</p>
-    <div class="note">Auto updating every second</div>
+
+  <div class="box">
+    <div>Daily Income</div>
+    <div class="value" id="dailyIncome">$0.00</div>
   </div>
 
-  <div class="card">
-    <h2>Total Earnings</h2>
-    <p id="totalEarnings">$0.00</p>
+  <div class="box">
+    <div>Live Earnings</div>
+    <div class="value" id="liveEarnings">$0.0000</div>
+
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
   </div>
 
-  <a href="dashboard.html" class="back-btn">⬅ Back to Dashboard</a>
+  <button onclick="goBack()">Back to Dashboard</button>
+
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
+onAuthStateChanged(auth, async (user) => {
+
+  if (!user) {
     window.location.replace("login.html");
     return;
   }
 
-  async function fetchEarnings(){
-    const snap = await getDoc(doc(db,"users",user.uid));
-    if(!snap.exists()) return;
+  const userRef = doc(db, "users", user.uid);
+
+  setInterval(async () => {
+
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
 
     const data = snap.data();
+
+    const now = Date.now();
+    const last = data.lastIncomeAt?.toMillis() || now;
+    const seconds = Math.floor((now - last) / 1000);
+
+    const perSecond = (data.dailyIncome || 0) / 86400;
+    const live = perSecond * seconds;
+
+    // 24h complete → credit wallet
+    if (seconds >= 86400) {
+
+      await updateDoc(userRef, {
+        walletBalance: (data.walletBalance || 0) + (data.dailyIncome || 0),
+        lastIncomeAt: new Date()
+      });
+
+      return;
+    }
+
+    // Update UI
+    document.getElementById("dailyIncome").innerText =
+      "$" + (data.dailyIncome || 0).toFixed(2);
+
     document.getElementById("liveEarnings").innerText =
-      "$" + (data.liveEarnings || 0).toFixed(2);
+      "$" + live.toFixed(4);
 
-    document.getElementById("totalEarnings").innerText =
-      "$" + (data.totalEarnings || 0).toFixed(2);
-  }
+    // Progress bar %
+    const percent = (seconds / 86400) * 100;
+    document.getElementById("progressBar").style.width =
+      percent + "%";
 
-  fetchEarnings();
-  setInterval(fetchEarnings, 1000);
+  }, 1000);
+
 });
+
+window.goBack = function(){
+  window.location.href="dashboard.html";
+};
+
 </script>
 
 </body>
