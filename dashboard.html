@@ -163,57 +163,77 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   // 🔥 LIVE MINING SYSTEM
+let miningStarted = false;
+
+if (!miningStarted) {
+  miningStarted = true;
+
   setInterval(async () => {
 
-    const s = await getDoc(userRef);
-    if (!s.exists()) return;
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
 
-    const d = s.data();
+    const d = snap.data();
 
     const now = Date.now();
-    const last = d.lastIncomeAt?.toMillis() || now;
+    const last = d.lastIncomeAt?.toMillis?.() || now;
     const seconds = Math.floor((now - last) / 1000);
 
-    const perSecond = (d.dailyIncome || 0) / 86400;
+    const daily = d.dailyIncome || 0;
+    const perSecond = daily / 86400;
     const live = perSecond * seconds;
-    console.log("Daily:", d.dailyIncome);
-console.log("Seconds:", seconds);
-console.log("Live:", live);
+
+    console.log("Daily:", daily);
+    console.log("Seconds:", seconds);
+    console.log("Live:", live);
 
     // ✅ 24 HOURS COMPLETE → CREDIT WALLET
     if (seconds >= 86400) {
 
       await updateDoc(userRef, {
-        walletBalance: (d.walletBalance || 0) + (d.dailyIncome || 0),
+        walletBalance: (d.walletBalance || 0) + daily,
         lastIncomeAt: new Date()
       });
 
       return;
     }
 
-    // ✅ UI UPDATE
-    document.getElementById("dailyIncome").innerText =
-      "$" + (d.dailyIncome || 0).toFixed(2);
+    // ✅ UI UPDATE (More visible decimals)
+    if (document.getElementById("dailyIncome")) {
+      document.getElementById("dailyIncome").innerText =
+        "$" + daily.toFixed(2);
+    }
 
-    document.getElementById("liveEarnings").innerText =
-      "$" + live.toFixed(4);
+    if (document.getElementById("liveEarnings")) {
+      document.getElementById("liveEarnings").innerText =
+        "$" + live.toFixed(6);   // 👈 was 4
+    }
 
     const totalWallet = (d.walletBalance || 0) + live;
 
-    document.getElementById("walletBalanceP").innerText =
-      "$" + totalWallet.toFixed(2);
+    if (document.getElementById("walletBalanceP")) {
+      document.getElementById("walletBalanceP").innerText =
+        "$" + totalWallet.toFixed(2);
+    }
 
-    document.getElementById("walletBalanceTop").innerText =
-      "$" + totalWallet.toFixed(2);
+    if (document.getElementById("walletBalanceTop")) {
+      document.getElementById("walletBalanceTop").innerText =
+        "$" + totalWallet.toFixed(2);
+    }
 
-    document.getElementById("depositMoney")
-      .querySelector("p").innerText =
-      "$" + (d.totalDeposit || 0);
+    if (document.getElementById("depositMoney")) {
+      document.getElementById("depositMoney")
+        .querySelector("p").innerText =
+        "$" + (d.totalDeposit || 0);
+    }
 
-    document.getElementById("referralCode").innerText =
-      "Referral: " + d.referralCode;
+    if (document.getElementById("referralCode")) {
+      document.getElementById("referralCode").innerText =
+        "Referral: " + d.referralCode;
+    }
 
   }, 1000);
+}
 
 });
 
