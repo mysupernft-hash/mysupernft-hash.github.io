@@ -14,16 +14,27 @@ color:#FFD700;
 text-align:center;
 }
 .container{
-padding:40px;
+padding:40px 20px;
 }
 .card{
 background:#1a1a1a;
 padding:25px;
 border-radius:12px;
 display:inline-block;
+max-width:400px;
+width:100%;
+}
+.notice{
+background:#111;
+border:1px solid #FFD700;
+border-radius:10px;
+padding:15px;
+margin-top:25px;
+font-size:14px;
+text-align:left;
 }
 input{
-width:250px;
+width:90%;
 padding:10px;
 border-radius:6px;
 border:none;
@@ -42,17 +53,34 @@ cursor:pointer;
 button:hover{
 background:#e6c200;
 }
+ul{
+padding-left:18px;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
+
 <h2>🎁 Use Referral Code</h2>
 
 <div class="card">
+
 <input type="text" id="refCode" placeholder="Enter Referral Code">
 <br>
 <button onclick="applyReferral()">Apply Referral</button>
+
+<div class="notice">
+<strong>⚠️ Important Notice:</strong>
+<ul>
+<li>Each referral gives <strong>$5 bonus</strong> to both users.</li>
+<li>Referral code can be used <strong>only once per account</strong>.</li>
+<li>You <strong>cannot use your own referral code</strong>.</li>
+<li>Bonus is instantly added to wallet balance.</li>
+<li>Fraud or multiple account abuse may result in account suspension.</li>
+</ul>
+</div>
+
 </div>
 </div>
 
@@ -76,25 +104,13 @@ const db=getFirestore(app);
 
 let currentUser=null;
 
-/* ===============================
-   AUTH READY
-=================================*/
-
 onAuthStateChanged(auth,(user)=>{
-
 if(!user){
-alert("Login required");
 window.location.href="login.html";
 return;
 }
-
 currentUser=user;
-
 });
-
-/* ===============================
-   APPLY REFERRAL FUNCTION
-=================================*/
 
 window.applyReferral = async function(){
 
@@ -125,8 +141,6 @@ alert("Referral already used");
 return;
 }
 
-/* 🔍 FIND REFERRER */
-
 const q=query(
 collection(db,"users"),
 where("referralCode","==",code)
@@ -142,7 +156,6 @@ return;
 const refDoc=querySnap.docs[0];
 const refUserId=refDoc.id;
 
-/* 🚫 SELF REFERRAL BLOCK */
 if(refUserId===currentUser.uid){
 alert("You cannot use your own referral code");
 return;
@@ -153,21 +166,18 @@ const refData=refDoc.data();
 
 const bonus=5;
 
-/* ✅ UPDATE REFERRER */
 await updateDoc(refRef,{
 walletBalance:(refData.walletBalance||0)+bonus,
 referralEarnings:(refData.referralEarnings||0)+bonus,
 referralCount:(refData.referralCount||0)+1
 });
 
-/* ✅ UPDATE NEW USER */
 await updateDoc(myRef,{
 walletBalance:(myData.walletBalance||0)+bonus,
 referralUsed:true
 });
 
 alert("🎉 $5 Bonus Added To Both Accounts!");
-
 window.location.href="dashboard.html";
 
 };
