@@ -14,14 +14,20 @@ color:#FFD700;
 text-align:center;
 }
 .container{
-padding:30px;
+padding:40px;
+}
+.card{
+background:#1a1a1a;
+padding:25px;
+border-radius:12px;
+display:inline-block;
 }
 input{
 width:250px;
 padding:10px;
 border-radius:6px;
 border:none;
-margin-top:15px;
+margin-top:10px;
 }
 button{
 margin-top:15px;
@@ -33,19 +39,14 @@ color:#000;
 font-weight:bold;
 cursor:pointer;
 }
-.card{
-background:#1a1a1a;
-padding:20px;
-border-radius:12px;
-display:inline-block;
-margin-top:40px;
+button:hover{
+background:#e6c200;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-
 <h2>🎁 Use Referral Code</h2>
 
 <div class="card">
@@ -53,7 +54,6 @@ margin-top:40px;
 <br>
 <button onclick="applyReferral()">Apply Referral</button>
 </div>
-
 </div>
 
 <script type="module">
@@ -93,7 +93,7 @@ currentUser=user;
 });
 
 /* ===============================
-   APPLY REFERRAL
+   APPLY REFERRAL FUNCTION
 =================================*/
 
 window.applyReferral = async function(){
@@ -125,7 +125,7 @@ alert("Referral already used");
 return;
 }
 
-/* 🔍 Find referrer by referralCode */
+/* 🔍 FIND REFERRER */
 
 const q=query(
 collection(db,"users"),
@@ -142,27 +142,31 @@ return;
 const refDoc=querySnap.docs[0];
 const refUserId=refDoc.id;
 
-/* 🚫 Cannot use own code */
+/* 🚫 SELF REFERRAL BLOCK */
 if(refUserId===currentUser.uid){
 alert("You cannot use your own referral code");
 return;
 }
 
-/* 💰 Update referrer earnings */
 const refRef=doc(db,"users",refUserId);
-
 const refData=refDoc.data();
 
+const bonus=5;
+
+/* ✅ UPDATE REFERRER */
 await updateDoc(refRef,{
-referralEarnings:(refData.referralEarnings||0)+10
+walletBalance:(refData.walletBalance||0)+bonus,
+referralEarnings:(refData.referralEarnings||0)+bonus,
+referralCount:(refData.referralCount||0)+1
 });
 
-/* ✅ Mark referral used */
+/* ✅ UPDATE NEW USER */
 await updateDoc(myRef,{
+walletBalance:(myData.walletBalance||0)+bonus,
 referralUsed:true
 });
 
-alert("🎉 Referral Applied Successfully!");
+alert("🎉 $5 Bonus Added To Both Accounts!");
 
 window.location.href="dashboard.html";
 
