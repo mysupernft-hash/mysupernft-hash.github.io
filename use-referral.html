@@ -2,89 +2,43 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Use Referral Code</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Use Referral - SuperNFT</title>
 
 <style>
 body{
-    margin:0;
-    font-family:Segoe UI, sans-serif;
-    background:#000;
-    color:#fff;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+margin:0;
+font-family:Arial;
+background:#0f0f0f;
+color:#FFD700;
+text-align:center;
 }
-
 .container{
-    width:95%;
-    max-width:420px;
-    background:#111;
-    border:1px solid gold;
-    border-radius:15px;
-    padding:25px;
-    box-shadow:0 0 20px rgba(255,215,0,.2);
-    text-align:center;
+padding:30px;
 }
-
-h2{
-    color:gold;
-    margin-bottom:10px;
-}
-
-.desc{
-    font-size:14px;
-    color:#aaa;
-    margin-bottom:20px;
-}
-
 input{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:8px;
-    background:#000;
-    border:1px solid gold;
-    color:#fff;
-    font-size:16px;
-    text-align:center;
+width:250px;
+padding:10px;
+border-radius:6px;
+border:none;
+margin-top:15px;
 }
-
 button{
-    margin-top:15px;
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:10px;
-    background:gold;
-    color:#000;
-    font-weight:bold;
-    font-size:16px;
-    cursor:pointer;
-    transition:.3s;
+margin-top:15px;
+padding:10px 20px;
+border:none;
+border-radius:6px;
+background:#FFD700;
+color:#000;
+font-weight:bold;
+cursor:pointer;
 }
-
-button:hover{
-    background:#ffd700cc;
-}
-
-.msg{
-    margin-top:15px;
-    font-size:14px;
-}
-
-.success{color:#00ff9d;}
-.error{color:#ff4d4d;}
-
-.warning{
-    margin-top:20px;
-    font-size:13px;
-    color:#ffcc00;
-    background:#1a1a1a;
-    padding:12px;
-    border-radius:10px;
-    text-align:left;
+.card{
+background:#1a1a1a;
+padding:20px;
+border-radius:12px;
+display:inline-block;
+margin-top:40px;
 }
 </style>
 </head>
@@ -92,112 +46,127 @@ button:hover{
 
 <div class="container">
 
-<h2>Enter Referral Code</h2>
+<h2>🎁 Use Referral Code</h2>
 
-<p class="desc">
-Use a valid referral code to activate rewards and bonuses.
-</p>
-
-<input id="code" placeholder="Enter Referral Code">
-
-<button onclick="applyCode()">Apply Code</button>
-
-<div id="msg" class="msg"></div>
-
-<div class="warning">
-<b>Important Notice:</b><br><br>
-
-• Referral code can be used only once.<br>
-• Invalid or fake codes will be rejected.<br>
-• Self-referral is strictly prohibited.<br>
-• Admin can disable rewards if fraud detected.<br>
-• Do not refresh during submission.<br>
-
+<div class="card">
+<input type="text" id="refCode" placeholder="Enter Referral Code">
+<br>
+<button onclick="applyReferral()">Apply Referral</button>
 </div>
 
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-getFirestore, doc, getDoc, updateDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import {
-getAuth, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
+const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
 authDomain:"supernft-5b952.firebaseapp.com",
 projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth();
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-let currentUser;
+let currentUser=null;
+
+/* ===============================
+   AUTH READY
+=================================*/
 
 onAuthStateChanged(auth,(user)=>{
-if(!user) location.href="login.html";
-else currentUser=user;
-});
 
-window.applyCode = async function(){
-
-const msg = document.getElementById("msg");
-const code = document.getElementById("code").value.trim();
-
-if(!code){
-msg.innerHTML="Enter referral code";
-msg.className="msg error";
+if(!user){
+alert("Login required");
+window.location.href="login.html";
 return;
 }
 
-try{
+currentUser=user;
 
-const myRef = doc(db,"users",currentUser.uid);
-const mySnap = await getDoc(myRef);
-const myData = mySnap.data();
+});
+
+/* ===============================
+   APPLY REFERRAL
+=================================*/
+
+window.applyReferral = async function(){
+
+if(!currentUser){
+alert("Please wait...");
+return;
+}
+
+const code=document.getElementById("refCode").value.trim();
+
+if(code===""){
+alert("Enter referral code");
+return;
+}
+
+const myRef=doc(db,"users",currentUser.uid);
+const mySnap=await getDoc(myRef);
+
+if(!mySnap.exists()){
+alert("User not found");
+return;
+}
+
+const myData=mySnap.data();
 
 if(myData.referralUsed){
-msg.innerHTML="Referral already used";
-msg.className="msg error";
+alert("Referral already used");
 return;
 }
 
-const usersSnap = await getDoc(doc(db,"referralCodes",code));
+/* 🔍 Find referrer by referralCode */
 
-if(!usersSnap.exists()){
-msg.innerHTML="Invalid referral code";
-msg.className="msg error";
+const q=query(
+collection(db,"users"),
+where("referralCode","==",code)
+);
+
+const querySnap=await getDocs(q);
+
+if(querySnap.empty){
+alert("Invalid referral code");
 return;
 }
 
-const ownerUid = usersSnap.data().ownerUid;
+const refDoc=querySnap.docs[0];
+const refUserId=refDoc.id;
 
-if(ownerUid === currentUser.uid){
-msg.innerHTML="You cannot use your own code";
-msg.className="msg error";
+/* 🚫 Cannot use own code */
+if(refUserId===currentUser.uid){
+alert("You cannot use your own referral code");
 return;
 }
 
-/* update user */
-await updateDoc(myRef,{
-referralUsed:true,
-referredByCode:code
+/* 💰 Update referrer earnings */
+const refRef=doc(db,"users",refUserId);
+
+const refData=refDoc.data();
+
+await updateDoc(refRef,{
+referralEarnings:(refData.referralEarnings||0)+10
 });
 
-msg.innerHTML="Referral applied successfully!";
-msg.className="msg success";
+/* ✅ Mark referral used */
+await updateDoc(myRef,{
+referralUsed:true
+});
 
-}catch(err){
-msg.innerHTML="Error: "+err.message;
-msg.className="msg error";
-}
+alert("🎉 Referral Applied Successfully!");
 
-}
+window.location.href="dashboard.html";
+
+};
 
 </script>
 
