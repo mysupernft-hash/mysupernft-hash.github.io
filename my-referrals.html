@@ -7,55 +7,62 @@
 
 <style>
 body{
-margin:0;
-font-family:Arial, sans-serif;
-background:#0f0f0f;
-color:#FFD700;
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
 }
 header{
-background:#1a1a1a;
-padding:15px;
-text-align:center;
-font-size:20px;
-font-weight:bold;
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
 }
 .container{
-padding:20px;
+  padding:20px;
 }
 .card{
-background:#1a1a1a;
-border-radius:12px;
-padding:15px;
-margin-bottom:15px;
+  background:#1a1a1a;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
 }
 .big{
-font-size:26px;
-font-weight:bold;
+  font-size:26px;
+  font-weight:bold;
 }
 .list{
-margin-top:10px;
+  margin-top:10px;
 }
 .item{
-padding:10px;
-border-bottom:1px solid #272727;
-font-size:14px;
+  padding:10px;
+  border-bottom:1px solid #272727;
+  font-size:14px;
 }
 .item:last-child{
-border-bottom:none;
+  border-bottom:none;
 }
 .small{
-font-size:12px;
-opacity:0.8;
+  font-size:12px;
+  opacity:0.8;
 }
 .back{
-display:block;
-text-align:center;
-margin-top:20px;
-padding:12px;
-background:#272727;
-border-radius:8px;
-color:#FFD700;
-text-decoration:none;
+  display:block;
+  text-align:center;
+  margin-top:20px;
+  padding:12px;
+  background:#272727;
+  border-radius:8px;
+  color:#FFD700;
+  text-decoration:none;
+}
+.notice{
+  background:#272727;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
+  font-size:13px;
 }
 </style>
 </head>
@@ -65,6 +72,11 @@ text-decoration:none;
 <header>👥 My Referrals</header>
 
 <div class="container">
+
+<div class="notice">
+⚠️ Important: You earn $5 for every successful referral.
+Bonus is credited instantly after referral code is applied.
+</div>
 
 <div class="card">
 <h3>Your Referral Code</h3>
@@ -103,77 +115,80 @@ collection, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-onAuthStateChanged(auth, async (user)=>{
+onAuthStateChanged(auth,(user)=>{
 
-if(!user){
-location.href="login.html";
-return;
-}
+  if(!user){
+    window.location.href="login.html";
+    return;
+  }
 
-const userRef=doc(db,"users",user.uid);
-const snap=await getDoc(userRef);
+  console.log("Current UID:", user.uid);
 
-if(!snap.exists()){
-return;
-}
+  const userRef=doc(db,"users",user.uid);
 
-const data=snap.data();
+  /* 🔹 Load Main User Data */
+  getDoc(userRef).then((snap)=>{
 
-/* 🔹 MAIN USER DATA */
-document.getElementById("refCode").innerText =
-data.referralCode || "---";
+    if(!snap.exists()) return;
 
-document.getElementById("totalEarn").innerText =
-data.referralEarnings || 0;
+    const data=snap.data();
 
-/* 🔹 REFERRAL HISTORY REALTIME */
+    document.getElementById("refCode").innerText =
+      data.referralCode || "---";
 
-const refCol = collection(db,"users",user.uid,"referrals");
+    document.getElementById("totalEarn").innerText =
+      data.referralEarnings || 0;
 
-onSnapshot(refCol,(snapshot)=>{
+  });
 
-const list=document.getElementById("refList");
-list.innerHTML="";
+  /* 🔹 Real-time Referral History */
+  const refCol=collection(db,"users",user.uid,"referrals");
 
-document.getElementById("totalRef").innerText =
-snapshot.size;
+  onSnapshot(refCol,(snapshot)=>{
 
-if(snapshot.empty){
-list.innerHTML=`<div class="small">No referrals yet</div>`;
-return;
-}
+    const list=document.getElementById("refList");
+    list.innerHTML="";
 
-snapshot.forEach(docSnap=>{
+    document.getElementById("totalRef").innerText =
+      snapshot.size;
 
-const r=docSnap.data();
+    if(snapshot.empty){
+      list.innerHTML=
+      `<div class="small">No referrals yet</div>`;
+      return;
+    }
 
-let date="Pending";
+    snapshot.forEach(docSnap=>{
 
-if(r.joinedAt && r.joinedAt.toDate){
-date=r.joinedAt.toDate().toLocaleString();
-}
+      const r=docSnap.data();
 
-list.innerHTML+=`
-<div class="item">
-<div>${r.email || "User"}</div>
-<div class="small">
-Joined: ${date} • Reward: $${r.reward || 0}
-</div>
-</div>
-`;
+      let date="Pending";
 
-});
+      if(r.joinedAt && r.joinedAt.toDate){
+        date=r.joinedAt.toDate().toLocaleString();
+      }
 
-});
+      list.innerHTML+=`
+      <div class="item">
+        <div>${r.email || "User"}</div>
+        <div class="small">
+        Joined: ${date} • Reward: $${r.reward || 0}
+        </div>
+      </div>
+      `;
+
+    });
+
+  });
 
 });
 
