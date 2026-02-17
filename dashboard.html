@@ -228,6 +228,16 @@ window.renderNFT=function(list){nftContainer.innerHTML="";list.forEach(n=>{
   nftContainer.innerHTML+=`<div class="nft"><img src="${n.img}" onclick="buyNFT(${n.price})"><p>Price $${n.price}</p><p>Daily Income $${n.p}</p><p>Validity 365 Days</p><button onclick="buyNFT(${n.price})">Buy NFT</button></div>`;
 })}
 window.renderNFT(NFTS);
+  window.setTab = function(el, category){
+  document.querySelectorAll('.tab').forEach(btn=>btn.classList.remove('active'));
+  el.classList.add('active');
+
+  if(category === 'all'){
+    renderNFT(NFTS);
+  } else {
+    renderNFT(NFTS.filter(n=>n.cat === category));
+  }
+};
 
 window.filterNFT=function(cat){if(cat==="all"){renderNFT(NFTS);return;} renderNFT(NFTS.filter(n=>n.cat===cat))}
 window.buyNFT=function(price){localStorage.setItem("price", price); location.href="nft-details.html"}
