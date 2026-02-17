@@ -115,9 +115,9 @@ collection, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -126,69 +126,74 @@ const db=getFirestore(app);
 
 onAuthStateChanged(auth,(user)=>{
 
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
+if(!user){
+window.location.href="login.html";
+return;
+}
 
-  console.log("Current UID:", user.uid);
+const userRef=doc(db,"users",user.uid);
 
-  const userRef=doc(db,"users",user.uid);
+getDoc(userRef).then((snap)=>{
 
-  /* 🔹 Load Main User Data */
-  getDoc(userRef).then((snap)=>{
+if(!snap.exists()){
+console.log("User doc not found");
+return;
+}
 
-    if(!snap.exists()) return;
+const data=snap.data();
 
-    const data=snap.data();
+console.log("User Data:",data);
 
-    document.getElementById("refCode").innerText =
-      data.referralCode || "---";
+document.getElementById("refCode").innerText =
+data.referralCode || "No Code";
 
-    document.getElementById("totalEarn").innerText =
-      data.referralEarnings || 0;
+document.getElementById("totalEarn").innerText =
+data.referralEarnings || 0;
 
-  });
+});
 
-  /* 🔹 Real-time Referral History */
-  const refCol=collection(db,"users",user.uid,"referrals");
+const refCol=collection(db,"users",user.uid,"referrals");
 
-  onSnapshot(refCol,(snapshot)=>{
+onSnapshot(refCol,(snapshot)=>{
 
-    const list=document.getElementById("refList");
-    list.innerHTML="";
+console.log("Referral Docs Count:",snapshot.size);
 
-    document.getElementById("totalRef").innerText =
-      snapshot.size;
+const list=document.getElementById("refList");
+list.innerHTML="";
 
-    if(snapshot.empty){
-      list.innerHTML=
-      `<div class="small">No referrals yet</div>`;
-      return;
-    }
+document.getElementById("totalRef").innerText =
+snapshot.size;
 
-    snapshot.forEach(docSnap=>{
+if(snapshot.empty){
+list.innerHTML=
+`<div class="small">No referrals yet</div>`;
+return;
+}
 
-      const r=docSnap.data();
+snapshot.forEach(docSnap=>{
 
-      let date="Pending";
+const r=docSnap.data();
 
-      if(r.joinedAt && r.joinedAt.toDate){
-        date=r.joinedAt.toDate().toLocaleString();
-      }
+console.log("Referral Data:",r);
 
-      list.innerHTML+=`
-      <div class="item">
-        <div>${r.email || "User"}</div>
-        <div class="small">
-        Joined: ${date} • Reward: $${r.reward || 0}
-        </div>
-      </div>
-      `;
+let date="Pending";
 
-    });
+if(r.joinedAt && r.joinedAt.toDate){
+date=r.joinedAt.toDate().toLocaleString();
+}
 
-  });
+list.innerHTML+=`
+<div class="item">
+<div>${r.email || "User"}</div>
+<div class="small">
+Joined: ${date} • Reward: $${r.reward || 0}
+</div>
+</div>
+`;
+
+});
+
+});
 
 });
 
