@@ -237,11 +237,13 @@ cursor:pointer;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-apiKey:"YOUR_API_KEY",
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4"",
 authDomain:"supernft-5b952.firebaseapp.com",
 projectId:"supernft-5b952"
 };
@@ -326,6 +328,7 @@ document.body.classList.remove("sidebar-open");
 };
 
 window.openPage=function(page){window.location.href=page+".html";};
+
 window.copyReferral=function(){
 const text=document.getElementById("referralCode").innerText.split(" ")[1];
 navigator.clipboard.writeText(text);
