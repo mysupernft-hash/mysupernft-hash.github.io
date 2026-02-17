@@ -7,59 +7,55 @@
 
 <style>
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0f0f0f;
-  color:#FFD700;
+margin:0;
+font-family:Arial, sans-serif;
+background:#0f0f0f;
+color:#FFD700;
 }
 header{
-  background:#1a1a1a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
+background:#1a1a1a;
+padding:15px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
 }
 .container{
-  padding:20px;
+padding:20px;
 }
 .card{
-  background:#1a1a1a;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:15px;
-}
-.card h3{
-  margin:0 0 8px;
-  font-size:16px;
+background:#1a1a1a;
+border-radius:12px;
+padding:15px;
+margin-bottom:15px;
 }
 .big{
-  font-size:26px;
-  font-weight:bold;
+font-size:26px;
+font-weight:bold;
 }
 .list{
-  margin-top:10px;
+margin-top:10px;
 }
 .item{
-  padding:10px;
-  border-bottom:1px solid #272727;
-  font-size:14px;
+padding:10px;
+border-bottom:1px solid #272727;
+font-size:14px;
 }
 .item:last-child{
-  border-bottom:none;
+border-bottom:none;
 }
 .small{
-  font-size:12px;
-  opacity:0.8;
+font-size:12px;
+opacity:0.8;
 }
 .back{
-  display:block;
-  text-align:center;
-  margin-top:20px;
-  padding:12px;
-  background:#272727;
-  border-radius:8px;
-  color:#FFD700;
-  text-decoration:none;
+display:block;
+text-align:center;
+margin-top:20px;
+padding:12px;
+background:#272727;
+border-radius:8px;
+color:#FFD700;
+text-decoration:none;
 }
 </style>
 </head>
@@ -70,95 +66,119 @@ header{
 
 <div class="container">
 
-  <!-- 🔹 Referral Code -->
-  <div class="card">
-    <h3>Your Referral Code</h3>
-    <div class="big" id="refCode">---</div>
-  </div>
+<div class="card">
+<h3>Your Referral Code</h3>
+<div class="big" id="refCode">---</div>
+</div>
 
-  <!-- 🔹 Stats -->
-  <div class="card">
-    <h3>Total Referrals</h3>
-    <div class="big" id="totalRef">0</div>
-  </div>
+<div class="card">
+<h3>Total Referrals</h3>
+<div class="big" id="totalRef">0</div>
+</div>
 
-  <div class="card">
-    <h3>Total Referral Earnings</h3>
-    <div class="big">$<span id="totalEarn">0</span></div>
-  </div>
+<div class="card">
+<h3>Total Referral Earnings</h3>
+<div class="big">$<span id="totalEarn">0</span></div>
+</div>
 
-  <!-- 🔹 History -->
-  <div class="card">
-    <h3>Referral History</h3>
-    <div class="list" id="refList">
-      <div class="small">Loading...</div>
-    </div>
-  </div>
+<div class="card">
+<h3>Referral History</h3>
+<div class="list" id="refList">
+<div class="small">Loading...</div>
+</div>
+</div>
 
-  <a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
+<a class="back" href="dashboard.html">⬅ Back to Dashboard</a>
 
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc,
-  collection, getDocs
+import { getAuth, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+getFirestore, doc, getDoc,
+collection, onSnapshot, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+const firebaseConfig={
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
 onAuthStateChanged(auth, async user=>{
-  if(!user){
-    location.href="login.html";
-    return;
-  }
 
-  // 🔹 USER MAIN DATA
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
+if(!user){
+location.href="login.html";
+return;
+}
 
-  if(!snap.exists()) return;
+/* ===============================
+   MAIN USER DATA
+=================================*/
 
-  const data = snap.data();
-  document.getElementById("refCode").innerText = data.referralCode || "---";
-  document.getElementById("totalEarn").innerText = data.referralEarnings || 0;
+const userRef=doc(db,"users",user.uid);
 
-  // 🔹 REFERRALS LIST
-  const refCol = collection(db,"users",user.uid,"referrals");
-  const refSnap = await getDocs(refCol);
+const snap=await getDoc(userRef);
+if(!snap.exists()) return;
 
-  document.getElementById("totalRef").innerText = refSnap.size;
+const data=snap.data();
 
-  const list = document.getElementById("refList");
-  list.innerHTML = "";
+document.getElementById("refCode").innerText =
+data.referralCode || "---";
 
-  if(refSnap.empty){
-    list.innerHTML = `<div class="small">No referrals yet</div>`;
-    return;
-  }
+document.getElementById("totalEarn").innerText =
+data.referralEarnings || 0;
 
-  refSnap.forEach(doc=>{
-    const r = doc.data();
-    const date = r.joinedAt?.toDate().toLocaleDateString() || "-";
+/* ===============================
+   REFERRAL HISTORY (REAL TIME)
+=================================*/
 
-    list.innerHTML += `
-      <div class="item">
-        <div>${r.email || "User"}</div>
-        <div class="small">Joined: ${date} • Reward: $${r.reward}</div>
-      </div>
-    `;
-  });
+const refCol = collection(db,"users",user.uid,"referrals");
+const q = query(refCol, orderBy("joinedAt","desc"));
+
+onSnapshot(q,(snapshot)=>{
+
+const list=document.getElementById("refList");
+list.innerHTML="";
+
+document.getElementById("totalRef").innerText =
+snapshot.size;
+
+if(snapshot.empty){
+list.innerHTML=`<div class="small">No referrals yet</div>`;
+return;
+}
+
+snapshot.forEach(doc=>{
+
+const r=doc.data();
+
+const date=r.joinedAt?.toDate
+? r.joinedAt.toDate().toLocaleString()
+: "Pending";
+
+list.innerHTML+=`
+<div class="item">
+<div>${r.email || "User"}</div>
+<div class="small">
+Joined: ${date} • Reward: $${r.reward || 0}
+</div>
+</div>
+`;
+
 });
+
+});
+
+});
+
 </script>
 
 </body>
