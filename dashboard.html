@@ -6,27 +6,50 @@
 <title>SuperNFT Dashboard</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
-header{position:sticky;top:0;background:#1a1a1a;padding:12px;display:flex;justify-content:space-between;align-items:center;}
-.menu-toggle{font-size:26px;cursor:pointer;}
-#sidebar{position:fixed;top:0;left:-260px;width:260px;height:100%;background:#1a1a1a;padding:20px;transition:.3s;overflow:auto;z-index:1000;}
-#sidebar.active{left:0;}
-#sidebar button{width:100%;background:none;border:none;color:#FFD700;padding:10px;text-align:left;cursor:pointer;}
-#sidebar button:hover{background:#272727;border-radius:6px;}
-#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:none;z-index:999;}
-#overlay.active{display:block;}
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;overflow-x:hidden;}
+header{position:sticky;top:0;background:#111;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #222;}
+.menu-toggle{font-size:26px;cursor:pointer;transition:.3s;}
+.menu-toggle:hover{transform:scale(1.1);}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;margin:20px;}
-.stat-box{background:#1a1a1a;padding:15px;border-radius:12px;text-align:center;cursor:pointer;}
-.stat-box:hover{background:#272727;}
-#referralBox{margin:20px;background:#1a1a1a;padding:10px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid #FFD700;}
-.nft-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin:20px;}
-.nft{background:#1a1a1a;padding:10px;border-radius:12px;text-align:center;}
-.nft img{width:100%;border-radius:8px;cursor:pointer;}
-button{background:#FFD700;border:none;padding:6px 8px;border-radius:6px;font-weight:bold;cursor:pointer;}
-footer{background:#1a1a1a;padding:15px;display:grid;grid-template-columns:repeat(5,1fr);text-align:center;margin-top:20px;}
-footer div{cursor:pointer;}
+.stat-box{background:#1a1a1a;padding:15px;border-radius:12px;text-align:center;cursor:pointer;transition:.3s;}
+.stat-box:hover{background:#222;}
+#referralBox{margin:20px;background:#1a1a1a;padding:12px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid #FFD700;}
 .filter-buttons{margin:20px;}
-.filter-buttons button{margin-right:6px;}
+.filter-buttons button{margin-right:6px;margin-bottom:6px;}
+.nft-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin:20px;}
+.nft{background:#1a1a1a;padding:10px;border-radius:12px;text-align:center;transition:.3s;}
+.nft:hover{transform:scale(1.03);}
+.nft img{width:100%;border-radius:8px;cursor:pointer;}
+button{background:#FFD700;border:none;padding:6px 10px;border-radius:6px;font-weight:bold;cursor:pointer;}
+footer{background:#111;padding:15px;display:grid;grid-template-columns:repeat(5,1fr);text-align:center;margin-top:20px;border-top:1px solid #222;}
+footer div{cursor:pointer;}
+
+/* PREMIUM SIDEBAR */
+#sidebar{
+position:fixed;top:0;left:-280px;width:280px;height:100vh;
+background:linear-gradient(180deg,#111,#0a0a0a);
+padding:25px 20px;transition:.35s cubic-bezier(.77,0,.18,1);
+z-index:1000;overflow-y:auto;box-shadow:5px 0 25px rgba(0,0,0,.8);
+border-right:1px solid #222;
+}
+#sidebar.active{left:0;}
+#sidebar h2{text-align:center;margin-bottom:25px;}
+#sidebar button{
+width:100%;background:none;border:none;color:#FFD700;
+padding:12px;margin-bottom:8px;text-align:left;
+border-radius:8px;transition:.25s;display:flex;gap:10px;
+}
+#sidebar button:hover{
+background:#1c1c1c;
+box-shadow:0 0 12px rgba(255,215,0,.4);
+transform:translateX(5px);
+}
+#overlay{
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+display:none;z-index:999;
+}
+#overlay.active{display:block;}
 </style>
 </head>
 <body>
@@ -39,12 +62,14 @@ footer div{cursor:pointer;}
 <div id="walletBalanceTop">$0</div>
 </header>
 
+<!-- SIDEBAR -->
 <div id="sidebar">
+<h2>SuperNFT</h2>
 <button onclick="openPage('account')">👤 My Account</button>
 <button onclick="openPage('my-referrals')">💹 My Referrals</button>
-<button onclick="openPage('use-referral')">🎁 Use Referral Code</button>
+<button onclick="openPage('use-referral')">🎁 Use Referral</button>
 <button onclick="openPage('trading')">📊 Trading</button>
-<button onclick="openPage('my-investments')">📁 My Investments</button>
+<button onclick="openPage('my-investments')">📁 Investments</button>
 <button onclick="openPage('wallet')">💳 Wallet</button>
 <button onclick="openPage('withdraw')">💸 Withdraw</button>
 <button onclick="openPage('live-earnings')">💹 Live Earnings</button>
@@ -53,9 +78,11 @@ footer div{cursor:pointer;}
 <button onclick="openPage('my-level')">📊 My Level</button>
 <button onclick="openPage('calculator')">📈 Calculator</button>
 <button onclick="openPage('settings')">⚙️ Settings</button>
+<hr style="border-color:#222;margin:18px 0;">
 <button onclick="location.href='logout.html'">🔒 Logout</button>
 </div>
 
+<!-- STATS -->
 <div class="stats">
 <div class="stat-box" onclick="openPage('live-earnings')">
 <h4>Daily Income</h4>
@@ -117,7 +144,6 @@ let miningStarted=false;
 
 onAuthStateChanged(auth, async (user)=>{
 if(!user){window.location.href="login.html";return;}
-
 const userRef=doc(db,"users",user.uid);
 let snap=await getDoc(userRef);
 
@@ -134,7 +160,6 @@ snap=await getDoc(userRef);
 
 if(!miningStarted){
 miningStarted=true;
-
 setInterval(async ()=>{
 const s=await getDoc(userRef);
 if(!s.exists()) return;
@@ -169,8 +194,14 @@ document.getElementById("referralCode").innerText="Referral: "+d.referralCode;
 /* SIDEBAR */
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
-document.querySelector(".menu-toggle").onclick=()=>{sidebar.classList.add("active");overlay.classList.add("active");};
-overlay.onclick=()=>{sidebar.classList.remove("active");overlay.classList.remove("active");};
+document.querySelector(".menu-toggle").onclick=()=>{
+sidebar.classList.toggle("active");
+overlay.classList.toggle("active");
+};
+overlay.onclick=()=>{
+sidebar.classList.remove("active");
+overlay.classList.remove("active");
+};
 
 window.openPage=function(page){window.location.href=page+".html";};
 
@@ -180,7 +211,7 @@ navigator.clipboard.writeText(text);
 alert("Referral Copied!");
 };
 
-/* NFT DATA (30 images) */
+/* NFT DATA */
 const NFTS=[
 {cat:"starter",price:10,p:0.2,img:"/images/IMG_0458.png"},
 {cat:"starter",price:15,p:0.3,img:"/images/IMG_0459.png"},
@@ -235,7 +266,7 @@ window.filterNFT=function(cat){
 if(cat==="all"){renderNFT(NFTS);return;}
 renderNFT(NFTS.filter(n=>n.cat===cat));
 };
-
 </script>
+
 </body>
 </html>
