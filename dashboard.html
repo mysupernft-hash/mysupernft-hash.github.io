@@ -54,6 +54,7 @@ footer div:hover{color:#e0c200;}
   <h2>Menu</h2>
   <button onclick="openPage('account')">👤 My Account</button>
   <button onclick="openPage('referral')">💹 My Referrals</button>
+  <button onclick="openPage('trading')">📊 Trading</button>
   <button onclick="openPage('useReferral')">🎁 Use Referral Code</button>
   <button onclick="openPage('investments')">📁 My Investments</button>
   <button onclick="openPage('wallet')">💳 Wallet</button>
@@ -140,6 +141,9 @@ function logout(){signOut(auth).then(()=>window.location.replace("login.html"));
 /* OpenPage */
 window.openPage = function(page){
   switch(page){
+      case "trading":
+  window.location.href = "trading.html";
+  break;
     case "account": window.location.href="account.html"; break;
     case "referral":
   window.location.href = "my-referrals.html";
