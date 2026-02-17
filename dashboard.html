@@ -8,7 +8,7 @@
 <style>
 body{
 margin:0;
-font-family:Arial, sans-serif;
+font-family:Arial;
 background:#0f0f0f;
 color:#FFD700;
 overflow-x:hidden;
@@ -16,13 +16,13 @@ overflow-x:hidden;
 
 /* HEADER */
 header{
-position:relative;
 background:#111;
 padding:15px 20px;
 display:flex;
 justify-content:space-between;
 align-items:center;
 border-bottom:1px solid #222;
+position:relative;
 z-index:1;
 }
 
@@ -35,20 +35,18 @@ cursor:pointer;
 #sidebar{
 position:fixed;
 top:0;
-left:-300px;
-width:300px;
+left:-320px;
+width:320px;
 height:100%;
 background:#111;
 padding:25px 20px;
-transition:0.35s ease;
+transition:0.3s;
 z-index:9999;
 overflow-y:auto;
-box-shadow:5px 0 25px rgba(0,0,0,0.8);
+box-shadow:5px 0 30px rgba(0,0,0,0.8);
 }
 
-#sidebar.active{
-left:0;
-}
+#sidebar.active{left:0;}
 
 #sidebar h2{
 text-align:center;
@@ -65,7 +63,6 @@ margin-bottom:8px;
 text-align:left;
 border-radius:8px;
 cursor:pointer;
-transition:0.2s;
 }
 
 #sidebar button:hover{
@@ -83,13 +80,8 @@ display:none;
 z-index:9998;
 }
 
-#overlay.active{
-display:block;
-}
-
-body.sidebar-open{
-overflow:hidden;
-}
+#overlay.active{display:block;}
+body.sidebar-open{overflow:hidden;}
 
 /* STATS */
 .stats{
@@ -105,11 +97,6 @@ padding:15px;
 border-radius:12px;
 text-align:center;
 cursor:pointer;
-transition:0.3s;
-}
-
-.stat-box:hover{
-background:#222;
 }
 
 /* REFERRAL */
@@ -130,8 +117,7 @@ margin:20px;
 }
 
 .filter-buttons button{
-margin-right:6px;
-margin-bottom:6px;
+margin:4px;
 }
 
 /* NFT GRID */
@@ -150,22 +136,11 @@ text-align:center;
 transition:0.3s;
 }
 
-.nft:hover{
-transform:scale(1.03);
-}
+.nft:hover{transform:scale(1.03);}
 
 .nft img{
 width:100%;
 border-radius:8px;
-cursor:pointer;
-}
-
-button{
-background:#FFD700;
-border:none;
-padding:6px 10px;
-border-radius:6px;
-font-weight:bold;
 cursor:pointer;
 }
 
@@ -179,7 +154,15 @@ text-align:center;
 margin-top:20px;
 border-top:1px solid #222;
 }
-footer div{
+
+footer div{cursor:pointer;}
+
+button{
+background:#FFD700;
+border:none;
+padding:6px 10px;
+border-radius:6px;
+font-weight:bold;
 cursor:pointer;
 }
 </style>
@@ -197,20 +180,14 @@ cursor:pointer;
 <!-- SIDEBAR -->
 <div id="sidebar">
 <h2>SuperNFT</h2>
-<button onclick="openPage('account')">👤 My Account</button>
-<button onclick="openPage('my-referrals')">💹 My Referrals</button>
-<button onclick="openPage('use-referral')">🎁 Use Referral</button>
-<button onclick="openPage('trading')">📊 Trading</button>
-<button onclick="openPage('my-investments')">📁 Investments</button>
+<button onclick="openPage('account')">👤 Account</button>
 <button onclick="openPage('wallet')">💳 Wallet</button>
+<button onclick="openPage('deposit')">💰 Deposit</button>
 <button onclick="openPage('withdraw')">💸 Withdraw</button>
 <button onclick="openPage('live-earnings')">💹 Live Earnings</button>
-<button onclick="openPage('deposit')">💰 Deposit</button>
-<button onclick="openPage('my-team')">👥 My Team</button>
-<button onclick="openPage('my-level')">📊 My Level</button>
+<button onclick="openPage('my-investments')">📁 Investments</button>
 <button onclick="openPage('calculator')">📈 Calculator</button>
-<button onclick="openPage('settings')">⚙️ Settings</button>
-<hr style="border-color:#222;margin:15px 0;">
+<hr style="border-color:#222;">
 <button onclick="location.href='logout.html'">🔒 Logout</button>
 </div>
 
@@ -258,8 +235,9 @@ cursor:pointer;
 </footer>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -272,10 +250,16 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+await setPersistence(auth, browserLocalPersistence);
+
 let miningStarted=false;
 
 onAuthStateChanged(auth, async (user)=>{
-if(!user){window.location.href="login.html";return;}
+
+if(!user){
+window.location.replace("login.html");
+return;
+}
 
 const userRef=doc(db,"users",user.uid);
 let snap=await getDoc(userRef);
@@ -296,7 +280,6 @@ miningStarted=true;
 
 setInterval(async ()=>{
 const s=await getDoc(userRef);
-if(!s.exists()) return;
 const d=s.data();
 
 const now=Date.now();
@@ -323,16 +306,19 @@ document.getElementById("referralCode").innerText="Referral: "+d.referralCode;
 
 },1000);
 }
+
 });
 
 /* SIDEBAR */
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
+
 document.querySelector(".menu-toggle").onclick=()=>{
 sidebar.classList.add("active");
 overlay.classList.add("active");
 document.body.classList.add("sidebar-open");
 };
+
 overlay.onclick=()=>{
 sidebar.classList.remove("active");
 overlay.classList.remove("active");
@@ -340,7 +326,6 @@ document.body.classList.remove("sidebar-open");
 };
 
 window.openPage=function(page){window.location.href=page+".html";};
-
 window.copyReferral=function(){
 const text=document.getElementById("referralCode").innerText.split(" ")[1];
 navigator.clipboard.writeText(text);
@@ -402,7 +387,7 @@ window.filterNFT=function(cat){
 if(cat==="all"){renderNFT(NFTS);return;}
 renderNFT(NFTS.filter(n=>n.cat===cat));
 };
-</script>
 
+</script>
 </body>
 </html>
