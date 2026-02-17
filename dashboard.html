@@ -92,14 +92,13 @@ footer div:hover{color:#e0c200;}
   <button onclick="copyReferral()">Copy</button>
 </div>
 
-<div style="margin:20px;">
-  <button onclick="filterNFT('all')">All</button>
-  <button onclick="filterNFT('starter')">Starter</button>
-  <button onclick="filterNFT('rising')">Rising</button>
-  <button onclick="filterNFT('elite')">Elite</button>
-  <button onclick="filterNFT('legendary')">Legendary</button>
+<div class="nft-tabs">
+  <button class="tab active" onclick="setTab(this,'all')">All</button>
+  <button class="tab" onclick="setTab(this,'starter')">Starter</button>
+  <button class="tab" onclick="setTab(this,'rising')">Rising</button>
+  <button class="tab" onclick="setTab(this,'elite')">Elite</button>
+  <button class="tab" onclick="setTab(this,'legendary')">Legendary</button>
 </div>
-
 <div class="nft-grid" id="nfts"></div>
 
 <h2 style="margin-left:20px;">Earnings (Last 7 Days)</h2>
