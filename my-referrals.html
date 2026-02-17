@@ -99,7 +99,7 @@ import { getAuth, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
 getFirestore, doc, getDoc,
-collection, onSnapshot, query, orderBy 
+collection, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -112,38 +112,34 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-onAuthStateChanged(auth, async user=>{
+onAuthStateChanged(auth, async (user)=>{
 
 if(!user){
 location.href="login.html";
 return;
 }
 
-/* ===============================
-   MAIN USER DATA
-=================================*/
-
 const userRef=doc(db,"users",user.uid);
-
 const snap=await getDoc(userRef);
-if(!snap.exists()) return;
+
+if(!snap.exists()){
+return;
+}
 
 const data=snap.data();
 
+/* 🔹 MAIN USER DATA */
 document.getElementById("refCode").innerText =
 data.referralCode || "---";
 
 document.getElementById("totalEarn").innerText =
 data.referralEarnings || 0;
 
-/* ===============================
-   REFERRAL HISTORY (REAL TIME)
-=================================*/
+/* 🔹 REFERRAL HISTORY REALTIME */
 
 const refCol = collection(db,"users",user.uid,"referrals");
-const q = query(refCol, orderBy("joinedAt","desc"));
 
-onSnapshot(q,(snapshot)=>{
+onSnapshot(refCol,(snapshot)=>{
 
 const list=document.getElementById("refList");
 list.innerHTML="";
@@ -156,13 +152,15 @@ list.innerHTML=`<div class="small">No referrals yet</div>`;
 return;
 }
 
-snapshot.forEach(doc=>{
+snapshot.forEach(docSnap=>{
 
-const r=doc.data();
+const r=docSnap.data();
 
-const date=r.joinedAt?.toDate
-? r.joinedAt.toDate().toLocaleString()
-: "Pending";
+let date="Pending";
+
+if(r.joinedAt && r.joinedAt.toDate){
+date=r.joinedAt.toDate().toLocaleString();
+}
 
 list.innerHTML+=`
 <div class="item">
