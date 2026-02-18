@@ -93,7 +93,7 @@ header{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -106,8 +106,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* SAME NFT ARRAY AS DASHBOARD */
-const NFTS=[
+/* FULL NFT ARRAY */
+const NFTS = [
 {price:10,p:0.2,img:"images/IMG_0458.png"},
 {price:15,p:0.3,img:"images/IMG_0459.png"},
 {price:20,p:0.4,img:"images/IMG_0460.png"},
@@ -140,12 +140,18 @@ const NFTS=[
 {price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
+/* GET ID FROM URL */
 const params = new URLSearchParams(window.location.search);
 let id = parseInt(params.get("id"));
-if(isNaN(id) || id < 0 || id >= NFTS.length){ id = 0; }
+
+if(isNaN(id) || id < 0 || id >= NFTS.length){
+  alert("Invalid NFT");
+  id = 0;
+}
 
 const nft = NFTS[id];
 
+/* LOAD NFT DATA */
 document.getElementById("nftImage").src = nft.img;
 document.getElementById("price").innerText = "Price: $" + nft.price;
 document.getElementById("daily").innerText = "$" + nft.p.toFixed(2);
@@ -153,43 +159,46 @@ document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
 document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
 document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
 
-window.buyNFT = async function(){
+/* BUY FUNCTION */
+window.buyNFT = function(){
 
-  const user = auth.currentUser;
-  if(!user){
-    alert("Please login first");
-    return;
-  }
+  onAuthStateChanged(auth, async (user)=>{
 
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
+    if(!user){
+      alert("Please login first");
+      window.location.href="login.html";
+      return;
+    }
 
-  if(!snap.exists()){
-    alert("User not found");
-    return;
-  }
+    const userRef = doc(db,"users",user.uid);
+    const snap = await getDoc(userRef);
 
-  const data = snap.data();
-  const wallet = data.walletBalance || 0;
-  const currentDaily = data.dailyIncome || 0;
+    if(!snap.exists()){
+      alert("User not found");
+      return;
+    }
 
-  if(wallet >= nft.price){
+    const data = snap.data();
+    const wallet = data.walletBalance || 0;
+    const currentDaily = data.dailyIncome || 0;
+
+    if(wallet < nft.price){
+      alert("❌ Insufficient Balance!");
+      return;
+    }
 
     await updateDoc(userRef,{
       walletBalance: wallet - nft.price,
       dailyIncome: currentDaily + nft.p
     });
 
-    alert("🎉 Purchased Successfully!");
+    alert("🎉 Purchase Successful!");
     window.location.href="dashboard.html";
 
-  } else {
-    alert("❌ Insufficient Balance!");
-  }
+  });
 
 }
 
 </script>
-
 </body>
 </html>
