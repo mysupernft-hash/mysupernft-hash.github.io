@@ -8,10 +8,11 @@
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial,sans-serif;
   background:#0f0f0f;
   color:#FFD700;
 }
+
 header{
   background:#1a1a1a;
   padding:15px;
@@ -19,165 +20,215 @@ header{
   font-size:20px;
   font-weight:bold;
 }
+
 .container{
-  padding:20px;
-  max-width:700px;
-  margin:auto;
+  padding:15px;
 }
+
 .card{
   background:#1a1a1a;
-  border-radius:12px;
   padding:15px;
+  border-radius:12px;
   margin-bottom:15px;
 }
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+}
+
 .big{
-  font-size:24px;
+  font-size:20px;
   font-weight:bold;
 }
-.leaderboard-item{
-  padding:10px;
-  border-bottom:1px solid #272727;
+
+.center{
+  text-align:center;
 }
-.leaderboard-item:last-child{
-  border-bottom:none;
+
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
 }
-.rank{
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.small-card{
+  background:#111;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  font-size:14px;
+}
+
+.small-card span{
+  display:block;
+  font-size:18px;
+  margin-top:5px;
   font-weight:bold;
-  color:#fff;
 }
-.back{
+
+.section-title{
+  margin:15px 0 8px;
+  font-size:16px;
+  font-weight:bold;
+}
+
+.btn{
   display:block;
   text-align:center;
-  margin-top:20px;
   padding:12px;
-  background:#272727;
+  background:#FFD700;
+  color:#000;
   border-radius:8px;
-  color:#FFD700;
   text-decoration:none;
+  margin-top:8px;
+  font-weight:bold;
+}
+
+.footer{
+  margin-top:20px;
+  text-align:center;
+  font-size:13px;
+  opacity:0.7;
 }
 </style>
 </head>
+
 <body>
 
-<header>🏆 Team Leaderboard</header>
+<header>👥 My Team</header>
 
 <div class="container">
 
-  <div class="card">
-    <div>Your Referral Code</div>
-    <div class="big" id="userReferralCode">Loading...</div>
-  </div>
+<!-- USER INFO -->
+<div class="card center">
+  <div id="userEmail">Loading...</div>
+  <div style="margin-top:5px;font-size:13px;">UID: <span id="uid">---</span></div>
+  <div style="margin-top:10px;">Level <span id="level">0</span></div>
+  <div><span id="points">0</span> Points</div>
+</div>
 
-  <div class="card">
-    <div>Total Team Members</div>
-    <div class="big" id="totalTeam">0</div>
+<!-- WALLET -->
+<div class="card">
+  <div class="row">
+    <div>Wallet Balance</div>
+    <div class="big">$<span id="wallet">0</span></div>
   </div>
+</div>
 
-  <div class="card">
-    <div>Total Team Earnings</div>
-    <div class="big">$<span id="totalEarnings">0</span></div>
+<!-- INCOME -->
+<div class="card">
+  <div class="section-title">Income</div>
+  <div class="grid-2">
+    <div class="small-card">
+      Daily Income
+      <span>$<span id="daily">0</span></span>
+    </div>
+    <div class="small-card">
+      Total Income
+      <span>$<span id="totalIncome">0</span></span>
+    </div>
   </div>
+</div>
 
-  <div class="card">
-    <div class="big">Team Members</div>
-    <div id="teamList">Loading team...</div>
+<!-- TEAM STATS -->
+<div class="card">
+  <div class="section-title">My Team</div>
+  <div class="grid-3">
+    <div class="small-card">
+      Valid Members
+      <span id="teamCount">0</span>
+    </div>
+    <div class="small-card">
+      Community Rewards
+      <span id="teamReward">0</span>
+    </div>
+    <div class="small-card">
+      Community Orders
+      <span id="teamOrders">0</span>
+    </div>
   </div>
+</div>
 
-  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+<!-- ORDERS -->
+<div class="card">
+  <div class="section-title">My Orders</div>
+  <div class="grid-2">
+    <div class="small-card">
+      Orders
+      <span id="orders">0</span>
+    </div>
+    <div class="small-card">
+      Processing
+      <span id="processing">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK ACTION -->
+<div class="card">
+  <div class="section-title">Common Functions</div>
+  <a href="deposit.html" class="btn">Deposit</a>
+  <a href="withdraw.html" class="btn">Withdraw</a>
+  <a href="settings.html" class="btn">Settings</a>
+</div>
+
+<div class="footer">
+SuperNFT Community Panel
+</div>
 
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc,
-  collection, getDocs
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-onAuthStateChanged(auth, async (user)=>{
+onAuthStateChanged(auth, async(user)=>{
 
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
+if(!user){
+location.href="login.html";
+return;
+}
 
-  try{
+document.getElementById("userEmail").innerText=user.email;
+document.getElementById("uid").innerText=user.uid;
 
-    const userRef=doc(db,"users",user.uid);
-    const snap=await getDoc(userRef);
+const userRef=doc(db,"users",user.uid);
+const snap=await getDoc(userRef);
 
-    if(!snap.exists()){
-      document.getElementById("teamList").innerHTML="User not found.";
-      return;
-    }
+if(!snap.exists()) return;
 
-    const data=snap.data();
+const data=snap.data();
 
-    const referralCode=data.referralCode || "---";
-    const referralCount=data.referralCount || 0;
-    const referralEarnings=data.referralEarnings || 0;
+document.getElementById("wallet").innerText=data.walletBalance||0;
+document.getElementById("daily").innerText=data.dailyIncome||0;
+document.getElementById("totalIncome").innerText=data.liveEarnings||0;
+document.getElementById("teamReward").innerText=data.referralEarnings||0;
+document.getElementById("level").innerText=data.level||0;
 
-    document.getElementById("userReferralCode").innerText=referralCode;
-    document.getElementById("totalTeam").innerText=referralCount;
-    document.getElementById("totalEarnings").innerText=referralEarnings;
-
-    // 🔥 Load team from subcollection
-    const refCol=collection(db,"users",user.uid,"referrals");
-    const refSnap=await getDocs(refCol);
-
-    const teamList=document.getElementById("teamList");
-    teamList.innerHTML="";
-
-    if(refSnap.empty){
-      teamList.innerHTML="No team members yet.";
-      return;
-    }
-
-    let rank=1;
-
-    refSnap.forEach(docSnap=>{
-
-      const r=docSnap.data();
-      const email=r.email || "User";
-      const reward=r.reward || 0;
-
-      let date="Pending";
-      if(r.joinedAt && r.joinedAt.toDate){
-        date=r.joinedAt.toDate().toLocaleString();
-      }
-
-      teamList.innerHTML+=`
-        <div class="leaderboard-item">
-          <div class="rank">#${rank}</div>
-          <div>${email}</div>
-          <div style="font-size:12px;color:#bbb;">
-            Reward: $${reward} | Joined: ${date}
-          </div>
-        </div>
-      `;
-
-      rank++;
-
-    });
-
-  }catch(error){
-    console.error("TEAM LOAD ERROR:",error);
-    document.getElementById("teamList").innerHTML="Error loading team.";
-  }
+// Team Count
+const refCol=collection(db,"users",user.uid,"referrals");
+const refSnap=await getDocs(refCol);
+document.getElementById("teamCount").innerText=refSnap.size;
 
 });
 
