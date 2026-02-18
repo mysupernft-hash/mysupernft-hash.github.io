@@ -8,7 +8,7 @@
 <style>
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:Arial, sans-serif;
   background:#0f0f0f;
   color:#FFD700;
 }
@@ -27,32 +27,27 @@ header{
 
 .card{
   background:#1a1a1a;
-  padding:20px;
   border-radius:12px;
-  margin-bottom:20px;
+  padding:20px;
+  margin-bottom:15px;
   text-align:center;
 }
 
 .big{
-  font-size:32px;
+  font-size:28px;
   font-weight:bold;
   margin-top:10px;
 }
 
-.small{
-  font-size:14px;
-  opacity:0.8;
-}
-
 .back{
   display:block;
-  text-align:center;
+  margin-top:20px;
   padding:12px;
   background:#272727;
   color:#FFD700;
-  text-decoration:none;
+  text-align:center;
   border-radius:8px;
-  margin-top:20px;
+  text-decoration:none;
 }
 </style>
 </head>
@@ -65,18 +60,17 @@ header{
 
   <div class="card">
     <div>Daily Income</div>
-    <div class="big">$<span id="dailyIncome">0.00</span></div>
+    <div class="big">$<span id="dailyIncome">0</span></div>
   </div>
 
   <div class="card">
     <div>Live Earnings</div>
     <div class="big">$<span id="liveEarnings">0.000000</span></div>
-    <div class="small">Updating every second</div>
   </div>
 
   <div class="card">
-    <div>Wallet Balance</div>
-    <div class="big">$<span id="walletBalance">0.00</span></div>
+    <div>Total Wallet (Live)</div>
+    <div class="big">$<span id="walletBalance">0</span></div>
   </div>
 
   <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
@@ -87,8 +81,9 @@ header{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔥 Firebase Config */
 const firebaseConfig = {
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -99,11 +94,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let dailyIncome = 0;
-let baseLive = 0;
-let lastIncomeAt = Date.now();
-let walletBalance = 0;
-
+/* 🔥 AUTH CHECK */
 onAuthStateChanged(auth, async(user)=>{
 
   if(!user){
@@ -118,42 +109,36 @@ onAuthStateChanged(auth, async(user)=>{
 
   const data = snap.data();
 
-  dailyIncome = data.dailyIncome || 0;
-  baseLive = data.liveEarnings || 0;
-  walletBalance = data.walletBalance || 0;
+  const dailyIncome = data.dailyIncome || 0;
+  const walletBalance = data.walletBalance || 0;
 
-  lastIncomeAt = data.lastIncomeAt?.toMillis() || Date.now();
+  const lastIncomeAt = data.lastIncomeAt?.toMillis() || Date.now();
 
   document.getElementById("dailyIncome").innerText =
     dailyIncome.toFixed(2);
 
-  startMining(userRef);
-
-});
-
-function startMining(userRef){
-
-  function update(){
+  /* 🔥 REAL TIME CALCULATION (NO DATABASE UPDATE) */
+  function animate(){
 
     const now = Date.now();
-    const seconds = (now - lastIncomeAt) / 1000;
+    const secondsPassed = (now - lastIncomeAt) / 1000;
 
     const perSecond = dailyIncome / 86400;
 
-    const currentLive = baseLive + (perSecond * seconds);
+    const live = perSecond * secondsPassed;
 
     document.getElementById("liveEarnings").innerText =
-      currentLive.toFixed(6);
+      live.toFixed(6);
 
     document.getElementById("walletBalance").innerText =
-      (walletBalance + currentLive).toFixed(2);
+      (walletBalance + live).toFixed(2);
 
-    requestAnimationFrame(update);
+    requestAnimationFrame(animate);
   }
 
-  update();
+  animate();
 
-}
+});
 
 </script>
 
