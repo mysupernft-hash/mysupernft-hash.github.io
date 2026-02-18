@@ -172,6 +172,10 @@ return;
 const refDoc=querySnap.docs[0];
 const refUserId=refDoc.id;
 
+console.log("Referral saving...");
+console.log("Referrer UID:", refUserId);
+console.log("Saving to path:", "users/"+refUserId+"/referrals");
+
 if(refUserId===currentUser.uid){
 status.innerText="You cannot use your own code";
 return;
