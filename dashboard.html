@@ -252,7 +252,26 @@ window.renderNFT(NFTS);
 };
 
 window.filterNFT=function(cat){if(cat==="all"){renderNFT(NFTS);return;} renderNFT(NFTS.filter(n=>n.cat===cat))}
-window.buyNFT=function(price){localStorage.setItem("price", price); location.href="nft-details.html"}
+window.renderNFT = function(list){
+  nftContainer.innerHTML="";
+
+  list.forEach((n,index)=>{
+
+    nftContainer.innerHTML += `
+      <div class="nft">
+        <img src="${n.img}" onclick="openNFT(${index})">
+        <p>Price $${n.price}</p>
+        <p>Daily Income $${n.p}</p>
+        <p>Validity 365 Days</p>
+        <button onclick="openNFT(${index})">Buy NFT</button>
+      </div>
+    `;
+  });
+}
+
+window.openNFT = function(id){
+  window.location.href = "nft-details.html?id=" + id;
+}
 window.copyReferral=function(){navigator.clipboard.writeText(document.getElementById("referralCode").innerText.split(" ")[1]);alert("Referral Copied")}
 
 /* Firebase Auth + REAL TIME MINING SYSTEM */
