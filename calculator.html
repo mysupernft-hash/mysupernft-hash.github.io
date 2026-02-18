@@ -2,136 +2,202 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Calculator – SuperNFT</title>
+<title>SuperNFT Pro Profit Simulator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:#fff;
+  background:#0f0f0f;
+  color:#FFD700;
 }
 header{
-  position:sticky;
-  top:0;
-  background:#0f172a;
+  background:#1a1a1a;
   padding:15px;
   text-align:center;
   font-size:20px;
-  color:#38bdf8;
-  border-bottom:1px solid #1e293b;
+  font-weight:bold;
 }
-.container{
-  padding:18px;
-}
+.container{padding:15px;}
 .card{
-  background:#0f172a;
-  padding:16px;
-  border-radius:16px;
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:14px;
   margin-bottom:15px;
-}
-label{
-  font-size:14px;
-  display:block;
-  margin-bottom:6px;
 }
 input,select{
   width:100%;
   padding:10px;
-  border-radius:10px;
+  margin-bottom:10px;
+  border-radius:8px;
   border:none;
-  margin-bottom:12px;
 }
 button{
   width:100%;
   padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#38bdf8;
-  color:#020617;
+  background:#FFD700;
+  color:#000;
   font-weight:bold;
-  font-size:16px;
+  border:none;
+  border-radius:10px;
 }
 .row{
   display:flex;
   justify-content:space-between;
-  padding:8px 0;
-  border-bottom:1px dashed #1e293b;
-}
-.row:last-child{border:none;}
-.back{
-  display:block;
-  text-align:center;
-  color:#38bdf8;
-  text-decoration:none;
-  margin-top:20px;
+  padding:6px 0;
+  border-bottom:1px solid #333;
 }
 .green{color:#22c55e;}
+.progress{
+  height:10px;
+  background:#111;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:5px;
+}
+.bar{
+  height:100%;
+  background:#FFD700;
+  width:0%;
+}
+canvas{background:#111;border-radius:10px;padding:10px;}
 </style>
 </head>
 
 <body>
 
-<header>📈 Earnings Calculator</header>
+<header>🚀 SuperNFT Ultimate Profit Simulator</header>
 
 <div class="container">
 
-  <!-- INPUT -->
-  <div class="card">
-    <label>NFT Price ($)</label>
-    <input type="number" id="price" placeholder="Enter NFT price">
+<div class="card">
+<h3>Investment Setup</h3>
 
-    <label>Daily ROI %</label>
-    <input type="number" id="roi" placeholder="e.g. 1.5">
+<input type="number" id="investment" placeholder="NFT Investment Amount ($)">
+<input type="number" id="roi" placeholder="Daily ROI % (example 1.5)">
 
-    <label>Staking</label>
-    <select id="staking">
-      <option value="1">No Staking</option>
-      <option value="1.2">Staking ON (+20%)</option>
-    </select>
+<select id="compound">
+<option value="simple">Simple Interest</option>
+<option value="daily">Compound Daily</option>
+<option value="monthly">Compound Monthly</option>
+</select>
 
-    <button onclick="calculate()">Calculate</button>
-  </div>
+<select id="vip">
+<option value="0">VIP 0 (0% Boost)</option>
+<option value="5">VIP 1 (+5%)</option>
+<option value="8">VIP 2 (+8%)</option>
+<option value="12">VIP 3 (+12%)</option>
+<option value="20">VIP 5 (+20%)</option>
+</select>
 
-  <!-- OUTPUT -->
-  <div class="card">
-    <div class="row">
-      <span>Daily Income</span>
-      <b class="green" id="daily">$0.00</b>
-    </div>
-    <div class="row">
-      <span>Monthly Income</span>
-      <b class="green" id="monthly">$0.00</b>
-    </div>
-    <div class="row">
-      <span>Total ROI (365 days)</span>
-      <b class="green" id="total">$0.00</b>
-    </div>
-    <div class="row">
-      <span>Auto Daily Credit</span>
-      <b class="green">Enabled</b>
-    </div>
-  </div>
+<input type="number" id="team" placeholder="Team Members Count">
+<input type="number" id="teamVolume" placeholder="Team Avg Investment ($)">
 
-  <a class="back" href="dashboard.html">← Back to Dashboard</a>
+<button onclick="calculate()">Calculate Profit</button>
+</div>
+
+<div class="card">
+<h3>Results</h3>
+
+<div class="row"><span>Daily Income</span><b class="green" id="daily">$0</b></div>
+<div class="row"><span>Monthly Income</span><b class="green" id="monthly">$0</b></div>
+<div class="row"><span>Yearly Income</span><b class="green" id="yearly">$0</b></div>
+<div class="row"><span>Team Commission</span><b class="green" id="teamIncome">$0</b></div>
+<div class="row"><span>Total 365 Days</span><b class="green" id="total">$0</b></div>
+<div class="row"><span>Break Even (Days)</span><b class="green" id="breakeven">0</b></div>
+
+</div>
+
+<div class="card">
+<h3>📈 365 Day Projection</h3>
+<canvas id="chart"></canvas>
+</div>
 
 </div>
 
 <script>
+
+let chart;
+
 function calculate(){
-  let price=parseFloat(priceInput=price.value)||0;
-  let roiPercent=parseFloat(roi.value)||0;
-  let stake=parseFloat(staking.value);
 
-  let daily=(price*roiPercent/100)*stake;
-  let monthly=daily*30;
-  let total=daily*365;
+let invest = parseFloat(document.getElementById("investment").value)||0;
+let roi = parseFloat(document.getElementById("roi").value)||0;
+let compoundType = document.getElementById("compound").value;
+let vipBoost = parseFloat(document.getElementById("vip").value)||0;
+let teamMembers = parseFloat(document.getElementById("team").value)||0;
+let teamVolume = parseFloat(document.getElementById("teamVolume").value)||0;
 
-  document.getElementById("daily").innerText="$"+daily.toFixed(2);
-  document.getElementById("monthly").innerText="$"+monthly.toFixed(2);
-  document.getElementById("total").innerText="$"+total.toFixed(2);
+roi = roi + (roi * vipBoost/100);
+
+let dailyIncome = invest * roi/100;
+let total = 0;
+let balance = invest;
+
+let dataPoints = [];
+
+for(let i=1;i<=365;i++){
+
+if(compoundType==="simple"){
+total += dailyIncome;
 }
+else if(compoundType==="daily"){
+balance += balance * roi/100;
+total = balance - invest;
+}
+else if(compoundType==="monthly"){
+if(i%30===0){
+balance += balance * roi/100 * 30;
+}
+total = balance - invest;
+}
+
+dataPoints.push(total.toFixed(2));
+}
+
+let teamIncome = teamMembers * teamVolume * 0.05; // 5% team commission
+
+let yearly = total;
+let monthly = yearly/12;
+
+let breakEvenDays = invest/dailyIncome;
+
+document.getElementById("daily").innerText="$"+dailyIncome.toFixed(2);
+document.getElementById("monthly").innerText="$"+monthly.toFixed(2);
+document.getElementById("yearly").innerText="$"+yearly.toFixed(2);
+document.getElementById("teamIncome").innerText="$"+teamIncome.toFixed(2);
+document.getElementById("total").innerText="$"+(yearly+teamIncome).toFixed(2);
+document.getElementById("breakeven").innerText=Math.ceil(breakEvenDays);
+
+drawChart(dataPoints);
+}
+
+function drawChart(data){
+
+if(chart) chart.destroy();
+
+chart = new Chart(document.getElementById("chart"),{
+type:"line",
+data:{
+labels:Array.from({length:365},(_,i)=>i+1),
+datasets:[{
+label:"365 Day Growth",
+data:data,
+borderColor:"#FFD700",
+fill:false
+}]
+},
+options:{
+responsive:true,
+plugins:{legend:{display:false}},
+scales:{x:{display:false}}
+}
+});
+}
+
 </script>
 
 </body>
