@@ -3,91 +3,205 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Team - SuperNFT</title>
+<title>My Team | SuperNFT</title>
+
 <style>
-body {margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;}
-.container{max-width:600px;margin:50px auto;padding:20px;background:#1a1a1a;border-radius:12px;}
-h2{text-align:center;margin-bottom:20px;}
-ul{list-style:none;padding:0;}
-li{padding:10px;border-bottom:1px solid #333;}
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#0f0f0f;
+color:#FFD700;
+}
+header{
+background:#1a1a1a;
+padding:15px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
+}
+.container{
+padding:20px;
+max-width:700px;
+margin:auto;
+}
+.card{
+background:#1a1a1a;
+border-radius:12px;
+padding:15px;
+margin-bottom:15px;
+box-shadow:0 0 15px rgba(255,215,0,0.2);
+}
+.big{
+font-size:26px;
+font-weight:bold;
+}
+.team-list{
+margin-top:15px;
+}
+.member{
+display:flex;
+justify-content:space-between;
+padding:12px;
+border-bottom:1px solid #272727;
+font-size:14px;
+}
+.member:last-child{
+border-bottom:none;
+}
+.rank{
+color:#FFD700;
+font-weight:bold;
+}
+.small{
+font-size:12px;
+opacity:0.7;
+}
+.back{
+display:block;
+margin-top:20px;
+padding:12px;
+background:#272727;
+color:#FFD700;
+text-align:center;
+border-radius:8px;
+text-decoration:none;
+}
+.notice{
+background:#111;
+padding:12px;
+border-radius:10px;
+margin-bottom:15px;
+font-size:13px;
+}
 </style>
 </head>
+
 <body>
 
+<header>👥 My Team Leaderboard</header>
+
 <div class="container">
-  <h2>My Team</h2>
-  <p>Your Referral Code: <strong id="userReferralCode">Loading...</strong></p>
-  <ul id="teamList">
-    <li>Loading team...</li>
-  </ul>
+
+<div class="notice">
+🔥 Build your team and earn $5 per referral instantly.
+More referrals = higher rank.
+</div>
+
+<div class="card">
+<div>Your Referral Code</div>
+<div class="big" id="refCode">Loading...</div>
+</div>
+
+<div class="card">
+<div>Total Team Members</div>
+<div class="big" id="teamCount">0</div>
+</div>
+
+<div class="card">
+<div>Total Team Earnings</div>
+<div class="big">$<span id="teamEarnings">0</span></div>
+</div>
+
+<div class="card">
+<div>🏆 Team Leaderboard</div>
+<div class="team-list" id="teamList">
+Loading team...
+</div>
+</div>
+
+<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+getFirestore, doc, getDoc,
+collection, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔹 Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+const firebaseConfig={
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
-// 🔹 Load My Team
-async function loadMyTeam(user) {
-  const uid = user.uid;
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-  // 🔹 Get user's referral code
-  const referralsSnap = await getDocs(collection(db, "referrals"));
-  let myCode = null;
-  referralsSnap.forEach(docSnap => {
-    if (docSnap.data().ownerUid === uid) myCode = docSnap.id;
-  });
+onAuthStateChanged(auth,(user)=>{
 
-  document.getElementById("userReferralCode").innerText = myCode || "You have no referral code yet";
-
-  if (!myCode) {
-    document.getElementById("teamList").innerHTML = "<li>No users joined via your referral yet.</li>";
-    return;
-  }
-
-  // 🔹 Get referred users
-  const refDoc = await getDoc(doc(db, "referrals", myCode));
-  const referredUIDs = refDoc.data().referredUsers || [];
-
-  const teamList = document.getElementById("teamList");
-  teamList.innerHTML = "";
-
-  if (referredUIDs.length === 0) {
-    teamList.innerHTML = "<li>No users joined via your referral yet.</li>";
-    return;
-  }
-
-  for (let userUID of referredUIDs) {
-    const userDoc = await getDoc(doc(db, "users", userUID));
-    if (userDoc.exists()) {
-      const li = document.createElement("li");
-      li.textContent = userDoc.data().email;
-      teamList.appendChild(li);
-    }
-  }
+if(!user){
+window.location.href="login.html";
+return;
 }
 
-// 🔹 Auth check
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadMyTeam(user);
-  } else {
-    document.getElementById("teamList").innerHTML = "<li>Please login to view your team.</li>";
-  }
+const userRef=doc(db,"users",user.uid);
+
+getDoc(userRef).then((snap)=>{
+if(snap.exists()){
+const data=snap.data();
+document.getElementById("refCode").innerText=
+data.referralCode || "No Code";
+}
 });
+
+const refCol=collection(db,"users",user.uid,"referrals");
+
+onSnapshot(refCol,(snapshot)=>{
+
+const teamList=document.getElementById("teamList");
+teamList.innerHTML="";
+
+document.getElementById("teamCount").innerText=
+snapshot.size;
+
+let totalEarn=0;
+let rank=1;
+
+if(snapshot.empty){
+teamList.innerHTML="<div class='small'>No team members yet</div>";
+document.getElementById("teamEarnings").innerText=0;
+return;
+}
+
+snapshot.forEach(docSnap=>{
+
+const r=docSnap.data();
+
+totalEarn += r.reward || 0;
+
+let date="Pending";
+
+if(r.joinedAt && r.joinedAt.toDate){
+date=r.joinedAt.toDate().toLocaleDateString();
+}
+
+teamList.innerHTML+=`
+<div class="member">
+<div>
+<span class="rank">#${rank}</span> ${r.email || "User"}
+<div class="small">Joined: ${date}</div>
+</div>
+<div>$${r.reward || 0}</div>
+</div>
+`;
+
+rank++;
+
+});
+
+document.getElementById("teamEarnings").innerText=
+totalEarn;
+
+});
+
+});
+
 </script>
 
 </body>
