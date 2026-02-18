@@ -259,17 +259,16 @@ window.copyReferral=function(){navigator.clipboard.writeText(document.getElement
 /* Firebase Auth + Referral + Stats + Live Earnings */
 onAuthStateChanged(auth, async (user) => {
 
-  if (!user) {
+  if(!user){
     window.location.replace("login.html");
     return;
   }
 
   const emailEl = document.getElementById("userEmail");
 
-  if (emailEl) {
+  if(emailEl){
     emailEl.innerText = user.email || "User";
   }
-
   const userRef = doc(db, "users", user.uid);
 
 });
