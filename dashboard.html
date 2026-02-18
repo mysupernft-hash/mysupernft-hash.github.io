@@ -255,7 +255,7 @@ window.filterNFT=function(cat){if(cat==="all"){renderNFT(NFTS);return;} renderNF
 window.buyNFT=function(price){localStorage.setItem("price", price); location.href="nft-details.html"}
 window.copyReferral=function(){navigator.clipboard.writeText(document.getElementById("referralCode").innerText.split(" ")[1]);alert("Referral Copied")}
 
-/* Firebase Auth + Referral + Stats + Live Earnings */
+/* Firebase Auth + REAL TIME MINING SYSTEM */
 onAuthStateChanged(auth, async (user) => {
 
   if(!user){
@@ -263,34 +263,73 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // ✅ Show Email
-  const emailEl = document.getElementById("userEmail");
-  if(emailEl){
-    emailEl.textContent = user.email || "User";
-  }
+  // 👤 Email Show
+  document.getElementById("userEmail").textContent =
+    user.email || "User";
 
-  // ✅ Load Firestore Data
   const userRef = doc(db,"users",user.uid);
   const snap = await getDoc(userRef);
 
-  if(snap.exists()){
-    const data = snap.data();
+  if(!snap.exists()) return;
 
-    document.getElementById("referralCode").innerText =
-      "Referral: " + (data.referralCode || "N/A");
+  const data = snap.data();
+
+  const dailyIncome = data.dailyIncome || 0;
+  let walletBalance = data.walletBalance || 0;
+
+  // ⏳ First time setup
+  if(!data.lastIncomeAt){
+    await updateDoc(userRef,{
+      lastIncomeAt:new Date()
+    });
+    return;
+  }
+
+  let lastIncomeAt = data.lastIncomeAt.toMillis();
+
+  // Referral Code
+  document.getElementById("referralCode").innerText =
+    "Referral: " + (data.referralCode || "N/A");
+
+  function updateMining(){
+
+    const now = Date.now();
+    const seconds = Math.floor((now - lastIncomeAt)/1000);
+
+    const perSecond = dailyIncome / 86400;
+    const live = perSecond * seconds;
+
+    // 🔥 24h Complete → Credit Wallet
+    if(seconds >= 86400){
+
+      walletBalance += dailyIncome;
+
+      updateDoc(userRef,{
+        walletBalance: walletBalance,
+        lastIncomeAt: new Date()
+      });
+
+      lastIncomeAt = Date.now();
+      return;
+    }
+
+    // 🖥 Update UI
 
     document.getElementById("dailyIncome").innerText =
-      "$" + (data.dailyIncome || 0);
+      "$" + dailyIncome.toFixed(2);
 
     document.getElementById("liveEarnings").innerText =
-      "$" + (data.liveEarnings || 0);
+      "$" + live.toFixed(6);
 
     document.getElementById("walletBalanceP").innerText =
-      "$" + (data.walletBalance || 0);
+      "$" + (walletBalance + live).toFixed(2);
 
     document.getElementById("walletBalanceTop").innerText =
-      "$" + (data.walletBalance || 0);
+      "$" + (walletBalance + live).toFixed(2);
   }
+
+  updateMining();
+  setInterval(updateMining,1000);
 
 });
 </script>
