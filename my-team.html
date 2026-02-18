@@ -7,209 +7,177 @@
 
 <style>
 body{
-margin:0;
-font-family:Arial,sans-serif;
-background:#0f0f0f;
-color:#FFD700;
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
 }
 header{
-background:#1a1a1a;
-padding:15px;
-text-align:center;
-font-size:20px;
-font-weight:bold;
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
 }
 .container{
-max-width:700px;
-margin:40px auto;
-padding:20px;
+  padding:20px;
+  max-width:700px;
+  margin:auto;
 }
 .card{
-background:#1a1a1a;
-border-radius:12px;
-padding:15px;
-margin-bottom:15px;
-box-shadow:0 0 12px rgba(255,215,0,0.25);
+  background:#1a1a1a;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
 }
 .big{
-font-size:24px;
-font-weight:bold;
+  font-size:24px;
+  font-weight:bold;
 }
-.team-list{
-margin-top:15px;
+.leaderboard-item{
+  padding:10px;
+  border-bottom:1px solid #272727;
 }
-.member{
-display:flex;
-justify-content:space-between;
-padding:10px;
-border-bottom:1px solid #272727;
-}
-.member:last-child{
-border-bottom:none;
+.leaderboard-item:last-child{
+  border-bottom:none;
 }
 .rank{
-font-weight:bold;
-color:#FFD700;
-}
-.small{
-font-size:12px;
-opacity:0.7;
-}
-.notice{
-background:#111;
-padding:12px;
-border-radius:10px;
-margin-bottom:15px;
-font-size:13px;
+  font-weight:bold;
+  color:#fff;
 }
 .back{
-display:block;
-margin-top:20px;
-padding:12px;
-background:#272727;
-color:#FFD700;
-text-align:center;
-border-radius:8px;
-text-decoration:none;
+  display:block;
+  text-align:center;
+  margin-top:20px;
+  padding:12px;
+  background:#272727;
+  border-radius:8px;
+  color:#FFD700;
+  text-decoration:none;
 }
 </style>
 </head>
-
 <body>
 
-<header>👥 My Team Leaderboard</header>
+<header>🏆 Team Leaderboard</header>
 
 <div class="container">
 
-<div class="notice">
-🔥 Earn $5 for every successful referral. Build your team and increase your rank.
-</div>
+  <div class="card">
+    <div>Your Referral Code</div>
+    <div class="big" id="userReferralCode">Loading...</div>
+  </div>
 
-<div class="card">
-<div>Your Referral Code</div>
-<div class="big" id="refCode">Loading...</div>
-</div>
+  <div class="card">
+    <div>Total Team Members</div>
+    <div class="big" id="totalTeam">0</div>
+  </div>
 
-<div class="card">
-<div>Total Team Members</div>
-<div class="big" id="teamCount">0</div>
-</div>
+  <div class="card">
+    <div>Total Team Earnings</div>
+    <div class="big">$<span id="totalEarnings">0</span></div>
+  </div>
 
-<div class="card">
-<div>Total Team Earnings</div>
-<div class="big">$<span id="teamEarnings">0</span></div>
-</div>
+  <div class="card">
+    <div class="big">Team Members</div>
+    <div id="teamList">Loading team...</div>
+  </div>
 
-<div class="card">
-<div>🏆 Team Leaderboard</div>
-<div class="team-list" id="teamList">Loading team...</div>
-</div>
-
-<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 </div>
 
 <script type="module">
 
-import { initializeApp, getApps, getApp } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import { getAuth, onAuthStateChanged } 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc,
+  collection, getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import { 
-getFirestore, doc, getDoc,
-collection, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-/* 🔹 Firebase Config */
 const firebaseConfig={
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
-/* 🔥 Safe Firebase Init */
-const app = !getApps().length 
-? initializeApp(firebaseConfig) 
-: getApp();
-
+const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🔥 Load Team */
 onAuthStateChanged(auth, async (user)=>{
 
-const teamList=document.getElementById("teamList");
+  if(!user){
+    window.location.href="login.html";
+    return;
+  }
 
-if(!user){
-teamList.innerHTML="Please login first.";
-return;
-}
+  try{
 
-try{
+    const userRef=doc(db,"users",user.uid);
+    const snap=await getDoc(userRef);
 
-// 🔹 Get User Data
-const userSnap=await getDoc(doc(db,"users",user.uid));
+    if(!snap.exists()){
+      document.getElementById("teamList").innerHTML="User not found.";
+      return;
+    }
 
-if(!userSnap.exists()){
-teamList.innerHTML="User not found.";
-return;
-}
+    const data=snap.data();
 
-const userData=userSnap.data();
+    const referralCode=data.referralCode || "---";
+    const referralCount=data.referralCount || 0;
+    const referralEarnings=data.referralEarnings || 0;
 
-document.getElementById("refCode").innerText=
-userData.referralCode || "No Code";
+    document.getElementById("userReferralCode").innerText=referralCode;
+    document.getElementById("totalTeam").innerText=referralCount;
+    document.getElementById("totalEarnings").innerText=referralEarnings;
 
-// 🔹 Get Team Members
-const refCol=collection(db,"users",user.uid,"referrals");
-const snapshot=await getDocs(refCol);
+    // 🔥 Load team from subcollection
+    const refCol=collection(db,"users",user.uid,"referrals");
+    const refSnap=await getDocs(refCol);
 
-teamList.innerHTML="";
+    const teamList=document.getElementById("teamList");
+    teamList.innerHTML="";
 
-if(snapshot.empty){
-teamList.innerHTML="No team members yet.";
-document.getElementById("teamCount").innerText=0;
-document.getElementById("teamEarnings").innerText=0;
-return;
-}
+    if(refSnap.empty){
+      teamList.innerHTML="No team members yet.";
+      return;
+    }
 
-let totalEarn=0;
-let rank=1;
+    let rank=1;
 
-snapshot.forEach(docSnap=>{
-const data=docSnap.data();
+    refSnap.forEach(docSnap=>{
 
-totalEarn+=data.reward||0;
+      const r=docSnap.data();
+      const email=r.email || "User";
+      const reward=r.reward || 0;
 
-teamList.innerHTML+=`
-<div class="member">
-<div>
-<span class="rank">#${rank}</span> 
-${data.email || "User"}
-<div class="small">
-Joined: ${
-data.joinedAt && data.joinedAt.toDate
-? data.joinedAt.toDate().toLocaleDateString()
-: "Pending"
-}
-</div>
-</div>
-<div>$${data.reward||0}</div>
-</div>
-`;
+      let date="Pending";
+      if(r.joinedAt && r.joinedAt.toDate){
+        date=r.joinedAt.toDate().toLocaleString();
+      }
 
-rank++;
-});
+      teamList.innerHTML+=`
+        <div class="leaderboard-item">
+          <div class="rank">#${rank}</div>
+          <div>${email}</div>
+          <div style="font-size:12px;color:#bbb;">
+            Reward: $${reward} | Joined: ${date}
+          </div>
+        </div>
+      `;
 
-document.getElementById("teamCount").innerText=snapshot.size;
-document.getElementById("teamEarnings").innerText=totalEarn;
+      rank++;
 
-}catch(error){
-console.error(error);
-teamList.innerHTML="Error loading team.";
-}
+    });
+
+  }catch(error){
+    console.error("TEAM LOAD ERROR:",error);
+    document.getElementById("teamList").innerHTML="Error loading team.";
+  }
 
 });
 
