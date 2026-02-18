@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>My Account - SuperNFT</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -17,30 +16,34 @@ body{
   color:#FFD700;
 }
 
-.container{
-  max-width:500px;
-  margin:40px auto;
-  background:#111;
-  border:1px solid #222;
-  border-radius:12px;
-  padding:25px;
-  box-shadow:0 0 20px rgba(255,215,0,0.08);
+header{
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
 }
 
-h2{
-  text-align:center;
-  margin-bottom:20px;
+.container{
+  padding:15px;
+}
+
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
 }
 
 .row{
   display:flex;
   justify-content:space-between;
   padding:12px 0;
-  border-bottom:1px solid #222;
+  border-bottom:1px solid #272727;
 }
 
-.row span{
-  color:#aaa;
+.row:last-child{
+  border-bottom:none;
 }
 
 .value{
@@ -55,20 +58,22 @@ h2{
   color:#ff4444;
 }
 
-.logout{
-  margin-top:25px;
+.btn{
+  display:block;
   width:100%;
+  text-align:center;
   padding:12px;
   background:#FFD700;
   color:#000;
-  border:none;
+  border-radius:8px;
+  text-decoration:none;
+  margin-top:10px;
   font-weight:bold;
+  border:none;
   cursor:pointer;
-  border-radius:6px;
-  transition:0.3s;
 }
 
-.logout:hover{
+.btn:hover{
   background:#e6c200;
 }
 </style>
@@ -76,22 +81,28 @@ h2{
 
 <body>
 
+<header>👤 My Account</header>
+
 <div class="container">
-  <h2>My Account</h2>
 
-  <div class="row"><span>Email</span><div class="value" id="email">---</div></div>
-  <div class="row"><span>User ID</span><div class="value" id="uid">---</div></div>
-  <div class="row"><span>Wallet Balance</span><div class="value">$<span id="wallet">0</span></div></div>
-  <div class="row"><span>Daily Income</span><div class="value">$<span id="daily">0</span></div></div>
-  <div class="row"><span>Live Earnings</span><div class="value">$<span id="live">0</span></div></div>
-  <div class="row"><span>Referral Earnings</span><div class="value">$<span id="referral">0</span></div></div>
-  <div class="row"><span>Level</span><div class="value" id="level">0</div></div>
-  <div class="row">
-    <span>Account Status</span>
-    <div class="value" id="status">---</div>
-  </div>
+<!-- USER INFO -->
+<div class="card">
+  <div class="row"><div>Email</div><div class="value" id="email">---</div></div>
+  <div class="row"><div>User ID</div><div class="value" id="uid">---</div></div>
+  <div class="row"><div>Level</div><div class="value" id="level">0</div></div>
+  <div class="row"><div>Account Status</div><div class="value" id="status">---</div></div>
+</div>
 
-  <button class="logout" onclick="logout()">Logout</button>
+<!-- WALLET -->
+<div class="card">
+  <div class="row"><div>Wallet Balance</div><div class="value">$<span id="wallet">0</span></div></div>
+  <div class="row"><div>Daily Income</div><div class="value">$<span id="daily">0</span></div></div>
+  <div class="row"><div>Live Earnings</div><div class="value">$<span id="live">0</span></div></div>
+  <div class="row"><div>Referral Earnings</div><div class="value">$<span id="referral">0</span></div></div>
+</div>
+
+<button class="btn" onclick="logout()">Logout</button>
+
 </div>
 
 <script>
@@ -114,7 +125,6 @@ auth.onAuthStateChanged(user=>{
   document.getElementById("email").innerText=user.email;
   document.getElementById("uid").innerText=user.uid;
 
-  // 🔥 REAL-TIME LISTENER
   db.collection("users").doc(user.uid)
     .onSnapshot(doc=>{
 
@@ -122,21 +132,11 @@ auth.onAuthStateChanged(user=>{
 
       const u=doc.data();
 
-      // IMPORTANT FIX → use walletBalance not balance
-      document.getElementById("wallet").innerText=
-        (u.walletBalance||0).toFixed(2);
-
-      document.getElementById("daily").innerText=
-        (u.dailyIncome||0).toFixed(2);
-
-      document.getElementById("live").innerText=
-        (u.liveEarnings||0).toFixed(4);
-
-      document.getElementById("referral").innerText=
-        (u.referralEarnings||0).toFixed(2);
-
-      document.getElementById("level").innerText=
-        u.level||0;
+      document.getElementById("wallet").innerText=(u.walletBalance||0).toFixed(2);
+      document.getElementById("daily").innerText=(u.dailyIncome||0).toFixed(2);
+      document.getElementById("live").innerText=(u.liveEarnings||0).toFixed(4);
+      document.getElementById("referral").innerText=(u.referralEarnings||0).toFixed(2);
+      document.getElementById("level").innerText=u.level||0;
 
       const statusEl=document.getElementById("status");
 
