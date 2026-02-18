@@ -1,93 +1,238 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SuperNFT Admin Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | SuperNFT</title>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
+}
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: Arial, sans-serif;
-      background: #0d0d0d;
-    }
+header{
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
 
-    .login-box {
-      background: #1a1a1a;
-      padding: 30px;
-      width: 320px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(255,215,0,0.3);
-      text-align: center;
-    }
+.container{
+  padding:15px;
+}
 
-    h2 { color: #FFD700; margin-bottom: 20px; }
-    input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: none; outline: none; font-size: 15px; }
-    button { width: 100%; padding: 12px; background: #FFD700; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
-    .error { margin-top: 12px; color: red; font-size: 14px; }
-  </style>
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.stat{
+  background:#111;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+}
+
+.stat span{
+  display:block;
+  font-size:20px;
+  margin-top:5px;
+  font-weight:bold;
+}
+
+button{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.approve{
+  background:#00ff88;
+  color:#000;
+}
+
+.reject{
+  background:#ff4444;
+  color:#fff;
+}
+
+.request{
+  border-bottom:1px solid #222;
+  padding:8px 0;
+  font-size:13px;
+}
+
+.logout{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  background:#FFD700;
+  color:#000;
+}
+</style>
 </head>
+
 <body>
 
-  <div class="login-box">
-    <h2>Admin Login</h2>
-    <input type="email" id="email" placeholder="Admin Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="adminLogin()">Login</button>
-    <div class="error" id="error"></div>
+<header>🛡 Admin Dashboard</header>
+
+<div class="container">
+
+<!-- STATS -->
+<div class="card">
+  <div class="grid-2">
+    <div class="stat">Users<span id="totalUsers">0</span></div>
+    <div class="stat">Total Deposit<span id="totalDeposit">0</span></div>
+    <div class="stat">Total Withdraw<span id="totalWithdraw">0</span></div>
+    <div class="stat">Total Earnings<span id="totalEarnings">0</span></div>
   </div>
+</div>
 
-  <script>
-    // 🔥 Firebase config (remembered canonical config)
-    const firebaseConfig = {
-      apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-      authDomain: "supernft-5b952.firebaseapp.com",
-      projectId: "supernft-5b952",
-      storageBucket: "supernft-5b952.firebasestorage.app",
-      messagingSenderId: "278097730700",
-      appId: "1:278097730700:web:014d5ab680859db4512fa9",
-      measurementId: "G-BME7FWT355"
-    };
+<!-- WITHDRAW REQUESTS -->
+<div class="card">
+  <div style="font-weight:bold;margin-bottom:10px;">
+    💸 Pending Withdraw Requests
+  </div>
+  <div id="withdrawRequests"></div>
+</div>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+<button class="logout" onclick="logout()">Logout</button>
 
-    async function adminLogin() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const errorBox = document.getElementById("error");
-      errorBox.innerText = "";
+</div>
 
-      if (!email || !password) {
-        errorBox.innerText = "Email & Password required";
-        return;
-      }
+<script type="module">
 
-      try {
-        const cred = await auth.signInWithEmailAndPassword(email, password);
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, collection,
+  getDocs, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // 🔹 FRONTEND-ONLY TEMPORARY ADMIN CHECK
-        // Change "admin@supernft.com" to your real admin email
-        if (cred.user.email === "mysupernft@gmail.com") {
-          window.location.href = "admin-dashboard.html";
-        } else {
-          await auth.signOut();
-          errorBox.innerText = "Access denied. Admin only.";
-        }
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
 
-      } catch (err) {
-        errorBox.innerText = err.message;
-      }
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(!snap.exists()){
+    location.href="dashboard.html";
+    return;
+  }
+
+  const data = snap.data();
+
+  if(data.role !== "admin"){
+    alert("Access Denied");
+    location.href="dashboard.html";
+    return;
+  }
+
+  loadStats();
+  loadWithdrawRequests();
+});
+
+async function loadStats(){
+
+  const usersSnap = await getDocs(collection(db,"users"));
+  let totalUsers = usersSnap.size;
+
+  let deposit=0, withdraw=0, earnings=0;
+
+  usersSnap.forEach(doc=>{
+    const d = doc.data();
+    deposit += d.totalDeposit || 0;
+    withdraw += d.totalWithdraw || 0;
+    earnings += d.totalIncome || 0;
+  });
+
+  document.getElementById("totalUsers").innerText = totalUsers;
+  document.getElementById("totalDeposit").innerText = "$"+deposit;
+  document.getElementById("totalWithdraw").innerText = "$"+withdraw;
+  document.getElementById("totalEarnings").innerText = "$"+earnings;
+}
+
+async function loadWithdrawRequests(){
+
+  const snap = await getDocs(collection(db,"withdrawRequests"));
+  const box = document.getElementById("withdrawRequests");
+  box.innerHTML="";
+
+  snap.forEach(async(docSnap)=>{
+
+    const d = docSnap.data();
+
+    if(d.status === "pending"){
+
+      box.innerHTML += `
+        <div class="request">
+          ${d.email} - $${d.amount}
+          <div style="margin-top:5px;">
+            <button class="approve" onclick="approve('${docSnap.id}','${d.uid}',${d.amount})">Approve</button>
+            <button class="reject" onclick="reject('${docSnap.id}')">Reject</button>
+          </div>
+        </div>
+      `;
     }
-  </script>
+  });
+}
+
+window.approve = async function(id,uid,amount){
+
+  await updateDoc(doc(db,"withdrawRequests",id),{
+    status:"approved"
+  });
+
+  await updateDoc(doc(db,"users",uid),{
+    walletBalance: 0
+  });
+
+  alert("Withdraw Approved");
+  loadWithdrawRequests();
+}
+
+window.reject = async function(id){
+
+  await updateDoc(doc(db,"withdrawRequests",id),{
+    status:"rejected"
+  });
+
+  alert("Withdraw Rejected");
+  loadWithdrawRequests();
+}
+
+window.logout = function(){
+  signOut(auth).then(()=>{
+    location.href="login.html";
+  });
+}
+
+</script>
 
 </body>
 </html>
