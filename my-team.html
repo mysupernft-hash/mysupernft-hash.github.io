@@ -20,19 +20,19 @@ font-size:20px;
 font-weight:bold;
 }
 .container{
-padding:20px;
 max-width:700px;
-margin:auto;
+margin:40px auto;
+padding:20px;
 }
 .card{
 background:#1a1a1a;
 border-radius:12px;
 padding:15px;
 margin-bottom:15px;
-box-shadow:0 0 15px rgba(255,215,0,0.2);
+box-shadow:0 0 12px rgba(255,215,0,0.25);
 }
 .big{
-font-size:26px;
+font-size:24px;
 font-weight:bold;
 }
 .team-list{
@@ -41,20 +41,26 @@ margin-top:15px;
 .member{
 display:flex;
 justify-content:space-between;
-padding:12px;
+padding:10px;
 border-bottom:1px solid #272727;
-font-size:14px;
 }
 .member:last-child{
 border-bottom:none;
 }
 .rank{
-color:#FFD700;
 font-weight:bold;
+color:#FFD700;
 }
 .small{
 font-size:12px;
 opacity:0.7;
+}
+.notice{
+background:#111;
+padding:12px;
+border-radius:10px;
+margin-bottom:15px;
+font-size:13px;
 }
 .back{
 display:block;
@@ -66,13 +72,6 @@ text-align:center;
 border-radius:8px;
 text-decoration:none;
 }
-.notice{
-background:#111;
-padding:12px;
-border-radius:10px;
-margin-bottom:15px;
-font-size:13px;
-}
 </style>
 </head>
 
@@ -83,8 +82,7 @@ font-size:13px;
 <div class="container">
 
 <div class="notice">
-🔥 Build your team and earn $5 per referral instantly.
-More referrals = higher rank.
+🔥 Earn $5 for every successful referral. Build your team and increase your rank.
 </div>
 
 <div class="card">
@@ -104,9 +102,7 @@ More referrals = higher rank.
 
 <div class="card">
 <div>🏆 Team Leaderboard</div>
-<div class="team-list" id="teamList">
-Loading team...
-</div>
+<div class="team-list" id="teamList">Loading team...</div>
 </div>
 
 <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
@@ -114,7 +110,8 @@ Loading team...
 </div>
 
 <script type="module">
-import { initializeApp } 
+
+import { initializeApp, getApps, getApp } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import { getAuth, onAuthStateChanged } 
@@ -125,37 +122,45 @@ getFirestore, doc, getDoc,
 collection, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔹 Firebase Config */
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
 authDomain:"supernft-5b952.firebaseapp.com",
 projectId:"supernft-5b952"
 };
 
-const app=initializeApp(firebaseConfig);
+/* 🔥 Safe Firebase Init */
+const app = !getApps().length 
+? initializeApp(firebaseConfig) 
+: getApp();
+
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+/* 🔥 Load Team */
 onAuthStateChanged(auth, async (user)=>{
 
+const teamList=document.getElementById("teamList");
+
 if(!user){
-document.getElementById("teamList").innerHTML =
-"<li>Please login first</li>";
+teamList.innerHTML="Please login first.";
 return;
 }
 
-const teamList=document.getElementById("teamList");
-teamList.innerHTML="Loading team...";
+try{
 
-// 🔹 Get My Referral Code
+// 🔹 Get User Data
 const userSnap=await getDoc(doc(db,"users",user.uid));
 
 if(!userSnap.exists()){
-teamList.innerHTML="<li>User not found</li>";
+teamList.innerHTML="User not found.";
 return;
 }
 
-document.getElementById("userReferralCode").innerText =
-userSnap.data().referralCode || "No Code";
+const userData=userSnap.data();
+
+document.getElementById("refCode").innerText=
+userData.referralCode || "No Code";
 
 // 🔹 Get Team Members
 const refCol=collection(db,"users",user.uid,"referrals");
@@ -164,28 +169,50 @@ const snapshot=await getDocs(refCol);
 teamList.innerHTML="";
 
 if(snapshot.empty){
-teamList.innerHTML =
-"<li>No users joined via your referral yet.</li>";
+teamList.innerHTML="No team members yet.";
+document.getElementById("teamCount").innerText=0;
+document.getElementById("teamEarnings").innerText=0;
 return;
 }
 
+let totalEarn=0;
 let rank=1;
 
 snapshot.forEach(docSnap=>{
 const data=docSnap.data();
 
-const li=document.createElement("li");
-li.innerHTML=`
-<strong>#${rank}</strong> 
-${data.email || "User"} 
-<span style="float:right">$${data.reward || 0}</span>
+totalEarn+=data.reward||0;
+
+teamList.innerHTML+=`
+<div class="member">
+<div>
+<span class="rank">#${rank}</span> 
+${data.email || "User"}
+<div class="small">
+Joined: ${
+data.joinedAt && data.joinedAt.toDate
+? data.joinedAt.toDate().toLocaleDateString()
+: "Pending"
+}
+</div>
+</div>
+<div>$${data.reward||0}</div>
+</div>
 `;
-teamList.appendChild(li);
 
 rank++;
 });
 
+document.getElementById("teamCount").innerText=snapshot.size;
+document.getElementById("teamEarnings").innerText=totalEarn;
+
+}catch(error){
+console.error(error);
+teamList.innerHTML="Error loading team.";
+}
+
 });
+
 </script>
 
 </body>
