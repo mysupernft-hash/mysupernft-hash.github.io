@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Earnings | SuperNFT</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
+  font-family:Arial,sans-serif;
   background:#0f0f0f;
   color:#FFD700;
   text-align:center;
@@ -21,40 +22,38 @@ header{
 }
 
 .container{
-  padding:40px 20px;
-}
-
-.big{
-  font-size:38px;
-  font-weight:bold;
-  margin-top:10px;
-}
-
-.label{
-  opacity:0.7;
-  font-size:14px;
+  padding:20px;
 }
 
 .card{
   background:#1a1a1a;
-  padding:25px;
+  padding:20px;
   border-radius:12px;
-  margin-top:25px;
-  display:inline-block;
-  min-width:280px;
+  margin-bottom:15px;
+}
+
+.big{
+  font-size:30px;
+  font-weight:bold;
+}
+
+.small{
+  font-size:14px;
+  opacity:0.8;
 }
 
 .back{
   display:block;
-  margin-top:30px;
+  margin-top:20px;
   padding:12px;
   background:#272727;
+  border-radius:8px;
   color:#FFD700;
   text-decoration:none;
-  border-radius:8px;
 }
 </style>
 </head>
+
 <body>
 
 <header>⚡ Live Earnings</header>
@@ -62,18 +61,18 @@ header{
 <div class="container">
 
   <div class="card">
-    <div class="label">Daily Income</div>
-    <div class="big">$<span id="dailyIncome">0</span></div>
+    <div class="small">Daily Income</div>
+    <div class="big" id="dailyIncome">$0</div>
   </div>
 
   <div class="card">
-    <div class="label">Live Earnings</div>
-    <div class="big">$<span id="liveEarnings">0.000000</span></div>
+    <div class="small">Live Mining</div>
+    <div class="big" id="liveEarnings">$0.000000</div>
   </div>
 
   <div class="card">
-    <div class="label">Wallet Balance (Live Included)</div>
-    <div class="big">$<span id="walletBalance">0</span></div>
+    <div class="small">Wallet Balance (With Live)</div>
+    <div class="big" id="walletTotal">$0</div>
   </div>
 
   <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
@@ -84,58 +83,69 @@ header{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-onAuthStateChanged(auth, async(user)=>{
+onAuthStateChanged(auth, async (user) => {
 
   if(!user){
-    window.location.href="login.html";
+    window.location.href = "login.html";
     return;
   }
 
-  const userRef=doc(db,"users",user.uid);
-  const snap=await getDoc(userRef);
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
 
   if(!snap.exists()) return;
 
-  const data=snap.data();
+  const data = snap.data();
 
-  const dailyIncome = Number(data.dailyIncome) || 0;
-  const walletBalance = Number(data.walletBalance) || 0;
-  const lastIncomeAt = data.lastIncomeAt?.toMillis?.() || Date.now();
+  const dailyIncome = data.dailyIncome || 0;
+  let lastIncomeAt = data.lastIncomeAt?.toMillis?.() || Date.now();
 
   document.getElementById("dailyIncome").innerText =
-    dailyIncome.toFixed(2);
+    "$" + dailyIncome.toFixed(2);
 
-  const perSecond = dailyIncome / 86400;
-
-  function animate(){
+  function updateLive(){
 
     const now = Date.now();
-    const secondsPassed = (now - lastIncomeAt) / 1000;
+    const secondsPassed = Math.floor((now - lastIncomeAt) / 1000);
 
+    const perSecond = dailyIncome / 86400;
     const live = perSecond * secondsPassed;
 
+    // 24h complete → credit wallet
+    if(secondsPassed >= 86400){
+
+      updateDoc(userRef,{
+        walletBalance: (data.walletBalance || 0) + dailyIncome,
+        lastIncomeAt: new Date()
+      });
+
+      lastIncomeAt = Date.now();
+      return;
+    }
+
     document.getElementById("liveEarnings").innerText =
-      live.toFixed(6);
+      "$" + live.toFixed(6);
 
-    document.getElementById("walletBalance").innerText =
-      (walletBalance + live).toFixed(2);
+    const totalWallet = (data.walletBalance || 0) + live;
 
-    requestAnimationFrame(animate);
+    document.getElementById("walletTotal").innerText =
+      "$" + totalWallet.toFixed(2);
   }
 
-  animate();
+  updateLive();
+  setInterval(updateLive,1000);
 
 });
 
