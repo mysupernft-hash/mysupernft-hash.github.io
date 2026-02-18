@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wallet | SuperNFT</title>
+<title>SuperNFT Advanced Wallet</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
@@ -12,189 +14,295 @@ body{
   background:#0f0f0f;
   color:#FFD700;
 }
+
 header{
-  position:sticky;
-  top:0;
   background:#1a1a1a;
-  padding:14px;
+  padding:15px;
   text-align:center;
   font-size:20px;
   font-weight:bold;
 }
+
 .container{
-  padding:20px;
+  padding:15px;
 }
+
 .card{
   background:#1a1a1a;
+  padding:15px;
   border-radius:12px;
-  padding:20px;
   margin-bottom:15px;
 }
-.card h2{
-  margin:0 0 10px;
-  font-size:18px;
-}
+
 .balance{
-  font-size:30px;
+  font-size:28px;
   font-weight:bold;
 }
+
 .row{
   display:flex;
   justify-content:space-between;
   margin-top:8px;
   font-size:14px;
 }
+
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.small{
+  background:#111;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+}
+
+.small span{
+  display:block;
+  font-size:18px;
+  margin-top:5px;
+  font-weight:bold;
+}
+
 button{
   width:100%;
-  margin-top:12px;
   padding:12px;
-  background:#FFD700;
-  color:#000;
+  margin-top:10px;
   border:none;
   border-radius:8px;
-  font-size:16px;
   font-weight:bold;
   cursor:pointer;
 }
-button.secondary{
+
+.primary{
+  background:#FFD700;
+  color:#000;
+}
+
+.secondary{
   background:#272727;
   color:#FFD700;
 }
-.back-btn{
-  display:block;
-  margin-top:20px;
-  padding:12px;
-  background:#272727;
-  color:#FFD700;
-  text-align:center;
-  border-radius:8px;
-  text-decoration:none;
+
+.progress{
+  background:#111;
+  height:10px;
+  border-radius:10px;
+  margin-top:10px;
+  overflow:hidden;
+}
+
+.progress-bar{
+  height:100%;
+  background:#FFD700;
+  width:0%;
+}
+
+.transaction{
+  font-size:13px;
+  border-bottom:1px solid #222;
+  padding:6px 0;
 }
 </style>
 </head>
-
 <body>
 
-<header>Wallet</header>
+<header>💳 SuperNFT Wallet</header>
 
 <div class="container">
 
-  <div class="card">
-    <h2>Wallet Balance</h2>
-    <div class="balance" id="walletBalance">$0</div>
+<!-- BALANCE -->
+<div class="card">
+  <div>Wallet Balance</div>
+  <div class="balance">$<span id="balance">0</span></div>
+  <div style="font-size:13px;margin-top:5px;">
+    ⚡ Live Earnings: $<span id="liveEarnings">0.000000</span>
   </div>
+</div>
 
-  <div class="card">
-    <h2>Wallet Summary</h2>
-    <div class="row">
-      <span>Total Deposit</span>
-      <span id="totalDeposit">$0</span>
-    </div>
-    <div class="row">
-      <span>Total Earnings</span>
-      <span id="totalEarnings">$0</span>
-    </div>
-    <div class="row">
-      <span>NFTs Owned</span>
-      <span id="nfts">0</span>
-    </div>
+<!-- FINANCIAL OVERVIEW -->
+<div class="card">
+  <div class="grid-2">
+    <div class="small">Total Deposit<span id="deposit">0</span></div>
+    <div class="small">Total Withdraw<span id="withdraw">0</span></div>
+    <div class="small">NFT Income<span id="nftIncome">0</span></div>
+    <div class="small">Referral Earnings<span id="referral">0</span></div>
+    <div class="small">Team Commission<span id="team">0</span></div>
+    <div class="small">Total Income<span id="totalIncome">0</span></div>
   </div>
+</div>
 
-  <div class="card">
-    <h2>Actions</h2>
-    <button onclick="buyNFT()">Buy NFT ($10)</button>
-    <button class="secondary" onclick="requestWithdraw()">Withdraw</button>
+<!-- VIP SYSTEM -->
+<div class="card">
+  <div>🏆 VIP Level: <span id="vipLevel">0</span></div>
+  <div>💰 Commission: <span id="vipPercent">5</span>%</div>
+  <div class="progress">
+    <div class="progress-bar" id="vipProgress"></div>
   </div>
+  <div style="font-size:12px;margin-top:5px;">
+    Next Level Progress: <span id="vipText">0%</span>
+  </div>
+</div>
 
-  <a href="dashboard.html" class="back-btn">⬅ Back to Dashboard</a>
+<!-- PASSIVE BONUS -->
+<div class="card">
+  <div class="grid-2">
+    <div class="small">Unilevel<span id="uni">0</span></div>
+    <div class="small">Global Bonus<span id="global">0</span></div>
+    <div class="small">Rank Salary<span id="rankSalary">0</span></div>
+    <div class="small">Auto Pool<span id="pool">0</span></div>
+  </div>
+</div>
+
+<!-- GRAPH -->
+<div class="card">
+  <canvas id="earnChart"></canvas>
+</div>
+
+<!-- TRANSACTIONS -->
+<div class="card">
+  <div style="font-weight:bold;margin-bottom:10px;">📜 Transaction History</div>
+  <div id="transactions"></div>
+</div>
+
+<!-- ACTIONS -->
+<div class="card">
+  <button class="primary" onclick="deposit()">Deposit</button>
+  <button class="secondary" onclick="withdrawRequest()">Withdraw</button>
+</div>
 
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc,
-  updateDoc, increment,
-  collection, addDoc, serverTimestamp
+  getFirestore, doc, getDoc, updateDoc,
+  increment, collection, addDoc, getDocs,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-  storageBucket: "supernft-5b952.appspot.com",
-  messagingSenderId: "278097730700",
-  appId: "1:278097730700:web:6ba9892334456fd8512fa9"
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-let userData;
 let userRef;
+let userData;
 
 onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    location.href="login.html";
-    return;
-  }
+  if(!user){ location.href="login.html"; return; }
 
   userRef = doc(db,"users",user.uid);
   const snap = await getDoc(userRef);
-
   if(!snap.exists()) return;
 
   userData = snap.data();
 
-  document.getElementById("walletBalance").innerText =
-    "$" + (userData.walletBalance || 0);
+  document.getElementById("balance").innerText =
+    (userData.walletBalance || 0).toFixed(2);
 
-  document.getElementById("totalDeposit").innerText =
-    "$" + (userData.totalDeposit || 0);
+  document.getElementById("deposit").innerText =
+    userData.totalDeposit || 0;
 
-  document.getElementById("totalEarnings").innerText =
-    "$" + (userData.referralEarnings || 0);
+  document.getElementById("withdraw").innerText =
+    userData.totalWithdraw || 0;
 
-  document.getElementById("nfts").innerText =
-    userData.nfts || 0;
+  document.getElementById("nftIncome").innerText =
+    userData.dailyIncome || 0;
+
+  document.getElementById("referral").innerText =
+    userData.referralEarnings || 0;
+
+  document.getElementById("team").innerText =
+    userData.teamCommission || 0;
+
+  document.getElementById("totalIncome").innerText =
+    userData.totalIncome || 0;
+
+  document.getElementById("vipLevel").innerText =
+    userData.vipLevel || 0;
+
+  let progress = userData.vipProgress || 0;
+  document.getElementById("vipProgress").style.width = progress+"%";
+  document.getElementById("vipText").innerText = progress+"%";
+
+  startLiveMining();
+  loadTransactions(user.uid);
+  loadChart();
 });
 
-/* 🪙 BUY NFT */
-window.buyNFT = async function(){
-  if((userData.walletBalance || 0) < 10){
-    alert("❌ Minimum $10 required to buy NFT");
-    return;
-  }
+function startLiveMining(){
+  let live = userData.liveEarnings || 0;
+  let rate = (userData.dailyIncome || 0)/86400;
 
-  await updateDoc(userRef,{
-    walletBalance: increment(-10),
-    nfts: increment(1)
+  setInterval(()=>{
+    live += rate;
+    document.getElementById("liveEarnings")
+      .innerText = live.toFixed(6);
+  },1000);
+}
+
+async function loadTransactions(uid){
+  const snap = await getDocs(collection(db,"users",uid,"transactions"));
+  const box = document.getElementById("transactions");
+  snap.forEach(doc=>{
+    const d = doc.data();
+    box.innerHTML += `
+      <div class="transaction">
+        ${d.type} - $${d.amount}
+      </div>`;
   });
+}
 
-  alert("🎉 NFT purchased successfully!");
+function loadChart(){
+  new Chart(document.getElementById("earnChart"),{
+    type:"line",
+    data:{
+      labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+      datasets:[{
+        label:"7 Day Earnings",
+        data:[5,8,6,10,12,9,15],
+        borderColor:"#FFD700",
+        fill:false
+      }]
+    }
+  });
+}
+
+window.deposit = async function(){
+  await updateDoc(userRef,{
+    walletBalance: increment(50),
+    totalDeposit: increment(50)
+  });
+  alert("Deposit Added (Demo)");
   location.reload();
-};
+}
 
-/* 💸 WITHDRAW REQUEST → ADMIN */
-window.requestWithdraw = async function(){
-  if((userData.walletBalance || 0) <= 0){
-    alert("❌ Wallet balance is zero");
+window.withdrawRequest = async function(){
+  if((userData.walletBalance||0)<=0){
+    alert("No balance");
     return;
   }
 
   await addDoc(collection(db,"withdrawRequests"),{
     uid: auth.currentUser.uid,
-    email: auth.currentUser.email,
     amount: userData.walletBalance,
-    status: "pending",
+    status:"pending",
     createdAt: serverTimestamp()
   });
 
-  alert("📩 Withdraw request sent to admin!");
-};
-</script>
+  alert("Withdraw request sent");
+}
 
+</script>
 </body>
 </html>
