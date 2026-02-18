@@ -3,22 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard | SuperNFT</title>
+<title>SuperNFT Admin Dashboard</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial,sans-serif;
-  background:#0f172a;
-  color:white;
+  font-family:Arial, sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
 }
 
 header{
-  background:#020617;
+  background:#1a1a1a;
   padding:15px;
   text-align:center;
-  font-size:22px;
-  color:#38bdf8;
+  font-size:20px;
   font-weight:bold;
 }
 
@@ -27,7 +26,7 @@ header{
 }
 
 .card{
-  background:#1e293b;
+  background:#1a1a1a;
   padding:15px;
   border-radius:12px;
   margin-bottom:15px;
@@ -36,31 +35,25 @@ header{
 .row{
   display:flex;
   justify-content:space-between;
-  margin:6px 0;
-  font-size:14px;
+  margin-top:8px;
 }
 
 button{
   padding:6px 12px;
   border:none;
   border-radius:6px;
-  cursor:pointer;
   font-weight:bold;
+  cursor:pointer;
 }
 
 .approve{
-  background:#22c55e;
+  background:#00c853;
   color:white;
 }
 
 .reject{
-  background:#ef4444;
+  background:#d50000;
   color:white;
-}
-
-.stat{
-  font-size:18px;
-  font-weight:bold;
 }
 </style>
 </head>
@@ -71,23 +64,24 @@ button{
 
 <div class="container">
 
-  <!-- STATS -->
-  <div class="card">
-    <div class="row">
-      <span>Total Users</span>
-      <span class="stat" id="totalUsers">0</span>
-    </div>
-    <div class="row">
-      <span>Pending Withdraws</span>
-      <span class="stat" id="pendingWithdraws">0</span>
-    </div>
+<div class="card">
+  <div class="row">
+    <div>Total Users</div>
+    <div id="totalUsers">0</div>
   </div>
+</div>
 
-  <!-- WITHDRAW REQUESTS -->
-  <div class="card">
-    <h3>💸 Withdraw Requests</h3>
-    <div id="withdrawList"></div>
+<div class="card">
+  <div class="row">
+    <div>Pending Withdraws</div>
+    <div id="pendingCount">0</div>
   </div>
+</div>
+
+<div class="card">
+  <h3>💸 Withdraw Requests</h3>
+  <div id="withdrawList">Loading...</div>
+</div>
 
 </div>
 
@@ -96,12 +90,8 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  getDoc
+  getFirestore, collection, getDocs,
+  doc, updateDoc, query, where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -117,89 +107,86 @@ const db=getFirestore(app);
 onAuthStateChanged(auth, async(user)=>{
 
   if(!user){
+    alert("Login Required");
     location.href="login.html";
     return;
   }
 
-  // 🔐 Check Admin Role
-  const userSnap = await getDoc(doc(db,"users",user.uid));
+  const userSnap = await getDocs(
+    query(collection(db,"users"), where("email","==",user.email))
+  );
 
-  if(!userSnap.exists() || userSnap.data().role !== "admin"){
-    alert("Access Denied ❌");
+  if(userSnap.empty){
+    alert("Access Denied");
     location.href="dashboard.html";
     return;
   }
 
-  loadStats();
-  loadWithdraws();
+  const userData = userSnap.docs[0].data();
+
+  if(!userData.isAdmin){
+    alert("Admin Access Only");
+    location.href="dashboard.html";
+    return;
+  }
+
+  loadDashboard();
 });
 
+async function loadDashboard(){
 
-async function loadStats(){
-
+  // TOTAL USERS
   const usersSnap = await getDocs(collection(db,"users"));
   document.getElementById("totalUsers").innerText = usersSnap.size;
 
-  const withdrawSnap = await getDocs(collection(db,"withdrawRequests"));
-  let pending = 0;
-  withdrawSnap.forEach(doc=>{
-    if(doc.data().status === "pending") pending++;
-  });
+  // PENDING WITHDRAW
+  const withdrawQuery = query(
+    collection(db,"withdrawRequests"),
+    where("status","==","pending")
+  );
 
-  document.getElementById("pendingWithdraws").innerText = pending;
-}
+  const withdrawSnap = await getDocs(withdrawQuery);
 
+  document.getElementById("pendingCount").innerText = withdrawSnap.size;
 
-async function loadWithdraws(){
+  const list = document.getElementById("withdrawList");
+  list.innerHTML = "";
 
-  const snap = await getDocs(collection(db,"withdrawRequests"));
-  const box = document.getElementById("withdrawList");
-  box.innerHTML="";
+  if(withdrawSnap.empty){
+    list.innerHTML = "No pending requests";
+    return;
+  }
 
-  snap.forEach(d=>{
+  withdrawSnap.forEach(docSnap=>{
+    const data = docSnap.data();
+    const div = document.createElement("div");
+    div.style.marginBottom="10px";
 
-    const data = d.data();
-    if(data.status !== "pending") return;
-
-    box.innerHTML += `
-      <div class="card">
-        <div class="row">
-          <span>UID:</span>
-          <span>${data.uid}</span>
-        </div>
-        <div class="row">
-          <span>Amount:</span>
-          <span>$${data.amount}</span>
-        </div>
-        <div class="row">
-          <button class="approve" onclick="approve('${d.id}')">Approve</button>
-          <button class="reject" onclick="reject('${d.id}')">Reject</button>
-        </div>
-      </div>
+    div.innerHTML = `
+      <div>Email: ${data.email}</div>
+      <div>Amount: $${data.amount}</div>
+      <button class="approve" onclick="approve('${docSnap.id}')">Approve</button>
+      <button class="reject" onclick="reject('${docSnap.id}')">Reject</button>
+      <hr>
     `;
+
+    list.appendChild(div);
   });
-
 }
-
 
 window.approve = async function(id){
-
   await updateDoc(doc(db,"withdrawRequests",id),{
     status:"approved"
   });
-
-  alert("Withdraw Approved ✅");
+  alert("Approved");
   location.reload();
 }
 
-
 window.reject = async function(id){
-
   await updateDoc(doc(db,"withdrawRequests",id),{
     status:"rejected"
   });
-
-  alert("Withdraw Rejected ❌");
+  alert("Rejected");
   location.reload();
 }
 
