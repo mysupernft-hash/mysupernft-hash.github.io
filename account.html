@@ -2,79 +2,106 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>My Account - SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account | SuperNFT</title>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 
 <style>
 body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#0f0f0f;
-  color:#FFD700;
+margin:0;
+font-family:Arial,sans-serif;
+background:#0f0f0f;
+color:#FFD700;
 }
 
 header{
-  background:#1a1a1a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
+background:#1a1a1a;
+padding:15px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
 }
 
 .container{
-  padding:15px;
+padding:15px;
 }
 
 .card{
-  background:#1a1a1a;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
+background:#1a1a1a;
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
+box-shadow:0 0 15px rgba(255,215,0,0.1);
 }
+
+.center{text-align:center;}
+
+.big{font-size:20px;font-weight:bold;}
 
 .row{
-  display:flex;
-  justify-content:space-between;
-  padding:12px 0;
-  border-bottom:1px solid #272727;
+display:flex;
+justify-content:space-between;
+margin-top:8px;
 }
 
-.row:last-child{
-  border-bottom:none;
+.grid-2{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
 }
 
-.value{
-  font-weight:bold;
+.small-card{
+background:#111;
+padding:10px;
+border-radius:10px;
+text-align:center;
+font-size:14px;
 }
 
-.status-active{
-  color:#00ff88;
+.small-card span{
+display:block;
+font-size:16px;
+margin-top:4px;
+font-weight:bold;
 }
 
-.status-banned{
-  color:#ff4444;
+.progress{
+height:8px;
+background:#333;
+border-radius:5px;
+margin-top:8px;
+overflow:hidden;
+}
+
+.progress-bar{
+height:100%;
+background:#FFD700;
+width:0%;
+}
+
+.badge{
+font-size:22px;
+margin-top:5px;
 }
 
 .btn{
-  display:block;
-  width:100%;
-  text-align:center;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
-  border-radius:8px;
-  text-decoration:none;
-  margin-top:10px;
-  font-weight:bold;
-  border:none;
-  cursor:pointer;
+display:block;
+margin-top:10px;
+padding:12px;
+background:#FFD700;
+color:#000;
+border-radius:8px;
+text-align:center;
+text-decoration:none;
+font-weight:bold;
 }
 
-.btn:hover{
-  background:#e6c200;
+.logout{
+background:#ff4444;
+color:#fff;
 }
 </style>
 </head>
@@ -85,78 +112,146 @@ header{
 
 <div class="container">
 
-<!-- USER INFO -->
-<div class="card">
-  <div class="row"><div>Email</div><div class="value" id="email">---</div></div>
-  <div class="row"><div>User ID</div><div class="value" id="uid">---</div></div>
-  <div class="row"><div>Level</div><div class="value" id="level">0</div></div>
-  <div class="row"><div>Account Status</div><div class="value" id="status">---</div></div>
+<!-- PROFILE -->
+<div class="card center">
+<div id="email">Loading...</div>
+<div style="font-size:12px;">UID: <span id="uid">---</span></div>
+<div class="badge" id="rankBadge">⭐ VIP 0</div>
+<div>Commission: <span id="commission">5%</span></div>
+<div class="progress">
+<div class="progress-bar" id="levelBar"></div>
+</div>
+<div style="font-size:12px;margin-top:5px;">Next Level Progress</div>
 </div>
 
 <!-- WALLET -->
 <div class="card">
-  <div class="row"><div>Wallet Balance</div><div class="value">$<span id="wallet">0</span></div></div>
-  <div class="row"><div>Daily Income</div><div class="value">$<span id="daily">0</span></div></div>
-  <div class="row"><div>Live Earnings</div><div class="value">$<span id="live">0</span></div></div>
-  <div class="row"><div>Referral Earnings</div><div class="value">$<span id="referral">0</span></div></div>
+<div class="row">
+<div>Wallet Balance</div>
+<div class="big">$<span id="wallet">0</span></div>
+</div>
+<div class="row">
+<div>Total Deposit</div>
+<div>$<span id="deposit">0</span></div>
+</div>
+<div class="row">
+<div>Total Withdraw</div>
+<div>$<span id="withdraw">0</span></div>
+</div>
 </div>
 
-<button class="btn" onclick="logout()">Logout</button>
+<!-- INCOME -->
+<div class="card">
+<div class="grid-2">
+<div class="small-card">
+Daily Income
+<span>$<span id="daily">0</span></span>
+</div>
+<div class="small-card">
+Live Earnings
+<span>$<span id="live">0</span></span>
+</div>
+<div class="small-card">
+Referral Bonus
+<span>$<span id="referral">0</span></span>
+</div>
+<div class="small-card">
+Team Commission
+<span>$<span id="teamBonus">0</span></span>
+</div>
+</div>
+</div>
+
+<!-- TEAM SUMMARY -->
+<div class="card">
+<div class="row">
+<div>Total Team</div>
+<div id="teamCount">0</div>
+</div>
+<div class="row">
+<div>VIP Level</div>
+<div id="level">0</div>
+</div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="card">
+<a href="deposit.html" class="btn">Deposit</a>
+<a href="withdraw.html" class="btn">Withdraw</a>
+<a href="settings.html" class="btn">Settings</a>
+<button onclick="logout()" class="btn logout">Logout</button>
+</div>
 
 </div>
 
-<script>
-firebase.initializeApp({
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
-});
+<script type="module">
 
-const auth=firebase.auth();
-const db=firebase.firestore();
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-auth.onAuthStateChanged(user=>{
+const firebaseConfig={
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+};
 
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-  document.getElementById("email").innerText=user.email;
-  document.getElementById("uid").innerText=user.uid;
+onAuthStateChanged(auth, async(user)=>{
 
-  db.collection("users").doc(user.uid)
-    .onSnapshot(doc=>{
-
-      if(!doc.exists) return;
-
-      const u=doc.data();
-
-      document.getElementById("wallet").innerText=(u.walletBalance||0).toFixed(2);
-      document.getElementById("daily").innerText=(u.dailyIncome||0).toFixed(2);
-      document.getElementById("live").innerText=(u.liveEarnings||0).toFixed(4);
-      document.getElementById("referral").innerText=(u.referralEarnings||0).toFixed(2);
-      document.getElementById("level").innerText=u.level||0;
-
-      const statusEl=document.getElementById("status");
-
-      if(u.banned===true){
-        statusEl.innerText="BANNED";
-        statusEl.className="value status-banned";
-      }else{
-        statusEl.innerText="ACTIVE";
-        statusEl.className="value status-active";
-      }
-
-    });
-
-});
-
-function logout(){
-  auth.signOut().then(()=>{
-    window.location.href="login.html";
-  });
+if(!user){
+location.href="login.html";
+return;
 }
+
+document.getElementById("email").innerText=user.email;
+document.getElementById("uid").innerText=user.uid;
+
+const userRef=doc(db,"users",user.uid);
+const snap=await getDoc(userRef);
+
+if(!snap.exists()) return;
+
+const data=snap.data();
+
+document.getElementById("wallet").innerText=data.walletBalance||0;
+document.getElementById("deposit").innerText=data.totalDeposit||0;
+document.getElementById("withdraw").innerText=data.withdraw||0;
+document.getElementById("daily").innerText=data.dailyIncome||0;
+document.getElementById("live").innerText=data.liveEarnings||0;
+document.getElementById("referral").innerText=data.referralEarnings||0;
+document.getElementById("teamBonus").innerText=data.teamBonus||0;
+document.getElementById("level").innerText=data.level||0;
+
+/* VIP SYSTEM */
+const level=data.level||0;
+
+let commission=5;
+if(level>=5) commission=10;
+if(level>=8) commission=15;
+
+document.getElementById("commission").innerText=commission+"%";
+document.getElementById("rankBadge").innerText="👑 VIP "+level;
+
+let progress=(data.totalDeposit||0)/1000*100;
+if(progress>100) progress=100;
+
+document.getElementById("levelBar").style.width=progress+"%";
+
+/* Team Count */
+const refCol=collection(db,"users",user.uid,"referrals");
+const refSnap=await getDocs(refCol);
+document.getElementById("teamCount").innerText=refSnap.size;
+
+});
+
+window.logout=function(){
+signOut(auth).then(()=>location.href="login.html");
+}
+
 </script>
 
 </body>
