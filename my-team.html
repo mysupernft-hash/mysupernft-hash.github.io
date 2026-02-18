@@ -23,6 +23,8 @@ header{
 
 .container{
   padding:15px;
+  max-width:700px;
+  margin:auto;
 }
 
 .card{
@@ -32,30 +34,12 @@ header{
   margin-bottom:15px;
 }
 
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:10px;
-}
-
-.big{
-  font-size:20px;
-  font-weight:bold;
-}
-
-.center{
-  text-align:center;
-}
+.center{text-align:center;}
+.big{font-size:20px;font-weight:bold;}
 
 .grid-2{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px;
-}
-
-.grid-3{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
   gap:12px;
 }
 
@@ -74,33 +58,46 @@ header{
   font-weight:bold;
 }
 
-.section-title{
-  margin:15px 0 8px;
-  font-size:16px;
-  font-weight:bold;
+.vip-box{
+  background:linear-gradient(135deg,#1a1a1a,#111);
+  border:1px solid #FFD700;
+  padding:15px;
+  border-radius:12px;
+  margin-top:10px;
 }
 
-.btn{
-  display:block;
-  text-align:center;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
-  border-radius:8px;
-  text-decoration:none;
-  margin-top:8px;
-  font-weight:bold;
+.progress-bar{
+  background:#222;
+  height:8px;
+  border-radius:10px;
+  margin-top:10px;
+  overflow:hidden;
 }
+
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:#FFD700;
+  transition:0.6s;
+}
+
+.leader-item{
+  display:flex;
+  justify-content:space-between;
+  padding:8px 0;
+  border-bottom:1px solid #333;
+}
+
+.crown{color:gold;font-weight:bold;}
 
 .footer{
-  margin-top:20px;
   text-align:center;
+  margin-top:20px;
+  opacity:0.6;
   font-size:13px;
-  opacity:0.7;
 }
 </style>
 </head>
-
 <body>
 
 <header>👥 My Team</header>
@@ -110,22 +107,26 @@ header{
 <!-- USER INFO -->
 <div class="card center">
   <div id="userEmail">Loading...</div>
-  <div style="margin-top:5px;font-size:13px;">UID: <span id="uid">---</span></div>
-  <div style="margin-top:10px;">Level <span id="level">0</span></div>
-  <div><span id="points">0</span> Points</div>
+  <div style="font-size:13px;">UID: <span id="uid">---</span></div>
+
+  <div class="vip-box">
+    <div>💎 VIP Level</div>
+    <div class="big" id="vipLevel">VIP 0</div>
+    <div style="font-size:12px;">Next Level At <span id="nextTarget">5</span> Members</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="vipProgress"></div>
+    </div>
+  </div>
 </div>
 
 <!-- WALLET -->
 <div class="card">
-  <div class="row">
-    <div>Wallet Balance</div>
-    <div class="big">$<span id="wallet">0</span></div>
-  </div>
+  Wallet Balance
+  <div class="big">$<span id="wallet">0</span></div>
 </div>
 
 <!-- INCOME -->
 <div class="card">
-  <div class="section-title">Income</div>
   <div class="grid-2">
     <div class="small-card">
       Daily Income
@@ -140,48 +141,26 @@ header{
 
 <!-- TEAM STATS -->
 <div class="card">
-  <div class="section-title">My Team</div>
-  <div class="grid-3">
+  <div class="grid-2">
     <div class="small-card">
-      Valid Members
+      Team Members
       <span id="teamCount">0</span>
     </div>
     <div class="small-card">
-      Community Rewards
-      <span id="teamReward">0</span>
-    </div>
-    <div class="small-card">
-      Community Orders
-      <span id="teamOrders">0</span>
+      Referral Earnings
+      <span>$<span id="teamReward">0</span></span>
     </div>
   </div>
 </div>
 
-<!-- ORDERS -->
+<!-- LEADERBOARD -->
 <div class="card">
-  <div class="section-title">My Orders</div>
-  <div class="grid-2">
-    <div class="small-card">
-      Orders
-      <span id="orders">0</span>
-    </div>
-    <div class="small-card">
-      Processing
-      <span id="processing">0</span>
-    </div>
-  </div>
-</div>
-
-<!-- QUICK ACTION -->
-<div class="card">
-  <div class="section-title">Common Functions</div>
-  <a href="deposit.html" class="btn">Deposit</a>
-  <a href="withdraw.html" class="btn">Withdraw</a>
-  <a href="settings.html" class="btn">Settings</a>
+  <div style="margin-bottom:10px;font-weight:bold;">🏆 Leaderboard</div>
+  <div id="leaderboard">Loading...</div>
 </div>
 
 <div class="footer">
-SuperNFT Community Panel
+SuperNFT Community Panel 💎
 </div>
 
 </div>
@@ -190,7 +169,7 @@ SuperNFT Community Panel
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -223,12 +202,51 @@ document.getElementById("wallet").innerText=data.walletBalance||0;
 document.getElementById("daily").innerText=data.dailyIncome||0;
 document.getElementById("totalIncome").innerText=data.liveEarnings||0;
 document.getElementById("teamReward").innerText=data.referralEarnings||0;
-document.getElementById("level").innerText=data.level||0;
 
-// Team Count
+/* TEAM COUNT */
 const refCol=collection(db,"users",user.uid,"referrals");
 const refSnap=await getDocs(refCol);
-document.getElementById("teamCount").innerText=refSnap.size;
+let teamSize=refSnap.size;
+document.getElementById("teamCount").innerText=teamSize;
+
+/* VIP SYSTEM */
+let vipLevel=0;
+let nextTarget=5;
+
+if(teamSize>=50){vipLevel=3;nextTarget="MAX";}
+else if(teamSize>=20){vipLevel=2;nextTarget=50;}
+else if(teamSize>=5){vipLevel=1;nextTarget=20;}
+
+document.getElementById("vipLevel").innerText="VIP "+vipLevel;
+document.getElementById("nextTarget").innerText=nextTarget;
+
+let percent=0;
+if(nextTarget!=="MAX"){
+percent=(teamSize/nextTarget)*100;
+}
+document.getElementById("vipProgress").style.width=percent+"%";
+
+/* LEADERBOARD TOP 3 */
+const q=query(collection(db,"users"),orderBy("referralEarnings","desc"),limit(3));
+const topSnap=await getDocs(q);
+
+let lb="";
+let rank=1;
+
+topSnap.forEach(docSnap=>{
+let d=docSnap.data();
+let crown=rank<=3?" 👑":"";
+lb+=`
+<div class="leader-item">
+<div>#${rank}${crown}</div>
+<div>${d.email||"User"}</div>
+<div>$${d.referralEarnings||0}</div>
+</div>
+`;
+rank++;
+});
+
+document.getElementById("leaderboard").innerHTML=lb||"No data";
 
 });
 
