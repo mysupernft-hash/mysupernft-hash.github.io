@@ -257,11 +257,22 @@ window.buyNFT=function(price){localStorage.setItem("price", price); location.hre
 window.copyReferral=function(){navigator.clipboard.writeText(document.getElementById("referralCode").innerText.split(" ")[1]);alert("Referral Copied")}
 
 /* Firebase Auth + Referral + Stats + Live Earnings */
-onAuthStateChanged(auth,async user=>{
-  if(!user){window.location.replace("login.html");return;}
-  document.getElementById("userEmail").innerText = user.email;
-  const userRef=doc(db,"users",user.uid);
-  let snap=await getDoc(userRef);
+onAuthStateChanged(auth, async (user) => {
+
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  const emailEl = document.getElementById("userEmail");
+
+  if (emailEl) {
+    emailEl.innerText = user.email || "User";
+  }
+
+  const userRef = doc(db, "users", user.uid);
+
+});
   if(!snap.exists()){
     const code="SNFT"+Math.floor(100000+Math.random()*900000);
     await setDoc(userRef,{referralCode:code,dailyIncome:0,liveEarnings:0,totalDeposit:0,walletBalance:0,nfts:[]});
