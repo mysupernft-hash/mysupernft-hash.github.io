@@ -1,222 +1,127 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Investments | SuperNFT</title>
 
 <style>
-:root{
-  --bg:#0f0f0f;
-  --card:#1a1a1a;
-  --gold:#FFD700;
-  --gold-soft:#d4af37;
-  --border:#2a2a2a;
-}
-
-*{box-sizing:border-box}
-
 body{
   margin:0;
-  font-family:Arial, sans-serif;
-  background:var(--bg);
-  color:var(--gold);
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
 }
 
-/* ===== HEADER ===== */
 header{
-  position:sticky;
-  top:0;
-  background:#121212;
+  background:#1a1a1a;
   padding:15px;
   text-align:center;
   font-size:20px;
   font-weight:bold;
-  border-bottom:1px solid var(--border);
-  z-index:100;
 }
 
-/* ===== CONTAINER ===== */
 .container{
-  padding:20px;
-}
-
-/* ===== SUMMARY BOX ===== */
-.summary{
-  background:linear-gradient(135deg,#1c1c1c,#111);
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:20px;
-  border:1px solid var(--border);
-}
-.summary p{
-  margin:6px 0;
-  font-size:14px;
-  color:var(--gold-soft);
-}
-.summary strong{
-  color:var(--gold);
-}
-
-/* ===== CARD ===== */
-.card{
-  background:var(--card);
-  border-radius:14px;
   padding:15px;
-  margin-bottom:18px;
-  border:1px solid var(--border);
-  box-shadow:0 0 12px rgba(255,215,0,0.06);
 }
 
-.card h3{
-  margin:0 0 6px;
-  font-size:17px;
-}
-.card p{
-  margin:4px 0;
-  font-size:14px;
-  color:var(--gold-soft);
+.nft-card{
+  background:#1a1a1a;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
+  border:1px solid #FFD700;
 }
 
-/* ===== PROGRESS ===== */
-.progress{
-  margin-top:10px;
-  background:#111;
+.nft-img{
+  width:100%;
   border-radius:10px;
-  height:10px;
-  overflow:hidden;
-}
-.progress-bar{
-  height:100%;
-  background:linear-gradient(90deg,#FFD700,#ffea70);
-  width:0%;
 }
 
-/* ===== STATUS ===== */
-.badge{
-  display:inline-block;
-  margin-top:10px;
-  padding:5px 14px;
-  border-radius:20px;
-  background:var(--gold);
-  color:#000;
-  font-size:12px;
-  font-weight:bold;
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
 }
 
-/* ===== EMPTY ===== */
 .empty{
   text-align:center;
-  margin-top:70px;
-  color:#777;
-}
-
-/* ===== BACK ===== */
-.back{
-  display:block;
-  text-align:center;
-  margin:30px 0 10px;
-  color:var(--gold);
-  text-decoration:none;
-  font-size:15px;
+  margin-top:50px;
+  opacity:0.7;
 }
 </style>
 </head>
-
 <body>
 
 <header>📁 My Investments</header>
 
-<div class="container">
-  <div class="summary" id="summaryBox">
-    Loading investments...
-  </div>
-
-  <div id="investmentList"></div>
-</div>
-
-<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+<div class="container" id="investments"></div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  query,
-  orderBy,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase */
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-const list = document.getElementById("investmentList");
-const summary = document.getElementById("summaryBox");
-
-/* 🔐 Auth */
 onAuthStateChanged(auth, async(user)=>{
+
   if(!user){
-    location.href="login.html";
+    window.location.href="login.html";
     return;
   }
 
-  const q = query(
-    collection(db,"users",user.uid,"investments"),
-    orderBy("purchasedAt","desc")
-  );
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
 
-  const snap = await getDocs(q);
+  if(!snap.exists()) return;
 
-  if(snap.empty){
-    summary.innerHTML = "No investments yet";
-    list.innerHTML = `<div class="empty">You haven't purchased any NFT</div>`;
+  const data = snap.data();
+  const nfts = data.nfts || [];
+
+  const container = document.getElementById("investments");
+
+  if(nfts.length === 0){
+    container.innerHTML = "<div class='empty'>No NFTs Purchased Yet</div>";
     return;
   }
 
-  let totalInvest = 0;
-  let totalDaily = 0;
+  nfts.forEach(nft => {
 
-  list.innerHTML = "";
-
-  snap.forEach(doc=>{
-    const d = doc.data();
-    const date = d.purchasedAt?.toDate().toLocaleDateString() || "";
-    const progress = Math.min((d.dailyIncome / d.price) * 100 * 10, 100);
-
-    totalInvest += d.price || 0;
-    totalDaily += d.dailyIncome || 0;
-
-    list.innerHTML += `
-      <div class="card">
-        <h3>${d.name || "NFT Investment"}</h3>
-        <p>💰 Price: $${d.price}</p>
-        <p>📈 Daily Income: $${d.dailyIncome}</p>
-        <p>📅 Purchased: ${date}</p>
-
-        <div class="progress">
-          <div class="progress-bar" style="width:${progress}%"></div>
+    container.innerHTML += `
+      <div class="nft-card">
+        <img src="${nft.image}" class="nft-img">
+        <div class="row">
+          <span>Category</span>
+          <span>${nft.category}</span>
         </div>
-
-        <span class="badge">ACTIVE</span>
+        <div class="row">
+          <span>Price</span>
+          <span>$${nft.price}</span>
+        </div>
+        <div class="row">
+          <span>Daily Income</span>
+          <span>$${nft.dailyIncome}</span>
+        </div>
+        <div class="row">
+          <span>Purchased</span>
+          <span>${new Date(nft.purchaseDate.seconds * 1000).toLocaleDateString()}</span>
+        </div>
       </div>
     `;
   });
 
-  summary.innerHTML = `
-    <p><strong>Total Investment:</strong> $${totalInvest.toFixed(2)}</p>
-    <p><strong>Total Daily Income:</strong> $${totalDaily.toFixed(2)}</p>
-    <p><strong>Est. 365 Days:</strong> $${(totalDaily*365).toFixed(2)}</p>
-  `;
 });
+
 </script>
 
 </body>
