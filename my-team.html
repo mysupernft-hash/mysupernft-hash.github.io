@@ -114,13 +114,15 @@ Loading team...
 </div>
 
 <script type="module">
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged }
+import { getAuth, onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 import { 
 getFirestore, doc, getDoc,
-collection, onSnapshot
+collection, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -133,75 +135,57 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-onAuthStateChanged(auth,(user)=>{
+onAuthStateChanged(auth, async (user)=>{
 
 if(!user){
-window.location.href="login.html";
+document.getElementById("teamList").innerHTML =
+"<li>Please login first</li>";
 return;
 }
-
-const userRef=doc(db,"users",user.uid);
-
-getDoc(userRef).then((snap)=>{
-if(snap.exists()){
-const data=snap.data();
-document.getElementById("refCode").innerText=
-data.referralCode || "No Code";
-}
-});
-
-const refCol=collection(db,"users",user.uid,"referrals");
-
-onSnapshot(refCol,(snapshot)=>{
 
 const teamList=document.getElementById("teamList");
-teamList.innerHTML="";
+teamList.innerHTML="Loading team...";
 
-document.getElementById("teamCount").innerText=
-snapshot.size;
+// 🔹 Get My Referral Code
+const userSnap=await getDoc(doc(db,"users",user.uid));
 
-let totalEarn=0;
-let rank=1;
-
-if(snapshot.empty){
-teamList.innerHTML="<div class='small'>No team members yet</div>";
-document.getElementById("teamEarnings").innerText=0;
+if(!userSnap.exists()){
+teamList.innerHTML="<li>User not found</li>";
 return;
 }
 
-snapshot.forEach(docSnap=>{
+document.getElementById("userReferralCode").innerText =
+userSnap.data().referralCode || "No Code";
 
-const r=docSnap.data();
+// 🔹 Get Team Members
+const refCol=collection(db,"users",user.uid,"referrals");
+const snapshot=await getDocs(refCol);
 
-totalEarn += r.reward || 0;
+teamList.innerHTML="";
 
-let date="Pending";
-
-if(r.joinedAt && r.joinedAt.toDate){
-date=r.joinedAt.toDate().toLocaleDateString();
+if(snapshot.empty){
+teamList.innerHTML =
+"<li>No users joined via your referral yet.</li>";
+return;
 }
 
-teamList.innerHTML+=`
-<div class="member">
-<div>
-<span class="rank">#${rank}</span> ${r.email || "User"}
-<div class="small">Joined: ${date}</div>
-</div>
-<div>$${r.reward || 0}</div>
-</div>
+let rank=1;
+
+snapshot.forEach(docSnap=>{
+const data=docSnap.data();
+
+const li=document.createElement("li");
+li.innerHTML=`
+<strong>#${rank}</strong> 
+${data.email || "User"} 
+<span style="float:right">$${data.reward || 0}</span>
 `;
+teamList.appendChild(li);
 
 rank++;
-
-});
-
-document.getElementById("teamEarnings").innerText=
-totalEarn;
-
 });
 
 });
-
 </script>
 
 </body>
