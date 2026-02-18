@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Account - SuperNFT</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
+}
+
+.container{
+  max-width:500px;
+  margin:40px auto;
+  background:#111;
+  border:1px solid #222;
+  border-radius:12px;
+  padding:25px;
+  box-shadow:0 0 20px rgba(255,215,0,0.08);
+}
+
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid #222;
+}
+
+.row span{
+  color:#aaa;
+}
+
+.value{
+  font-weight:bold;
+}
+
+.status-active{
+  color:#00ff88;
+}
+
+.status-banned{
+  color:#ff4444;
+}
+
+.logout{
+  margin-top:25px;
+  width:100%;
+  padding:12px;
+  background:#FFD700;
+  color:#000;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  border-radius:6px;
+  transition:0.3s;
+}
+
+.logout:hover{
+  background:#e6c200;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>My Account</h2>
+
+  <div class="row"><span>Email</span><div class="value" id="email">---</div></div>
+  <div class="row"><span>User ID</span><div class="value" id="uid">---</div></div>
+  <div class="row"><span>Wallet Balance</span><div class="value">$<span id="wallet">0</span></div></div>
+  <div class="row"><span>Daily Income</span><div class="value">$<span id="daily">0</span></div></div>
+  <div class="row"><span>Live Earnings</span><div class="value">$<span id="live">0</span></div></div>
+  <div class="row"><span>Referral Earnings</span><div class="value">$<span id="referral">0</span></div></div>
+  <div class="row"><span>Level</span><div class="value" id="level">0</div></div>
+  <div class="row">
+    <span>Account Status</span>
+    <div class="value" id="status">---</div>
+  </div>
+
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+});
+
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+auth.onAuthStateChanged(user=>{
+
+  if(!user){
+    window.location.href="login.html";
+    return;
+  }
+
+  document.getElementById("email").innerText=user.email;
+  document.getElementById("uid").innerText=user.uid;
+
+  // 🔥 REAL-TIME LISTENER
+  db.collection("users").doc(user.uid)
+    .onSnapshot(doc=>{
+
+      if(!doc.exists) return;
+
+      const u=doc.data();
+
+      // IMPORTANT FIX → use walletBalance not balance
+      document.getElementById("wallet").innerText=
+        (u.walletBalance||0).toFixed(2);
+
+      document.getElementById("daily").innerText=
+        (u.dailyIncome||0).toFixed(2);
+
+      document.getElementById("live").innerText=
+        (u.liveEarnings||0).toFixed(4);
+
+      document.getElementById("referral").innerText=
+        (u.referralEarnings||0).toFixed(2);
+
+      document.getElementById("level").innerText=
+        u.level||0;
+
+      const statusEl=document.getElementById("status");
+
+      if(u.banned===true){
+        statusEl.innerText="BANNED";
+        statusEl.className="value status-banned";
+      }else{
+        statusEl.innerText="ACTIVE";
+        statusEl.className="value status-active";
+      }
+
+    });
+
+});
+
+function logout(){
+  auth.signOut().then(()=>{
+    window.location.href="login.html";
+  });
+}
+</script>
+
+</body>
+</html>
