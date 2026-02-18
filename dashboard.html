@@ -311,41 +311,5 @@ onAuthStateChanged(auth, (user) => {
   },5000);
 });
 </script>
-  <script>
-function openPage(page){
-  if(page === 'referrals'){
-    window.location.href = 'my-referrals.html';
-  }
-}
-</script>
-
-  <script>
-firebase.auth().onAuthStateChanged(async user=>{
-  if(!user) return;
-
-  const ref = firebase.firestore().collection("users").doc(user.uid);
-  const doc = await ref.get();
-  const d = doc.data();
-
-  const now = Date.now();
-  const last = d.lastIncomeAt?.toMillis() || now;
-  const hours = (now - last) / (1000*60*60);
-
-  const liveEarnings = ((d.dailyIncome || 0) / 24) * hours;
-
-  document.getElementById("dailyIncome").innerText =
-    d.dailyIncome || 0;
-
-  document.getElementById("liveEarnings").innerText =
-    liveEarnings.toFixed(2);
-
-  document.getElementById("walletBalance").innerText =
-    (d.balance + liveEarnings).toFixed(2);
-
-  document.getElementById("totalDeposit").innerText =
-    d.totalDeposit || 0;
-});
-</script>
-  
 </body>
 </html>
