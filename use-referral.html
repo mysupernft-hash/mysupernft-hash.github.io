@@ -8,7 +8,7 @@
 <style>
 body{
 margin:0;
-font-family:Arial, sans-serif;
+font-family:Arial;
 background:#0f0f0f;
 color:#FFD700;
 text-align:center;
@@ -56,12 +56,10 @@ transition:0.3s;
 button:hover{
 background:#e6c200;
 }
-ul{
-padding-left:18px;
-}
 .status{
 margin-top:15px;
 font-size:14px;
+min-height:20px;
 }
 </style>
 </head>
@@ -81,11 +79,11 @@ font-size:14px;
 <div class="notice">
 <strong>⚠️ Important Notice:</strong>
 <ul>
-<li>$5 bonus to both users.</li>
-<li>One-time use only.</li>
-<li>No self-referral allowed.</li>
-<li>Instant wallet credit.</li>
-<li>Fraud may lead to ban.</li>
+<li>$5 bonus to both users</li>
+<li>One-time use only</li>
+<li>No self-referral</li>
+<li>Instant wallet credit</li>
+<li>Fraud may lead to ban</li>
 </ul>
 </div>
 
@@ -130,7 +128,7 @@ const status=document.getElementById("status");
 status.innerText="Processing...";
 
 if(!currentUser){
-status.innerText="Please wait for authentication...";
+status.innerText="Authenticating...";
 return;
 }
 
@@ -184,9 +182,9 @@ return;
 const bonus=5;
 const refRef=doc(db,"users",refUserId);
 
-/* 🔥 TRANSACTION SAFE UPDATE */
 try{
 
+/* 🔥 SAFE TRANSACTION */
 await runTransaction(db, async (transaction)=>{
 
 const refSnap=await transaction.get(refRef);
@@ -212,7 +210,9 @@ referralUsed:true
 
 });
 
-/* ✅ SAVE HISTORY */
+/* 🔥 SAVE HISTORY */
+console.log("About to save referral history...");
+
 await addDoc(
 collection(db,"users",refUserId,"referrals"),
 {
@@ -222,13 +222,16 @@ joinedAt: serverTimestamp()
 }
 );
 
+console.log("Referral history saved successfully");
+
 status.innerText="🎉 Success! $5 Added To Both Accounts!";
+
 setTimeout(()=>{
 window.location.href="dashboard.html";
 },1500);
 
 }catch(error){
-console.error(error);
+console.error("REFERRAL ERROR:",error);
 status.innerText="Transaction failed. Try again.";
 }
 
