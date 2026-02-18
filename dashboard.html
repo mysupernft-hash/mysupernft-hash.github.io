@@ -264,11 +264,20 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  const emailEl = document.getElementById("userEmail");
+  // 🔥 Wait until DOM fully loads
+  document.addEventListener("DOMContentLoaded", () => {
 
-  if(emailEl){
-    emailEl.innerText = user.email || "User";
-  }
+    const emailEl = document.getElementById("userEmail");
+
+    if(emailEl){
+      emailEl.textContent = user.email;
+      console.log("Email Set:", user.email);
+    } else {
+      console.log("Element not found");
+    }
+
+  });
+
   const userRef = doc(db, "users", user.uid);
 
 });
