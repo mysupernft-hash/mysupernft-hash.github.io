@@ -44,19 +44,19 @@ header{
   opacity:0.8;
 }
 
-.btn{
+.back{
   display:block;
-  margin-top:20px;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
   text-align:center;
-  border-radius:8px;
+  padding:12px;
+  background:#272727;
+  color:#FFD700;
   text-decoration:none;
-  font-weight:bold;
+  border-radius:8px;
+  margin-top:20px;
 }
 </style>
 </head>
+
 <body>
 
 <header>💹 Live Earnings</header>
@@ -65,16 +65,21 @@ header{
 
   <div class="card">
     <div>Daily Income</div>
-    <div class="big">$<span id="dailyIncome">0</span></div>
+    <div class="big">$<span id="dailyIncome">0.00</span></div>
   </div>
 
   <div class="card">
     <div>Live Earnings</div>
     <div class="big">$<span id="liveEarnings">0.000000</span></div>
-    <div class="small">Mining in progress...</div>
+    <div class="small">Updating every second</div>
   </div>
 
-  <a href="dashboard.html" class="btn">⬅ Back to Dashboard</a>
+  <div class="card">
+    <div>Wallet Balance</div>
+    <div class="big">$<span id="walletBalance">0.00</span></div>
+  </div>
+
+  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 </div>
 
@@ -82,7 +87,7 @@ header{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -94,7 +99,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-onAuthStateChanged(auth,(user)=>{
+let dailyIncome = 0;
+let baseLive = 0;
+let lastIncomeAt = Date.now();
+let walletBalance = 0;
+
+onAuthStateChanged(auth, async(user)=>{
 
   if(!user){
     location.href="login.html";
@@ -102,39 +112,48 @@ onAuthStateChanged(auth,(user)=>{
   }
 
   const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
 
-  onSnapshot(userRef,(snap)=>{
+  if(!snap.exists()) return;
 
-    if(!snap.exists()) return;
+  const data = snap.data();
 
-    const data = snap.data();
+  dailyIncome = data.dailyIncome || 0;
+  baseLive = data.liveEarnings || 0;
+  walletBalance = data.walletBalance || 0;
 
-    const daily = data.dailyIncome || 0;
-    document.getElementById("dailyIncome").innerText = daily.toFixed(2);
+  lastIncomeAt = data.lastIncomeAt?.toMillis() || Date.now();
 
-    // 🔥 LIVE MINING CALCULATION (Same as Account Page)
+  document.getElementById("dailyIncome").innerText =
+    dailyIncome.toFixed(2);
 
-    function updateLive(){
-
-      const now = Date.now();
-      const last = data.lastIncomeAt?.toMillis() || now;
-
-      const secondsPassed = (now - last) / 1000;
-      const perSecond = daily / 86400;
-
-      const live = (data.liveEarnings || 0) + (perSecond * secondsPassed);
-
-      document.getElementById("liveEarnings").innerText =
-        live.toFixed(6);
-
-      requestAnimationFrame(updateLive);
-    }
-
-    updateLive();
-
-  });
+  startMining(userRef);
 
 });
+
+function startMining(userRef){
+
+  function update(){
+
+    const now = Date.now();
+    const seconds = (now - lastIncomeAt) / 1000;
+
+    const perSecond = dailyIncome / 86400;
+
+    const currentLive = baseLive + (perSecond * seconds);
+
+    document.getElementById("liveEarnings").innerText =
+      currentLive.toFixed(6);
+
+    document.getElementById("walletBalance").innerText =
+      (walletBalance + currentLive).toFixed(2);
+
+    requestAnimationFrame(update);
+  }
+
+  update();
+
+}
 
 </script>
 
