@@ -113,7 +113,6 @@ button{
 
 <div class="container">
 
-<!-- BALANCE -->
 <div class="card">
   <div>Wallet Balance</div>
   <div class="balance">$<span id="balance">0</span></div>
@@ -122,7 +121,6 @@ button{
   </div>
 </div>
 
-<!-- FINANCIAL OVERVIEW -->
 <div class="card">
   <div class="grid-2">
     <div class="small">Total Deposit<span id="deposit">0</span></div>
@@ -134,7 +132,6 @@ button{
   </div>
 </div>
 
-<!-- VIP SYSTEM -->
 <div class="card">
   <div>🏆 VIP Level: <span id="vipLevel">0</span></div>
   <div>💰 Commission: <span id="vipPercent">5</span>%</div>
@@ -146,28 +143,15 @@ button{
   </div>
 </div>
 
-<!-- PASSIVE BONUS -->
-<div class="card">
-  <div class="grid-2">
-    <div class="small">Unilevel<span id="uni">0</span></div>
-    <div class="small">Global Bonus<span id="global">0</span></div>
-    <div class="small">Rank Salary<span id="rankSalary">0</span></div>
-    <div class="small">Auto Pool<span id="pool">0</span></div>
-  </div>
-</div>
-
-<!-- GRAPH -->
 <div class="card">
   <canvas id="earnChart"></canvas>
 </div>
 
-<!-- TRANSACTIONS -->
 <div class="card">
   <div style="font-weight:bold;margin-bottom:10px;">📜 Transaction History</div>
   <div id="transactions"></div>
 </div>
 
-<!-- ACTIONS -->
 <div class="card">
   <button class="primary" onclick="deposit()">Deposit</button>
   <button class="secondary" onclick="withdrawRequest()">Withdraw</button>
@@ -180,9 +164,8 @@ button{
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, updateDoc,
-  increment, collection, addDoc, getDocs,
-  serverTimestamp
+  getFirestore, doc, onSnapshot,
+  collection, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -195,56 +178,65 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-let userRef;
-let userData;
+let liveInterval;
 
-onAuthStateChanged(auth, async(user)=>{
+onAuthStateChanged(auth, (user)=>{
   if(!user){ location.href="login.html"; return; }
 
-  userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-  if(!snap.exists()) return;
+  const userRef = doc(db,"users",user.uid);
 
-  userData = snap.data();
+  // 🔥 REALTIME LISTENER
+  onSnapshot(userRef,(snap)=>{
+    if(!snap.exists()) return;
 
-  document.getElementById("balance").innerText =
-    (userData.walletBalance || 0).toFixed(2);
+    const data = snap.data();
 
-  document.getElementById("deposit").innerText =
-    userData.totalDeposit || 0;
+    document.getElementById("balance").innerText =
+      (data.walletBalance || 0).toFixed(2);
 
-  document.getElementById("withdraw").innerText =
-    userData.totalWithdraw || 0;
+    document.getElementById("deposit").innerText =
+      (data.totalDeposit || 0);
 
-  document.getElementById("nftIncome").innerText =
-    userData.dailyIncome || 0;
+    document.getElementById("withdraw").innerText =
+      (data.totalWithdraw || 0);
 
-  document.getElementById("referral").innerText =
-    userData.referralEarnings || 0;
+    document.getElementById("nftIncome").innerText =
+      (data.dailyIncome || 0);
 
-  document.getElementById("team").innerText =
-    userData.teamCommission || 0;
+    document.getElementById("referral").innerText =
+      (data.referralEarnings || 0);
 
-  document.getElementById("totalIncome").innerText =
-    userData.totalIncome || 0;
+    document.getElementById("team").innerText =
+      (data.teamCommission || 0);
 
-  document.getElementById("vipLevel").innerText =
-    userData.vipLevel || 0;
+    document.getElementById("totalIncome").innerText =
+      (data.totalIncome || 0);
 
-  let progress = userData.vipProgress || 0;
-  document.getElementById("vipProgress").style.width = progress+"%";
-  document.getElementById("vipText").innerText = progress+"%";
+    document.getElementById("vipLevel").innerText =
+      (data.vipLevel || 0);
 
-  startLiveMining();
+    let progress = data.vipProgress || 0;
+    document.getElementById("vipProgress").style.width = progress+"%";
+    document.getElementById("vipText").innerText = progress+"%";
+
+    startLiveMining(data);
+  });
+
   loadTransactions(user.uid);
   loadChart();
 });
 
-function startLiveMining(){
-  let live = userData.liveEarnings || 0;
-  let rate = (userData.dailyIncome || 0)/86400;
+function startLiveMining(data){
 
-  setInterval(()=>{
+  if(liveInterval) clearInterval(liveInterval);
+
+  let live = data.liveEarnings || 0;
+  let rate = (data.dailyIncome || 0)/86400;
+
+  document.getElementById("liveEarnings")
+    .innerText = live.toFixed(6);
+
+  liveInterval = setInterval(()=>{
     live += rate;
     document.getElementById("liveEarnings")
       .innerText = live.toFixed(6);
@@ -254,6 +246,7 @@ function startLiveMining(){
 async function loadTransactions(uid){
   const snap = await getDocs(collection(db,"users",uid,"transactions"));
   const box = document.getElementById("transactions");
+  box.innerHTML="";
   snap.forEach(doc=>{
     const d = doc.data();
     box.innerHTML += `
@@ -284,16 +277,6 @@ window.deposit = function(){
 
 window.withdrawRequest = function(){
   window.location.href = "withdraw.html";
-}
-
-  await addDoc(collection(db,"withdrawRequests"),{
-    uid: auth.currentUser.uid,
-    amount: userData.walletBalance,
-    status:"pending",
-    createdAt: serverTimestamp()
-  });
-
-  alert("Withdraw request sent");
 }
 
 </script>
