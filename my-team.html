@@ -110,9 +110,15 @@ header{
 <!-- USER INFO -->
 <div class="card center">
   <div id="userEmail">Loading...</div>
-  <div style="margin-top:5px;font-size:13px;">UID: <span id="uid">---</span></div>
-  <div style="margin-top:10px;">Level <span id="level">0</span></div>
-  <div><span id="points">0</span> Points</div>
+  <div style="margin-top:5px;font-size:13px;">
+    UID: <span id="uid">---</span>
+  </div>
+  <div style="margin-top:10px;">
+    Level <span id="level">0</span>
+  </div>
+  <div>
+    <span id="points">0</span> Points
+  </div>
 </div>
 
 <!-- WALLET -->
@@ -153,21 +159,6 @@ header{
     <div class="small-card">
       Community Orders
       <span id="teamOrders">0</span>
-    </div>
-  </div>
-</div>
-
-<!-- ORDERS -->
-<div class="card">
-  <div class="section-title">My Orders</div>
-  <div class="grid-2">
-    <div class="small-card">
-      Orders
-      <span id="orders">0</span>
-    </div>
-    <div class="small-card">
-      Processing
-      <span id="processing">0</span>
     </div>
   </div>
 </div>
@@ -223,12 +214,43 @@ document.getElementById("wallet").innerText=data.walletBalance||0;
 document.getElementById("daily").innerText=data.dailyIncome||0;
 document.getElementById("totalIncome").innerText=data.liveEarnings||0;
 document.getElementById("teamReward").innerText=data.referralEarnings||0;
-document.getElementById("level").innerText=data.level||0;
 
-// Team Count
+// 🔥 TEAM COUNT
 const refCol=collection(db,"users",user.uid,"referrals");
 const refSnap=await getDocs(refCol);
-document.getElementById("teamCount").innerText=refSnap.size;
+let teamSize = refSnap.size;
+
+document.getElementById("teamCount").innerText=teamSize;
+
+// ==========================
+// 💎 AUTO LEVEL SYSTEM
+// ==========================
+
+let level = 0;
+let points = 0;
+
+// Points calculation
+points = (teamSize * 10) + (data.referralEarnings || 0);
+
+// Level logic
+if(teamSize >= 50 && data.referralEarnings >= 500){
+  level = 4;
+}
+else if(teamSize >= 20 && data.referralEarnings >= 200){
+  level = 3;
+}
+else if(teamSize >= 10 && data.referralEarnings >= 100){
+  level = 2;
+}
+else if(teamSize >= 5){
+  level = 1;
+}
+else{
+  level = 0;
+}
+
+document.getElementById("level").innerText = level;
+document.getElementById("points").innerText = points;
 
 });
 
