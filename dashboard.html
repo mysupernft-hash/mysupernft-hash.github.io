@@ -37,6 +37,12 @@ header h1{margin:0;font-size:22px;}
 footer{background:#1a1a1a;padding:15px;margin-top:20px;border-top:1px solid #272727;display:grid;grid-template-columns:repeat(5,1fr);text-align:center;font-size:14px;color:#FFD700;}
 footer div{padding:5px;cursor:pointer;}
 footer div:hover{color:#e0c200;}
+  #userBar{
+  background:#111;
+  padding:8px 20px;
+  font-size:14px;
+  border-bottom:1px solid #272727;
+}
   .nft-tabs {
   display: flex;
   justify-content: center;
@@ -79,6 +85,10 @@ footer div:hover{color:#e0c200;}
   <h1>SuperNFT Dashboard</h1>
   <div id="walletBalanceTop">$0</div>
 </header>
+
+  <div id="userBar">
+  👤 Welcome, <span id="userEmail">Loading...</span>
+</div>
 
 <div id="sidebar">
   <h2>Menu</h2>
@@ -244,43 +254,110 @@ window.buyNFT=function(price){localStorage.setItem("price", price); location.hre
 window.copyReferral=function(){navigator.clipboard.writeText(document.getElementById("referralCode").innerText.split(" ")[1]);alert("Referral Copied")}
 
 /* Firebase Auth + Referral + Stats + Live Earnings */
-onAuthStateChanged(auth,async user=>{
-  if(!user){window.location.replace("login.html");return;}
-  const userRef=doc(db,"users",user.uid);
-  let snap=await getDoc(userRef);
-  if(!snap.exists()){
-    const code="SNFT"+Math.floor(100000+Math.random()*900000);
-    await setDoc(userRef,{referralCode:code,dailyIncome:0,liveEarnings:0,totalDeposit:0,walletBalance:0,nfts:[]});
-    document.getElementById("referralCode").innerText="Referral: "+code;
-  } else {
-    const data=snap.data();
-    if(!data.referralCode){
-      const code="SNFT"+Math.floor(100000+Math.random()*900000);
-      await updateDoc(userRef,{referralCode:code});
-      document.getElementById("referralCode").innerText="Referral: "+code;
-    } else {
-      document.getElementById("referralCode").innerText="Referral: "+data.referralCode;
-    }
-    document.getElementById("dailyIncome").innerText=`$${data.dailyIncome||0}`;
-    document.getElementById("liveEarnings").innerText=`$${data.liveEarnings||0}`;
-    document.getElementById("depositMoney").querySelector("p").innerText=`$${data.totalDeposit||0}`;
-    document.getElementById("walletBalanceP").innerText=`$${data.walletBalance||0}`;
-    document.getElementById("walletBalanceTop").innerText=`$${data.walletBalance||0}`;
+ onAuthStateChanged(auth, async (user) => {
+
+  if(!user){
+    window.location.replace("login.html");
+    return;
   }
 
-  setInterval(async()=>{
-    const snap2=await getDoc(userRef);
-    if(!snap2.exists()) return;
-    let live=0;
-    (snap2.data().nfts||[]).forEach(nft=>{
-      const map={"Starter NFT":1,"Rising NFT":2.5,"Elite NFT":5,"Legendary NFT":10};
-      live+=map[nft]||0;
+  // 👤 Show Email
+  const emailEl = document.getElementById("userEmail");
+  if(emailEl){
+    emailEl.innerText = user.email || "User";
+  }
+
+  const userRef = doc(db,"users",user.uid);
+  let snap = await getDoc(userRef);
+
+  // 🔹 Create user if not exists
+  if(!snap.exists()){
+
+    const code = "SNFT" + Math.floor(100000 + Math.random()*900000);
+
+    await setDoc(userRef,{
+      referralCode:code,
+      dailyIncome:0,
+      liveEarnings:0,
+      totalDeposit:0,
+      walletBalance:0,
+      referralEarnings:0,
+      referralUsed:false,
+      nfts:[],
+      createdAt:new Date()
     });
-    await updateDoc(userRef,{liveEarnings:live});
-    document.getElementById("liveEarnings").innerText=`$${live.toFixed(2)}`;
-  },5000);
+
+    snap = await getDoc(userRef);
+  }
+
+  const data = snap.data();
+
+  /* ===============================
+     DASHBOARD UI UPDATE
+  ================================*/
+
+  if(document.getElementById("referralCode")){
+    document.getElementById("referralCode").innerText =
+      "Referral: " + (data.referralCode || "N/A");
+  }
+
+  if(document.getElementById("dailyIncome")){
+    document.getElementById("dailyIncome").innerText =
+      "$" + (data.dailyIncome || 0);
+  }
+
+  if(document.getElementById("liveEarnings")){
+    document.getElementById("liveEarnings").innerText =
+      "$" + (data.liveEarnings || 0);
+  }
+
+  if(document.getElementById("depositMoney")){
+    document.getElementById("depositMoney")
+      .querySelector("p").innerText =
+      "$" + (data.totalDeposit || 0);
+  }
+
+  if(document.getElementById("walletBalanceP")){
+    document.getElementById("walletBalanceP").innerText =
+      "$" + (data.walletBalance || 0);
+  }
+
+  if(document.getElementById("walletBalanceTop")){
+    document.getElementById("walletBalanceTop").innerText =
+      "$" + (data.walletBalance || 0);
+  }
+
+  /* ===============================
+     LIVE MINING SYSTEM
+  ================================*/
+
+  setInterval(async ()=>{
+
+    const snap2 = await getDoc(userRef);
+    if(!snap2.exists()) return;
+
+    const d = snap2.data();
+    const daily = d.dailyIncome || 0;
+
+    if(daily <= 0) return;
+
+    const perSecond = daily / 86400;
+    const liveIncrease = perSecond * 1; // every second
+
+    const newLive = (d.liveEarnings || 0) + liveIncrease;
+
+    await updateDoc(userRef,{
+      liveEarnings:newLive
+    });
+
+    if(document.getElementById("liveEarnings")){
+      document.getElementById("liveEarnings").innerText =
+        "$" + newLive.toFixed(6);
+    }
+
+  },1000);
+
 });
-</script>
   <script>
 function openPage(page){
   if(page === 'referrals'){
