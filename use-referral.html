@@ -8,7 +8,7 @@
 <style>
 body{
 margin:0;
-font-family:Arial, sans-serif;
+font-family:Arial;
 background:#0f0f0f;
 color:#FFD700;
 text-align:center;
@@ -21,9 +21,9 @@ background:#1a1a1a;
 padding:25px;
 border-radius:12px;
 display:inline-block;
-max-width:420px;
+max-width:400px;
 width:100%;
-box-shadow:0 0 20px rgba(255,215,0,0.2);
+box-shadow:0 0 15px rgba(255,215,0,0.3);
 }
 .notice{
 background:#111;
@@ -36,22 +36,20 @@ text-align:left;
 }
 input{
 width:90%;
-padding:12px;
+padding:10px;
 border-radius:6px;
 border:none;
 margin-top:10px;
-font-size:15px;
 }
 button{
-margin-top:18px;
-padding:12px 20px;
+margin-top:15px;
+padding:10px 20px;
 border:none;
 border-radius:6px;
 background:#FFD700;
 color:#000;
 font-weight:bold;
 cursor:pointer;
-transition:0.3s;
 }
 button:hover{
 background:#e6c200;
@@ -59,15 +57,12 @@ background:#e6c200;
 ul{
 padding-left:18px;
 }
-.status{
-margin-top:15px;
-font-size:14px;
-}
 </style>
 </head>
 <body>
 
 <div class="container">
+
 <h2>🎁 Use Referral Code</h2>
 
 <div class="card">
@@ -76,16 +71,14 @@ font-size:14px;
 <br>
 <button onclick="applyReferral()">Apply Referral</button>
 
-<div class="status" id="status"></div>
-
 <div class="notice">
 <strong>⚠️ Important Notice:</strong>
 <ul>
-<li>$5 bonus to both users.</li>
-<li>One-time use only.</li>
-<li>No self-referral allowed.</li>
-<li>Instant wallet credit.</li>
-<li>Fraud may lead to ban.</li>
+<li>Each referral gives <strong>$5 bonus</strong> to both users.</li>
+<li>Referral code can be used <strong>only once per account</strong>.</li>
+<li>You <strong>cannot use your own referral code</strong>.</li>
+<li>Bonus is instantly added to wallet balance.</li>
+<li>Fraud or abuse may result in account suspension.</li>
 </ul>
 </div>
 
@@ -94,16 +87,20 @@ font-size:14px;
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged }
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { getAuth, onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-getFirestore, doc, getDoc,
-collection, query, where, getDocs,
-addDoc, serverTimestamp,
-runTransaction
+
+import { 
+getFirestore,
+doc, getDoc, updateDoc,
+collection, query, where,
+getDocs, addDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔹 Firebase Config */
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
 authDomain:"supernft-5b952.firebaseapp.com",
@@ -116,6 +113,7 @@ const db=getFirestore(app);
 
 let currentUser=null;
 
+/* 🔹 Auth Check */
 onAuthStateChanged(auth,(user)=>{
 if(!user){
 window.location.href="login.html";
@@ -124,20 +122,18 @@ return;
 currentUser=user;
 });
 
+/* 🔥 APPLY REFERRAL FUNCTION */
 window.applyReferral = async function(){
 
-const status=document.getElementById("status");
-status.innerText="Processing...";
-
 if(!currentUser){
-status.innerText="Please wait for authentication...";
+alert("Please wait...");
 return;
 }
 
 const code=document.getElementById("refCode").value.trim();
 
 if(!code){
-status.innerText="Enter referral code";
+alert("Enter referral code");
 return;
 }
 
@@ -145,18 +141,18 @@ const myRef=doc(db,"users",currentUser.uid);
 const mySnap=await getDoc(myRef);
 
 if(!mySnap.exists()){
-status.innerText="User not found";
+alert("User not found");
 return;
 }
 
 const myData=mySnap.data();
 
 if(myData.referralUsed){
-status.innerText="Referral already used";
+alert("Referral already used");
 return;
 }
 
-/* 🔍 FIND REFERRER */
+// 🔎 Find referral owner
 const q=query(
 collection(db,"users"),
 where("referralCode","==",code)
@@ -165,7 +161,7 @@ where("referralCode","==",code)
 const querySnap=await getDocs(q);
 
 if(querySnap.empty){
-status.innerText="Invalid referral code";
+alert("Invalid referral code");
 return;
 }
 
@@ -173,42 +169,31 @@ const refDoc=querySnap.docs[0];
 const refUserId=refDoc.id;
 
 if(refUserId===currentUser.uid){
-status.innerText="You cannot use your own code";
+alert("You cannot use your own referral code");
 return;
 }
 
-const bonus=5;
 const refRef=doc(db,"users",refUserId);
+const refData=refDoc.data();
 
-/* 🔥 TRANSACTION SAFE UPDATE */
+const bonus=5;
+
 try{
 
-await runTransaction(db, async (transaction)=>{
-
-const refSnap=await transaction.get(refRef);
-const mySnapTx=await transaction.get(myRef);
-
-if(!refSnap.exists()) throw "Referrer not found";
-
-const refData=refSnap.data();
-const myDataTx=mySnapTx.data();
-
-if(myDataTx.referralUsed) throw "Already used";
-
-transaction.update(refRef,{
+// 🔥 Update Referrer
+await updateDoc(refRef,{
 walletBalance:(refData.walletBalance||0)+bonus,
 referralEarnings:(refData.referralEarnings||0)+bonus,
 referralCount:(refData.referralCount||0)+1
 });
 
-transaction.update(myRef,{
-walletBalance:(myDataTx.walletBalance||0)+bonus,
+// 🔥 Update Current User
+await updateDoc(myRef,{
+walletBalance:(myData.walletBalance||0)+bonus,
 referralUsed:true
 });
 
-});
-
-/* ✅ SAVE HISTORY */
+// 🔥 Save Referral History
 await addDoc(
 collection(db,"users",refUserId,"referrals"),
 {
@@ -218,14 +203,12 @@ joinedAt: serverTimestamp()
 }
 );
 
-status.innerText="🎉 Success! $5 Added To Both Accounts!";
-setTimeout(()=>{
+alert("🎉 $5 Bonus Added To Both Accounts!");
 window.location.href="dashboard.html";
-},1500);
 
 }catch(error){
-console.error(error);
-status.innerText="Transaction failed. Try again.";
+console.error("Referral error:",error);
+alert("Something went wrong!");
 }
 
 };
