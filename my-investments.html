@@ -2,7 +2,6 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Investments | SuperNFT</title>
 
 <style>
@@ -25,29 +24,37 @@ header{
   padding:15px;
 }
 
-.nft-card{
+.card{
   background:#1a1a1a;
   border-radius:12px;
   padding:15px;
   margin-bottom:15px;
-  border:1px solid #FFD700;
 }
 
 .nft-img{
   width:100%;
   border-radius:10px;
+  margin-bottom:10px;
 }
 
 .row{
   display:flex;
   justify-content:space-between;
-  margin-top:8px;
+  margin:5px 0;
+}
+
+.status-active{
+  color:#00ff88;
+}
+
+.status-expired{
+  color:#ff4444;
 }
 
 .empty{
   text-align:center;
   margin-top:50px;
-  opacity:0.7;
+  opacity:0.6;
 }
 </style>
 </head>
@@ -55,7 +62,9 @@ header{
 
 <header>📁 My Investments</header>
 
-<div class="container" id="investments"></div>
+<div class="container" id="investmentsContainer">
+Loading...
+</div>
 
 <script type="module">
 
@@ -64,9 +73,9 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -75,54 +84,57 @@ const db=getFirestore(app);
 
 onAuthStateChanged(auth, async(user)=>{
 
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
+if(!user){
+location.href="login.html";
+return;
+}
 
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
+const container=document.getElementById("investmentsContainer");
+container.innerHTML="Loading...";
 
-  if(!snap.exists()) return;
+const snap=await getDoc(doc(db,"users",user.uid));
 
-  const data = snap.data();
-  const nfts = data.nfts || [];
+if(!snap.exists()){
+container.innerHTML="No data found.";
+return;
+}
 
-  const container = document.getElementById("investments");
+const data=snap.data();
+const nfts=data.nfts||[];
 
-  if(nfts.length === 0){
-    container.innerHTML = "<div class='empty'>No NFTs Purchased Yet</div>";
-    return;
-  }
+if(nfts.length===0){
+container.innerHTML="<div class='empty'>No Investments Yet</div>";
+return;
+}
 
-  nfts.forEach(nft => {
+container.innerHTML="";
 
-    container.innerHTML += `
-      <div class="nft-card">
-        <img src="${nft.image}" class="nft-img">
-        <div class="row">
-          <span>Category</span>
-          <span>${nft.category}</span>
-        </div>
-        <div class="row">
-          <span>Price</span>
-          <span>$${nft.price}</span>
-        </div>
-        <div class="row">
-          <span>Daily Income</span>
-          <span>$${nft.dailyIncome}</span>
-        </div>
-        <div class="row">
-          <span>Purchased</span>
-          <span>${new Date(nft.purchaseDate.seconds * 1000).toLocaleDateString()}</span>
-        </div>
-      </div>
-    `;
-  });
+nfts.forEach(nft=>{
+
+const purchaseDate=new Date(nft.purchaseDate.seconds*1000);
+const now=new Date();
+const diffDays=Math.floor((now-purchaseDate)/(1000*60*60*24));
+const remaining=nft.validDays-diffDays;
+const isActive=remaining>0;
+
+const totalEarned=(diffDays*nft.daily).toFixed(2);
+
+container.innerHTML+=`
+<div class="card">
+  <img src="${nft.img}" class="nft-img">
+  <div class="row"><span>Price</span><span>$${nft.price}</span></div>
+  <div class="row"><span>Daily Income</span><span>$${nft.daily}</span></div>
+  <div class="row"><span>Purchase Date</span><span>${purchaseDate.toDateString()}</span></div>
+  <div class="row"><span>Remaining Days</span><span>${remaining>0?remaining:0}</span></div>
+  <div class="row"><span>Status</span><span class="${isActive?'status-active':'status-expired'}">${isActive?'Active':'Expired'}</span></div>
+  <div class="row"><span>Total Earned</span><span>$${totalEarned}</span></div>
+</div>
+`;
+
+});
 
 });
 
 </script>
-
 </body>
 </html>
