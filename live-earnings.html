@@ -22,60 +22,55 @@ header{
 }
 
 .container{
-  padding:20px;
+  padding:30px 20px;
+}
+
+.big{
+  font-size:38px;
+  font-weight:bold;
+  margin:20px 0;
+}
+
+.small{
+  font-size:14px;
+  opacity:0.7;
 }
 
 .card{
   background:#1a1a1a;
   padding:20px;
   border-radius:12px;
-  margin-bottom:15px;
-}
-
-.big{
-  font-size:30px;
-  font-weight:bold;
-}
-
-.small{
-  font-size:14px;
-  opacity:0.8;
+  margin-top:20px;
 }
 
 .back{
   display:block;
-  margin-top:20px;
+  margin-top:30px;
   padding:12px;
-  background:#272727;
+  background:#FFD700;
+  color:#000;
   border-radius:8px;
-  color:#FFD700;
   text-decoration:none;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<header>⚡ Live Earnings</header>
+<header>💹 Live Earnings</header>
 
 <div class="container">
 
-  <div class="card">
-    <div class="small">Daily Income</div>
-    <div class="big" id="dailyIncome">$0</div>
-  </div>
+<div class="big" id="liveEarnings">$0.000000</div>
+<div class="small">Real-time mining income</div>
 
-  <div class="card">
-    <div class="small">Live Mining</div>
-    <div class="big" id="liveEarnings">$0.000000</div>
-  </div>
+<div class="card">
+  Wallet Total:
+  <div class="big">$<span id="walletTotal">0</span></div>
+</div>
 
-  <div class="card">
-    <div class="small">Wallet Balance (With Live)</div>
-    <div class="big" id="walletTotal">$0</div>
-  </div>
-
-  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 </div>
 
@@ -85,20 +80,20 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async (user)=>{
 
   if(!user){
-    window.location.href = "login.html";
+    location.href="login.html";
     return;
   }
 
@@ -110,24 +105,33 @@ onAuthStateChanged(auth, async (user) => {
   const data = snap.data();
 
   const dailyIncome = data.dailyIncome || 0;
-  let lastIncomeAt = data.lastIncomeAt?.toMillis?.() || Date.now();
+  let walletBalance = data.walletBalance || 0;
 
-  document.getElementById("dailyIncome").innerText =
-    "$" + dailyIncome.toFixed(2);
+  // 🔥 if first time user
+  if(!data.lastIncomeAt){
+    await updateDoc(userRef,{
+      lastIncomeAt: new Date()
+    });
+    return;
+  }
 
-  function updateLive(){
+  let lastIncomeAt = data.lastIncomeAt.toMillis();
+
+  function updateMining(){
 
     const now = Date.now();
-    const secondsPassed = Math.floor((now - lastIncomeAt) / 1000);
+    const seconds = Math.floor((now - lastIncomeAt) / 1000);
 
     const perSecond = dailyIncome / 86400;
-    const live = perSecond * secondsPassed;
+    const live = perSecond * seconds;
 
-    // 24h complete → credit wallet
-    if(secondsPassed >= 86400){
+    // ✅ 24 hour complete → credit wallet
+    if(seconds >= 86400){
+
+      walletBalance += dailyIncome;
 
       updateDoc(userRef,{
-        walletBalance: (data.walletBalance || 0) + dailyIncome,
+        walletBalance: walletBalance,
         lastIncomeAt: new Date()
       });
 
@@ -138,14 +142,12 @@ onAuthStateChanged(auth, async (user) => {
     document.getElementById("liveEarnings").innerText =
       "$" + live.toFixed(6);
 
-    const totalWallet = (data.walletBalance || 0) + live;
-
     document.getElementById("walletTotal").innerText =
-      "$" + totalWallet.toFixed(2);
+      (walletBalance + live).toFixed(2);
   }
 
-  updateLive();
-  setInterval(updateLive,1000);
+  updateMining();
+  setInterval(updateMining,1000);
 
 });
 
