@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Investments</title>
+<title>My Investments | SuperNFT</title>
 
 <style>
 body{
@@ -14,38 +14,51 @@ body{
 }
 
 header{
+  padding:18px;
   background:#1a1a1a;
-  padding:15px;
   text-align:center;
   font-size:20px;
+  border-bottom:2px solid #FFD700;
 }
 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
+.container{
   padding:15px;
 }
 
 .card{
   background:#111;
-  padding:10px;
-  border-radius:10px;
-  text-align:center;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:15px;
   border:1px solid #FFD700;
 }
 
 .card img{
   width:100%;
-  border-radius:8px;
+  border-radius:10px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+  font-size:14px;
+}
+
+.empty{
+  text-align:center;
+  margin-top:40px;
+  font-size:16px;
 }
 </style>
 </head>
 <body>
 
-<header>My Investments</header>
+<header>📁 My Investments</header>
 
-<div class="grid" id="investments"></div>
+<div class="container" id="investmentContainer">
+  <div class="empty">Loading...</div>
+</div>
 
 <script type="module">
 
@@ -63,7 +76,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔥 SAME NFT ARRAY AS DASHBOARD */
+/* SAME NFT ARRAY */
 const NFTS=[
 {price:10,p:0.2,img:"images/IMG_0458.png"},
 {price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -97,19 +110,20 @@ const NFTS=[
 {price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
-const container = document.getElementById("investments");
+const container = document.getElementById("investmentContainer");
 
 onAuthStateChanged(auth, async(user)=>{
 
   if(!user){
-    location.href="login.html";
+    window.location.href="login.html";
     return;
   }
 
-  const snap = await getDoc(doc(db,"users",user.uid));
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
 
   if(!snap.exists()){
-    container.innerHTML="<p>User not found</p>";
+    container.innerHTML = `<div class="empty">User data not found</div>`;
     return;
   }
 
@@ -117,18 +131,32 @@ onAuthStateChanged(auth, async(user)=>{
   const purchased = data.purchasedNFTs || [];
 
   if(purchased.length === 0){
-    container.innerHTML="<p style='padding:20px'>No Investments Yet</p>";
+    container.innerHTML = `<div class="empty">You have not purchased any NFT yet.</div>`;
     return;
   }
 
-  purchased.forEach(id=>{
+  container.innerHTML = "";
+
+  purchased.forEach(id => {
+
     const nft = NFTS[id];
+    if(!nft) return;
 
     container.innerHTML += `
       <div class="card">
         <img src="${nft.img}">
-        <p>Price $${nft.price}</p>
-        <p>Daily $${nft.p}</p>
+        <div class="row">
+          <span>Price</span>
+          <span>$${nft.price}</span>
+        </div>
+        <div class="row">
+          <span>Daily Income</span>
+          <span>$${nft.p}</span>
+        </div>
+        <div class="row">
+          <span>Yearly Income</span>
+          <span>$${(nft.p*365).toFixed(2)}</span>
+        </div>
       </div>
     `;
   });
