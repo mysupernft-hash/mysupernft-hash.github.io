@@ -2,128 +2,246 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Settings – SuperNFT</title>
+<title>SuperNFT – Ultra Settings</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body {
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#020617;
-    color:white;
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
 }
-header {
-    padding:15px;
-    font-size:22px;
-    text-align:center;
-    color:#38bdf8;
-    border-bottom:1px solid #1e293b;
+
+header{
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  background:#1a1a1a;
 }
-.container {
-    max-width:600px;
-    margin:20px auto;
-    padding:15px;
-    background:#0f172a;
-    border-radius:12px;
+
+.container{
+  padding:15px;
 }
-h2 {
-    margin-top:0;
-    color:#38bdf8;
-    text-align:center;
+
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
 }
-.setting-item {
-    margin:15px 0;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+
+.section-title{
+  font-size:16px;
+  margin-bottom:10px;
+  font-weight:bold;
 }
-.setting-item label {
-    font-weight:bold;
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
 }
-input[type=text], input[type=password] {
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #38bdf8;
-    background:#020617;
-    color:white;
+
+input,select{
+  padding:6px;
+  border-radius:6px;
+  border:none;
 }
-button {
-    padding:8px 14px;
-    border:none;
-    border-radius:8px;
-    background:#38bdf8;
-    color:#020617;
-    font-weight:bold;
-    cursor:pointer;
+
+.toggle{
+  transform:scale(1.2);
 }
-button:hover {
-    background:#00e5ff;
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
 }
-a {
-    color:#38bdf8;
-    text-decoration:none;
-    display:block;
-    text-align:center;
-    margin-top:20px;
+
+.primary{
+  background:#FFD700;
+  color:#000;
+}
+
+.secondary{
+  background:#272727;
+  color:#FFD700;
 }
 </style>
 </head>
-
 <body>
 
-<header>Settings</header>
+<header>⚙️ Ultra Settings</header>
 
 <div class="container">
-    <h2>User Settings</h2>
 
-    <div class="setting-item">
-        <label for="theme">Theme:</label>
-        <select id="theme">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-        </select>
-    </div>
-
-    <div class="setting-item">
-        <label for="notifications">Notifications:</label>
-        <select id="notifications">
-            <option value="on">ON</option>
-            <option value="off">OFF</option>
-        </select>
-    </div>
-
-    <div class="setting-item">
-        <label for="pin">Change PIN:</label>
-        <input type="password" id="pin" placeholder="Enter new PIN">
-    </div>
-
-    <button onclick="saveSettings()">Save Settings</button>
-    <a href="dashboard.html">⬅ Back to Dashboard</a>
+<!-- ACCOUNT INFO -->
+<div class="card">
+  <div class="section-title">👤 Account Info</div>
+  <div>Email: <span id="email">---</span></div>
+  <div>UID: <span id="uid">---</span></div>
 </div>
 
-<script>
-/* Load settings if saved */
-if(localStorage.getItem("userSettings")){
-    const s = JSON.parse(localStorage.getItem("userSettings"));
-    document.getElementById("theme").value = s.theme || "dark";
-    document.getElementById("notifications").value = s.notifications || "on";
+<!-- UI SETTINGS -->
+<div class="card">
+  <div class="section-title">🎨 UI Preferences</div>
+
+  <div class="row">
+    <span>Theme</span>
+    <select id="theme">
+      <option value="dark">Dark</option>
+      <option value="gold">Gold</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <span>Hide Balance</span>
+    <input type="checkbox" id="hideBalance" class="toggle">
+  </div>
+
+  <div class="row">
+    <span>Show VIP Badge</span>
+    <input type="checkbox" id="vipBadge" class="toggle">
+  </div>
+</div>
+
+<!-- SECURITY -->
+<div class="card">
+  <div class="section-title">🔐 Security</div>
+
+  <div class="row">
+    <span>Withdraw Protection</span>
+    <input type="checkbox" id="withdrawProtection" class="toggle">
+  </div>
+
+  <div class="row">
+    <span>Auto Compound</span>
+    <input type="checkbox" id="autoCompound" class="toggle">
+  </div>
+
+  <div class="row">
+    <span>Change Withdraw PIN</span>
+    <input type="password" id="pin" placeholder="New PIN">
+  </div>
+
+  <button class="primary" onclick="changePassword()">Change Password</button>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="card">
+  <div class="section-title">🔔 Notifications</div>
+
+  <div class="row">
+    <span>Deposit Alert</span>
+    <input type="checkbox" id="depositAlert" class="toggle">
+  </div>
+
+  <div class="row">
+    <span>Withdraw Alert</span>
+    <input type="checkbox" id="withdrawAlert" class="toggle">
+  </div>
+
+  <div class="row">
+    <span>Team Bonus Alert</span>
+    <input type="checkbox" id="teamAlert" class="toggle">
+  </div>
+</div>
+
+<!-- SAVE -->
+<div class="card">
+  <button class="primary" onclick="saveSettings()">💾 Save Settings</button>
+  <button class="secondary" onclick="logout()">🚪 Logout</button>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, updatePassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let userRef;
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+
+  document.getElementById("email").innerText=user.email;
+  document.getElementById("uid").innerText=user.uid;
+
+  userRef=doc(db,"users",user.uid);
+  const snap=await getDoc(userRef);
+
+  if(snap.exists()){
+    const s=snap.data().settings || {};
+
+    document.getElementById("theme").value=s.theme || "dark";
+    document.getElementById("hideBalance").checked=s.hideBalance || false;
+    document.getElementById("vipBadge").checked=s.vipBadge || true;
+    document.getElementById("withdrawProtection").checked=s.withdrawProtection || false;
+    document.getElementById("autoCompound").checked=s.autoCompound || false;
+    document.getElementById("depositAlert").checked=s.depositAlert || true;
+    document.getElementById("withdrawAlert").checked=s.withdrawAlert || true;
+    document.getElementById("teamAlert").checked=s.teamAlert || true;
+  }
+});
+
+window.saveSettings=async function(){
+
+  const settings={
+    theme:document.getElementById("theme").value,
+    hideBalance:document.getElementById("hideBalance").checked,
+    vipBadge:document.getElementById("vipBadge").checked,
+    withdrawProtection:document.getElementById("withdrawProtection").checked,
+    autoCompound:document.getElementById("autoCompound").checked,
+    depositAlert:document.getElementById("depositAlert").checked,
+    withdrawAlert:document.getElementById("withdrawAlert").checked,
+    teamAlert:document.getElementById("teamAlert").checked
+  };
+
+  const pin=document.getElementById("pin").value;
+  if(pin){
+    settings.withdrawPIN=pin;
+  }
+
+  await updateDoc(userRef,{settings});
+
+  alert("✅ Settings Saved Successfully!");
 }
 
-/* Save settings */
-function saveSettings(){
-    const theme = document.getElementById("theme").value;
-    const notifications = document.getElementById("notifications").value;
-    const pin = document.getElementById("pin").value;
-
-    let settings = { theme, notifications };
-
-    if(pin){
-        settings.pin = pin;  // save new PIN
-        alert("PIN updated!");
-    }
-
-    localStorage.setItem("userSettings", JSON.stringify(settings));
-    alert("Settings saved successfully!");
+window.changePassword=async function(){
+  const user=auth.currentUser;
+  const newPass=prompt("Enter new password:");
+  if(newPass){
+    await updatePassword(user,newPass);
+    alert("Password Updated!");
+  }
 }
+
+window.logout=function(){
+  signOut(auth).then(()=>location.href="login.html");
+}
+
 </script>
 
 </body>
