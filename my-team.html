@@ -80,18 +80,6 @@ header{
   font-weight:bold;
 }
 
-.btn{
-  display:block;
-  text-align:center;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
-  border-radius:8px;
-  text-decoration:none;
-  margin-top:8px;
-  font-weight:bold;
-}
-
 .footer{
   margin-top:20px;
   text-align:center;
@@ -112,12 +100,6 @@ header{
   <div id="userEmail">Loading...</div>
   <div style="margin-top:5px;font-size:13px;">
     UID: <span id="uid">---</span>
-  </div>
-  <div style="margin-top:10px;">
-    Level <span id="level">0</span>
-  </div>
-  <div>
-    <span id="points">0</span> Points
   </div>
 </div>
 
@@ -144,7 +126,7 @@ header{
   </div>
 </div>
 
-<!-- TEAM STATS -->
+<!-- 🔥 MY TEAM -->
 <div class="card">
   <div class="section-title">My Team</div>
   <div class="grid-3">
@@ -163,12 +145,30 @@ header{
   </div>
 </div>
 
-<!-- QUICK ACTION -->
+<!-- 💎 MY LEVEL -->
 <div class="card">
-  <div class="section-title">Common Functions</div>
-  <a href="deposit.html" class="btn">Deposit</a>
-  <a href="withdraw.html" class="btn">Withdraw</a>
-  <a href="settings.html" class="btn">Settings</a>
+  <div class="section-title">My Level</div>
+  <div class="center">
+    <div>Level <span id="level">0</span></div>
+    <div style="margin-top:8px;">
+      <span id="points">0</span> Points
+    </div>
+  </div>
+</div>
+
+<!-- 📦 MY ORDERS -->
+<div class="card">
+  <div class="section-title">My Orders</div>
+  <div class="grid-2">
+    <div class="small-card">
+      Orders
+      <span id="orders">0</span>
+    </div>
+    <div class="small-card">
+      Processing
+      <span id="processing">0</span>
+    </div>
+  </div>
 </div>
 
 <div class="footer">
@@ -222,17 +222,10 @@ let teamSize = refSnap.size;
 
 document.getElementById("teamCount").innerText=teamSize;
 
-// ==========================
-// 💎 AUTO LEVEL SYSTEM
-// ==========================
-
+// 💎 LEVEL SYSTEM
 let level = 0;
-let points = 0;
+let points = (teamSize * 10) + (data.referralEarnings || 0);
 
-// Points calculation
-points = (teamSize * 10) + (data.referralEarnings || 0);
-
-// Level logic
 if(teamSize >= 50 && data.referralEarnings >= 500){
   level = 4;
 }
