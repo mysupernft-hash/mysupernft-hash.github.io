@@ -278,13 +278,8 @@ function loadChart(){
   });
 }
 
-window.deposit = async function(){
-  await updateDoc(userRef,{
-    walletBalance: increment(50),
-    totalDeposit: increment(50)
-  });
-  alert("Deposit Added (Demo)");
-  location.reload();
+window.deposit = function(){
+  window.location.href = "deposit.html";
 }
 
 window.withdrawRequest = async function(){
