@@ -5,9 +5,167 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Account | SuperNFT</title>
 
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
+}
+header{
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+.container{padding:15px;}
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+.section-title{
+  font-weight:bold;
+  margin-bottom:10px;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+  font-size:14px;
+}
+.big{
+  font-size:18px;
+  font-weight:bold;
+}
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.progress{
+  background:#333;
+  height:8px;
+  border-radius:5px;
+  margin-top:6px;
+}
+.progress-bar{
+  height:100%;
+  background:#FFD700;
+  width:0%;
+}
+.btn{
+  display:block;
+  text-align:center;
+  padding:12px;
+  background:#FFD700;
+  color:#000;
+  border-radius:8px;
+  margin-top:8px;
+  text-decoration:none;
+  font-weight:bold;
+}
+.small{font-size:13px;opacity:0.8;}
+</style>
+</head>
+
+<body>
+
+<header>👤 My Account</header>
+
+<div class="container">
+
+<!-- 1️⃣ BASIC INFO -->
+<div class="card">
+<div class="section-title">Basic Info</div>
+<div class="row"><span>Email</span><span id="email">-</span></div>
+<div class="row"><span>UID</span><span id="uid">-</span></div>
+<div class="row"><span>Referral Code</span><span id="refCode">-</span></div>
+<div class="row"><span>VIP Level</span><span id="vipLevel">VIP 0</span></div>
+<div class="row"><span>Status</span><span id="status">-</span></div>
+<div class="row"><span>Join Date</span><span id="joinDate">-</span></div>
+</div>
+
+<!-- 2️⃣ FINANCIAL OVERVIEW -->
+<div class="card">
+<div class="section-title">Financial Overview</div>
+<div class="grid-2">
+<div>Wallet<div class="big">$<span id="wallet">0</span></div></div>
+<div>Daily<div class="big">$<span id="daily">0</span></div></div>
+<div>Live<div class="big">$<span id="live">0</span></div></div>
+<div>Total Income<div class="big">$<span id="totalIncome">0</span></div></div>
+<div>Referral<div class="big">$<span id="referral">0</span></div></div>
+<div>Team Commission<div class="big">$<span id="teamCommission">0</span></div></div>
+<div>Total Deposit<div class="big">$<span id="deposit">0</span></div></div>
+<div>Total Withdraw<div class="big">$<span id="withdraw">0</span></div></div>
+</div>
+</div>
+
+<!-- 3️⃣ VIP SYSTEM -->
+<div class="card">
+<div class="section-title">VIP / Level System</div>
+<div id="badge">⭐</div>
+<div class="small">Commission: <span id="commission">5%</span></div>
+<div class="small">Next Level Progress</div>
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+<div class="small" id="progressText">0%</div>
+</div>
+
+<!-- 4️⃣ TEAM SUMMARY -->
+<div class="card">
+<div class="section-title">Team Summary</div>
+<div class="row"><span>Total Members</span><span id="teamCount">0</span></div>
+<div class="row"><span>Level 1 Members</span><span id="level1">0</span></div>
+<div class="row"><span>Level 2–10 Members</span><span id="levelDeep">0</span></div>
+<div class="row"><span>Active Members</span><span id="activeMembers">0</span></div>
+<div class="row"><span>Network Bonus</span><span>$0</span></div>
+</div>
+
+<!-- 5️⃣ INCOME BREAKDOWN -->
+<div class="card">
+<div class="section-title">Income Breakdown</div>
+<div class="row"><span>NFT Income</span><span>$0</span></div>
+<div class="row"><span>Referral Bonus</span><span>$0</span></div>
+<div class="row"><span>Team Commission</span><span>$0</span></div>
+<div class="row"><span>Pool Reward</span><span>$0</span></div>
+<div class="row"><span>Rank Salary</span><span>$0</span></div>
+<div class="row"><span>Global Bonus</span><span>$0</span></div>
+</div>
+
+<!-- 6️⃣ PASSIVE BONUS -->
+<div class="card">
+<div class="section-title">Passive / Network Bonus</div>
+<div class="row"><span>Unilevel Income</span><span>$0</span></div>
+<div class="row"><span>Global Turnover Bonus</span><span>$0</span></div>
+<div class="row"><span>Rank Salary</span><span>$0</span></div>
+<div class="row"><span>Auto Pool Reward</span><span>$0</span></div>
+</div>
+
+<!-- 7️⃣ ACTIVITY -->
+<div class="card">
+<div class="section-title">Activity</div>
+<div class="row"><span>Last Login</span><span id="lastLogin">-</span></div>
+<div class="row"><span>Last Purchase</span><span>-</span></div>
+<div class="row"><span>Last Withdraw</span><span>-</span></div>
+<div class="row"><span>Last Referral</span><span>-</span></div>
+</div>
+
+<!-- 8️⃣ SECURITY -->
+<div class="card">
+<div class="section-title">Security</div>
+<div class="row"><span>Email Verified</span><span id="verified">✔</span></div>
+<div class="row"><span>2FA</span><span>Coming Soon</span></div>
+<div class="row"><span>Account Freeze</span><span id="freeze">No</span></div>
+<a href="#" class="btn">Change Password</a>
+</div>
+
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -25,178 +183,59 @@ if(!user){location.href="login.html";return;}
 
 document.getElementById("email").innerText=user.email;
 document.getElementById("uid").innerText=user.uid;
+document.getElementById("lastLogin").innerText=new Date().toLocaleString();
+document.getElementById("verified").innerText=user.emailVerified?"✔":"❌";
 
-const userRef=doc(db,"users",user.uid);
-const snap=await getDoc(userRef);
+const snap=await getDoc(doc(db,"users",user.uid));
 if(!snap.exists()) return;
-
 const d=snap.data();
 
-/* BASIC INFO */
+/* Basic */
 document.getElementById("refCode").innerText=d.referralCode||"-";
+document.getElementById("vipLevel").innerText="VIP "+(d.level||0);
 document.getElementById("joinDate").innerText=d.createdAt?.toDate().toLocaleDateString()||"-";
+document.getElementById("status").innerText=d.banned?"BANNED":"ACTIVE";
 
-/* STATUS */
-const statusEl=document.getElementById("status");
-if(d.banned){
-statusEl.innerText="BANNED";
-statusEl.style.color="red";
-}else{
-statusEl.innerText="ACTIVE";
-statusEl.style.color="#00ff88";
-}
-
-/* FINANCIAL */
+/* Financial */
 document.getElementById("wallet").innerText=d.walletBalance||0;
 document.getElementById("daily").innerText=d.dailyIncome||0;
 document.getElementById("referral").innerText=d.referralEarnings||0;
 document.getElementById("deposit").innerText=d.totalDeposit||0;
 document.getElementById("withdraw").innerText=d.withdraw||0;
+document.getElementById("teamCommission").innerText=d.teamCommission||0;
 
-let totalIncome=(d.liveEarnings||0)+(d.referralEarnings||0);
-document.getElementById("totalIncome").innerText=totalIncome.toFixed(2);
-
-/* LIVE ANIMATION */
 let live=d.liveEarnings||0;
 setInterval(()=>{
 live+= (d.dailyIncome||0)/86400;
 document.getElementById("live").innerText=live.toFixed(6);
 },1000);
 
-/* VIP SYSTEM */
-let level=d.level||0;
-document.getElementById("vipLevel").innerText="VIP "+level;
+let total=(d.liveEarnings||0)+(d.referralEarnings||0);
+document.getElementById("totalIncome").innerText=total.toFixed(2);
 
+/* VIP */
+let level=d.level||0;
 let commission=5;
 if(level>=3) commission=8;
 if(level>=5) commission=12;
 if(level>=8) commission=18;
 document.getElementById("commission").innerText=commission+"%";
 
-/* Rank Badge */
-let badge="⭐";
-if(level>=8) badge="👑";
-if(level>=5) badge="🥇";
-document.getElementById("badge").innerText=badge;
-
-/* Progress */
 let progress=(d.totalDeposit||0)/1000*100;
 if(progress>100) progress=100;
 document.getElementById("progressBar").style.width=progress+"%";
 document.getElementById("progressText").innerText=progress.toFixed(0)+"%";
 
-/* TEAM */
+/* Team */
 const refCol=collection(db,"users",user.uid,"referrals");
 const refSnap=await getDocs(refCol);
 document.getElementById("teamCount").innerText=refSnap.size;
-
-/* Activity */
-document.getElementById("lastLogin").innerText=new Date().toLocaleString();
+document.getElementById("level1").innerText=refSnap.size;
+document.getElementById("levelDeep").innerText=0;
+document.getElementById("activeMembers").innerText=refSnap.size;
 
 });
-
-/* Logout */
-window.logout=function(){
-signOut(auth).then(()=>location.href="login.html");
-}
-
 </script>
 
-<style>
-body{margin:0;background:#0f0f0f;color:#FFD700;font-family:Arial;}
-header{background:#1a1a1a;padding:15px;text-align:center;font-weight:bold;}
-.container{padding:15px;}
-.card{background:#1a1a1a;padding:15px;border-radius:12px;margin-bottom:15px;}
-.row{display:flex;justify-content:space-between;margin-top:6px;}
-.big{font-size:18px;font-weight:bold;}
-.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.progress{height:8px;background:#333;border-radius:5px;margin-top:6px;}
-.progress-bar{height:100%;background:#FFD700;width:0%;}
-.btn{display:block;margin-top:8px;padding:12px;background:#FFD700;color:#000;text-align:center;border-radius:8px;text-decoration:none;font-weight:bold;}
-.section{margin-top:10px;font-weight:bold;}
-</style>
-</head>
-
-<body>
-
-<header>👤 My Account</header>
-
-<div class="container">
-
-<!-- BASIC INFO -->
-<div class="card">
-<div class="section">Basic Info</div>
-<div class="row"><div>Email</div><div id="email">-</div></div>
-<div class="row"><div>UID</div><div id="uid">-</div></div>
-<div class="row"><div>Referral Code</div><div id="refCode">-</div></div>
-<div class="row"><div>Account Status</div><div id="status">-</div></div>
-<div class="row"><div>Join Date</div><div id="joinDate">-</div></div>
-</div>
-
-<!-- FINANCIAL -->
-<div class="card">
-<div class="section">Financial Overview</div>
-<div class="grid-2">
-<div>Wallet <div class="big">$<span id="wallet">0</span></div></div>
-<div>Daily <div class="big">$<span id="daily">0</span></div></div>
-<div>Live <div class="big">$<span id="live">0</span></div></div>
-<div>Total Income <div class="big">$<span id="totalIncome">0</span></div></div>
-<div>Referral <div class="big">$<span id="referral">0</span></div></div>
-<div>Deposit <div class="big">$<span id="deposit">0</span></div></div>
-<div>Withdraw <div class="big">$<span id="withdraw">0</span></div></div>
-</div>
-</div>
-
-<!-- VIP -->
-<div class="card">
-<div class="section">VIP System</div>
-<div id="badge">⭐</div>
-<div id="vipLevel">VIP 0</div>
-<div>Commission: <span id="commission">5%</span></div>
-<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-<div id="progressText">0%</div>
-</div>
-
-<!-- TEAM -->
-<div class="card">
-<div class="section">Team Summary</div>
-<div class="row"><div>Total Members</div><div id="teamCount">0</div></div>
-<div class="row"><div>Network Bonus</div><div>$0</div></div>
-</div>
-
-<!-- INCOME BREAKDOWN -->
-<div class="card">
-<div class="section">Income Breakdown</div>
-<div>NFT Income</div>
-<div>Referral Bonus</div>
-<div>Team Commission</div>
-<div>Pool Reward</div>
-<div>Rank Salary</div>
-<div>Global Bonus</div>
-</div>
-
-<!-- ACTIVITY -->
-<div class="card">
-<div class="section">Activity</div>
-<div class="row"><div>Last Login</div><div id="lastLogin">-</div></div>
-<div class="row"><div>Last Purchase</div><div>-</div></div>
-<div class="row"><div>Last Withdraw</div><div>-</div></div>
-</div>
-
-<!-- SECURITY -->
-<div class="card">
-<div class="section">Security</div>
-<div class="row"><div>Email Verified</div><div>✔</div></div>
-<div class="row"><div>2FA</div><div>Coming Soon</div></div>
-</div>
-
-<div class="card">
-<a href="deposit.html" class="btn">Deposit</a>
-<a href="withdraw.html" class="btn">Withdraw</a>
-<a href="settings.html" class="btn">Settings</a>
-<a href="#" onclick="logout()" class="btn" style="background:#ff4444;color:white;">Logout</a>
-</div>
-
-</div>
 </body>
 </html>
