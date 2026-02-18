@@ -12,7 +12,6 @@ body{
   background:#0f0f0f;
   color:#FFD700;
 }
-
 header{
   background:#1a1a1a;
   padding:15px;
@@ -20,45 +19,35 @@ header{
   font-size:20px;
   font-weight:bold;
 }
-
 .container{
   padding:15px;
 }
-
 .card{
   background:#1a1a1a;
   padding:15px;
   border-radius:12px;
   margin-bottom:15px;
 }
-
 .row{
   display:flex;
   justify-content:space-between;
   margin-top:10px;
 }
-
 .big{
   font-size:20px;
   font-weight:bold;
 }
-
-.center{
-  text-align:center;
-}
-
+.center{text-align:center;}
 .grid-2{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:12px;
 }
-
 .grid-3{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:12px;
 }
-
 .small-card{
   background:#111;
   padding:12px;
@@ -66,26 +55,24 @@ header{
   text-align:center;
   font-size:14px;
 }
-
 .small-card span{
   display:block;
   font-size:18px;
   margin-top:5px;
   font-weight:bold;
 }
-
 .section-title{
   margin:15px 0 8px;
   font-size:16px;
   font-weight:bold;
 }
-
 .footer{
   margin-top:20px;
   text-align:center;
   font-size:13px;
   opacity:0.7;
 }
+a{text-decoration:none;color:#FFD700;}
 </style>
 </head>
 
@@ -126,7 +113,7 @@ header{
   </div>
 </div>
 
-<!-- 🔥 MY TEAM -->
+<!-- MY TEAM -->
 <div class="card">
   <div class="section-title">My Team</div>
   <div class="grid-3">
@@ -145,21 +132,25 @@ header{
   </div>
 </div>
 
-<!-- 💎 MY LEVEL -->
+<!-- MY LEVEL -->
 <div class="card">
   <div class="section-title">My Level</div>
-  <div class="center">
-    <div>Level <span id="level">0</span></div>
-    <div style="margin-top:8px;">
-      <span id="points">0</span> Points
+  <div class="grid-2">
+    <div class="small-card">
+      Level
+      <span id="level">0</span>
+    </div>
+    <div class="small-card">
+      Points
+      <span id="points">0</span>
     </div>
   </div>
 </div>
 
-<!-- 📦 MY ORDERS -->
+<!-- MY ORDERS -->
 <div class="card">
   <div class="section-title">My Orders</div>
-  <div class="grid-2">
+  <div class="grid-3">
     <div class="small-card">
       Orders
       <span id="orders">0</span>
@@ -168,6 +159,29 @@ header{
       Processing
       <span id="processing">0</span>
     </div>
+    <div class="small-card">
+      Completed
+      <span id="completed">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- COMMON FUNCTIONS -->
+<div class="card">
+  <div class="section-title">Common Functions</div>
+  <div class="grid-3">
+    <a href="deposit.html" class="small-card">
+      Deposit
+      <span>💰</span>
+    </a>
+    <a href="withdraw.html" class="small-card">
+      Withdraw
+      <span>💸</span>
+    </a>
+    <a href="settings.html" class="small-card">
+      Settings
+      <span>⚙️</span>
+    </a>
   </div>
 </div>
 
@@ -215,35 +229,25 @@ document.getElementById("daily").innerText=data.dailyIncome||0;
 document.getElementById("totalIncome").innerText=data.liveEarnings||0;
 document.getElementById("teamReward").innerText=data.referralEarnings||0;
 
-// 🔥 TEAM COUNT
+// TEAM COUNT
 const refCol=collection(db,"users",user.uid,"referrals");
 const refSnap=await getDocs(refCol);
-let teamSize = refSnap.size;
+let teamSize=refSnap.size;
 
 document.getElementById("teamCount").innerText=teamSize;
 
-// 💎 LEVEL SYSTEM
-let level = 0;
-let points = (teamSize * 10) + (data.referralEarnings || 0);
+// AUTO LEVEL SYSTEM
+let level=0;
+let points=(teamSize*10)+(data.referralEarnings||0);
 
-if(teamSize >= 50 && data.referralEarnings >= 500){
-  level = 4;
-}
-else if(teamSize >= 20 && data.referralEarnings >= 200){
-  level = 3;
-}
-else if(teamSize >= 10 && data.referralEarnings >= 100){
-  level = 2;
-}
-else if(teamSize >= 5){
-  level = 1;
-}
-else{
-  level = 0;
-}
+if(teamSize>=50 && data.referralEarnings>=500){level=4;}
+else if(teamSize>=20 && data.referralEarnings>=200){level=3;}
+else if(teamSize>=10 && data.referralEarnings>=100){level=2;}
+else if(teamSize>=5){level=1;}
+else{level=0;}
 
-document.getElementById("level").innerText = level;
-document.getElementById("points").innerText = points;
+document.getElementById("level").innerText=level;
+document.getElementById("points").innerText=points;
 
 });
 
