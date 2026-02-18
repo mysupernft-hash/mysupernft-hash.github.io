@@ -282,11 +282,9 @@ window.deposit = function(){
   window.location.href = "deposit.html";
 }
 
-window.withdrawRequest = async function(){
-  if((userData.walletBalance||0)<=0){
-    alert("No balance");
-    return;
-  }
+window.withdrawRequest = function(){
+  window.location.href = "withdraw.html";
+}
 
   await addDoc(collection(db,"withdrawRequests"),{
     uid: auth.currentUser.uid,
