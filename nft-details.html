@@ -1,3 +1,5 @@
+Nft buy pr click krna pr successful purchase ya insufficient balance aana chahiya lakin login first aa ra ha
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -13,15 +15,18 @@ body{
   color:#FFD700;
   text-align:center;
 }
+
 header{
   padding:20px;
   background:#1a1a1a;
   font-size:24px;
   border-bottom:2px solid #FFD700;
 }
+
 .container{
   padding:20px;
 }
+
 .nft-img{
   width:90%;
   max-width:400px;
@@ -29,10 +34,12 @@ header{
   border:3px solid #FFD700;
   box-shadow:0 0 25px #FFD700;
 }
+
 .price{
   font-size:22px;
   margin:15px 0;
 }
+
 .calc-box{
   background:#1a1a1a;
   border-radius:12px;
@@ -41,11 +48,13 @@ header{
   max-width:400px;
   border:1px solid #FFD700;
 }
+
 .calc-row{
   display:flex;
   justify-content:space-between;
   margin:8px 0;
 }
+
 .buy-btn{
   background:#FFD700;
   color:#000;
@@ -57,6 +66,7 @@ header{
   margin-top:20px;
   width:200px;
 }
+
 .buy-btn:hover{
   background:#e6c200;
 }
@@ -85,8 +95,8 @@ header{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -98,7 +108,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* NFT LIST */
+/* SAME NFT ARRAY AS DASHBOARD */
 const NFTS=[
 {price:10,p:0.2,img:"images/IMG_0458.png"},
 {price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -145,52 +155,41 @@ document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
 document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
 document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
 
-window.buyNFT = function(){
+window.buyNFT = async function(){
 
-  onAuthStateChanged(auth, async (user)=>{
+  const user = auth.currentUser;
+  if(!user){
+    alert("Please login first");
+    return;
+  }
 
-    if(!user){
-      alert("Please login first");
-      window.location.href="login.html";
-      return;
-    }
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
 
-    const userRef = doc(db,"users",user.uid);
-    const snap = await getDoc(userRef);
+  if(!snap.exists()){
+    alert("User not found");
+    return;
+  }
 
-    if(!snap.exists()){
-      alert("User not found");
-      return;
-    }
+  const data = snap.data();
+  const wallet = data.walletBalance || 0;
+  const currentDaily = data.dailyIncome || 0;
 
-    const data = snap.data();
-    const wallet = data.walletBalance || 0;
-    const currentDaily = data.dailyIncome || 0;
+  if(wallet >= nft.price){
 
-    if(wallet < nft.price){
-      alert("❌ Insufficient Balance!");
-      return;
-    }
+    await updateDoc(userRef,{
+      walletBalance: wallet - nft.price,
+      dailyIncome: currentDaily + nft.p
+    });
 
-    try{
+    alert("🎉 Purchased Successfully!");
+    window.location.href="dashboard.html";
 
-      await updateDoc(userRef,{
-        walletBalance: wallet - nft.price,
-        dailyIncome: currentDaily + nft.p,
-        nfts: arrayUnion("NFT $" + nft.price)
-      });
+  } else {
+    alert("❌ Insufficient Balance!");
+  }
 
-      alert("🎉 Purchase Successful!");
-      window.location.href="dashboard.html";
-
-    }catch(err){
-      console.error(err);
-      alert("Purchase failed");
-    }
-
-  });
-
-};
+}
 
 </script>
 
