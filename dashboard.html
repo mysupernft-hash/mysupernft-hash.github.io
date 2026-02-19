@@ -56,35 +56,7 @@ footer div:hover{color:#e0c200;}
   box-shadow:0 0 10px #FFD700;
 }
 
-  .top-header{
-  position:sticky;
-  top:0;
-  background:#1a1a1a;
-  padding:10px 15px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-}
-
-.top-header h1{
-  flex:1;
-  text-align:center;
-  margin:0;
-  font-size:18px;
-  color:#FFD700;
-}
-
-.trading-icon{
-  cursor:pointer;
-  padding:6px 8px;
-  border-radius:8px;
-  transition:0.2s;
-}
-
-.trading-icon:hover{
-  background:#272727;
-  box-shadow:0 0 10px #FFD700;
-}
+  
   #userBar{
   background:#111;
   padding:8px 20px;
@@ -132,11 +104,6 @@ footer div:hover{color:#e0c200;}
 <header>
   <span class="menu-toggle">&#9776;</span>
   <h1>SuperNFT Dashboard</h1>
-  <div class="trading-icon" onclick="openTrading()">
-    <svg viewBox="0 0 24 24" width="22" height="22">
-      <path fill="#FFD700" d="M3 17h2v4H3v-4zm4-6h2v10H7V11zm4-4h2v14h-2V7zm4 6h2v8h-2v-8zm4-10h2v18h-2V3z"/>
-    </svg>
-  </div>
 </header>
 
 <div id="userBar">
@@ -242,11 +209,9 @@ overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay
 function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
 
 /* OpenPage */
-window.openTrading = function(){
-  window.location.href = "trading.html";
-};
+window.openPage = function(page){
   switch(page){
-    case "trading":
+      case "trading":
   window.location.href = "trading.html";
   break;
     case "account": window.location.href="account.html"; break;
