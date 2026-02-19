@@ -45,21 +45,6 @@ footer div:hover{color:#e0c200;}
   font-size:14px;
   border-bottom:1px solid #272727;
 }
-  .verified-badge{
-  background:linear-gradient(45deg,#FFD700,#ffb300);
-  color:#000;
-  font-size:11px;
-  padding:2px 7px;
-  border-radius:50px;
-  font-weight:bold;
-  box-shadow:0 0 8px #FFD700;
-  animation:goldPulse 1.5s infinite alternate;
-}
-
-@keyframes goldPulse{
-  from{box-shadow:0 0 6px #FFD700;}
-  to{box-shadow:0 0 18px #FFD700;}
-}
   
   .nft-tabs {
   display: flex;
@@ -98,20 +83,17 @@ footer div:hover{color:#e0c200;}
 
 <div id="overlay"></div>
 
-<div id="userBar">
+<header>
+  <span class="menu-toggle">&#9776;</span>
+  <h1>SuperNFT Dashboard</h1>
+</header>
 
-  <div class="user-left">
-    👤 Welcome, 
-    <span id="userEmail">Loading...</span>
-    <span id="verifiedBadge" class="verified-badge" style="display:none;">
-      ✔
-    </span>
-  </div>
+<div id="userBar">
+  👤 Welcome, <span id="userEmail">Loading...</span>
 
   <div class="wallet-right">
-    💰 $<span id="walletBalanceTop">0.00</span>
+    💰<span id="walletBalanceTop">0.00</span>
   </div>
-
 </div>
 
 </div>
