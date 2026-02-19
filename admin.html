@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin Panel</title>
+<title>SuperNFT Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -12,61 +12,47 @@
 <style>
 body{
   margin:0;
+  font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
-  font-family:Arial;
-}
-
-header{
-  background:#1a1a1a;
   padding:15px;
+}
+
+h2{
   text-align:center;
-  font-size:20px;
-  font-weight:bold;
 }
 
-.container{
-  padding:12px;
-}
-
-.user-card{
-  background:#1a1a1a;
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:12px;
-}
-
-.row{
-  margin-bottom:8px;
-  font-size:14px;
-}
-
-input,select{
+table{
   width:100%;
-  padding:6px;
-  margin-top:4px;
-  border-radius:6px;
-  border:none;
+  border-collapse:collapse;
+  margin-top:20px;
+}
+
+th,td{
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
+  font-size:12px;
+}
+
+th{
+  background:#1a1a1a;
+}
+
+input{
+  width:70px;
 }
 
 button{
-  width:100%;
-  padding:8px;
-  margin-top:6px;
-  border:none;
-  border-radius:6px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.save-btn{
+  padding:5px 8px;
   background:#FFD700;
-  color:#000;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
 }
 
-.logout-btn{
-  background:#272727;
-  color:#FFD700;
+.logout{
+  float:right;
   margin-bottom:10px;
 }
 </style>
@@ -74,15 +60,23 @@ button{
 
 <body>
 
-<header>🔥 SuperNFT Admin Dashboard</header>
+<button class="logout" onclick="logout()">Logout</button>
+<h2>🔥 SuperNFT Admin Dashboard</h2>
 
-<div class="container">
-
-<button class="logout-btn" onclick="logout()">Logout</button>
-
-<div id="usersContainer">Loading users...</div>
-
-</div>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Wallet</th>
+<th>Daily</th>
+<th>Referral</th>
+<th>Level</th>
+<th>Banned</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody id="users"></tbody>
+</table>
 
 <script>
 
@@ -93,11 +87,10 @@ firebase.initializeApp({
 });
 
 const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 
 /* 🔐 AUTH CHECK */
-auth.onAuthStateChanged(user => {
-
+auth.onAuthStateChanged(user=>{
   if(!user){
     window.location.href="admin-login.html";
     return;
@@ -106,84 +99,50 @@ auth.onAuthStateChanged(user => {
   loadUsers();
 });
 
-/* 👥 LOAD ALL USERS */
+/* 👥 LOAD USERS */
 function loadUsers(){
+  db.collection("users").get().then(snapshot=>{
+    let html="";
 
-  db.collection("users").get().then(snapshot => {
-
-    let html = "";
-
-    snapshot.forEach(doc => {
-
+    snapshot.forEach(doc=>{
       const u = doc.data();
 
       html += `
-      <div class="user-card">
-
-        <div class="row">
-          <strong>Email:</strong> ${u.email || ""}
-        </div>
-
-        <div>
-          Wallet Balance
-          <input id="wallet_${doc.id}" value="${u.walletBalance || 0}">
-        </div>
-
-        <div>
-          Daily Income
-          <input id="daily_${doc.id}" value="${u.dailyIncome || 0}">
-        </div>
-
-        <div>
-          Referral Earnings
-          <input id="ref_${doc.id}" value="${u.referralEarnings || 0}">
-        </div>
-
-        <div>
-          Level
-          <input id="level_${doc.id}" value="${u.level || 0}">
-        </div>
-
-        <div>
-          Banned
-          <select id="ban_${doc.id}">
-            <option value="false" ${u.banned ? "" : "selected"}>No</option>
-            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
+      <tr>
+        <td>${u.email||""}</td>
+        <td><input id="w_${doc.id}" value="${u.walletBalance||0}"></td>
+        <td><input id="d_${doc.id}" value="${u.dailyIncome||0}"></td>
+        <td><input id="r_${doc.id}" value="${u.referralEarnings||0}"></td>
+        <td><input id="l_${doc.id}" value="${u.level||1}"></td>
+        <td>
+          <select id="b_${doc.id}">
+            <option value="false" ${u.banned?"":"selected"}>No</option>
+            <option value="true" ${u.banned?"selected":""}>Yes</option>
           </select>
-        </div>
-
-        <button class="save-btn" onclick="saveUser('${doc.id}')">
-          Save Changes
-        </button>
-
-      </div>
+        </td>
+        <td><button onclick="saveUser('${doc.id}')">Save</button></td>
+      </tr>
       `;
-
     });
 
-    document.getElementById("usersContainer").innerHTML = html;
-
+    document.getElementById("users").innerHTML=html;
   });
 }
 
-/* 💾 SAVE USER DATA */
+/* 💾 SAVE USER */
 function saveUser(uid){
 
   db.collection("users").doc(uid).update({
-
-    walletBalance: Number(document.getElementById("wallet_"+uid).value),
-    dailyIncome: Number(document.getElementById("daily_"+uid).value),
-    referralEarnings: Number(document.getElementById("ref_"+uid).value),
-    level: Number(document.getElementById("level_"+uid).value),
-    banned: document.getElementById("ban_"+uid).value === "true"
-
-  }).then(()=>{
-    alert("✅ User Updated Successfully");
-  });
-
+    walletBalance:Number(document.getElementById("w_"+uid).value),
+    dailyIncome:Number(document.getElementById("d_"+uid).value),
+    referralEarnings:Number(document.getElementById("r_"+uid).value),
+    level:Number(document.getElementById("l_"+uid).value),
+    banned:document.getElementById("b_"+uid).value==="true"
+  })
+  .then(()=>alert("✅ Updated"));
 }
 
-/* 🔓 LOGOUT */
+/* 🚪 LOGOUT */
 function logout(){
   auth.signOut().then(()=>{
     window.location.href="admin-login.html";
@@ -191,6 +150,5 @@ function logout(){
 }
 
 </script>
-
 </body>
 </html>
