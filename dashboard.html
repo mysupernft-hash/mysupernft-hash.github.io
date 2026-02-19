@@ -56,7 +56,28 @@ footer div:hover{color:#e0c200;}
   box-shadow:0 0 10px #FFD700;
 }
 
-  
+  .trading-icon{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:linear-gradient(145deg,#FFD700,#e6c200);
+  cursor:pointer;
+  transition:0.3s;
+  box-shadow:0 0 12px #FFD700;
+}
+
+.trading-icon svg{
+  width:18px;
+  height:18px;
+}
+
+.trading-icon:hover{
+  transform:scale(1.1);
+  box-shadow:0 0 18px #FFD700;
+}
   #userBar{
   background:#111;
   padding:8px 20px;
@@ -104,6 +125,12 @@ footer div:hover{color:#e0c200;}
 <header>
   <span class="menu-toggle">&#9776;</span>
   <h1>SuperNFT Dashboard</h1>
+  <div class="trading-icon" onclick="openTrading()">
+  <svg viewBox="0 0 24 24">
+    <path fill="#000"
+      d="M3 17h2v4H3v-4zm4-6h2v10H7V11zm4-4h2v14h-2V7zm4 6h2v8h-2v-8zm4-10h2v18h-2V3z"/>
+  </svg>
+</div>
 </header>
 
 <div id="userBar">
