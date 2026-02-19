@@ -2,69 +2,80 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Admin</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-*{
-  box-sizing:border-box;
-}
-
 body{
   margin:0;
   font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#000000,#1a1a1a);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+  background:#0d0d0d;
   color:#FFD700;
 }
 
-.container{
-  width:100%;
-  max-width:380px;
-  padding:20px;
-}
-
-.card{
+/* Header */
+header{
   background:#111;
-  padding:25px;
-  border-radius:18px;
-  box-shadow:0 0 30px rgba(255,215,0,0.2);
-}
-
-h2{
+  padding:14px;
   text-align:center;
-  margin-bottom:20px;
+  font-size:18px;
+  font-weight:bold;
+  position:sticky;
+  top:0;
+  z-index:100;
 }
 
-input{
+/* Container */
+.container{
+  padding:10px;
+}
+
+/* Scroll Wrapper */
+.table-wrapper{
+  overflow-x:auto;
+}
+
+/* Table */
+table{
   width:100%;
-  padding:14px;
-  margin-bottom:14px;
+  min-width:700px;
+  border-collapse:collapse;
+}
+
+th,td{
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
+  font-size:13px;
+}
+
+th{
+  background:#1a1a1a;
+}
+
+/* Inputs */
+input,select{
+  width:70px;
+  padding:4px;
+  background:#222;
+  color:#FFD700;
   border:none;
-  border-radius:10px;
-  font-size:14px;
+  border-radius:5px;
+  font-size:12px;
 }
 
-input:focus{
-  outline:none;
-  box-shadow:0 0 8px #FFD700;
-}
-
+/* Buttons */
 button{
-  width:100%;
-  padding:14px;
+  padding:5px 8px;
+  font-size:12px;
+  font-weight:bold;
   border:none;
-  border-radius:12px;
+  border-radius:6px;
   background:#FFD700;
   color:#000;
-  font-weight:bold;
-  font-size:15px;
   cursor:pointer;
 }
 
@@ -72,91 +83,121 @@ button:hover{
   background:#e6c200;
 }
 
-.error{
-  text-align:center;
-  color:red;
-  margin-top:10px;
-  font-size:13px;
-}
+/* Mobile Card Style (Below 480px) */
+@media(max-width:480px){
 
-.logo{
-  text-align:center;
-  font-size:26px;
-  margin-bottom:10px;
+  table{
+    min-width:600px;
+  }
+
+  th,td{
+    font-size:12px;
+    padding:6px;
+  }
+
+  input,select{
+    width:55px;
+  }
+
+  button{
+    font-size:11px;
+    padding:4px 6px;
+  }
 }
 </style>
 </head>
 
 <body>
 
+<header>🔥 SuperNFT Admin Panel</header>
+
 <div class="container">
-  <div class="card">
-
-    <div class="logo">🔥 SuperNFT Admin</div>
-
-    <h2>Secure Login</h2>
-
-    <input type="email" id="email" placeholder="Admin Email">
-    <input type="password" id="password" placeholder="Password">
-    <input type="text" id="uid" placeholder="Admin UID">
-    <input type="password" id="pin" placeholder="Admin PIN">
-
-    <button onclick="adminLogin()">Login</button>
-
-    <div id="error" class="error"></div>
-
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Wallet</th>
+          <th>Daily</th>
+          <th>Referral</th>
+          <th>Level</th>
+          <th>Banned</th>
+          <th>Save</th>
+        </tr>
+      </thead>
+      <tbody id="users"></tbody>
+    </table>
   </div>
 </div>
 
 <script>
 
+// 🔥 Firebase Init
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
 });
 
-const auth = firebase.auth();
+const db = firebase.firestore();
 
-/* 🔐 Hard Admin Credentials */
-const ADMIN_UID = "MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1";
-const ADMIN_PIN = "1449@MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1@shiva";
+// 🔥 Load Users
+db.collection("users").get().then(snapshot => {
 
-function adminLogin(){
+  let html = "";
 
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const uidInput = document.getElementById("uid").value.trim();
-  const pinInput = document.getElementById("pin").value.trim();
+  snapshot.forEach(doc => {
 
-  const errorBox = document.getElementById("error");
+    const u = doc.data();
 
-  if(uidInput !== ADMIN_UID){
-    errorBox.innerText = "❌ Invalid UID";
-    return;
-  }
+    html += `
+      <tr>
+        <td style="min-width:140px">${u.email || ""}</td>
 
-  if(pinInput !== ADMIN_PIN){
-    errorBox.innerText = "❌ Invalid PIN";
-    return;
-  }
+        <td><input id="w_${doc.id}" value="${u.walletBalance || 0}"></td>
 
-  auth.signInWithEmailAndPassword(email,password)
-  .then((cred)=>{
+        <td><input id="d_${doc.id}" value="${u.dailyIncome || 0}"></td>
 
-    if(cred.user.uid === ADMIN_UID){
-      window.location.href="admin.html";
-    } else {
-      errorBox.innerText = "❌ Not Admin Account";
-      auth.signOut();
-    }
+        <td><input id="r_${doc.id}" value="${u.referralEarnings || 0}"></td>
 
-  })
-  .catch(err=>{
-    errorBox.innerText = err.message;
+        <td><input id="l_${doc.id}" value="${u.level || 0}"></td>
+
+        <td>
+          <select id="ban_${doc.id}">
+            <option value="false" ${u.banned ? "" : "selected"}>No</option>
+            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
+          </select>
+        </td>
+
+        <td>
+          <button onclick="saveUser('${doc.id}')">
+            Save
+          </button>
+        </td>
+      </tr>
+    `;
   });
-}
 
+  document.getElementById("users").innerHTML = html;
+
+}).catch(error => {
+  alert("Error: " + error.message);
+});
+
+// 🔥 Save User
+function saveUser(uid){
+
+  db.collection("users").doc(uid).update({
+    walletBalance: Number(document.getElementById("w_"+uid).value),
+    dailyIncome: Number(document.getElementById("d_"+uid).value),
+    referralEarnings: Number(document.getElementById("r_"+uid).value),
+    level: Number(document.getElementById("l_"+uid).value),
+    banned: document.getElementById("ban_"+uid).value === "true"
+  })
+  .then(()=>alert("✅ Updated"))
+  .catch(error=>alert("❌ "+error.message));
+
+}
 </script>
 
 </body>
