@@ -319,6 +319,8 @@ onAuthStateChanged(auth, async (user) => {
 
   if(!snap.exists()) return;
 
+  const data = snap.data();
+
   // ✅ VERIFIED CHECK
 if(data.verified === true){
   document.getElementById("verifiedTick").style.display = "inline-flex";
