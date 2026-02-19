@@ -321,6 +321,12 @@ onAuthStateChanged(auth, async (user) => {
 
   const data = snap.data();
 
+  const totalDeposit = data.totalDeposit || 0;
+
+// ✅ Dashboard Total Deposit Update
+document.querySelector("#depositMoney p").innerText =
+  "$" + totalDeposit.toFixed(2);
+
   // ✅ VERIFIED CHECK
 if(data.verified === true){
   document.getElementById("verifiedTick").style.display = "inline-flex";
