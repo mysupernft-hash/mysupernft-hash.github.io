@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin</title>
+<title>SuperNFT Ultimate Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -15,52 +15,107 @@ body{
   font-family:Arial;
   background:#0d0d0d;
   color:#FFD700;
-  padding:15px;
+  padding:10px;
 }
-h2{text-align:center;}
+
+h2{text-align:center}
+
+.card{
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+input,select{
+  width:100%;
+  padding:5px;
+}
+
+button{
+  padding:6px 10px;
+  background:#FFD700;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
 
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:15px;
+  font-size:12px;
 }
+
 th,td{
   border:1px solid #333;
-  padding:8px;
+  padding:5px;
   text-align:center;
-}
-th{background:#111;}
-
-a{
-  color:#00ffcc;
-  cursor:pointer;
-  text-decoration:none;
-}
-
-button{
-  background:#FFD700;
-  border:none;
-  padding:5px 8px;
-  cursor:pointer;
 }
 </style>
 </head>
 <body>
 
-<h2>🔥 SuperNFT Admin Panel</h2>
+<h2>🔥 SuperNFT Admin Dashboard</h2>
 
+<div class="card">
+<b>Total Users:</b> <span id="totalUsers">0</span>
+</div>
+
+<div class="card">
+<input type="text" id="searchInput" placeholder="Search Email / UID">
+</div>
+
+<div class="card">
+<h3>👥 Users</h3>
 <table>
 <thead>
 <tr>
 <th>Email</th>
 <th>Wallet</th>
+<th>Daily</th>
+<th>Referral</th>
 <th>Level</th>
-<th>Status</th>
+<th>Banned</th>
 <th>Save</th>
+<th>Delete</th>
 </tr>
 </thead>
 <tbody id="userTable"></tbody>
 </table>
+</div>
+
+<div class="card">
+<h3>🖼 NFT Purchases</h3>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>NFT ID</th>
+<th>Price</th>
+<th>Daily</th>
+<th>Date</th>
+<th>Delete</th>
+</tr>
+</thead>
+<tbody id="nftTable"></tbody>
+</table>
+</div>
+
+<div class="card">
+<h3>💸 Withdraw Requests</h3>
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Amount</th>
+<th>Status</th>
+<th>Approve</th>
+<th>Reject</th>
+</tr>
+</thead>
+<tbody id="withdrawTable"></tbody>
+</table>
+</div>
 
 <script>
 
@@ -73,42 +128,176 @@ firebase.initializeApp({
 const auth=firebase.auth();
 const db=firebase.firestore();
 
+let allUsers=[];
+
 auth.onAuthStateChanged(user=>{
   if(!user){
     location.href="admin-login.html";
     return;
   }
+
   loadUsers();
+  loadNFTs();
+  loadWithdraws();
 });
+
+/* ================= USERS ================= */
 
 function loadUsers(){
   db.collection("users").get().then(snap=>{
-    let html="";
+    allUsers=[];
+    document.getElementById("totalUsers").innerText=snap.size;
+
     snap.forEach(doc=>{
-      const u=doc.data();
-      html+=`
-      <tr>
-        <td>
-          <a href="admin-user.html?uid=${doc.id}">
-            ${u.email||""}
-          </a>
-        </td>
-        <td><input id="w_${doc.id}" value="${u.walletBalance||0}"></td>
-        <td><input id="l_${doc.id}" value="${u.level||0}"></td>
-        <td>${u.banned?"❌ Banned":"✅ Active"}</td>
-        <td><button onclick="saveUser('${doc.id}')">Save</button></td>
-      </tr>
-      `;
+      allUsers.push({id:doc.id,...doc.data()});
     });
-    document.getElementById("userTable").innerHTML=html;
+
+    renderUsers(allUsers);
   });
+}
+
+function renderUsers(users){
+  let html="";
+  users.forEach(u=>{
+    html+=`
+    <tr>
+      <td>${u.email||""}</td>
+      <td><input id="w_${u.id}" value="${u.walletBalance||0}"></td>
+      <td><input id="d_${u.id}" value="${u.dailyIncome||0}"></td>
+      <td><input id="r_${u.id}" value="${u.referralEarnings||0}"></td>
+      <td><input id="l_${u.id}" value="${u.level||0}"></td>
+      <td>
+        <select id="ban_${u.id}">
+          <option value="false" ${u.banned?"":"selected"}>No</option>
+          <option value="true" ${u.banned?"selected":""}>Yes</option>
+        </select>
+      </td>
+      <td><button onclick="saveUser('${u.id}')">Save</button></td>
+      <td><button onclick="deleteUser('${u.id}')">Delete</button></td>
+    </tr>`;
+  });
+
+  document.getElementById("userTable").innerHTML=html;
 }
 
 function saveUser(uid){
   db.collection("users").doc(uid).update({
     walletBalance:Number(document.getElementById("w_"+uid).value),
-    level:Number(document.getElementById("l_"+uid).value)
+    dailyIncome:Number(document.getElementById("d_"+uid).value),
+    referralEarnings:Number(document.getElementById("r_"+uid).value),
+    level:Number(document.getElementById("l_"+uid).value),
+    banned:document.getElementById("ban_"+uid).value==="true"
   }).then(()=>alert("Updated"));
+}
+
+function deleteUser(uid){
+  if(!confirm("Delete this user?")) return;
+
+  db.collection("users").doc(uid).delete()
+  .then(()=>{
+    alert("User deleted");
+    loadUsers();
+  });
+}
+
+document.getElementById("searchInput").addEventListener("input",function(){
+  const val=this.value.toLowerCase();
+  const filtered=allUsers.filter(u=>
+    (u.email||"").toLowerCase().includes(val) ||
+    u.id.toLowerCase().includes(val)
+  );
+  renderUsers(filtered);
+});
+
+/* ================= NFT HISTORY ================= */
+
+function loadNFTs(){
+
+  db.collection("users").get().then(async snap=>{
+
+    let html="";
+
+    for(const userDoc of snap.docs){
+
+      const userData=userDoc.data();
+      const uid=userDoc.id;
+
+      const nftSnap=await db
+        .collection("users")
+        .doc(uid)
+        .collection("nftHistory")
+        .get();
+
+      nftSnap.forEach(nftDoc=>{
+        const nft=nftDoc.data();
+
+        html+=`
+        <tr>
+          <td>${userData.email}</td>
+          <td>${nft.nftId}</td>
+          <td>$${nft.price}</td>
+          <td>$${nft.dailyReturn}</td>
+          <td>${nft.purchasedAt?.toDate().toLocaleDateString()||""}</td>
+          <td>
+            <button onclick="deleteNFT('${uid}','${nftDoc.id}',${nft.dailyReturn})">
+            Delete
+            </button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    document.getElementById("nftTable").innerHTML=html;
+  });
+}
+
+function deleteNFT(uid,nftId,dailyReturn){
+
+  if(!confirm("Delete NFT?")) return;
+
+  const userRef=db.collection("users").doc(uid);
+
+  db.collection("users").doc(uid)
+    .collection("nftHistory").doc(nftId).delete()
+    .then(()=>{
+      userRef.update({
+        dailyIncome: firebase.firestore.FieldValue.increment(-dailyReturn)
+      });
+      alert("NFT Deleted");
+      loadNFTs();
+    });
+}
+
+/* ================= WITHDRAW ================= */
+
+function loadWithdraws(){
+  db.collection("withdrawRequests").get().then(snap=>{
+    let html="";
+    snap.forEach(doc=>{
+      const w=doc.data();
+      html+=`
+      <tr>
+        <td>${w.email||""}</td>
+        <td>$${w.amount}</td>
+        <td>${w.status}</td>
+        <td><button onclick="approve('${doc.id}')">Approve</button></td>
+        <td><button onclick="reject('${doc.id}')">Reject</button></td>
+      </tr>`;
+    });
+    document.getElementById("withdrawTable").innerHTML=html;
+  });
+}
+
+function approve(id){
+  db.collection("withdrawRequests").doc(id)
+  .update({status:"approved"})
+  .then(()=>alert("Approved"));
+}
+
+function reject(id){
+  db.collection("withdrawRequests").doc(id)
+  .update({status:"rejected"})
+  .then(()=>alert("Rejected"));
 }
 
 </script>
