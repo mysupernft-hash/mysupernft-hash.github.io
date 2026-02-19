@@ -19,7 +19,9 @@ header{
   font-size:20px;
   font-weight:bold;
 }
-.container{padding:20px;}
+.container{
+  padding:20px;
+}
 .card{
   background:#1a1a1a;
   border-radius:12px;
@@ -50,21 +52,27 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{background:#e6c200;}
-.status{margin-top:12px;font-size:14px;}
+button:hover{
+  background:#e6c200;
+}
+.status{
+  margin-top:12px;
+  font-size:14px;
+}
 .history-card{
   background:#111;
   padding:12px;
   border-radius:10px;
   margin-top:10px;
+  font-size:13px;
 }
 .pending{color:orange}
 .approved{color:#00ff00}
 .rejected{color:red}
 .success-msg{
-  margin-top:8px;
+  margin-top:6px;
   color:#00ff00;
-  font-size:13px;
+  font-size:12px;
 }
 .back{
   display:block;
@@ -85,18 +93,21 @@ button:hover{background:#e6c200;}
 
 <div class="container">
 
+  <!-- WALLET -->
   <div class="card">
     <div>Available Balance</div>
     <div class="balance">$<span id="walletBalance">0.00</span></div>
   </div>
 
+  <!-- FORM -->
   <div class="card">
     <div>Withdraw Amount</div>
     <input type="number" id="amount" placeholder="Enter amount">
-    <button id="withdrawBtn" onclick="withdraw()">Request Withdraw</button>
+    <button onclick="withdraw()">Request Withdraw</button>
     <div class="status" id="status"></div>
   </div>
 
+  <!-- HISTORY -->
   <div class="card">
     <h3>Withdraw History</h3>
     <div id="history"></div>
@@ -112,9 +123,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, collection,
-  runTransaction, onSnapshot,
-  query, where, orderBy
+  getFirestore, doc, updateDoc,
+  collection, addDoc, serverTimestamp,
+  onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -129,10 +140,10 @@ const db=getFirestore(app);
 
 let currentUser=null;
 let walletAmount=0;
-let hasPending=false;
 
 /* AUTH */
 onAuthStateChanged(auth,(user)=>{
+
   if(!user){
     window.location.replace("login.html");
     return;
@@ -140,8 +151,9 @@ onAuthStateChanged(auth,(user)=>{
 
   currentUser=user;
 
-  // 🔥 REALTIME WALLET
   const userRef=doc(db,"users",user.uid);
+
+  // 🔥 REALTIME WALLET SYNC
   onSnapshot(userRef,(snap)=>{
     if(!snap.exists()) return;
     walletAmount=snap.data().walletBalance||0;
@@ -150,111 +162,89 @@ onAuthStateChanged(auth,(user)=>{
   });
 
   loadHistory();
+
 });
 
-/* WITHDRAW */
+
+/* WITHDRAW FUNCTION */
 window.withdraw=async function(){
 
-  const btn=document.getElementById("withdrawBtn");
   const status=document.getElementById("status");
   const amount=Number(document.getElementById("amount").value);
 
-  if(hasPending){
-    status.innerText="You already have pending request.";
-    return;
-  }
-
   if(!amount||amount<=0){
-    status.innerText="Enter valid amount.";
+    status.innerText="Enter valid amount";
     return;
   }
 
   if(amount<10){
-    status.innerText="Minimum withdraw is $10.";
+    status.innerText="Minimum withdraw is $10";
     return;
   }
 
   if(amount>walletAmount){
-    status.innerText="Insufficient balance.";
+    status.innerText="Insufficient balance";
     return;
   }
 
-  btn.disabled=true;
-  btn.innerText="Processing...";
-
   try{
 
-    await runTransaction(db,async(transaction)=>{
+    const userRef=doc(db,"users",currentUser.uid);
 
-      const userRef=doc(db,"users",currentUser.uid);
-      const snap=await transaction.get(userRef);
-
-      if(!snap.exists()) throw "User not found";
-
-      const data=snap.data();
-      const currentBal=data.walletBalance||0;
-
-      if(amount>currentBal) throw "Balance changed";
-
-      transaction.update(userRef,{
-        walletBalance:currentBal-amount,
-        totalWithdraw:(data.totalWithdraw||0)+amount
-      });
-
-      const withdrawRef=doc(collection(db,"withdrawRequests"));
-
-      transaction.set(withdrawRef,{
-        uid:currentUser.uid,
-        email:currentUser.email,
-        amount:amount,
-        status:"pending",
-        createdAt:new Date()
-      });
-
+    // 1️⃣ Deduct wallet instantly
+    await updateDoc(userRef,{
+      walletBalance: walletAmount - amount
     });
 
-    status.innerText="✅ Withdraw submitted successfully.";
+    // 2️⃣ Save withdraw under user document
+    await addDoc(
+      collection(db,"users",currentUser.uid,"withdraws"),
+      {
+        amount:amount,
+        status:"pending",
+        createdAt:serverTimestamp()
+      }
+    );
+
+    status.innerText=
+      "✅ Withdraw submitted. Waiting for admin approval.";
+
     document.getElementById("amount").value="";
 
   }catch(err){
     console.error(err);
     status.innerText="❌ Withdraw failed.";
   }
-
-  btn.disabled=false;
-  btn.innerText="Request Withdraw";
 };
 
-/* HISTORY REALTIME */
+
+/* LOAD HISTORY REALTIME */
 function loadHistory(){
 
-  const q=query(
-    collection(db,"withdrawRequests"),
-    where("uid","==",currentUser.uid),
-    orderBy("createdAt","desc")
-  );
+  const withdrawRef=
+    collection(db,"users",currentUser.uid,"withdraws");
 
-  onSnapshot(q,(snapshot)=>{
+  onSnapshot(withdrawRef,(snapshot)=>{
 
     let html="";
-    hasPending=false;
 
-    snapshot.forEach(docSnap=>{
+    snapshot.forEach(doc=>{
 
-      const w=docSnap.data();
+      const w=doc.data();
       let statusClass="pending";
       let message="";
       let time="";
 
-      if(w.createdAt){
-        const date=w.createdAt.toDate();
-        time=date.toLocaleString();
+      if(w.createdAt?.seconds){
+        const d=new Date(w.createdAt.seconds*1000);
+        time=d.toLocaleString();
       }
 
       if(w.status==="approved"){
         statusClass="approved";
-        message=`<div class="success-msg">
-        ✅ $${w.amount} received in your Binance wallet
+        message=`
+        <div class="success-msg">
+          ✅ $${w.amount} received in your Binance wallet
         </div>`;
       }
 
@@ -262,26 +252,23 @@ function loadHistory(){
         statusClass="rejected";
       }
 
-      if(w.status==="pending"){
-        hasPending=true;
-      }
-
       html+=`
       <div class="history-card">
-        <div><b>Withdraw ID:</b> ${docSnap.id}</div>
         <div><b>Amount:</b> $${w.amount}</div>
         <div><b>Date:</b> ${time}</div>
-        <div><b>Status:</b> 
-        <span class="${statusClass}">
-        ${w.status}
-        </span></div>
+        <div>
+          <b>Status:</b>
+          <span class="${statusClass}">
+            ${w.status}
+          </span>
+        </div>
         ${message}
       </div>
       `;
     });
 
     document.getElementById("history").innerHTML=
-      html || "<div>No withdraw history</div>";
+      html||"No withdraw history found";
 
   });
 
