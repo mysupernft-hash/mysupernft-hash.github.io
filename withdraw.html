@@ -124,7 +124,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc,
+  getFirestore, doc, getDoc, updateDoc,
   collection, addDoc, serverTimestamp,
   onSnapshot, query, where, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -141,6 +141,7 @@ const db=getFirestore(app);
 
 let currentUser=null;
 let walletAmount=0;
+let hasPending=false;
 
 /* AUTH CHECK */
 onAuthStateChanged(auth, async(user)=>{
@@ -151,22 +152,30 @@ onAuthStateChanged(auth, async(user)=>{
 
   currentUser=user;
 
-  const snap=await getDoc(doc(db,"users",user.uid));
+  const userRef=doc(db,"users",user.uid);
 
-  if(snap.exists()){
+  // 🔥 REALTIME WALLET UPDATE
+  onSnapshot(userRef,(snap)=>{
+    if(!snap.exists()) return;
     walletAmount=snap.data().walletBalance||0;
     document.getElementById("walletBalance").innerText=
       walletAmount.toFixed(2);
-  }
+  });
 
   loadHistory();
 });
 
-/* WITHDRAW REQUEST */
+/* WITHDRAW FUNCTION */
 window.withdraw=async function(){
 
+  const btn=document.querySelector("button");
   const status=document.getElementById("status");
   const amount=Number(document.getElementById("amount").value);
+
+  if(hasPending){
+    status.innerText="You already have a pending withdraw request";
+    return;
+  }
 
   if(!amount||amount<=0){
     status.innerText="Enter valid amount";
@@ -183,7 +192,9 @@ window.withdraw=async function(){
     return;
   }
 
-  status.innerText="Processing...";
+  btn.disabled=true;
+  btn.innerText="Processing...";
+  status.innerText="Submitting request...";
 
   try{
 
@@ -196,7 +207,7 @@ window.withdraw=async function(){
     });
 
     status.innerText=
-      "✅ Withdraw request submitted (Waiting for Admin Approval)";
+      "✅ Withdraw request submitted. Waiting for admin approval.";
 
     document.getElementById("amount").value="";
 
@@ -204,6 +215,8 @@ window.withdraw=async function(){
     status.innerText="Withdraw failed";
   }
 
+  btn.disabled=false;
+  btn.innerText="Request Withdraw";
 };
 
 /* LOAD HISTORY REALTIME */
@@ -218,17 +231,24 @@ function loadHistory(){
   onSnapshot(q,(snapshot)=>{
 
     let html="";
+    hasPending=false;
 
     snapshot.forEach(doc=>{
 
       const w=doc.data();
       let statusClass="pending";
       let message="";
+      let time="";
+
+      if(w.createdAt?.seconds){
+        const date=new Date(w.createdAt.seconds*1000);
+        time=date.toLocaleString();
+      }
 
       if(w.status==="approved"){
         statusClass="approved";
         message=`<div class="success-msg">
-          $${w.amount} received in your Binance wallet
+          ✅ $${w.amount} received in your Binance wallet
         </div>`;
       }
 
@@ -236,9 +256,15 @@ function loadHistory(){
         statusClass="rejected";
       }
 
+      if(w.status==="pending"){
+        hasPending=true;
+      }
+
       html+=`
       <div class="history-card">
+        <div><b>Withdraw ID:</b> ${doc.id}</div>
         <div><b>Amount:</b> $${w.amount}</div>
+        <div><b>Date:</b> ${time}</div>
         <div>
           <b>Status:</b>
           <span class="${statusClass}">
@@ -250,7 +276,8 @@ function loadHistory(){
       `;
     });
 
-    document.getElementById("history").innerHTML=html;
+    document.getElementById("history").innerHTML=
+      html || "<div>No withdraw history found</div>";
 
   });
 
