@@ -162,11 +162,20 @@ function copyWallet(){
 }
 
 function loadBalance(){
-  db.collection("users").doc(currentUser.uid).get()
-  .then(doc=>{
-    if(doc.exists)
-      document.getElementById("balance").innerText =
-        doc.data().balance || 0;
+
+  db.collection("users")
+  .doc(currentUser.uid)
+  .onSnapshot(doc=>{
+
+    if(!doc.exists) return;
+
+    const data = doc.data();
+
+    // 🔥 Total Deposit show karo
+    const totalDeposit = data.totalDeposit || 0;
+
+    document.getElementById("balance").innerText =
+      totalDeposit.toFixed(2);
   });
 }
 
