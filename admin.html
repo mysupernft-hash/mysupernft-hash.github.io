@@ -55,12 +55,18 @@ button{
   font-weight:bold;
 }
 
-.saveBtn{ background:#FFD700; }
-.deleteBtn{ background:#ff4444; color:#fff; }
+.saveBtn{
+  background:#FFD700;
+}
+
+.deleteBtn{
+  background:#ff4444;
+  color:#fff;
+}
 
 @media(max-width:768px){
-  input,select{ width:55px; }
   table{ font-size:9px; }
+  input,select{ width:55px; }
 }
 </style>
 </head>
@@ -85,7 +91,6 @@ placeholder="Search by Email or UID">
 <th>Withdraw</th>
 <th>Live</th>
 <th>Verified</th>
-<th>Role</th>
 <th>Ban</th>
 <th>Save</th>
 <th>Delete</th>
@@ -169,15 +174,6 @@ function renderUsers(users){
       </td>
 
       <td>
-        <select id="role_${u.id}">
-          <option value="user" ${u.role==="user"?"selected":""}>User</option>
-          <option value="vip" ${u.role==="vip"?"selected":""}>VIP</option>
-          <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
-          <option value="superadmin" ${u.role==="superadmin"?"selected":""}>Superadmin</option>
-        </select>
-      </td>
-
-      <td>
         <select id="ban_${u.id}">
           <option value="false" ${u.banned?"":"selected"}>No</option>
           <option value="true" ${u.banned?"selected":""}>Yes</option>
@@ -211,9 +207,8 @@ function saveUser(uid){
   const deposit  = Number(document.getElementById("deposit_"+uid).value)||0;
   const withdraw = Number(document.getElementById("withdraw_"+uid).value)||0;
   const live     = Number(document.getElementById("live_"+uid).value)||0;
-  const banned   = document.getElementById("ban_"+uid).value==="true";
   const verified = document.getElementById("verified_"+uid).value==="true";
-  const role     = document.getElementById("role_"+uid).value;
+  const banned   = document.getElementById("ban_"+uid).value==="true";
 
   const totalIncome = daily + referral + live;
 
@@ -227,9 +222,8 @@ function saveUser(uid){
     totalWithdraw: withdraw,
     liveEarnings: live,
     totalIncome: totalIncome,
-    banned: banned,
     verified: verified,
-    role: role
+    banned: banned
 
   }).then(()=>{
     alert("✅ User Updated Successfully");
@@ -241,11 +235,10 @@ function saveUser(uid){
 function deleteUser(uid){
 
   if(confirm("Delete this user permanently?")){
-
     db.collection("users").doc(uid).delete()
     .then(()=>alert("User Deleted"));
-
   }
+
 }
 
 /* SEARCH */
@@ -263,5 +256,6 @@ document.getElementById("search")
 
 });
 </script>
+
 </body>
 </html>
