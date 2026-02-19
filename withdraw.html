@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Withdraw | SuperNFT</title>
+<title>Ultra Withdraw | SuperNFT</title>
 
 <style>
 body{
@@ -44,7 +44,7 @@ input{
 button{
   width:100%;
   padding:12px;
-  margin-top:15px;
+  margin-top:12px;
   border:none;
   border-radius:8px;
   background:#FFD700;
@@ -54,6 +54,10 @@ button{
 }
 button:hover{
   background:#e6c200;
+}
+button.cancel{
+  background:#ff4444;
+  color:#fff;
 }
 .status{
   margin-top:12px;
@@ -66,6 +70,7 @@ button:hover{
   margin-top:10px;
 }
 .pending{color:orange}
+.processing{color:#00ccff}
 .approved{color:#00ff00}
 .rejected{color:red}
 .success-msg{
@@ -73,49 +78,71 @@ button:hover{
   color:#00ff00;
   font-size:13px;
 }
-.back{
-  display:block;
-  text-align:center;
-  margin-top:20px;
-  padding:10px;
-  background:#272727;
-  border-radius:8px;
-  text-decoration:none;
-  color:#FFD700;
+.reject-msg{
+  margin-top:8px;
+  color:red;
+  font-size:13px;
+}
+.modal{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal-box{
+  background:#1a1a1a;
+  padding:20px;
+  border-radius:12px;
+  width:90%;
+  max-width:350px;
 }
 </style>
 </head>
 
 <body>
 
-<header>💸 Withdraw</header>
+<header>💸 Ultra Withdraw</header>
 
 <div class="container">
 
-  <!-- WALLET BALANCE -->
-  <div class="card">
-    <div>Available Balance</div>
-    <div class="balance">$<span id="walletBalance">0.00</span></div>
+<div class="card">
+  <div>Available Balance</div>
+  <div class="balance">$<span id="walletBalance">0.00</span></div>
+</div>
+
+<div class="card">
+  <div>Withdraw Amount</div>
+  <input type="number" id="amount" placeholder="Enter amount">
+
+  <button onclick="openSummary()">Withdraw</button>
+  <div class="status" id="status"></div>
+</div>
+
+<div class="card">
+  <h3>Withdraw History</h3>
+  <div id="history"></div>
+</div>
+
+<a href="dashboard.html" style="color:#FFD700;">⬅ Back</a>
+
+</div>
+
+<!-- SUMMARY MODAL -->
+<div class="modal" id="summaryModal">
+  <div class="modal-box">
+    <h3>Confirm Withdraw</h3>
+    <div id="summaryText"></div>
+
+    <input type="password" id="pinInput" placeholder="Enter Withdraw PIN">
+
+    <button onclick="confirmWithdraw()">Confirm</button>
+    <button onclick="closeModal()" class="cancel">Cancel</button>
   </div>
-
-  <!-- WITHDRAW FORM -->
-  <div class="card">
-    <div>Withdraw Amount</div>
-    <input type="number" id="amount" placeholder="Enter amount">
-
-    <button onclick="withdraw()">Request Withdraw</button>
-
-    <div class="status" id="status"></div>
-  </div>
-
-  <!-- WITHDRAW HISTORY -->
-  <div class="card">
-    <h3>Withdraw History</h3>
-    <div id="history"></div>
-  </div>
-
-  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
-
 </div>
 
 <script type="module">
@@ -126,11 +153,11 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, updateDoc,
   collection, addDoc, serverTimestamp,
-  onSnapshot, query, where, orderBy
+  onSnapshot, query, where, orderBy, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  apiKey:"YOUR_API_KEY",
   authDomain:"supernft-5b952.firebaseapp.com",
   projectId:"supernft-5b952"
 };
@@ -142,11 +169,12 @@ const db=getFirestore(app);
 let currentUser=null;
 let walletAmount=0;
 let hasPending=false;
+let withdrawAmount=0;
 
-/* AUTH CHECK */
+/* AUTH */
 onAuthStateChanged(auth, async(user)=>{
   if(!user){
-    window.location.replace("login.html");
+    location.href="login.html";
     return;
   }
 
@@ -154,7 +182,6 @@ onAuthStateChanged(auth, async(user)=>{
 
   const userRef=doc(db,"users",user.uid);
 
-  // 🔥 REALTIME WALLET UPDATE
   onSnapshot(userRef,(snap)=>{
     if(!snap.exists()) return;
     walletAmount=snap.data().walletBalance||0;
@@ -165,25 +192,19 @@ onAuthStateChanged(auth, async(user)=>{
   loadHistory();
 });
 
-/* WITHDRAW FUNCTION */
-window.withdraw=async function(){
+/* OPEN SUMMARY */
+window.openSummary=function(){
 
-  const btn=document.querySelector("button");
-  const status=document.getElementById("status");
   const amount=Number(document.getElementById("amount").value);
+  const status=document.getElementById("status");
 
   if(hasPending){
-    status.innerText="You already have a pending withdraw request";
+    status.innerText="You already have pending withdraw.";
     return;
   }
 
-  if(!amount||amount<=0){
-    status.innerText="Enter valid amount";
-    return;
-  }
-
-  if(amount<10){
-    status.innerText="Minimum withdraw is $10";
+  if(!amount||amount<10){
+    status.innerText="Minimum withdraw $10";
     return;
   }
 
@@ -192,34 +213,50 @@ window.withdraw=async function(){
     return;
   }
 
-  btn.disabled=true;
-  btn.innerText="Processing...";
-  status.innerText="Submitting request...";
+  withdrawAmount=amount;
 
-  try{
+  document.getElementById("summaryText").innerHTML=`
+    Amount: $${amount}<br>
+    Fee: $0<br>
+    You Receive: $${amount}
+  `;
 
-    await addDoc(collection(db,"withdrawRequests"),{
-      uid:currentUser.uid,
-      email:currentUser.email,
-      amount:amount,
-      status:"pending",
-      createdAt:serverTimestamp()
-    });
-
-    status.innerText=
-      "✅ Withdraw request submitted. Waiting for admin approval.";
-
-    document.getElementById("amount").value="";
-
-  }catch(err){
-    status.innerText="Withdraw failed";
-  }
-
-  btn.disabled=false;
-  btn.innerText="Request Withdraw";
+  document.getElementById("summaryModal").style.display="flex";
 };
 
-/* LOAD HISTORY REALTIME */
+/* CLOSE MODAL */
+window.closeModal=function(){
+  document.getElementById("summaryModal").style.display="none";
+};
+
+/* CONFIRM WITHDRAW */
+window.confirmWithdraw=async function(){
+
+  const pin=document.getElementById("pinInput").value;
+
+  const userRef=doc(db,"users",currentUser.uid);
+  const snap=await getDoc(userRef);
+  const data=snap.data();
+
+  if(data.settings?.withdrawPIN !== pin){
+    alert("Wrong PIN");
+    return;
+  }
+
+  await addDoc(collection(db,"withdrawRequests"),{
+    uid:currentUser.uid,
+    email:currentUser.email,
+    amount:withdrawAmount,
+    status:"pending",
+    createdAt:serverTimestamp()
+  });
+
+  document.getElementById("summaryModal").style.display="none";
+  document.getElementById("amount").value="";
+  document.getElementById("pinInput").value="";
+};
+
+/* LOAD HISTORY */
 function loadHistory(){
 
   const q=query(
@@ -236,52 +273,53 @@ function loadHistory(){
     snapshot.forEach(doc=>{
 
       const w=doc.data();
-      let statusClass="pending";
+      let statusClass=w.status;
       let message="";
-      let time="";
-
-      if(w.createdAt?.seconds){
-        const date=new Date(w.createdAt.seconds*1000);
-        time=date.toLocaleString();
-      }
+      let cancelBtn="";
 
       if(w.status==="approved"){
-        statusClass="approved";
         message=`<div class="success-msg">
-          ✅ $${w.amount} received in your Binance wallet
+        $${w.amount} received in your Binance wallet
         </div>`;
       }
 
       if(w.status==="rejected"){
-        statusClass="rejected";
+        message=`<div class="reject-msg">
+        ${w.reason||"Rejected by admin"}
+        </div>`;
       }
 
       if(w.status==="pending"){
         hasPending=true;
+        cancelBtn=`<button class="cancel"
+        onclick="cancelWithdraw('${doc.id}')">
+        Cancel</button>`;
       }
 
       html+=`
       <div class="history-card">
-        <div><b>Withdraw ID:</b> ${doc.id}</div>
-        <div><b>Amount:</b> $${w.amount}</div>
-        <div><b>Date:</b> ${time}</div>
-        <div>
-          <b>Status:</b>
+        <div>Amount: $${w.amount}</div>
+        <div>Status:
           <span class="${statusClass}">
-            ${w.status}
+          ${w.status}
           </span>
         </div>
         ${message}
+        ${cancelBtn}
       </div>
       `;
     });
 
     document.getElementById("history").innerHTML=
-      html || "<div>No withdraw history found</div>";
+      html||"No withdraw history";
 
   });
-
 }
+
+/* CANCEL PENDING */
+window.cancelWithdraw=async function(id){
+  await deleteDoc(doc(db,"withdrawRequests",id));
+};
 
 </script>
 
