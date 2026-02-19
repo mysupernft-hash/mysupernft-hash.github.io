@@ -137,10 +137,15 @@ function loadUsers(){
 
 /* RENDER TABLE */
 function renderUsers(users){
+
   let html="";
+
   users.forEach(u=>{
+
     html+=`
     <tr>
+
+      <!-- EMAIL + UID -->
       <td>
         <div style="font-size:13px;font-weight:bold;">
           ${u.email || ""}
@@ -150,23 +155,56 @@ function renderUsers(users){
         </div>
       </td>
 
-      <td><input id="w_${u.id}" value="${u.walletBalance||0}"></td>
-      <td><input id="d_${u.id}" value="${u.dailyIncome||0}"></td>
-      <td><input id="r_${u.id}" value="${u.referralEarnings||0}"></td>
-      <td><input id="l_${u.id}" value="${u.level||0}"></td>
+      <!-- WALLET -->
+      <td>
+        <input type="number"
+        id="w_${u.id}"
+        value="${u.walletBalance || 0}">
+      </td>
 
+      <!-- DAILY INCOME -->
+      <td>
+        <input type="number"
+        id="d_${u.id}"
+        value="${u.dailyIncome || 0}">
+      </td>
+
+      <!-- REFERRAL -->
+      <td>
+        <input type="number"
+        id="r_${u.id}"
+        value="${u.referralEarnings || 0}">
+      </td>
+
+      <!-- VIP LEVEL -->
+      <td>
+        <input type="number"
+        id="l_${u.id}"
+        value="${u.level || 0}">
+      </td>
+
+      <!-- BAN -->
       <td>
         <select id="ban_${u.id}">
-          <option value="false" ${u.banned?"":"selected"}>No</option>
-          <option value="true" ${u.banned?"selected":""}>Yes</option>
+          <option value="false" ${u.banned ? "" : "selected"}>No</option>
+          <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
         </select>
       </td>
 
-      <td><button onclick="saveUser('${u.id}')">Save</button></td>
-    </tr>`;
+      <!-- SAVE BUTTON -->
+      <td>
+        <button onclick="saveUser('${u.id}')">
+          Save
+        </button>
+      </td>
+
+    </tr>
+    `;
+
   });
 
-  document.getElementById("userTable").innerHTML=html;
+  document.getElementById("userTable").innerHTML = html;
+}
 }
 
       <td>
