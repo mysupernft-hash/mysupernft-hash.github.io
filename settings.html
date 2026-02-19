@@ -107,8 +107,8 @@ button{
   </div>
 
   <div class="row">
-    <span>Show VIP Badge</span>
-    <input type="checkbox" id="vipBadge" class="toggle">
+    <span>Auto Compound</span>
+    <input type="checkbox" id="autoCompound" class="toggle">
   </div>
 </div>
 
@@ -122,11 +122,6 @@ button{
   </div>
 
   <div class="row">
-    <span>Auto Compound</span>
-    <input type="checkbox" id="autoCompound" class="toggle">
-  </div>
-
-  <div class="row">
     <span>Change Withdraw PIN</span>
     <input type="password" id="pin" placeholder="New PIN">
   </div>
@@ -134,24 +129,16 @@ button{
   <button class="primary" onclick="changePassword()">Change Password</button>
 </div>
 
-<!-- NOTIFICATIONS -->
-<div class="card">
-  <div class="section-title">🔔 Notifications</div>
+<!-- ADMIN ACCESS (Hidden by Default) -->
+<div class="card" id="adminBox" style="display:none;">
+  <div class="section-title">🛡 Admin Access</div>
 
   <div class="row">
-    <span>Deposit Alert</span>
-    <input type="checkbox" id="depositAlert" class="toggle">
+    <span>Enter Admin PIN</span>
+    <input type="password" id="adminPin" placeholder="Enter PIN">
   </div>
 
-  <div class="row">
-    <span>Withdraw Alert</span>
-    <input type="checkbox" id="withdrawAlert" class="toggle">
-  </div>
-
-  <div class="row">
-    <span>Team Bonus Alert</span>
-    <input type="checkbox" id="teamAlert" class="toggle">
-  </div>
+  <button class="primary" onclick="adminAccess()">Open Admin Panel</button>
 </div>
 
 <!-- SAVE -->
@@ -180,6 +167,13 @@ const db=getFirestore(app);
 
 let userRef;
 
+/* 🔥 Hidden Admin Reveal (CTRL + 9) */
+document.addEventListener("keydown", function(e){
+  if(e.ctrlKey && e.key==="9"){
+    document.getElementById("adminBox").style.display="block";
+  }
+});
+
 onAuthStateChanged(auth, async(user)=>{
   if(!user){
     location.href="login.html";
@@ -197,26 +191,19 @@ onAuthStateChanged(auth, async(user)=>{
 
     document.getElementById("theme").value=s.theme || "dark";
     document.getElementById("hideBalance").checked=s.hideBalance || false;
-    document.getElementById("vipBadge").checked=s.vipBadge || true;
-    document.getElementById("withdrawProtection").checked=s.withdrawProtection || false;
     document.getElementById("autoCompound").checked=s.autoCompound || false;
-    document.getElementById("depositAlert").checked=s.depositAlert || true;
-    document.getElementById("withdrawAlert").checked=s.withdrawAlert || true;
-    document.getElementById("teamAlert").checked=s.teamAlert || true;
+    document.getElementById("withdrawProtection").checked=s.withdrawProtection || false;
   }
 });
 
+/* 💾 SAVE SETTINGS */
 window.saveSettings=async function(){
 
   const settings={
     theme:document.getElementById("theme").value,
     hideBalance:document.getElementById("hideBalance").checked,
-    vipBadge:document.getElementById("vipBadge").checked,
-    withdrawProtection:document.getElementById("withdrawProtection").checked,
     autoCompound:document.getElementById("autoCompound").checked,
-    depositAlert:document.getElementById("depositAlert").checked,
-    withdrawAlert:document.getElementById("withdrawAlert").checked,
-    teamAlert:document.getElementById("teamAlert").checked
+    withdrawProtection:document.getElementById("withdrawProtection").checked
   };
 
   const pin=document.getElementById("pin").value;
@@ -225,10 +212,10 @@ window.saveSettings=async function(){
   }
 
   await updateDoc(userRef,{settings});
-
   alert("✅ Settings Saved Successfully!");
-}
+};
 
+/* 🔐 CHANGE PASSWORD */
 window.changePassword=async function(){
   const user=auth.currentUser;
   const newPass=prompt("Enter new password:");
@@ -236,11 +223,35 @@ window.changePassword=async function(){
     await updatePassword(user,newPass);
     alert("Password Updated!");
   }
-}
+};
 
+/* 🛡 ADMIN ACCESS */
+window.adminAccess = async function(){
+
+  const pin=document.getElementById("adminPin").value;
+
+  const SECRET_PIN="786786";  // 🔥 Change this to your secret PIN
+
+  if(pin!==SECRET_PIN){
+    alert("❌ Invalid Admin PIN");
+    return;
+  }
+
+  const user=auth.currentUser;
+  const snap=await getDoc(doc(db,"users",user.uid));
+
+  if(!snap.exists() || snap.data().isAdmin!==true){
+    alert("❌ You are not authorized as admin");
+    return;
+  }
+
+  window.location.href="admin.html";
+};
+
+/* 🚪 LOGOUT */
 window.logout=function(){
   signOut(auth).then(()=>location.href="login.html");
-}
+};
 
 </script>
 
