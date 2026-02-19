@@ -2,69 +2,74 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Direct Admin Panel</title>
+<title>SuperNFT Direct Admin Login</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <style>
 body{
+  margin:0;
+  font-family:Arial;
   background:#0d0d0d;
   color:#FFD700;
-  font-family:Arial;
-  padding:20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-h2{
+
+.card{
+  background:#1a1a1a;
+  padding:30px;
+  border-radius:12px;
+  width:320px;
   text-align:center;
 }
-table{
+
+input{
   width:100%;
-  border-collapse:collapse;
-  margin-top:20px;
+  padding:10px;
+  margin:10px 0;
+  border:none;
+  border-radius:6px;
 }
-th,td{
-  border:1px solid #333;
-  padding:8px;
-  text-align:center;
-}
-th{
-  background:#111;
-}
-input,select{
-  width:80px;
-  padding:4px;
-}
+
 button{
-  padding:6px 10px;
+  width:100%;
+  padding:12px;
   background:#FFD700;
   border:none;
-  cursor:pointer;
+  border-radius:8px;
   font-weight:bold;
+  cursor:pointer;
 }
+
 button:hover{
   background:#e6c200;
+}
+
+.error{
+  color:red;
+  margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🔥 SuperNFT Admin Dashboard</h2>
+<div class="card">
+  <h2>🔐 Direct Admin Login</h2>
 
-<table>
-<thead>
-<tr>
-<th>Email</th>
-<th>Wallet</th>
-<th>Daily</th>
-<th>Referral</th>
-<th>Level</th>
-<th>Banned</th>
-<th>Save</th>
-</tr>
-</thead>
-<tbody id="users"></tbody>
-</table>
+  <input type="email" id="email" placeholder="Admin Email">
+  <input type="password" id="password" placeholder="Password">
+  <input type="text" id="uid" placeholder="Enter UID">
+  <input type="password" id="pin" placeholder="Enter Admin PIN">
+
+  <button onclick="adminLogin()">Login</button>
+
+  <div id="error" class="error"></div>
+</div>
 
 <script>
 
@@ -74,77 +79,44 @@ firebase.initializeApp({
   projectId: "supernft-5b952"
 });
 
-const db = firebase.firestore();
+const auth = firebase.auth();
 
-/* 🔥 DIRECT LOAD USERS – NO AUTH CHECK */
-loadUsers();
+/* 🔐 HARD ADMIN CREDENTIALS */
+const ADMIN_UID = "MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1";
+const ADMIN_PIN = "1449@MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1@shiva";
 
-function loadUsers(){
+function adminLogin(){
 
-  db.collection("users").get().then(snapshot => {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const uidInput = document.getElementById("uid").value;
+  const pinInput = document.getElementById("pin").value;
 
-    let html="";
+  /* 🔐 UID + PIN Check */
+  if(uidInput !== ADMIN_UID){
+    document.getElementById("error").innerText = "❌ Invalid UID";
+    return;
+  }
 
-    snapshot.forEach(doc => {
+  if(pinInput !== ADMIN_PIN){
+    document.getElementById("error").innerText = "❌ Invalid PIN";
+    return;
+  }
 
-      const u = doc.data();
+  /* 🔥 Firebase Login */
+  auth.signInWithEmailAndPassword(email,password)
+  .then((cred)=>{
 
-      html += `
-      <tr>
-        <td>${u.email || ""}</td>
+    if(cred.user.uid === ADMIN_UID){
+      window.location.href = "admin.html";
+    } else {
+      document.getElementById("error").innerText = "❌ Not Admin Account";
+      auth.signOut();
+    }
 
-        <td>
-          <input id="w_${doc.id}" value="${u.walletBalance || 0}">
-        </td>
-
-        <td>
-          <input id="d_${doc.id}" value="${u.dailyIncome || 0}">
-        </td>
-
-        <td>
-          <input id="r_${doc.id}" value="${u.referralEarnings || 0}">
-        </td>
-
-        <td>
-          <input id="l_${doc.id}" value="${u.level || 0}">
-        </td>
-
-        <td>
-          <select id="ban_${doc.id}">
-            <option value="false" ${u.banned ? "" : "selected"}>No</option>
-            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
-          </select>
-        </td>
-
-        <td>
-          <button onclick="saveUser('${doc.id}')">Save</button>
-        </td>
-      </tr>
-      `;
-    });
-
-    document.getElementById("users").innerHTML = html;
-
-  }).catch(error=>{
-    alert("Firestore Permission Error: " + error.message);
-  });
-}
-
-/* 💾 SAVE USER */
-function saveUser(uid){
-
-  db.collection("users").doc(uid).update({
-
-    walletBalance: Number(document.getElementById("w_"+uid).value),
-    dailyIncome: Number(document.getElementById("d_"+uid).value),
-    referralEarnings: Number(document.getElementById("r_"+uid).value),
-    level: Number(document.getElementById("l_"+uid).value),
-    banned: document.getElementById("ban_"+uid).value === "true"
-
-  }).then(()=>{
-    alert("✅ User Updated Successfully");
-  }).catch(error=>{
-    alert("Update Failed: " + error.message);
+  })
+  .catch(error=>{
+    document.getElementById("error").innerText = error.message;
   });
 
 }
