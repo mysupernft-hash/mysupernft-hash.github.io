@@ -20,12 +20,11 @@ body{
 
 h2{
   text-align:center;
-  margin-bottom:10px;
 }
 
 .search{
   width:100%;
-  padding:10px;
+  padding:8px;
   margin-bottom:10px;
   border:none;
   border-radius:6px;
@@ -49,7 +48,7 @@ input{
 }
 
 button{
-  padding:4px 6px;
+  padding:5px 7px;
   font-size:10px;
   border:none;
   cursor:pointer;
@@ -66,12 +65,8 @@ button{
 }
 
 @media(max-width:768px){
-  table{
-    font-size:9px;
-  }
-  input{
-    width:55px;
-  }
+  input{ width:55px; }
+  table{ font-size:9px; }
 }
 </style>
 </head>
@@ -142,7 +137,7 @@ function loadUsers(){
   });
 }
 
-/* RENDER USERS */
+/* RENDER TABLE */
 function renderUsers(users){
 
   let html="";
@@ -161,13 +156,13 @@ function renderUsers(users){
         </div>
       </td>
 
-      <td><input id="w_${u.id}" value="${u.walletBalance||0}"></td>
-      <td><input id="d_${u.id}" value="${u.dailyIncome||0}"></td>
-      <td><input id="r_${u.id}" value="${u.referralEarnings||0}"></td>
-      <td><input id="l_${u.id}" value="${u.level||1}"></td>
+      <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
+      <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
+      <td><input id="ref_${u.id}" value="${u.referralEarnings||0}"></td>
+      <td><input id="level_${u.id}" value="${u.level||1}"></td>
 
-      <td><input id="dep_${u.id}" value="${u.totalDeposit||0}"></td>
-      <td><input id="with_${u.id}" value="${u.totalWithdraw||0}"></td>
+      <td><input id="deposit_${u.id}" value="${u.totalDeposit||0}"></td>
+      <td><input id="withdraw_${u.id}" value="${u.totalWithdraw||0}"></td>
       <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
 
       <td>
@@ -194,19 +189,19 @@ function renderUsers(users){
   document.getElementById("users").innerHTML=html;
 }
 
-/* SAVE USER */
+/* SAVE USER FULL UPDATE */
 function saveUser(uid){
 
-  const wallet   = Number(document.getElementById("w_"+uid).value)||0;
-  const daily    = Number(document.getElementById("d_"+uid).value)||0;
-  const referral = Number(document.getElementById("r_"+uid).value)||0;
-  const level    = Number(document.getElementById("l_"+uid).value)||0;
-  const deposit  = Number(document.getElementById("dep_"+uid).value)||0;
-  const withdraw = Number(document.getElementById("with_"+uid).value)||0;
+  const wallet   = Number(document.getElementById("wallet_"+uid).value)||0;
+  const daily    = Number(document.getElementById("daily_"+uid).value)||0;
+  const referral = Number(document.getElementById("ref_"+uid).value)||0;
+  const level    = Number(document.getElementById("level_"+uid).value)||0;
+  const deposit  = Number(document.getElementById("deposit_"+uid).value)||0;
+  const withdraw = Number(document.getElementById("withdraw_"+uid).value)||0;
   const live     = Number(document.getElementById("live_"+uid).value)||0;
   const banned   = document.getElementById("ban_"+uid).value==="true";
 
-  const totalIncome = referral + daily + live;
+  const totalIncome = daily + referral + live;
 
   db.collection("users").doc(uid).update({
 
@@ -221,7 +216,7 @@ function saveUser(uid){
     banned: banned
 
   }).then(()=>{
-    alert("✅ User Updated");
+    alert("✅ User Updated Successfully");
   });
 }
 
