@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin Dashboard</title>
+<title>SuperNFT Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -42,8 +42,8 @@ th,td{
   text-align:center;
 }
 
-input{
-  width:70px;
+input,select{
+  width:65px;
   font-size:11px;
 }
 
@@ -55,17 +55,11 @@ button{
   font-weight:bold;
 }
 
-.saveBtn{
-  background:#FFD700;
-}
-
-.deleteBtn{
-  background:#ff4444;
-  color:#fff;
-}
+.saveBtn{ background:#FFD700; }
+.deleteBtn{ background:#ff4444; color:#fff; }
 
 @media(max-width:768px){
-  input{ width:55px; }
+  input,select{ width:55px; }
   table{ font-size:9px; }
 }
 </style>
@@ -73,7 +67,7 @@ button{
 
 <body>
 
-<h2>🔥 SuperNFT Admin Panel</h2>
+<h2>🔥 SuperNFT Admin Dashboard</h2>
 
 <input type="text" id="search" class="search"
 placeholder="Search by Email or UID">
@@ -90,6 +84,8 @@ placeholder="Search by Email or UID">
 <th>Deposit</th>
 <th>Withdraw</th>
 <th>Live</th>
+<th>Verified</th>
+<th>Role</th>
 <th>Ban</th>
 <th>Save</th>
 <th>Delete</th>
@@ -166,6 +162,22 @@ function renderUsers(users){
       <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
 
       <td>
+        <select id="verified_${u.id}">
+          <option value="false" ${u.verified?"":"selected"}>No</option>
+          <option value="true" ${u.verified?"selected":""}>Yes</option>
+        </select>
+      </td>
+
+      <td>
+        <select id="role_${u.id}">
+          <option value="user" ${u.role==="user"?"selected":""}>User</option>
+          <option value="vip" ${u.role==="vip"?"selected":""}>VIP</option>
+          <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
+          <option value="superadmin" ${u.role==="superadmin"?"selected":""}>Superadmin</option>
+        </select>
+      </td>
+
+      <td>
         <select id="ban_${u.id}">
           <option value="false" ${u.banned?"":"selected"}>No</option>
           <option value="true" ${u.banned?"selected":""}>Yes</option>
@@ -189,7 +201,7 @@ function renderUsers(users){
   document.getElementById("users").innerHTML=html;
 }
 
-/* SAVE USER FULL UPDATE */
+/* SAVE USER */
 function saveUser(uid){
 
   const wallet   = Number(document.getElementById("wallet_"+uid).value)||0;
@@ -200,6 +212,8 @@ function saveUser(uid){
   const withdraw = Number(document.getElementById("withdraw_"+uid).value)||0;
   const live     = Number(document.getElementById("live_"+uid).value)||0;
   const banned   = document.getElementById("ban_"+uid).value==="true";
+  const verified = document.getElementById("verified_"+uid).value==="true";
+  const role     = document.getElementById("role_"+uid).value;
 
   const totalIncome = daily + referral + live;
 
@@ -213,11 +227,14 @@ function saveUser(uid){
     totalWithdraw: withdraw,
     liveEarnings: live,
     totalIncome: totalIncome,
-    banned: banned
+    banned: banned,
+    verified: verified,
+    role: role
 
   }).then(()=>{
     alert("✅ User Updated Successfully");
   });
+
 }
 
 /* DELETE USER */
@@ -246,6 +263,5 @@ document.getElementById("search")
 
 });
 </script>
-
 </body>
 </html>
