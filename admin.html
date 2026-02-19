@@ -2,131 +2,12 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>SuperNFT Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Secure Admin</title>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { 
-  getAuth, 
-  onAuthStateChanged, 
-  signOut 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-  getFirestore, 
-  collection, 
-  getDocs, 
-  doc, 
-  updateDoc, 
-  getDoc 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-
-let adminUID = null;
-
-onAuthStateChanged(auth, async(user)=>{
-
-  if(!user){
-    window.location.href = "admin-login.html";
-    return;
-  }
-
-  const snap = await getDoc(doc(db,"users",user.uid));
-
-  if(!snap.exists()){
-    denyAccess();
-    return;
-  }
-
-  const data = snap.data();
-
-  if(data.role !== "superadmin"){
-    denyAccess();
-    return;
-  }
-
-  adminUID = user.uid;
-  loadUsers();
-});
-
-function denyAccess(){
-  document.body.innerHTML = `
-    <div style="text-align:center;margin-top:100px;color:red;font-size:18px">
-      ❌ Access Denied (Not Superadmin)
-    </div>
-  `;
-}
-
-async function loadUsers(){
-
-  const snapshot = await getDocs(collection(db,"users"));
-
-  let html = "";
-
-  snapshot.forEach(docSnap=>{
-
-    const u = docSnap.data();
-
-    html += `
-    <div class="card">
-      <h3>${u.email || "No Email"}</h3>
-
-      <label>Wallet</label>
-      <input id="w_${docSnap.id}" value="${u.walletBalance||0}">
-
-      <label>Daily</label>
-      <input id="d_${docSnap.id}" value="${u.dailyIncome||0}">
-
-      <label>Referral</label>
-      <input id="r_${docSnap.id}" value="${u.referralEarnings||0}">
-
-      <label>Level</label>
-      <input id="l_${docSnap.id}" value="${u.level||0}">
-
-      <label>Banned</label>
-      <select id="b_${docSnap.id}">
-        <option value="false" ${u.banned ? "" : "selected"}>No</option>
-        <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
-      </select>
-
-      <button onclick="saveUser('${docSnap.id}')">Save</button>
-    </div>
-    `;
-  });
-
-  document.getElementById("users").innerHTML = html;
-}
-
-window.saveUser = async function(uid){
-
-  await updateDoc(doc(db,"users",uid),{
-    walletBalance: Number(document.getElementById("w_"+uid).value),
-    dailyIncome: Number(document.getElementById("d_"+uid).value),
-    referralEarnings: Number(document.getElementById("r_"+uid).value),
-    level: Number(document.getElementById("l_"+uid).value),
-    banned: document.getElementById("b_"+uid).value === "true"
-  });
-
-  alert("✅ Updated");
-}
-
-window.logout = function(){
-  signOut(auth).then(()=>{
-    window.location.href = "admin-login.html";
-  });
-}
-
-</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body{
@@ -135,6 +16,7 @@ body{
   color:#FFD700;
   font-family:Arial;
 }
+
 header{
   background:#1a1a1a;
   padding:15px;
@@ -142,47 +24,170 @@ header{
   font-size:20px;
   font-weight:bold;
 }
+
 .container{
-  padding:15px;
+  padding:10px;
 }
-.card{
+
+.user-card{
   background:#1a1a1a;
-  padding:15px;
+  padding:12px;
   border-radius:10px;
-  margin-bottom:15px;
+  margin-bottom:12px;
 }
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+  font-size:14px;
+}
+
 input,select{
   width:100%;
   padding:6px;
-  margin-bottom:8px;
+  margin-top:4px;
   border-radius:6px;
   border:none;
 }
+
 button{
   width:100%;
   padding:8px;
-  background:#FFD700;
+  margin-top:6px;
   border:none;
   border-radius:6px;
   font-weight:bold;
   cursor:pointer;
 }
-.logout{
-  margin:10px;
+
+.save-btn{
+  background:#FFD700;
+  color:#000;
+}
+
+.logout-btn{
+  background:#272727;
+  color:#FFD700;
+  margin-bottom:10px;
 }
 </style>
-
 </head>
+
 <body>
 
-<header>
-  🔥 SuperNFT Secure Admin
-  <button class="logout" onclick="logout()">Logout</button>
-</header>
+<header>🔥 SuperNFT Admin Panel</header>
 
 <div class="container">
-  <div id="users">Loading...</div>
+
+<button class="logout-btn" onclick="logout()">Logout</button>
+
+<div id="usersContainer"></div>
+
 </div>
+
+<script>
+
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+});
+
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+auth.onAuthStateChanged(user => {
+
+  if(!user){
+    window.location.href="admin-login.html";
+    return;
+  }
+
+  loadUsers();
+});
+
+function loadUsers(){
+
+  db.collection("users").get().then(snapshot => {
+
+    let html = "";
+
+    snapshot.forEach(doc => {
+
+      const u = doc.data();
+
+      html += `
+      <div class="user-card">
+
+        <div class="row">
+          <strong>Email:</strong> ${u.email || ""}
+        </div>
+
+        <div>
+          Wallet
+          <input id="wallet_${doc.id}" value="${u.walletBalance || 0}">
+        </div>
+
+        <div>
+          Daily Income
+          <input id="daily_${doc.id}" value="${u.dailyIncome || 0}">
+        </div>
+
+        <div>
+          Referral Earnings
+          <input id="ref_${doc.id}" value="${u.referralEarnings || 0}">
+        </div>
+
+        <div>
+          Level
+          <input id="level_${doc.id}" value="${u.level || 0}">
+        </div>
+
+        <div>
+          Banned
+          <select id="ban_${doc.id}">
+            <option value="false" ${u.banned ? "" : "selected"}>No</option>
+            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
+          </select>
+        </div>
+
+        <button class="save-btn" onclick="saveUser('${doc.id}')">
+          Save Changes
+        </button>
+
+      </div>
+      `;
+
+    });
+
+    document.getElementById("usersContainer").innerHTML = html;
+
+  });
+}
+
+function saveUser(uid){
+
+  db.collection("users").doc(uid).update({
+
+    walletBalance: Number(document.getElementById("wallet_"+uid).value),
+    dailyIncome: Number(document.getElementById("daily_"+uid).value),
+    referralEarnings: Number(document.getElementById("ref_"+uid).value),
+    level: Number(document.getElementById("level_"+uid).value),
+    banned: document.getElementById("ban_"+uid).value === "true"
+
+  }).then(()=>{
+    alert("✅ User Updated Successfully");
+  });
+}
+
+function logout(){
+  auth.signOut().then(()=>{
+    window.location.href="admin-login.html";
+  });
+}
+
+</script>
 
 </body>
 </html>
