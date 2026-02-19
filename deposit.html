@@ -3,289 +3,203 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deposit | SuperNFT</title>
+<title>Deposit Funds | SuperNFT</title>
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background:#0f0f0f;
+  background:#0d0d0d;
   color:#FFD700;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
 }
 
 header{
-  background:#1a1a1a;
+  background:#111;
   padding:15px;
   text-align:center;
   font-size:20px;
   font-weight:bold;
 }
 
-.container{
+.main{
+  flex:1;
   padding:20px;
+  text-align:center;
 }
 
 .card{
   background:#1a1a1a;
   padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
+  border-radius:10px;
+  margin-bottom:20px;
 }
 
-.balance{
-  font-size:24px;
-  font-weight:bold;
+.qr-img{
+  width:220px;
+  margin:10px auto;
+  display:block;
 }
 
-input, select{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#272727;
-  color:#FFD700;
-  margin-top:10px;
+.wallet{
+  background:#000;
+  padding:10px;
+  border-radius:6px;
+  word-break:break-all;
+  margin:10px 0;
 }
 
 button{
-  width:100%;
-  padding:12px;
-  margin-top:15px;
+  padding:10px 15px;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
   background:#FFD700;
   color:#000;
   font-weight:bold;
   cursor:pointer;
 }
 
-button:hover{
-  background:#e6c200;
-}
+button:hover{background:#e6c200;}
 
-.status{
-  margin-top:10px;
-  font-size:14px;
-}
-
-.history-card{
-  background:#111;
+input{
+  width:100%;
   padding:10px;
-  border-radius:10px;
-  margin-top:10px;
-  font-size:13px;
+  border-radius:6px;
+  border:none;
+  margin-top:8px;
 }
 
-.pending{color:orange}
-.approved{color:#00ff00}
-.rejected{color:red}
+footer{
+  display:flex;
+  justify-content:space-around;
+  background:#1a1a1a;
+  padding:12px 0;
+  flex-wrap:wrap;
+}
 
-.back{
-  display:block;
-  text-align:center;
-  margin-top:20px;
-  padding:10px;
-  background:#272727;
-  border-radius:8px;
-  text-decoration:none;
-  color:#FFD700;
+footer div{
+  cursor:pointer;
+}
+
+footer div:hover{
+  color:#fff;
 }
 </style>
-</head>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+</head>
 <body>
 
-<header>💰 Deposit Funds</header>
+<header>Deposit Funds</header>
 
-<div class="container">
+<div class="main">
 
-<!-- WALLET BALANCE -->
 <div class="card">
-  Available Balance
-  <div class="balance">$<span id="walletBalance">0.00</span></div>
+<h3>Send Payment to Binance Wallet</h3>
+
+<img src="images/IMG_0757.jpeg" class="qr-img">
+
+<div class="wallet" id="wallet">
+0xaf984e5d8be77dda62cd0cd89107d1a3b1b1038a
 </div>
 
-<!-- DEPOSIT FORM -->
+<button onclick="copyWallet()">Copy Wallet Address</button>
+</div>
+
 <div class="card">
-  <div>Deposit Amount</div>
-  <input type="number" id="amount" placeholder="Enter amount">
+<h3>Submit Deposit Request</h3>
 
-  <div>Transaction ID (TXID)</div>
-  <input type="text" id="txid" placeholder="Enter blockchain txid">
+<input type="number" id="depositAmount" placeholder="Enter amount ($)">
+<input type="text" id="txid" placeholder="Transaction ID / Hash">
 
-  <button onclick="makeDeposit()">Submit Deposit</button>
+<button onclick="makeDeposit()">Submit Deposit</button>
 
-  <div class="status" id="status"></div>
+<h3>Your Balance: $<span id="balance">0</span></h3>
 </div>
-
-<!-- HISTORY -->
-<div class="card">
-  <h3>Deposit History</h3>
-  <div id="history">Loading...</div>
-</div>
-
-<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 </div>
 
-<script type="module">
+<footer>
+<div onclick="location.href='dashboard.html'">Investments</div>
+<div onclick="location.href='wallet.html'">Wallet</div>
+<div onclick="location.href='withdraw.html'">Withdraw</div>
+<div onclick="location.href='live-earnings.html'">Earnings</div>
+<div onclick="location.href='my-account.html'">Account</div>
+</footer>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, updateDoc,
-  collection, addDoc, serverTimestamp,
-  query, where, orderBy, onSnapshot, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952",
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+firebase.initializeApp(firebaseConfig);
 
-let currentUser=null;
-let walletAmount=0;
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-/* AUTH + REALTIME WALLET */
-onAuthStateChanged(auth,(user)=>{
+let currentUser;
 
-  if(!user){
-    window.location.replace("login.html");
-    return;
+auth.onAuthStateChanged(user=>{
+  if(!user) location.href="signup.html";
+  else{
+    currentUser = user;
+    loadBalance();
   }
-
-  currentUser=user;
-  const userRef=doc(db,"users",user.uid);
-
-  onSnapshot(userRef,(snap)=>{
-    if(!snap.exists()) return;
-
-    const data=snap.data();
-    walletAmount=data.walletBalance||0;
-
-    document.getElementById("walletBalance").innerText=
-      walletAmount.toFixed(2);
-  });
-
-  loadHistory();
 });
 
-/* MAKE DEPOSIT */
-window.makeDeposit=async function(){
+function copyWallet(){
+  const text = document.getElementById("wallet").innerText;
+  navigator.clipboard.writeText(text);
+  alert("Wallet copied!");
+}
 
-  const status=document.getElementById("status");
-  const amount=Number(document.getElementById("amount").value);
-  const txid=document.getElementById("txid").value.trim();
-
-  if(!amount||amount<=0){
-    status.innerText="Enter valid amount";
-    return;
-  }
-
-  if(amount<10){
-    status.innerText="Minimum deposit is $10";
-    return;
-  }
-
-  if(!txid || txid.length<6){
-    status.innerText="Enter valid TXID";
-    return;
-  }
-
-  status.innerText="Checking TXID...";
-
-  // 🔒 Duplicate TXID Protection
-  const checkQuery=query(
-    collection(db,"depositRequests"),
-    where("txid","==",txid)
-  );
-
-  const existing=await getDocs(checkQuery);
-
-  if(!existing.empty){
-    status.innerText="This TXID already used";
-    return;
-  }
-
-  status.innerText="Submitting deposit request...";
-
-  try{
-
-    await addDoc(collection(db,"depositRequests"),{
-      uid:currentUser.uid,
-      email:currentUser.email,
-      amount:amount,
-      txid:txid,
-      status:"pending",
-      createdAt:serverTimestamp()
-    });
-
-    status.innerText=
-      "✅ Deposit submitted. Waiting for admin approval.";
-
-    document.getElementById("amount").value="";
-    document.getElementById("txid").value="";
-
-  }catch(err){
-    status.innerText="Deposit failed";
-  }
-};
-
-/* LOAD HISTORY */
-function loadHistory(){
-
-  const q=query(
-    collection(db,"depositRequests"),
-    where("uid","==",currentUser.uid),
-    orderBy("createdAt","desc")
-  );
-
-  onSnapshot(q,(snapshot)=>{
-
-    let html="";
-
-    snapshot.forEach(doc=>{
-
-      const d=doc.data();
-      let statusClass="pending";
-
-      if(d.status==="approved") statusClass="approved";
-      if(d.status==="rejected") statusClass="rejected";
-
-      let time="";
-      if(d.createdAt?.seconds){
-        const date=new Date(d.createdAt.seconds*1000);
-        time=date.toLocaleString();
-      }
-
-      html+=`
-      <div class="history-card">
-        <div><b>ID:</b> ${doc.id}</div>
-        <div><b>Amount:</b> $${d.amount}</div>
-        <div><b>TXID:</b> ${d.txid}</div>
-        <div><b>Date:</b> ${time}</div>
-        <div>
-          <b>Status:</b>
-          <span class="${statusClass}">
-            ${d.status}
-          </span>
-        </div>
-      </div>
-      `;
-    });
-
-    document.getElementById("history").innerHTML=
-      html || "No deposit history found";
-
+function loadBalance(){
+  db.collection("users").doc(currentUser.uid).get()
+  .then(doc=>{
+    if(doc.exists)
+      document.getElementById("balance").innerText =
+        doc.data().balance || 0;
   });
 }
 
+function makeDeposit(){
+  const amount = parseFloat(
+    document.getElementById("depositAmount").value
+  );
+  const txid = document.getElementById("txid").value;
+
+  if(!amount || amount <= 0){
+    alert("Enter valid amount");
+    return;
+  }
+
+  if(!txid){
+    alert("Enter transaction ID");
+    return;
+  }
+
+  db.collection("depositRequests").add({
+    userId: currentUser.uid,
+    email: currentUser.email,
+    amount: amount,
+    txid: txid,
+    status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(()=>{
+    alert("Deposit request sent for approval");
+    document.getElementById("depositAmount").value="";
+    document.getElementById("txid").value="";
+  });
+}
 </script>
+
 </body>
 </html>
