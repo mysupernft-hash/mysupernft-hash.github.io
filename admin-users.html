@@ -1,47 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Users | SuperNFT Admin</title>
+<title>User Details</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/style.css">
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="assets/script.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0d0d0d;
+  color:#FFD700;
+  padding:15px;
+}
+
+.card{
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+h2{text-align:center;}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+
+button{
+  background:#FFD700;
+  border:none;
+  padding:8px 12px;
+  margin-top:10px;
+  cursor:pointer;
+}
+</style>
 </head>
 <body>
 
-<header>Users Management</header>
-<nav>
-<a href="admin-dashboard.html">Dashboard</a>
-<a href="admin-users.html">Users</a>
-<a href="admin-nfts.html">NFTs</a>
-<a href="admin-deposits.html">Deposits</a>
-<a href="admin-withdraw.html">Withdraw</a>
-<a href="#" class="logout" onclick="logout()">Logout</a>
-</nav>
+<h2>👤 User Full Details</h2>
 
-<div class="main">
-<h2>All Users</h2>
-<table id="usersTable">
-<thead><tr><th>Email</th><th>Joined</th><th>Balance</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
+<div class="card" id="details"></div>
+
+<button onclick="history.back()">⬅ Back</button>
 
 <script>
-const usersTable = document.getElementById("usersTable").getElementsByTagName("tbody")[0];
 
-firebase.firestore().collection("users").get().then(snapshot=>{
-  snapshot.forEach(doc=>{
-    const u = doc.data();
-    let row = usersTable.insertRow();
-    row.insertCell(0).innerText = u.email || "-";
-    row.insertCell(1).innerText = u.joinDate || "-";
-    row.insertCell(2).innerText = u.balance || 0;
-  });
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 });
-</script>
 
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+const params=new URLSearchParams(window.location.search);
+const uid=params.get("uid");
+
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    location.href="admin-login.html";
+    return;
+  }
+  loadUser();
+});
+
+function loadUser(){
+  db.collection("users").doc(uid).get().then(doc=>{
+    if(!doc.exists) return;
+
+    const u=doc.data();
+    let html="";
+
+    for(const key in u){
+      html+=`
+        <div class="row">
+          <span>${key}</span>
+          <span>${JSON.stringify(u[key])}</span>
+        </div>
+      `;
+    }
+
+    document.getElementById("details").innerHTML=html;
+  });
+}
+
+</script>
 </body>
 </html>
