@@ -138,13 +138,45 @@ function loadUsers(){
 /* RENDER TABLE */
 function renderUsers(users){
   let html="";
-
   users.forEach(u=>{
-
     html+=`
     <tr>
+      <td>
+        <div style="font-size:13px;font-weight:bold;">
+          ${u.email || ""}
+        </div>
+        <div style="font-size:11px;color:#aaa;">
+          UID: ${u.id}
+        </div>
+      </td>
 
-      <td>${u.email||""}</td>
+      <td><input id="w_${u.id}" value="${u.walletBalance||0}"></td>
+      <td><input id="d_${u.id}" value="${u.dailyIncome||0}"></td>
+      <td><input id="r_${u.id}" value="${u.referralEarnings||0}"></td>
+      <td><input id="l_${u.id}" value="${u.level||0}"></td>
+
+      <td>
+        <select id="ban_${u.id}">
+          <option value="false" ${u.banned?"":"selected"}>No</option>
+          <option value="true" ${u.banned?"selected":""}>Yes</option>
+        </select>
+      </td>
+
+      <td><button onclick="saveUser('${u.id}')">Save</button></td>
+    </tr>`;
+  });
+
+  document.getElementById("userTable").innerHTML=html;
+}
+
+      <td>
+  <div style="font-size:13px;font-weight:bold;">
+    ${u.email || ""}
+  </div>
+  <div style="font-size:11px;color:#aaa;">
+    UID: ${u.id}
+  </div>
+</td>
 
       <td style="font-size:9px">${u.id}</td>
 
