@@ -6,37 +6,112 @@
 <title>Withdraw | SuperNFT</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
-header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
-.container{padding:20px;}
-.card{background:#1a1a1a;border-radius:12px;padding:20px;margin-bottom:15px;}
-.card h2{margin:0 0 12px;font-size:18px;}
-.balance{font-size:30px;font-weight:bold;}
-input{width:100%;padding:12px;background:#272727;border:none;border-radius:8px;color:#FFD700;}
-button{width:100%;margin-top:15px;padding:12px;background:#FFD700;color:#000;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;}
-button:hover{background:#e6c200;}
-.note{font-size:12px;color:#bbb;margin-top:10px;}
-.status{margin-top:12px;font-size:14px;}
-.back{display:block;margin-top:20px;padding:12px;text-align:center;background:#272727;color:#FFD700;border-radius:8px;text-decoration:none;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
+}
+header{
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+.container{
+  padding:20px;
+}
+.card{
+  background:#1a1a1a;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:15px;
+}
+.balance{
+  font-size:28px;
+  font-weight:bold;
+}
+input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#272727;
+  color:#FFD700;
+  margin-top:10px;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:8px;
+  background:#FFD700;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  background:#e6c200;
+}
+.status{
+  margin-top:12px;
+  font-size:14px;
+}
+.history-card{
+  background:#111;
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+}
+.pending{color:orange}
+.approved{color:#00ff00}
+.rejected{color:red}
+.success-msg{
+  margin-top:8px;
+  color:#00ff00;
+  font-size:13px;
+}
+.back{
+  display:block;
+  text-align:center;
+  margin-top:20px;
+  padding:10px;
+  background:#272727;
+  border-radius:8px;
+  text-decoration:none;
+  color:#FFD700;
+}
 </style>
 </head>
+
 <body>
 
 <header>💸 Withdraw</header>
 
 <div class="container">
 
+  <!-- WALLET BALANCE -->
   <div class="card">
-    <h2>Available Balance</h2>
-    <div class="balance" id="walletBalance">$0.00</div>
+    <div>Available Balance</div>
+    <div class="balance">$<span id="walletBalance">0.00</span></div>
   </div>
 
+  <!-- WITHDRAW FORM -->
   <div class="card">
-    <h2>Withdraw Amount</h2>
+    <div>Withdraw Amount</div>
     <input type="number" id="amount" placeholder="Enter amount">
+
     <button onclick="withdraw()">Request Withdraw</button>
-    <div class="note">⏳ Withdraw request will be processed within 24 hours</div>
+
     <div class="status" id="status"></div>
+  </div>
+
+  <!-- WITHDRAW HISTORY -->
+  <div class="card">
+    <h3>Withdraw History</h3>
+    <div id="history"></div>
   </div>
 
   <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
@@ -49,97 +124,137 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-getFirestore, doc, getDoc,
-runTransaction, arrayUnion
+  getFirestore, doc, getDoc,
+  collection, addDoc, serverTimestamp,
+  onSnapshot, query, where, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
+const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
   projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-let currentUser = null;
-let walletAmount = 0;
+let currentUser=null;
+let walletAmount=0;
 
-// 🔐 AUTH CHECK + LOAD BALANCE
+/* AUTH CHECK */
 onAuthStateChanged(auth, async(user)=>{
   if(!user){
     window.location.replace("login.html");
     return;
   }
-  currentUser = user;
 
-  const userDoc = await getDoc(doc(db, "users", user.uid));
-  if(userDoc.exists()){
-    const data = userDoc.data();
-    walletAmount = data.walletBalance || 0;
-    document.getElementById("walletBalance").innerText =
-      "$" + walletAmount.toFixed(2);
+  currentUser=user;
+
+  const snap=await getDoc(doc(db,"users",user.uid));
+
+  if(snap.exists()){
+    walletAmount=snap.data().walletBalance||0;
+    document.getElementById("walletBalance").innerText=
+      walletAmount.toFixed(2);
   }
+
+  loadHistory();
 });
 
-// 💸 WITHDRAW FUNCTION
-window.withdraw = async function(){
+/* WITHDRAW REQUEST */
+window.withdraw=async function(){
 
-  const status = document.getElementById("status");
-  status.innerText = "Processing...";
+  const status=document.getElementById("status");
+  const amount=Number(document.getElementById("amount").value);
 
-  const amount = Number(document.getElementById("amount").value);
-
-  if(!amount || amount <= 0){
-    status.innerText = "Enter a valid amount";
+  if(!amount||amount<=0){
+    status.innerText="Enter valid amount";
     return;
   }
 
-  if(amount > walletAmount){
-    status.innerText = "Insufficient balance";
+  if(amount<10){
+    status.innerText="Minimum withdraw is $10";
     return;
   }
 
-  if(amount < 10){
-    status.innerText = "Minimum withdraw is $10";
+  if(amount>walletAmount){
+    status.innerText="Insufficient balance";
     return;
   }
 
-  // SAFE TRANSACTION UPDATE
+  status.innerText="Processing...";
+
   try{
-    await runTransaction(db, async (transaction) => {
 
-      const userRef = doc(db, "users", currentUser.uid);
-      const snap = await transaction.get(userRef);
-
-      if(!snap.exists()) throw "User not found";
-
-      const data = snap.data();
-      const newBal = (data.walletBalance || 0) - amount;
-
-      if(newBal < 0) throw "Balance changed";
-
-      transaction.update(userRef, {
-        walletBalance: newBal,
-        withdrawRequests: arrayUnion({
-          amount: amount,
-          status: "pending",
-          time: new Date()
-        })
-      });
-
+    await addDoc(collection(db,"withdrawRequests"),{
+      uid:currentUser.uid,
+      email:currentUser.email,
+      amount:amount,
+      status:"pending",
+      createdAt:serverTimestamp()
     });
 
-    status.innerText = "✅ Withdraw request submitted!";
-    setTimeout(()=> location.reload(), 1500);
+    status.innerText=
+      "✅ Withdraw request submitted (Waiting for Admin Approval)";
+
+    document.getElementById("amount").value="";
 
   }catch(err){
-    console.error(err);
-    status.innerText = "❌ Withdraw failed. Try again.";
+    status.innerText="Withdraw failed";
   }
 
 };
+
+/* LOAD HISTORY REALTIME */
+function loadHistory(){
+
+  const q=query(
+    collection(db,"withdrawRequests"),
+    where("uid","==",currentUser.uid),
+    orderBy("createdAt","desc")
+  );
+
+  onSnapshot(q,(snapshot)=>{
+
+    let html="";
+
+    snapshot.forEach(doc=>{
+
+      const w=doc.data();
+      let statusClass="pending";
+      let message="";
+
+      if(w.status==="approved"){
+        statusClass="approved";
+        message=`<div class="success-msg">
+          $${w.amount} received in your Binance wallet
+        </div>`;
+      }
+
+      if(w.status==="rejected"){
+        statusClass="rejected";
+      }
+
+      html+=`
+      <div class="history-card">
+        <div><b>Amount:</b> $${w.amount}</div>
+        <div>
+          <b>Status:</b>
+          <span class="${statusClass}">
+            ${w.status}
+          </span>
+        </div>
+        ${message}
+      </div>
+      `;
+    });
+
+    document.getElementById("history").innerHTML=html;
+
+  });
+
+}
 
 </script>
 
