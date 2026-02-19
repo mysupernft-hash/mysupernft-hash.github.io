@@ -318,6 +318,34 @@ onAuthStateChanged(auth, async (user) => {
   onSnapshot(userRef, (snap)=>{
    const data = snap.data();
 
+    const dailyIncome = data.dailyIncome || 0;
+let walletBalance = data.walletBalance || 0;
+const totalDeposit = data.totalDeposit || 0;
+const referral = data.referralEarnings || 0;
+const live = data.liveEarnings || 0;
+
+// 🔥 Deposit update
+document.querySelector("#depositMoney p").innerText =
+  "$" + totalDeposit.toFixed(2);
+
+// 🔥 Daily Income
+document.getElementById("dailyIncome").innerText =
+  "$" + dailyIncome.toFixed(2);
+
+// 🔥 Wallet Balance box
+document.getElementById("walletBalanceP").innerText =
+  "$" + walletBalance.toFixed(2);
+
+// 🔥 Top Right Wallet
+document.getElementById("walletBalanceTop").innerText =
+  walletBalance.toFixed(2);
+
+// 🔥 Referral (optional)
+if(document.getElementById("referralBox")){
+  document.getElementById("referralCode").innerText =
+    "Referral: " + (data.referralCode || "N/A");
+}
+
    // same update code here
 });
 
