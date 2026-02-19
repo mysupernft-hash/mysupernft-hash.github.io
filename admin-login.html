@@ -2,200 +2,118 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>SuperNFT Admin Login</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Admin</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
   background:#0d0d0d;
+  font-family:Arial;
   color:#FFD700;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-
-/* Header */
-header{
-  background:#111;
-  padding:14px;
-  text-align:center;
-  font-size:18px;
-  font-weight:bold;
-  position:sticky;
-  top:0;
-  z-index:100;
-}
-
-/* Container */
-.container{
-  padding:10px;
-}
-
-/* Scroll Wrapper */
-.table-wrapper{
-  overflow-x:auto;
-}
-
-/* Table */
-table{
-  width:100%;
-  min-width:700px;
-  border-collapse:collapse;
-}
-
-th,td{
-  border:1px solid #333;
-  padding:8px;
-  text-align:center;
-  font-size:13px;
-}
-
-th{
+.box{
   background:#1a1a1a;
+  padding:25px;
+  border-radius:12px;
+  width:90%;
+  max-width:400px;
 }
-
-/* Inputs */
-input,select{
-  width:70px;
-  padding:4px;
-  background:#222;
-  color:#FFD700;
-  border:none;
-  border-radius:5px;
-  font-size:12px;
+h2{
+  text-align:center;
 }
-
-/* Buttons */
-button{
-  padding:5px 8px;
-  font-size:12px;
-  font-weight:bold;
+input{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
   border:none;
   border-radius:6px;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
   background:#FFD700;
-  color:#000;
+  border:none;
+  font-weight:bold;
   cursor:pointer;
 }
-
 button:hover{
   background:#e6c200;
 }
-
-/* Mobile Card Style (Below 480px) */
-@media(max-width:480px){
-
-  table{
-    min-width:600px;
-  }
-
-  th,td{
-    font-size:12px;
-    padding:6px;
-  }
-
-  input,select{
-    width:55px;
-  }
-
-  button{
-    font-size:11px;
-    padding:4px 6px;
-  }
+#error{
+  color:red;
+  margin-top:10px;
+  text-align:center;
 }
 </style>
 </head>
 
 <body>
 
-<header>🔥 SuperNFT Admin Panel</header>
+<div class="box">
+  <h2>🔐 Admin Login</h2>
 
-<div class="container">
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Wallet</th>
-          <th>Daily</th>
-          <th>Referral</th>
-          <th>Level</th>
-          <th>Banned</th>
-          <th>Save</th>
-        </tr>
-      </thead>
-      <tbody id="users"></tbody>
-    </table>
-  </div>
+  <input type="email" id="email" placeholder="Admin Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <button onclick="adminLogin()">Login</button>
+
+  <div id="error"></div>
 </div>
 
 <script>
-
-// 🔥 Firebase Init
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
 });
 
-const db = firebase.firestore();
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
-// 🔥 Load Users
-db.collection("users").get().then(snapshot => {
+function adminLogin(){
 
-  let html = "";
+  const email = document.getElementById("email").value;
+  const pass  = document.getElementById("password").value;
 
-  snapshot.forEach(doc => {
+  auth.signInWithEmailAndPassword(email,pass)
+  .then(cred => {
 
-    const u = doc.data();
+    const uid = cred.user.uid;
 
-    html += `
-      <tr>
-        <td style="min-width:140px">${u.email || ""}</td>
+    // 🔎 Check role in Firestore
+    db.collection("users").doc(uid).get()
+    .then(doc => {
 
-        <td><input id="w_${doc.id}" value="${u.walletBalance || 0}"></td>
+      if(!doc.exists){
+        document.getElementById("error").innerText="User not found";
+        return;
+      }
 
-        <td><input id="d_${doc.id}" value="${u.dailyIncome || 0}"></td>
+      const data = doc.data();
 
-        <td><input id="r_${doc.id}" value="${u.referralEarnings || 0}"></td>
+      if(data.role === "superadmin"){
+        window.location.href="admin.html";
+      }else{
+        document.getElementById("error").innerText=
+        "❌ Access Denied (Not Superadmin)";
+      }
 
-        <td><input id="l_${doc.id}" value="${u.level || 0}"></td>
+    });
 
-        <td>
-          <select id="ban_${doc.id}">
-            <option value="false" ${u.banned ? "" : "selected"}>No</option>
-            <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
-          </select>
-        </td>
-
-        <td>
-          <button onclick="saveUser('${doc.id}')">
-            Save
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-
-  document.getElementById("users").innerHTML = html;
-
-}).catch(error => {
-  alert("Error: " + error.message);
-});
-
-// 🔥 Save User
-function saveUser(uid){
-
-  db.collection("users").doc(uid).update({
-    walletBalance: Number(document.getElementById("w_"+uid).value),
-    dailyIncome: Number(document.getElementById("d_"+uid).value),
-    referralEarnings: Number(document.getElementById("r_"+uid).value),
-    level: Number(document.getElementById("l_"+uid).value),
-    banned: document.getElementById("ban_"+uid).value === "true"
   })
-  .then(()=>alert("✅ Updated"))
-  .catch(error=>alert("❌ "+error.message));
+  .catch(err=>{
+    document.getElementById("error").innerText=err.message;
+  });
 
 }
 </script>
