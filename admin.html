@@ -1,193 +1,248 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Admin Dashboard</title>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0f0f0f;
+  background:#0d0d0d;
   color:#FFD700;
+  font-family:Arial;
+  padding:20px;
 }
-
-header{
-  background:#1a1a1a;
-  padding:15px;
+h2{
   text-align:center;
-  font-size:20px;
-  font-weight:bold;
 }
-
-.container{
-  padding:15px;
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
 }
-
-.card{
-  background:#1a1a1a;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
+th,td{
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
 }
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:8px;
+th{
+  background:#111;
 }
-
+input,select{
+  width:80px;
+  padding:4px;
+}
 button{
-  padding:6px 12px;
+  padding:6px 10px;
+  background:#FFD700;
   border:none;
-  border-radius:6px;
-  font-weight:bold;
   cursor:pointer;
+  font-weight:bold;
 }
-
-.approve{
-  background:#00c853;
-  color:white;
+button:hover{
+  background:#e6c200;
 }
-
-.reject{
-  background:#d50000;
-  color:white;
+.logout{
+  float:right;
+  margin-bottom:10px;
+}
+#status{
+  text-align:center;
+  margin-top:40px;
 }
 </style>
 </head>
 
 <body>
 
-<header>⚙️ SuperNFT Admin Dashboard</header>
+<h2 id="status">Checking admin access...</h2>
 
-<div class="container">
+<div id="panel" style="display:none">
 
-<div class="card">
-  <div class="row">
-    <div>Total Users</div>
-    <div id="totalUsers">0</div>
-  </div>
+<button class="logout" onclick="logout()">Logout</button>
+
+<h2>🔥 SuperNFT Admin Panel</h2>
+
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Wallet</th>
+<th>Daily</th>
+<th>Referral</th>
+<th>Level</th>
+<th>Banned</th>
+<th>Save</th>
+</tr>
+</thead>
+<tbody id="users"></tbody>
+</table>
+
 </div>
 
-<div class="card">
-  <div class="row">
-    <div>Pending Withdraws</div>
-    <div id="pendingCount">0</div>
-  </div>
-</div>
+<script>
 
-<div class="card">
-  <h3>💸 Withdraw Requests</h3>
-  <div id="withdrawList">Loading...</div>
-</div>
-
-</div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, collection, getDocs,
-  doc, updateDoc, query, where
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
-};
-
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-onAuthStateChanged(auth, async(user)=>{
-
-  if(!user){
-    alert("Login Required");
-    location.href="login.html";
-    return;
-  }
-
-  const userSnap = await getDocs(
-    query(collection(db,"users"), where("email","==",user.email))
-  );
-
-  if(userSnap.empty){
-    alert("Access Denied");
-    location.href="dashboard.html";
-    return;
-  }
-
-  const userData = userSnap.docs[0].data();
-
-  if(!userData.isAdmin){
-    alert("Admin Access Only");
-    location.href="dashboard.html";
-    return;
-  }
-
-  loadDashboard();
+firebase.initializeApp({
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
 });
 
-async function loadDashboard(){
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
-  // TOTAL USERS
-  const usersSnap = await getDocs(collection(db,"users"));
-  document.getElementById("totalUsers").innerText = usersSnap.size;
+/* ============================= */
+/* 🔐 ADMIN CHECK */
+/* ============================= */
 
-  // PENDING WITHDRAW
-  const withdrawQuery = query(
-    collection(db,"withdrawRequests"),
-    where("status","==","pending")
-  );
+auth.onAuthStateChanged(async user => {
 
-  const withdrawSnap = await getDocs(withdrawQuery);
-
-  document.getElementById("pendingCount").innerText = withdrawSnap.size;
-
-  const list = document.getElementById("withdrawList");
-  list.innerHTML = "";
-
-  if(withdrawSnap.empty){
-    list.innerHTML = "No pending requests";
+  if(!user){
+    window.location.href = "admin-login.html";
     return;
   }
 
-  withdrawSnap.forEach(docSnap=>{
-    const data = docSnap.data();
-    const div = document.createElement("div");
-    div.style.marginBottom="10px";
+  try{
 
-    div.innerHTML = `
-      <div>Email: ${data.email}</div>
-      <div>Amount: $${data.amount}</div>
-      <button class="approve" onclick="approve('${docSnap.id}')">Approve</button>
-      <button class="reject" onclick="reject('${docSnap.id}')">Reject</button>
-      <hr>
-    `;
+    const snap = await db.collection("users").doc(user.uid).get();
 
-    list.appendChild(div);
+    if(!snap.exists){
+      document.getElementById("status").innerText =
+        "❌ User document not found";
+      return;
+    }
+
+    const data = snap.data();
+
+    // ✅ ADMIN ACCESS CHECK
+    if(data.role === "superadmin" || data.isAdmin === true){
+
+      document.getElementById("status").style.display="none";
+      document.getElementById("panel").style.display="block";
+
+      loadUsers();
+
+    } else {
+      document.getElementById("status").innerText =
+        "❌ Access denied (not admin)";
+    }
+
+  } catch(error){
+    document.getElementById("status").innerText =
+      "❌ Error: " + error.message;
+  }
+
+});
+
+/* ============================= */
+/* 👥 LOAD USERS */
+/* ============================= */
+
+function loadUsers(){
+
+  db.collection("users").get().then(snapshot => {
+
+    let html="";
+
+    snapshot.forEach(doc => {
+
+      const u = doc.data();
+
+      html += `
+      <tr>
+        <td>${u.email || ""}</td>
+
+        <td>
+          <input id="w_${doc.id}"
+          value="${u.walletBalance || 0}">
+        </td>
+
+        <td>
+          <input id="d_${doc.id}"
+          value="${u.dailyIncome || 0}">
+        </td>
+
+        <td>
+          <input id="r_${doc.id}"
+          value="${u.referralEarnings || 0}">
+        </td>
+
+        <td>
+          <input id="l_${doc.id}"
+          value="${u.level || 0}">
+        </td>
+
+        <td>
+          <select id="ban_${doc.id}">
+            <option value="false"
+            ${u.banned ? "" : "selected"}>No</option>
+            <option value="true"
+            ${u.banned ? "selected" : ""}>Yes</option>
+          </select>
+        </td>
+
+        <td>
+          <button onclick="saveUser('${doc.id}')">
+          Save
+          </button>
+        </td>
+      </tr>
+      `;
+
+    });
+
+    document.getElementById("users").innerHTML = html;
+
   });
+
 }
 
-window.approve = async function(id){
-  await updateDoc(doc(db,"withdrawRequests",id),{
-    status:"approved"
+/* ============================= */
+/* 💾 SAVE USER */
+/* ============================= */
+
+function saveUser(uid){
+
+  db.collection("users").doc(uid).update({
+
+    walletBalance: Number(
+      document.getElementById("w_"+uid).value
+    ),
+
+    dailyIncome: Number(
+      document.getElementById("d_"+uid).value
+    ),
+
+    referralEarnings: Number(
+      document.getElementById("r_"+uid).value
+    ),
+
+    level: Number(
+      document.getElementById("l_"+uid).value
+    ),
+
+    banned:
+      document.getElementById("ban_"+uid).value === "true"
+
+  }).then(()=>{
+    alert("✅ User Updated Successfully");
+  }).catch(error=>{
+    alert("Error: "+error.message);
   });
-  alert("Approved");
-  location.reload();
+
 }
 
-window.reject = async function(id){
-  await updateDoc(doc(db,"withdrawRequests",id),{
-    status:"rejected"
+/* ============================= */
+/* 🔓 LOGOUT */
+/* ============================= */
+
+function logout(){
+  auth.signOut().then(()=>{
+    window.location.href="admin-login.html";
   });
-  alert("Rejected");
-  location.reload();
 }
 
 </script>
