@@ -10,12 +10,53 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#0d0d0d;color:#FFD700;padding:15px}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0d0d0d;
+  color:#FFD700;
+  padding:15px
+}
+
 h2{text-align:center}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{border:1px solid #333;padding:6px;text-align:center}
-input{width:80px}
-button{padding:6px 10px;background:#FFD700;border:none;font-weight:bold}
+
+input{
+  width:70px;
+  font-size:11px;
+}
+
+button{
+  padding:5px 8px;
+  background:#FFD700;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:11px;
+}
+
+button.delete{
+  background:#ff4444;
+  color:#fff;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11px;
+  overflow-x:auto;
+}
+
+th,td{
+  border:1px solid #333;
+  padding:5px;
+  text-align:center;
+}
+
+.search{
+  width:100%;
+  padding:8px;
+  margin-bottom:10px;
+}
 </style>
 </head>
 
@@ -23,15 +64,23 @@ button{padding:6px 10px;background:#FFD700;border:none;font-weight:bold}
 
 <h2>🔥 SuperNFT Admin Dashboard</h2>
 
+<input type="text" id="search" class="search"
+placeholder="Search by Email or UID">
+
 <table>
 <thead>
 <tr>
-<th>Email</th>
+<th>Email / UID</th>
 <th>Wallet</th>
 <th>Daily</th>
 <th>Referral</th>
 <th>Level</th>
+<th>Deposit</th>
+<th>Withdraw</th>
+<th>Live</th>
+<th>Ban</th>
 <th>Save</th>
+<th>Delete</th>
 </tr>
 </thead>
 <tbody id="users"></tbody>
@@ -48,55 +97,129 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
+let allUsers=[];
+
+/* AUTH CHECK */
 auth.onAuthStateChanged(user=>{
   if(!user){
     location.href="admin-login.html";
     return;
   }
-
   loadUsers();
 });
 
+/* LOAD USERS REALTIME */
 function loadUsers(){
 
   db.collection("users").onSnapshot(snapshot=>{
 
-    let html="";
+    allUsers=[];
 
     snapshot.forEach(doc=>{
-
-      const u = doc.data();
-
-      html+=`
-      <tr>
-        <td>${u.email||""}</td>
-        <td><input id="w_${doc.id}" value="${u.walletBalance||0}"></td>
-        <td><input id="d_${doc.id}" value="${u.dailyIncome||0}"></td>
-        <td><input id="r_${doc.id}" value="${u.referralEarnings||0}"></td>
-        <td><input id="l_${doc.id}" value="${u.level||1}"></td>
-        <td><button onclick="saveUser('${doc.id}')">Save</button></td>
-      </tr>
-      `;
+      allUsers.push({id:doc.id,...doc.data()});
     });
 
-    document.getElementById("users").innerHTML=html;
+    renderUsers(allUsers);
 
   });
 }
 
+/* RENDER TABLE */
+function renderUsers(users){
+
+  let html="";
+
+  users.forEach(u=>{
+
+    html+=`
+    <tr>
+
+      <td>
+        <div style="font-weight:bold">
+          ${u.email||""}
+        </div>
+        <div style="color:#aaa;font-size:10px">
+          ${u.id}
+        </div>
+      </td>
+
+      <td><input id="w_${u.id}" value="${u.walletBalance||0}"></td>
+      <td><input id="d_${u.id}" value="${u.dailyIncome||0}"></td>
+      <td><input id="r_${u.id}" value="${u.referralEarnings||0}"></td>
+      <td><input id="l_${u.id}" value="${u.level||1}"></td>
+
+      <td>${u.totalDeposit||0}</td>
+      <td>${u.totalWithdraw||0}</td>
+      <td>${u.liveEarnings||0}</td>
+
+      <td>
+        <select id="ban_${u.id}">
+          <option value="false" ${u.banned?"":"selected"}>No</option>
+          <option value="true" ${u.banned?"selected":""}>Yes</option>
+        </select>
+      </td>
+
+      <td>
+        <button onclick="saveUser('${u.id}')">Save</button>
+      </td>
+
+      <td>
+        <button class="delete"
+        onclick="deleteUser('${u.id}')">
+        X
+        </button>
+      </td>
+
+    </tr>
+    `;
+  });
+
+  document.getElementById("users").innerHTML=html;
+}
+
+/* SAVE USER */
 function saveUser(uid){
 
   db.collection("users").doc(uid).update({
+
     walletBalance:Number(document.getElementById("w_"+uid).value),
     dailyIncome:Number(document.getElementById("d_"+uid).value),
     referralEarnings:Number(document.getElementById("r_"+uid).value),
-    level:Number(document.getElementById("l_"+uid).value)
+    level:Number(document.getElementById("l_"+uid).value),
+    banned:document.getElementById("ban_"+uid).value==="true"
+
   }).then(()=>{
-    alert("✅ Updated Successfully");
+    alert("✅ Updated");
   });
 
 }
 
+/* DELETE USER */
+function deleteUser(uid){
+
+  if(confirm("Delete this user?")){
+
+    db.collection("users").doc(uid).delete()
+    .then(()=>alert("User Deleted"));
+
+  }
+}
+
+/* SEARCH */
+document.getElementById("search")
+.addEventListener("input",function(){
+
+  const val=this.value.toLowerCase();
+
+  const filtered=allUsers.filter(u=>
+    (u.email||"").toLowerCase().includes(val) ||
+    u.id.toLowerCase().includes(val)
+  );
+
+  renderUsers(filtered);
+
+});
 </script>
+
 </body>
 </html>
