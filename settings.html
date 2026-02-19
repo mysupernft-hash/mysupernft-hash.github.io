@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT – Ultra Settings</title>
+<title>SuperNFT – Ultra Pro Settings</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -12,59 +12,44 @@ body{
   background:#0f0f0f;
   color:#FFD700;
 }
-
 header{
+  background:#1a1a1a;
   padding:15px;
   text-align:center;
   font-size:20px;
   font-weight:bold;
-  background:#1a1a1a;
   position:relative;
 }
-
-#adminIcon{
+.admin-icon{
   position:absolute;
   right:15px;
   top:12px;
-  font-size:22px;
   cursor:pointer;
-  opacity:0.6;
+  font-size:20px;
 }
-
-.container{
-  padding:15px;
-}
-
+.container{ padding:15px; }
 .card{
   background:#1a1a1a;
   padding:15px;
   border-radius:12px;
   margin-bottom:15px;
 }
-
 .section-title{
   font-size:16px;
-  margin-bottom:10px;
   font-weight:bold;
+  margin-bottom:10px;
 }
-
 .row{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-bottom:10px;
 }
-
 input,select{
   padding:6px;
   border-radius:6px;
   border:none;
 }
-
-.toggle{
-  transform:scale(1.2);
-}
-
 button{
   width:100%;
   padding:12px;
@@ -74,108 +59,165 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-
-.primary{
-  background:#FFD700;
-  color:#000;
-}
-
-.secondary{
-  background:#272727;
-  color:#FFD700;
-}
-
-/* 🔒 ADMIN MODAL */
-#adminModal{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.8);
-justify-content:center;
-align-items:center;
-z-index:9999;
-}
+.primary{ background:#FFD700; color:#000; }
+.secondary{ background:#272727; color:#FFD700; }
 </style>
 </head>
 <body>
 
 <header>
-⚙️ Ultra Settings
-<span id="adminIcon">👑</span>
+⚙️ Ultra Pro Settings
+<span class="admin-icon" onclick="openAdmin()">👑</span>
 </header>
 
 <div class="container">
 
-<!-- ACCOUNT INFO -->
 <div class="card">
-  <div class="section-title">👤 Account Info</div>
-  <div>Email: <span id="email">---</span></div>
-  <div>UID: <span id="uid">---</span></div>
+<div class="section-title">👤 Account</div>
+<div>Email: <span id="email">---</span></div>
+<div>UID: <span id="uid">---</span></div>
+<div>Role: <span id="role">user</span></div>
 </div>
 
-<!-- UI SETTINGS -->
 <div class="card">
-  <div class="section-title">🎨 UI Preferences</div>
-
-  <div class="row">
-    <span>Theme</span>
-    <select id="theme">
-      <option value="dark">Dark</option>
-      <option value="gold">Gold</option>
-    </select>
-  </div>
-
-  <div class="row">
-    <span>Hide Balance</span>
-    <input type="checkbox" id="hideBalance" class="toggle">
-  </div>
-
-  <div class="row">
-    <span>Auto Compound</span>
-    <input type="checkbox" id="autoCompound" class="toggle">
-  </div>
+<div class="section-title">🎨 UI</div>
+<div class="row">
+<span>Theme</span>
+<select id="theme">
+<option>Dark</option>
+<option>Gold</option>
+<option>Neon</option>
+<option>Auto</option>
+</select>
 </div>
 
-<!-- SECURITY -->
+<div class="row">
+<span>Accent Color</span>
+<input type="color" id="accent">
+</div>
+
+<div class="row">
+<span>Font Size</span>
+<select id="fontSize">
+<option>Small</option>
+<option selected>Medium</option>
+<option>Large</option>
+</select>
+</div>
+
+<div class="row">
+<span>Hide Balance</span>
+<input type="checkbox" id="hideBalance">
+</div>
+
+<div class="row">
+<span>Compact Mode</span>
+<input type="checkbox" id="compact">
+</div>
+
+<div class="row">
+<span>Animations</span>
+<input type="checkbox" id="animation" checked>
+</div>
+</div>
+
 <div class="card">
-  <div class="section-title">🔐 Security</div>
+<div class="section-title">🔐 Security</div>
 
-  <div class="row">
-    <span>Withdraw Protection</span>
-    <input type="checkbox" id="withdrawProtection" class="toggle">
-  </div>
-
-  <div class="row">
-    <span>Change Withdraw PIN</span>
-    <input type="password" id="pin" placeholder="New PIN">
-  </div>
-
-  <button class="primary" onclick="changePassword()">Change Password</button>
+<div class="row">
+<span>Withdraw PIN</span>
+<input type="password" id="pin" placeholder="New PIN">
 </div>
 
-<!-- SAVE -->
+<div class="row">
+<span>Withdraw Protection</span>
+<input type="checkbox" id="withdrawProtection">
+</div>
+
+<div class="row">
+<span>Freeze Account</span>
+<input type="checkbox" id="freeze">
+</div>
+
+<button class="primary" onclick="changePassword()">Change Password</button>
+</div>
+
 <div class="card">
-  <button class="primary" onclick="saveSettings()">💾 Save Settings</button>
-  <button class="secondary" onclick="logout()">🚪 Logout</button>
+<div class="section-title">💰 Financial</div>
+
+<div class="row">
+<span>Auto Compound</span>
+<input type="checkbox" id="autoCompound">
 </div>
 
+<div class="row">
+<span>Reinvest %</span>
+<input type="number" id="reinvest" value="50">
 </div>
 
-<!-- 🔒 ADMIN PIN MODAL -->
-<div id="adminModal">
-  <div style="background:#1a1a1a;padding:20px;border-radius:12px;width:85%;max-width:300px;text-align:center;">
-    <h3>🛡 Admin Access</h3>
+<div class="row">
+<span>Withdraw Limit</span>
+<input type="number" id="withdrawLimit" value="100">
+</div>
 
-    <input type="password" id="adminPin"
-           placeholder="Enter Admin PIN"
-           style="width:100%;padding:8px;margin:10px 0;border-radius:6px;border:none;">
+<div class="row">
+<span>Risk Mode</span>
+<select id="risk">
+<option>Low</option>
+<option>Medium</option>
+<option>High</option>
+</select>
+</div>
+</div>
 
-    <button class="primary" onclick="checkAdminPin()">Enter</button>
-    <button class="secondary" onclick="closeAdmin()">Cancel</button>
-  </div>
+<div class="card">
+<div class="section-title">👑 VIP</div>
+
+<div class="row">
+<span>Show VIP Badge</span>
+<input type="checkbox" id="vipBadge" checked>
+</div>
+
+<div class="row">
+<span>Income Animation</span>
+<input type="checkbox" id="incomeAnimation" checked>
+</div>
+
+<div class="row">
+<span>Rank Alerts</span>
+<input type="checkbox" id="rankAlert" checked>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">🔔 Notifications</div>
+
+<div class="row">
+<span>Deposit Alert</span>
+<input type="checkbox" id="depositAlert" checked>
+</div>
+
+<div class="row">
+<span>Withdraw Alert</span>
+<input type="checkbox" id="withdrawAlert" checked>
+</div>
+
+<div class="row">
+<span>Team Alert</span>
+<input type="checkbox" id="teamAlert" checked>
+</div>
+
+<div class="row">
+<span>Email Alert</span>
+<input type="checkbox" id="emailAlert">
+</div>
+</div>
+
+<div class="card">
+<button class="primary" onclick="saveSettings()">💾 Save Settings</button>
+<button class="secondary" onclick="logout()">🚪 Logout</button>
+</div>
+
 </div>
 
 <script type="module">
@@ -185,9 +227,9 @@ import { getAuth, onAuthStateChanged, updatePassword, signOut } from "https://ww
 import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -197,79 +239,70 @@ const db=getFirestore(app);
 let userRef;
 
 onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    location.href="login.html";
-    return;
-  }
+if(!user){ location.href="login.html"; return; }
 
-  document.getElementById("email").innerText=user.email;
-  document.getElementById("uid").innerText=user.uid;
+document.getElementById("email").innerText=user.email;
+document.getElementById("uid").innerText=user.uid;
 
-  userRef=doc(db,"users",user.uid);
-  const snap=await getDoc(userRef);
-
-  if(snap.exists()){
-    const s=snap.data().settings || {};
-
-    document.getElementById("theme").value=s.theme || "dark";
-    document.getElementById("hideBalance").checked=s.hideBalance || false;
-    document.getElementById("autoCompound").checked=s.autoCompound || false;
-    document.getElementById("withdrawProtection").checked=s.withdrawProtection || false;
-  }
+userRef=doc(db,"users",user.uid);
+const snap=await getDoc(userRef);
+if(snap.exists()){
+const data=snap.data();
+document.getElementById("role").innerText=data.role || "user";
+}
 });
 
 window.saveSettings=async function(){
+const settings={
+theme:theme.value,
+accent:accent.value,
+fontSize:fontSize.value,
+hideBalance:hideBalance.checked,
+compact:compact.checked,
+animation:animation.checked,
+withdrawProtection:withdrawProtection.checked,
+freeze:freeze.checked,
+autoCompound:autoCompound.checked,
+reinvest:reinvest.value,
+withdrawLimit:withdrawLimit.value,
+risk:risk.value,
+vipBadge:vipBadge.checked,
+incomeAnimation:incomeAnimation.checked,
+rankAlert:rankAlert.checked,
+depositAlert:depositAlert.checked,
+withdrawAlert:withdrawAlert.checked,
+teamAlert:teamAlert.checked,
+emailAlert:emailAlert.checked
+};
 
-  const settings={
-    theme:document.getElementById("theme").value,
-    hideBalance:document.getElementById("hideBalance").checked,
-    autoCompound:document.getElementById("autoCompound").checked,
-    withdrawProtection:document.getElementById("withdrawProtection").checked
-  };
+if(pin.value){
+settings.withdrawPIN=pin.value;
+}
 
-  const pin=document.getElementById("pin").value;
-  if(pin){
-    settings.withdrawPIN=pin;
-  }
-
-  await updateDoc(userRef,{settings});
-  alert("✅ Settings Saved Successfully!");
+await updateDoc(userRef,{settings});
+alert("✅ Settings Saved!");
 }
 
 window.changePassword=async function(){
-  const user=auth.currentUser;
-  const newPass=prompt("Enter new password:");
-  if(newPass){
-    await updatePassword(user,newPass);
-    alert("Password Updated!");
-  }
+const user=auth.currentUser;
+const newPass=prompt("Enter new password:");
+if(newPass){
+await updatePassword(user,newPass);
+alert("Password Updated!");
+}
 }
 
 window.logout=function(){
-  signOut(auth).then(()=>location.href="login.html");
+signOut(auth).then(()=>location.href="login.html");
 }
 
-/* 👑 ADMIN ACCESS */
-
-document.getElementById("adminIcon")
-.addEventListener("click",function(){
-  document.getElementById("adminModal").style.display="flex";
-});
-
-window.closeAdmin=function(){
-  document.getElementById("adminModal").style.display="none";
+window.openAdmin=function(){
+let pin=prompt("Enter Admin PIN");
+if(pin==="1449@MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1@shiva"){
+location.href="admin.html";
+}else{
+alert("Wrong PIN");
 }
-
-window.checkAdminPin=function(){
-
-  const pin=document.getElementById("adminPin").value;
-  const SECRET="1449";
-
-  if(pin===SECRET){
-    window.location.href="admin.html";
-  }else{
-    alert("❌ Wrong PIN");
-  }
 }
 
 </script>
