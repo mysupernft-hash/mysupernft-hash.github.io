@@ -223,6 +223,11 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+  // 🔥 Trading Icon Click
+window.openTrading = function(){
+  window.location.href = "trading.html";
+};
+
 /* Sidebar Toggle */
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
