@@ -34,6 +34,9 @@ th{
 input,select{
   width:80px;
   padding:4px;
+  background:#111;
+  color:#FFD700;
+  border:1px solid #333;
 }
 button{
   padding:6px 10px;
@@ -49,12 +52,17 @@ button:hover{
   float:right;
   margin-bottom:10px;
 }
+.status{
+  text-align:center;
+  font-size:18px;
+  margin-top:20px;
+}
 </style>
 </head>
 
 <body>
 
-<h2 id="status">Checking admin access...</h2>
+<h2 id="status" class="status">Checking admin access...</h2>
 
 <div id="panel" style="display:none">
 
@@ -94,26 +102,41 @@ const db   = firebase.firestore();
 /* 🔐 ADMIN CHECK */
 /* ============================= */
 
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async user => {
 
   if(!user){
     window.location.href = "admin-login.html";
     return;
   }
 
-  db.collection("users").doc(user.uid).get().then(doc => {
+  try {
 
-    if(!doc.exists || !doc.data().isAdmin){
+    const snap = await db.collection("users").doc(user.uid).get();
+
+    if(!snap.exists){
       document.getElementById("status").innerText =
-        "❌ Access denied (not admin)";
+        "❌ User record not found";
+      return;
+    }
+
+    const data = snap.data();
+
+    // 🔐 SUPERADMIN CHECK
+    if(data.role !== "superadmin"){
+      document.getElementById("status").innerText =
+        "❌ Access denied (not superadmin)";
       return;
     }
 
     document.getElementById("status").style.display="none";
     document.getElementById("panel").style.display="block";
+
     loadUsers();
 
-  });
+  } catch(err){
+    document.getElementById("status").innerText =
+      "❌ Error: " + err.message;
+  }
 
 });
 
@@ -121,62 +144,59 @@ auth.onAuthStateChanged(user => {
 /* 👥 LOAD USERS */
 /* ============================= */
 
-function loadUsers(){
+async function loadUsers(){
 
-  db.collection("users").get().then(snapshot => {
+  const snapshot = await db.collection("users").get();
+  let html="";
 
-    let html="";
+  snapshot.forEach(doc => {
 
-    snapshot.forEach(doc => {
+    const u = doc.data();
 
-      const u = doc.data();
+    html += `
+    <tr>
+      <td>${u.email || ""}</td>
 
-      html += `
-      <tr>
-        <td>${u.email || ""}</td>
+      <td>
+        <input id="w_${doc.id}"
+        value="${u.walletBalance || 0}">
+      </td>
 
-        <td>
-          <input id="w_${doc.id}"
-          value="${u.walletBalance || 0}">
-        </td>
+      <td>
+        <input id="d_${doc.id}"
+        value="${u.dailyIncome || 0}">
+      </td>
 
-        <td>
-          <input id="d_${doc.id}"
-          value="${u.dailyIncome || 0}">
-        </td>
+      <td>
+        <input id="r_${doc.id}"
+        value="${u.referralEarnings || 0}">
+      </td>
 
-        <td>
-          <input id="r_${doc.id}"
-          value="${u.referralEarnings || 0}">
-        </td>
+      <td>
+        <input id="l_${doc.id}"
+        value="${u.level || 0}">
+      </td>
 
-        <td>
-          <input id="l_${doc.id}"
-          value="${u.level || 0}">
-        </td>
+      <td>
+        <select id="ban_${doc.id}">
+          <option value="false"
+          ${u.banned ? "" : "selected"}>No</option>
+          <option value="true"
+          ${u.banned ? "selected" : ""}>Yes</option>
+        </select>
+      </td>
 
-        <td>
-          <select id="ban_${doc.id}">
-            <option value="false"
-            ${u.banned ? "" : "selected"}>No</option>
-            <option value="true"
-            ${u.banned ? "selected" : ""}>Yes</option>
-          </select>
-        </td>
-
-        <td>
-          <button onclick="saveUser('${doc.id}')">
-          Save
-          </button>
-        </td>
-      </tr>
-      `;
-
-    });
-
-    document.getElementById("users").innerHTML = html;
+      <td>
+        <button onclick="saveUser('${doc.id}')">
+        Save
+        </button>
+      </td>
+    </tr>
+    `;
 
   });
+
+  document.getElementById("users").innerHTML = html;
 
 }
 
@@ -184,32 +204,38 @@ function loadUsers(){
 /* 💾 SAVE USER */
 /* ============================= */
 
-function saveUser(uid){
+async function saveUser(uid){
 
-  db.collection("users").doc(uid).update({
+  try{
 
-    walletBalance: Number(
-      document.getElementById("w_"+uid).value
-    ),
+    await db.collection("users").doc(uid).update({
 
-    dailyIncome: Number(
-      document.getElementById("d_"+uid).value
-    ),
+      walletBalance: Number(
+        document.getElementById("w_"+uid).value
+      ),
 
-    referralEarnings: Number(
-      document.getElementById("r_"+uid).value
-    ),
+      dailyIncome: Number(
+        document.getElementById("d_"+uid).value
+      ),
 
-    level: Number(
-      document.getElementById("l_"+uid).value
-    ),
+      referralEarnings: Number(
+        document.getElementById("r_"+uid).value
+      ),
 
-    banned:
-      document.getElementById("ban_"+uid).value === "true"
+      level: Number(
+        document.getElementById("l_"+uid).value
+      ),
 
-  }).then(()=>{
+      banned:
+        document.getElementById("ban_"+uid).value === "true"
+
+    });
+
     alert("✅ User Updated Successfully");
-  });
+
+  }catch(err){
+    alert("❌ Error: "+err.message);
+  }
 
 }
 
