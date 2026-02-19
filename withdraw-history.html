@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Withdraw History | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;padding:15px}
+h2{text-align:center}
+.card{
+  background:#1a1a1a;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+.status-pending{color:orange}
+.status-approved{color:#00ff00}
+.status-rejected{color:red}
+</style>
+</head>
+
+<body>
+
+<h2>💸 Withdraw History</h2>
+
+<div id="history"></div>
+
+<script>
+
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+});
+
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+
+  db.collection("withdrawRequests")
+  .where("uid","==",user.uid)
+  .orderBy("createdAt","desc")
+  .onSnapshot(snapshot=>{
+
+    let html="";
+
+    snapshot.forEach(doc=>{
+      const w = doc.data();
+
+      let statusClass="status-pending";
+      if(w.status==="approved") statusClass="status-approved";
+      if(w.status==="rejected") statusClass="status-rejected";
+
+      html+=`
+        <div class="card">
+          <div><b>Amount:</b> $${w.amount}</div>
+          <div><b>Status:</b> 
+            <span class="${statusClass}">
+              ${w.status}
+            </span>
+          </div>
+        </div>
+      `;
+    });
+
+    document.getElementById("history").innerHTML = html;
+
+  });
+
+});
+
+</script>
+
+</body>
+</html>
