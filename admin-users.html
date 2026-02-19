@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>User Details</title>
+<title>Admin User Details</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -18,6 +18,11 @@ body{
   padding:15px;
 }
 
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
 .card{
   background:#111;
   padding:15px;
@@ -25,30 +30,50 @@ body{
   margin-bottom:15px;
 }
 
-h2{text-align:center;}
-
 .row{
   display:flex;
   justify-content:space-between;
-  margin-bottom:8px;
+  margin-bottom:10px;
+  font-size:14px;
+  flex-wrap:wrap;
+}
+
+input{
+  padding:5px;
+  width:120px;
 }
 
 button{
-  background:#FFD700;
-  border:none;
   padding:8px 12px;
-  margin-top:10px;
+  border:none;
+  font-weight:bold;
   cursor:pointer;
+  border-radius:6px;
+  margin-top:10px;
+}
+
+.primary{
+  background:#FFD700;
+  color:#000;
+}
+
+.danger{
+  background:#ff4444;
+  color:white;
+}
+
+.back{
+  background:#333;
+  color:#FFD700;
 }
 </style>
 </head>
+
 <body>
 
-<h2>👤 User Full Details</h2>
+<h2>👤 User Details</h2>
 
-<div class="card" id="details"></div>
-
-<button onclick="history.back()">⬅ Back</button>
+<div id="content">Loading...</div>
 
 <script>
 
@@ -58,40 +83,122 @@ firebase.initializeApp({
   projectId:"supernft-5b952"
 });
 
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
-const params=new URLSearchParams(window.location.search);
-const uid=params.get("uid");
+const params = new URLSearchParams(window.location.search);
+const uid = params.get("uid");
 
-auth.onAuthStateChanged(user=>{
+let userRef;
+
+auth.onAuthStateChanged(async user => {
+
   if(!user){
-    location.href="admin-login.html";
+    document.getElementById("content").innerHTML="❌ Not logged in";
     return;
   }
-  loadUser();
+
+  if(!uid){
+    document.getElementById("content").innerHTML="❌ No UID found in URL";
+    return;
+  }
+
+  userRef = db.collection("users").doc(uid);
+  const snap = await userRef.get();
+
+  if(!snap.exists){
+    document.getElementById("content").innerHTML="❌ User not found";
+    return;
+  }
+
+  const u = snap.data();
+
+  renderUser(u);
 });
 
-function loadUser(){
-  db.collection("users").doc(uid).get().then(doc=>{
-    if(!doc.exists) return;
 
-    const u=doc.data();
-    let html="";
+function renderUser(u){
 
-    for(const key in u){
-      html+=`
-        <div class="row">
-          <span>${key}</span>
-          <span>${JSON.stringify(u[key])}</span>
-        </div>
-      `;
-    }
+  let html = `
+  <div class="card">
+    <div class="row"><b>Email</b><span>${u.email||""}</span></div>
+    <div class="row"><b>UID</b><span>${uid}</span></div>
+    <div class="row">
+      <b>Wallet</b>
+      <input id="wallet" value="${u.walletBalance||0}">
+    </div>
+    <div class="row">
+      <b>Daily Income</b>
+      <input id="daily" value="${u.dailyIncome||0}">
+    </div>
+    <div class="row">
+      <b>Live Earnings</b>
+      <input id="live" value="${u.liveEarnings||0}">
+    </div>
+    <div class="row">
+      <b>Referral</b>
+      <input id="ref" value="${u.referralEarnings||0}">
+    </div>
+    <div class="row">
+      <b>Total Deposit</b>
+      <input id="deposit" value="${u.totalDeposit||0}">
+    </div>
+    <div class="row">
+      <b>Total Withdraw</b>
+      <input id="withdraw" value="${u.totalWithdraw||0}">
+    </div>
+    <div class="row">
+      <b>Level</b>
+      <input id="level" value="${u.level||0}">
+    </div>
+    <div class="row">
+      <b>Banned</b>
+      <input type="checkbox" id="banned" ${u.banned?"checked":""}>
+    </div>
 
-    document.getElementById("details").innerHTML=html;
+    <button class="primary" onclick="saveUser()">💾 Save Changes</button>
+    <button class="danger" onclick="deleteUser()">🗑 Delete User</button>
+    <button class="back" onclick="back()">⬅ Back</button>
+  </div>
+  `;
+
+  document.getElementById("content").innerHTML = html;
+}
+
+
+async function saveUser(){
+
+  await userRef.update({
+    walletBalance:Number(document.getElementById("wallet").value),
+    dailyIncome:Number(document.getElementById("daily").value),
+    liveEarnings:Number(document.getElementById("live").value),
+    referralEarnings:Number(document.getElementById("ref").value),
+    totalDeposit:Number(document.getElementById("deposit").value),
+    totalWithdraw:Number(document.getElementById("withdraw").value),
+    level:Number(document.getElementById("level").value),
+    banned:document.getElementById("banned").checked
   });
+
+  alert("✅ User Updated Successfully");
+}
+
+
+async function deleteUser(){
+
+  if(!confirm("Are you sure you want to delete this user?")) return;
+
+  await userRef.delete();
+
+  alert("User Deleted");
+  window.location.href="admin.html";
+}
+
+
+function back(){
+  window.location.href="admin.html";
 }
 
 </script>
+
 </body>
 </html>
