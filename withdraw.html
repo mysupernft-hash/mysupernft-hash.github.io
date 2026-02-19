@@ -152,9 +152,15 @@ window.withdraw=async function(){
 /* WITHDRAW HISTORY REALTIME */
 function loadHistory(){
 
-  const q=query(
-    collection(db,"withdrawRequests"),
-    where("uid","==",currentUser.uid),
+  const historyRef = collection(
+    db,
+    "users",
+    currentUser.uid,
+    "history"
+  );
+
+  const q = query(
+    historyRef,
     orderBy("createdAt","desc")
   );
 
@@ -164,48 +170,34 @@ function loadHistory(){
 
     snapshot.forEach(doc=>{
 
-      const w=doc.data();
-      let statusClass="pending";
-      let message="";
-      let time="";
+      const h = doc.data();
+      let time = "";
 
-      if(w.createdAt?.seconds){
-        const date=new Date(w.createdAt.seconds*1000);
-        time=date.toLocaleString();
-      }
-
-      if(w.status==="approved"){
-        statusClass="approved";
-        message=`<div class="success-msg">
-          ✅ $${w.amount} received in your Binance wallet
-        </div>`;
-      }
-
-      if(w.status==="rejected"){
-        statusClass="rejected";
+      if(h.createdAt?.seconds){
+        const date = new Date(h.createdAt.seconds*1000);
+        time = date.toLocaleString();
       }
 
       html+=`
       <div class="history-card">
-        <div><b>Amount:</b> $${w.amount}</div>
-        <div><b>Date:</b> ${time}</div>
-        <div><b>Status:</b>
-          <span class="${statusClass}">
-            ${w.status}
-          </span>
+        <div><b>${h.title}</b></div>
+        <div>${time}</div>
+        <div class="approved">
+          +$${h.amount}
         </div>
-        ${message}
+        <div>Success</div>
+        <div class="success-msg">
+          $${h.amount} received in your Binance wallet
+        </div>
       </div>
       `;
     });
 
-    document.getElementById("history").innerHTML=
-      html || "No withdraw history found";
+    document.getElementById("history").innerHTML =
+      html || "No history found";
 
   });
-
 }
-
 </script>
 
 </body>
