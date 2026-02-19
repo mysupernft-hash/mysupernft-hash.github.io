@@ -301,33 +301,45 @@ function loadWithdraws(){
 
 function approve(id,uid,amount){
 
-  const userRef=db.collection("users").doc(uid);
-  const withdrawRef=db.collection("withdrawRequests").doc(id);
+  const userRef = db.collection("users").doc(uid);
+  const withdrawRef = db.collection("withdrawRequests").doc(id);
+  const historyRef = db.collection("users").doc(uid)
+                       .collection("history").doc();
 
   db.runTransaction(async(transaction)=>{
 
-    const userDoc=await transaction.get(userRef);
+    const userDoc = await transaction.get(userRef);
     if(!userDoc.exists) throw "User missing";
 
-    const newBal=(userDoc.data().walletBalance||0)-amount;
-    if(newBal<0) throw "Insufficient";
+    const newBal = (userDoc.data().walletBalance||0) - amount;
+    if(newBal < 0) throw "Insufficient";
 
+    // 🔹 Wallet update
     transaction.update(userRef,{
       walletBalance:newBal,
       totalWithdraw:(userDoc.data().totalWithdraw||0)+amount
     });
 
+    // 🔹 Withdraw status update
     transaction.update(withdrawRef,{
       status:"approved",
-      receivedMessage:amount+"$ received in your Binance wallet"
+      receivedMessage:amount+"$ received in your Binance wallet",
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-  }).then(()=>alert("Withdraw Approved"));
-}
+    // 🔹 🔥 HISTORY ENTRY ADD
+    transaction.set(historyRef,{
+      title:"Withdraw",
+      amount:amount,
+      status:"success",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
 
-function reject(id){
-  db.collection("withdrawRequests").doc(id)
-  .update({status:"rejected"});
+  }).then(()=>{
+    alert("Withdraw Approved & History Added");
+  }).catch(err=>{
+    alert("Error: "+err);
+  });
 }
 </script>
 </body>
