@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ultra Withdraw | SuperNFT</title>
+<title>Withdraw | SuperNFT</title>
 
 <style>
 body{
@@ -29,7 +29,7 @@ header{
   margin-bottom:15px;
 }
 .balance{
-  font-size:28px;
+  font-size:30px;
   font-weight:bold;
 }
 input{
@@ -44,7 +44,7 @@ input{
 button{
   width:100%;
   padding:12px;
-  margin-top:12px;
+  margin-top:15px;
   border:none;
   border-radius:8px;
   background:#FFD700;
@@ -52,12 +52,8 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{
-  background:#e6c200;
-}
-button.cancel{
-  background:#ff4444;
-  color:#fff;
+button:disabled{
+  opacity:0.6;
 }
 .status{
   margin-top:12px;
@@ -68,81 +64,61 @@ button.cancel{
   padding:12px;
   border-radius:10px;
   margin-top:10px;
+  border:1px solid #272727;
 }
 .pending{color:orange}
-.processing{color:#00ccff}
 .approved{color:#00ff00}
 .rejected{color:red}
 .success-msg{
-  margin-top:8px;
+  margin-top:6px;
   color:#00ff00;
   font-size:13px;
 }
-.reject-msg{
-  margin-top:8px;
-  color:red;
-  font-size:13px;
+.time{
+  font-size:11px;
+  color:#aaa;
 }
-.modal{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.7);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-.modal-box{
-  background:#1a1a1a;
-  padding:20px;
-  border-radius:12px;
-  width:90%;
-  max-width:350px;
+.back{
+  display:block;
+  text-align:center;
+  margin-top:20px;
+  padding:10px;
+  background:#272727;
+  border-radius:8px;
+  text-decoration:none;
+  color:#FFD700;
 }
 </style>
 </head>
 
 <body>
 
-<header>💸 Ultra Withdraw</header>
+<header>💸 Withdraw</header>
 
 <div class="container">
 
+<!-- WALLET -->
 <div class="card">
   <div>Available Balance</div>
   <div class="balance">$<span id="walletBalance">0.00</span></div>
 </div>
 
+<!-- WITHDRAW FORM -->
 <div class="card">
   <div>Withdraw Amount</div>
   <input type="number" id="amount" placeholder="Enter amount">
-
-  <button onclick="openSummary()">Withdraw</button>
+  <button id="withdrawBtn" onclick="withdraw()">Request Withdraw</button>
   <div class="status" id="status"></div>
 </div>
 
+<!-- HISTORY -->
 <div class="card">
   <h3>Withdraw History</h3>
   <div id="history"></div>
 </div>
 
-<a href="dashboard.html" style="color:#FFD700;">⬅ Back</a>
+<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
-</div>
-
-<!-- SUMMARY MODAL -->
-<div class="modal" id="summaryModal">
-  <div class="modal-box">
-    <h3>Confirm Withdraw</h3>
-    <div id="summaryText"></div>
-
-    <input type="password" id="pinInput" placeholder="Enter Withdraw PIN">
-
-    <button onclick="confirmWithdraw()">Confirm</button>
-    <button onclick="closeModal()" class="cancel">Cancel</button>
-  </div>
 </div>
 
 <script type="module">
@@ -151,9 +127,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, updateDoc,
+  getFirestore, doc, onSnapshot,
   collection, addDoc, serverTimestamp,
-  onSnapshot, query, where, orderBy, deleteDoc
+  query, where, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
@@ -169,19 +145,18 @@ const db=getFirestore(app);
 let currentUser=null;
 let walletAmount=0;
 let hasPending=false;
-let withdrawAmount=0;
 
 /* AUTH */
-onAuthStateChanged(auth, async(user)=>{
+onAuthStateChanged(auth,(user)=>{
   if(!user){
-    location.href="login.html";
+    window.location.replace("login.html");
     return;
   }
 
   currentUser=user;
 
+  // 🔥 REALTIME WALLET SYNC
   const userRef=doc(db,"users",user.uid);
-
   onSnapshot(userRef,(snap)=>{
     if(!snap.exists()) return;
     walletAmount=snap.data().walletBalance||0;
@@ -192,71 +167,56 @@ onAuthStateChanged(auth, async(user)=>{
   loadHistory();
 });
 
-/* OPEN SUMMARY */
-window.openSummary=function(){
+/* WITHDRAW */
+window.withdraw=async function(){
 
-  const amount=Number(document.getElementById("amount").value);
+  const btn=document.getElementById("withdrawBtn");
   const status=document.getElementById("status");
+  const amount=Number(document.getElementById("amount").value);
 
   if(hasPending){
-    status.innerText="You already have pending withdraw.";
+    status.innerText="You already have a pending request.";
     return;
   }
 
-  if(!amount||amount<10){
-    status.innerText="Minimum withdraw $10";
+  if(!amount||amount<=0){
+    status.innerText="Enter valid amount.";
+    return;
+  }
+
+  if(amount<10){
+    status.innerText="Minimum withdraw is $10.";
     return;
   }
 
   if(amount>walletAmount){
-    status.innerText="Insufficient balance";
+    status.innerText="Insufficient balance.";
     return;
   }
 
-  withdrawAmount=amount;
+  btn.disabled=true;
+  btn.innerText="Processing...";
 
-  document.getElementById("summaryText").innerHTML=`
-    Amount: $${amount}<br>
-    Fee: $0<br>
-    You Receive: $${amount}
-  `;
+  try{
+    await addDoc(collection(db,"withdrawRequests"),{
+      uid:currentUser.uid,
+      email:currentUser.email,
+      amount:amount,
+      status:"pending",
+      createdAt:serverTimestamp()
+    });
 
-  document.getElementById("summaryModal").style.display="flex";
-};
-
-/* CLOSE MODAL */
-window.closeModal=function(){
-  document.getElementById("summaryModal").style.display="none";
-};
-
-/* CONFIRM WITHDRAW */
-window.confirmWithdraw=async function(){
-
-  const pin=document.getElementById("pinInput").value;
-
-  const userRef=doc(db,"users",currentUser.uid);
-  const snap=await getDoc(userRef);
-  const data=snap.data();
-
-  if(data.settings?.withdrawPIN !== pin){
-    alert("Wrong PIN");
-    return;
+    status.innerText="✅ Request submitted. Waiting for admin approval.";
+    document.getElementById("amount").value="";
+  }catch(err){
+    status.innerText="Withdraw failed.";
   }
 
-  await addDoc(collection(db,"withdrawRequests"),{
-    uid:currentUser.uid,
-    email:currentUser.email,
-    amount:withdrawAmount,
-    status:"pending",
-    createdAt:serverTimestamp()
-  });
-
-  document.getElementById("summaryModal").style.display="none";
-  document.getElementById("amount").value="";
-  document.getElementById("pinInput").value="";
+  btn.disabled=false;
+  btn.innerText="Request Withdraw";
 };
 
-/* LOAD HISTORY */
+/* HISTORY REALTIME */
 function loadHistory(){
 
   const q=query(
@@ -273,53 +233,51 @@ function loadHistory(){
     snapshot.forEach(doc=>{
 
       const w=doc.data();
-      let statusClass=w.status;
+      let statusClass="pending";
       let message="";
-      let cancelBtn="";
+      let time="";
+
+      if(w.createdAt?.seconds){
+        const date=new Date(w.createdAt.seconds*1000);
+        time=date.toLocaleString(); // ✅ shows full date + time
+      }
 
       if(w.status==="approved"){
+        statusClass="approved";
         message=`<div class="success-msg">
-        $${w.amount} received in your Binance wallet
+          ✅ $${w.amount} received in your Binance wallet
         </div>`;
       }
 
       if(w.status==="rejected"){
-        message=`<div class="reject-msg">
-        ${w.reason||"Rejected by admin"}
-        </div>`;
+        statusClass="rejected";
       }
 
       if(w.status==="pending"){
         hasPending=true;
-        cancelBtn=`<button class="cancel"
-        onclick="cancelWithdraw('${doc.id}')">
-        Cancel</button>`;
       }
 
       html+=`
       <div class="history-card">
-        <div>Amount: $${w.amount}</div>
-        <div>Status:
+        <div><b>Amount:</b> $${w.amount}</div>
+        <div class="time">${time}</div>
+        <div>
+          <b>Status:</b>
           <span class="${statusClass}">
-          ${w.status}
+            ${w.status}
           </span>
         </div>
         ${message}
-        ${cancelBtn}
       </div>
       `;
     });
 
     document.getElementById("history").innerHTML=
-      html||"No withdraw history";
+      html || "<div>No withdraw history found</div>";
 
   });
-}
 
-/* CANCEL PENDING */
-window.cancelWithdraw=async function(id){
-  await deleteDoc(doc(db,"withdrawRequests",id));
-};
+}
 
 </script>
 
