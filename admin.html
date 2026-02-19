@@ -10,52 +10,72 @@
 
 <style>
 body{
-  margin:0;
-  background:#0f0f0f;
+  background:#0d0d0d;
   color:#FFD700;
-  font-family:Arial;
+  font-family:Arial, sans-serif;
+  margin:0;
 }
-
 header{
-  padding:15px;
+  background:#111;
   text-align:center;
+  padding:15px;
   font-size:20px;
   font-weight:bold;
-  background:#1a1a1a;
+  color:#ffd700;
 }
-
 .container{
-  padding:10px;
+  padding:12px;
 }
-
 .card{
   background:#1a1a1a;
+  margin-bottom:12px;
+  border-radius:8px;
   padding:10px;
-  border-radius:10px;
-  margin-bottom:10px;
+  font-size:14px;
 }
-
-input{
-  width:70px;
+label{
+  display:block;
+  margin-bottom:4px;
+  font-size:13px;
+  color:#ccc;
 }
-
+input,select{
+  width:100%;
+  padding:6px;
+  border-radius:6px;
+  border:1px solid #333;
+  background:#000;
+  color:#FFD700;
+  margin-bottom:8px;
+}
 button{
-  padding:5px 10px;
-  background:#FFD700;
-  border:none;
+  width:100%;
+  padding:8px;
   font-weight:bold;
+  border:none;
+  border-radius:6px;
+  background:#FFD700;
+  color:#000;
   cursor:pointer;
+  margin-top:6px;
+}
+button:hover{
+  background:#e6c200;
 }
 </style>
 </head>
+
 <body>
 
 <header>🔥 SuperNFT Admin Dashboard</header>
 
-<div class="container" id="users"></div>
+<div class="container" id="userList">
+  Loading users...
+</div>
 
 <script>
 
+// Initialize Firebase
 firebase.initializeApp({
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -64,53 +84,60 @@ firebase.initializeApp({
 
 const db = firebase.firestore();
 
-/* DIRECT LOAD USERS (NO AUTH CHECK) */
+// Load users from Firestore
+db.collection("users").get().then(snapshot => {
 
-db.collection("users").get().then(snapshot=>{
-
-  let html="";
-
-  snapshot.forEach(doc=>{
-
+  let html = "";
+  snapshot.forEach(doc => {
     const u = doc.data();
 
     html += `
-    <div class="card">
-      <div>${u.email || "No Email"}</div>
-      <div>
-        Wallet: 
-        <input id="w_${doc.id}" value="${u.walletBalance || 0}">
-      </div>
-      <div>
-        Daily: 
-        <input id="d_${doc.id}" value="${u.dailyIncome || 0}">
-      </div>
-      <div>
-        Level: 
-        <input id="l_${doc.id}" value="${u.level || 1}">
-      </div>
-      <button onclick="saveUser('${doc.id}')">Save</button>
-    </div>
-    `;
+      <div class="card">
+        <div><strong>${u.email || "No Email"}</strong></div>
 
+        <label>Wallet Balance</label>
+        <input id="w_${doc.id}" value="${u.walletBalance||0}">
+
+        <label>Daily Income</label>
+        <input id="d_${doc.id}" value="${u.dailyIncome||0}">
+
+        <label>Referral Earnings</label>
+        <input id="r_${doc.id}" value="${u.referralEarnings||0}">
+
+        <label>Level</label>
+        <input id="l_${doc.id}" value="${u.level||0}">
+
+        <label>Banned</label>
+        <select id="b_${doc.id}">
+          <option value="false" ${u.banned ? "" : "selected"}>No</option>
+          <option value="true" ${u.banned ? "selected" : ""}>Yes</option>
+        </select>
+
+        <button onclick="saveUser('${doc.id}')">Save</button>
+      </div>
+    `;
   });
 
-  document.getElementById("users").innerHTML = html;
+  document.getElementById("userList").innerHTML = html;
 
+}).catch(err => {
+  document.getElementById("userList").innerText =
+    "Failed to load users. Check Firestore rules.";
 });
 
-/* SAVE FUNCTION */
-
+// Save updated user
 function saveUser(uid){
-
   db.collection("users").doc(uid).update({
-    walletBalance:Number(document.getElementById("w_"+uid).value),
-    dailyIncome:Number(document.getElementById("d_"+uid).value),
-    level:Number(document.getElementById("l_"+uid).value)
+    walletBalance: Number(document.getElementById("w_"+uid).value),
+    dailyIncome: Number(document.getElementById("d_"+uid).value),
+    referralEarnings: Number(document.getElementById("r_"+uid).value),
+    level: Number(document.getElementById("l_"+uid).value),
+    banned: document.getElementById("b_"+uid).value === "true"
   }).then(()=>{
-    alert("Updated");
+    alert("User updated successfully!");
+  }).catch(err=>{
+    alert("Update failed: " + err.message);
   });
-
 }
 
 </script>
