@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin Dashboard</title>
+<title>SuperNFT Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -26,7 +26,7 @@ header{
 }
 
 .container{
-  padding:10px;
+  padding:12px;
 }
 
 .user-card{
@@ -37,8 +37,6 @@ header{
 }
 
 .row{
-  display:flex;
-  justify-content:space-between;
   margin-bottom:8px;
   font-size:14px;
 }
@@ -76,13 +74,13 @@ button{
 
 <body>
 
-<header>🔥 SuperNFT Admin Panel</header>
+<header>🔥 SuperNFT Admin Dashboard</header>
 
 <div class="container">
 
 <button class="logout-btn" onclick="logout()">Logout</button>
 
-<div id="usersContainer"></div>
+<div id="usersContainer">Loading users...</div>
 
 </div>
 
@@ -97,6 +95,7 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
+/* 🔐 AUTH CHECK */
 auth.onAuthStateChanged(user => {
 
   if(!user){
@@ -107,6 +106,7 @@ auth.onAuthStateChanged(user => {
   loadUsers();
 });
 
+/* 👥 LOAD ALL USERS */
 function loadUsers(){
 
   db.collection("users").get().then(snapshot => {
@@ -125,7 +125,7 @@ function loadUsers(){
         </div>
 
         <div>
-          Wallet
+          Wallet Balance
           <input id="wallet_${doc.id}" value="${u.walletBalance || 0}">
         </div>
 
@@ -166,6 +166,7 @@ function loadUsers(){
   });
 }
 
+/* 💾 SAVE USER DATA */
 function saveUser(uid){
 
   db.collection("users").doc(uid).update({
@@ -179,8 +180,10 @@ function saveUser(uid){
   }).then(()=>{
     alert("✅ User Updated Successfully");
   });
+
 }
 
+/* 🔓 LOGOUT */
 function logout(){
   auth.signOut().then(()=>{
     window.location.href="admin-login.html";
