@@ -149,16 +149,23 @@ onAuthStateChanged(auth,(user)=>{
     return;
   }
 
-  currentUser=user;
+  currentUser = user;
 
-  const userRef=doc(db,"users",user.uid);
+  const userRef = doc(db,"users",user.uid);
 
-  // 🔥 REALTIME WALLET SYNC
+  // 🔥 REALTIME WALLET SYNC (Single Source of Truth)
   onSnapshot(userRef,(snap)=>{
+
     if(!snap.exists()) return;
-    walletAmount=snap.data().walletBalance||0;
-    document.getElementById("walletBalance").innerText=
+
+    const data = snap.data();
+
+    // Always use only walletBalance
+    walletAmount = Number(data.walletBalance || 0);
+
+    document.getElementById("walletBalance").innerText =
       walletAmount.toFixed(2);
+
   });
 
   loadHistory();
