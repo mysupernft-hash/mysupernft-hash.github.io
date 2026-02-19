@@ -19,9 +19,7 @@ header{
   font-size:20px;
   font-weight:bold;
 }
-.container{
-  padding:20px;
-}
+.container{padding:20px;}
 .card{
   background:#1a1a1a;
   border-radius:12px;
@@ -29,7 +27,7 @@ header{
   margin-bottom:15px;
 }
 .balance{
-  font-size:30px;
+  font-size:28px;
   font-weight:bold;
 }
 input{
@@ -52,31 +50,21 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button:disabled{
-  opacity:0.6;
-}
-.status{
-  margin-top:12px;
-  font-size:14px;
-}
+button:hover{background:#e6c200;}
+.status{margin-top:12px;font-size:14px;}
 .history-card{
   background:#111;
   padding:12px;
   border-radius:10px;
   margin-top:10px;
-  border:1px solid #272727;
 }
 .pending{color:orange}
 .approved{color:#00ff00}
 .rejected{color:red}
 .success-msg{
-  margin-top:6px;
+  margin-top:8px;
   color:#00ff00;
   font-size:13px;
-}
-.time{
-  font-size:11px;
-  color:#aaa;
 }
 .back{
   display:block;
@@ -97,27 +85,24 @@ button:disabled{
 
 <div class="container">
 
-<!-- WALLET -->
-<div class="card">
-  <div>Available Balance</div>
-  <div class="balance">$<span id="walletBalance">0.00</span></div>
-</div>
+  <div class="card">
+    <div>Available Balance</div>
+    <div class="balance">$<span id="walletBalance">0.00</span></div>
+  </div>
 
-<!-- WITHDRAW FORM -->
-<div class="card">
-  <div>Withdraw Amount</div>
-  <input type="number" id="amount" placeholder="Enter amount">
-  <button id="withdrawBtn" onclick="withdraw()">Request Withdraw</button>
-  <div class="status" id="status"></div>
-</div>
+  <div class="card">
+    <div>Withdraw Amount</div>
+    <input type="number" id="amount" placeholder="Enter amount">
+    <button id="withdrawBtn" onclick="withdraw()">Request Withdraw</button>
+    <div class="status" id="status"></div>
+  </div>
 
-<!-- HISTORY -->
-<div class="card">
-  <h3>Withdraw History</h3>
-  <div id="history"></div>
-</div>
+  <div class="card">
+    <h3>Withdraw History</h3>
+    <div id="history"></div>
+  </div>
 
-<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
+  <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
 
 </div>
 
@@ -127,8 +112,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, doc, onSnapshot,
-  collection, addDoc, serverTimestamp,
+  getFirestore, doc, collection,
+  runTransaction, onSnapshot,
   query, where, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -155,7 +140,7 @@ onAuthStateChanged(auth,(user)=>{
 
   currentUser=user;
 
-  // 🔥 REALTIME WALLET SYNC
+  // 🔥 REALTIME WALLET
   const userRef=doc(db,"users",user.uid);
   onSnapshot(userRef,(snap)=>{
     if(!snap.exists()) return;
@@ -175,7 +160,7 @@ window.withdraw=async function(){
   const amount=Number(document.getElementById("amount").value);
 
   if(hasPending){
-    status.innerText="You already have a pending request.";
+    status.innerText="You already have pending request.";
     return;
   }
 
@@ -198,18 +183,42 @@ window.withdraw=async function(){
   btn.innerText="Processing...";
 
   try{
-    await addDoc(collection(db,"withdrawRequests"),{
-      uid:currentUser.uid,
-      email:currentUser.email,
-      amount:amount,
-      status:"pending",
-      createdAt:serverTimestamp()
+
+    await runTransaction(db,async(transaction)=>{
+
+      const userRef=doc(db,"users",currentUser.uid);
+      const snap=await transaction.get(userRef);
+
+      if(!snap.exists()) throw "User not found";
+
+      const data=snap.data();
+      const currentBal=data.walletBalance||0;
+
+      if(amount>currentBal) throw "Balance changed";
+
+      transaction.update(userRef,{
+        walletBalance:currentBal-amount,
+        totalWithdraw:(data.totalWithdraw||0)+amount
+      });
+
+      const withdrawRef=doc(collection(db,"withdrawRequests"));
+
+      transaction.set(withdrawRef,{
+        uid:currentUser.uid,
+        email:currentUser.email,
+        amount:amount,
+        status:"pending",
+        createdAt:new Date()
+      });
+
     });
 
-    status.innerText="✅ Request submitted. Waiting for admin approval.";
+    status.innerText="✅ Withdraw submitted successfully.";
     document.getElementById("amount").value="";
+
   }catch(err){
-    status.innerText="Withdraw failed.";
+    console.error(err);
+    status.innerText="❌ Withdraw failed.";
   }
 
   btn.disabled=false;
@@ -230,22 +239,22 @@ function loadHistory(){
     let html="";
     hasPending=false;
 
-    snapshot.forEach(doc=>{
+    snapshot.forEach(docSnap=>{
 
-      const w=doc.data();
+      const w=docSnap.data();
       let statusClass="pending";
       let message="";
       let time="";
 
-      if(w.createdAt?.seconds){
-        const date=new Date(w.createdAt.seconds*1000);
-        time=date.toLocaleString(); // ✅ shows full date + time
+      if(w.createdAt){
+        const date=w.createdAt.toDate();
+        time=date.toLocaleString();
       }
 
       if(w.status==="approved"){
         statusClass="approved";
         message=`<div class="success-msg">
-          ✅ $${w.amount} received in your Binance wallet
+        ✅ $${w.amount} received in your Binance wallet
         </div>`;
       }
 
@@ -259,21 +268,20 @@ function loadHistory(){
 
       html+=`
       <div class="history-card">
+        <div><b>Withdraw ID:</b> ${docSnap.id}</div>
         <div><b>Amount:</b> $${w.amount}</div>
-        <div class="time">${time}</div>
-        <div>
-          <b>Status:</b>
-          <span class="${statusClass}">
-            ${w.status}
-          </span>
-        </div>
+        <div><b>Date:</b> ${time}</div>
+        <div><b>Status:</b> 
+        <span class="${statusClass}">
+        ${w.status}
+        </span></div>
         ${message}
       </div>
       `;
     });
 
     document.getElementById("history").innerHTML=
-      html || "<div>No withdraw history found</div>";
+      html || "<div>No withdraw history</div>";
 
   });
 
