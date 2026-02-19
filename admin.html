@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin Panel</title>
+<title>SuperNFT Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -15,35 +15,26 @@ body{
   font-family:Arial;
   background:#0d0d0d;
   color:#FFD700;
-  padding:15px
+  padding:10px;
 }
 
-h2{text-align:center}
-
-input{
-  width:70px;
-  font-size:11px;
+h2{
+  text-align:center;
+  margin-bottom:10px;
 }
 
-button{
-  padding:5px 8px;
-  background:#FFD700;
+.search{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
   border:none;
-  font-weight:bold;
-  cursor:pointer;
-  font-size:11px;
-}
-
-button.delete{
-  background:#ff4444;
-  color:#fff;
+  border-radius:6px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
   font-size:11px;
-  overflow-x:auto;
 }
 
 th,td{
@@ -52,21 +43,47 @@ th,td{
   text-align:center;
 }
 
-.search{
-  width:100%;
-  padding:8px;
-  margin-bottom:10px;
+input{
+  width:70px;
+  font-size:11px;
+}
+
+button{
+  padding:4px 6px;
+  font-size:10px;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.saveBtn{
+  background:#FFD700;
+}
+
+.deleteBtn{
+  background:#ff4444;
+  color:#fff;
+}
+
+@media(max-width:768px){
+  table{
+    font-size:9px;
+  }
+  input{
+    width:55px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<h2>🔥 SuperNFT Admin Dashboard</h2>
+<h2>🔥 SuperNFT Admin Panel</h2>
 
 <input type="text" id="search" class="search"
 placeholder="Search by Email or UID">
 
+<div style="overflow-x:auto;">
 <table>
 <thead>
 <tr>
@@ -85,6 +102,7 @@ placeholder="Search by Email or UID">
 </thead>
 <tbody id="users"></tbody>
 </table>
+</div>
 
 <script>
 
@@ -124,7 +142,7 @@ function loadUsers(){
   });
 }
 
-/* RENDER TABLE */
+/* RENDER USERS */
 function renderUsers(users){
 
   let html="";
@@ -138,7 +156,7 @@ function renderUsers(users){
         <div style="font-weight:bold">
           ${u.email||""}
         </div>
-        <div style="color:#aaa;font-size:10px">
+        <div style="color:#aaa;font-size:9px">
           ${u.id}
         </div>
       </td>
@@ -148,9 +166,9 @@ function renderUsers(users){
       <td><input id="r_${u.id}" value="${u.referralEarnings||0}"></td>
       <td><input id="l_${u.id}" value="${u.level||1}"></td>
 
-      <td>${u.totalDeposit||0}</td>
-      <td>${u.totalWithdraw||0}</td>
-      <td>${u.liveEarnings||0}</td>
+      <td><input id="dep_${u.id}" value="${u.totalDeposit||0}"></td>
+      <td><input id="with_${u.id}" value="${u.totalWithdraw||0}"></td>
+      <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
 
       <td>
         <select id="ban_${u.id}">
@@ -160,14 +178,13 @@ function renderUsers(users){
       </td>
 
       <td>
-        <button onclick="saveUser('${u.id}')">Save</button>
+        <button class="saveBtn"
+        onclick="saveUser('${u.id}')">Save</button>
       </td>
 
       <td>
-        <button class="delete"
-        onclick="deleteUser('${u.id}')">
-        X
-        </button>
+        <button class="deleteBtn"
+        onclick="deleteUser('${u.id}')">X</button>
       </td>
 
     </tr>
@@ -180,24 +197,38 @@ function renderUsers(users){
 /* SAVE USER */
 function saveUser(uid){
 
+  const wallet   = Number(document.getElementById("w_"+uid).value)||0;
+  const daily    = Number(document.getElementById("d_"+uid).value)||0;
+  const referral = Number(document.getElementById("r_"+uid).value)||0;
+  const level    = Number(document.getElementById("l_"+uid).value)||0;
+  const deposit  = Number(document.getElementById("dep_"+uid).value)||0;
+  const withdraw = Number(document.getElementById("with_"+uid).value)||0;
+  const live     = Number(document.getElementById("live_"+uid).value)||0;
+  const banned   = document.getElementById("ban_"+uid).value==="true";
+
+  const totalIncome = referral + daily + live;
+
   db.collection("users").doc(uid).update({
 
-    walletBalance:Number(document.getElementById("w_"+uid).value),
-    dailyIncome:Number(document.getElementById("d_"+uid).value),
-    referralEarnings:Number(document.getElementById("r_"+uid).value),
-    level:Number(document.getElementById("l_"+uid).value),
-    banned:document.getElementById("ban_"+uid).value==="true"
+    walletBalance: wallet,
+    dailyIncome: daily,
+    referralEarnings: referral,
+    level: level,
+    totalDeposit: deposit,
+    totalWithdraw: withdraw,
+    liveEarnings: live,
+    totalIncome: totalIncome,
+    banned: banned
 
   }).then(()=>{
-    alert("✅ Updated");
+    alert("✅ User Updated");
   });
-
 }
 
 /* DELETE USER */
 function deleteUser(uid){
 
-  if(confirm("Delete this user?")){
+  if(confirm("Delete this user permanently?")){
 
     db.collection("users").doc(uid).delete()
     .then(()=>alert("User Deleted"));
