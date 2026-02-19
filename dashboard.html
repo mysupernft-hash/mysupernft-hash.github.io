@@ -315,7 +315,11 @@ onAuthStateChanged(auth, async (user) => {
     user.email || "User";
 
   const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
+  onSnapshot(userRef, (snap)=>{
+   const data = snap.data();
+
+   // same update code here
+});
 
   if(!snap.exists()) return;
 
