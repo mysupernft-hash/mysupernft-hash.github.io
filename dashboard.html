@@ -50,7 +50,7 @@ footer div:hover{color:#e0c200;}
   font-size:12px;
   font-weight:bold;
   margin-left:6px;
-  box-shadow:0 0 8px #FFD700;
+  box-shadow:0 0 10px #FFD700;
 }
 
   
@@ -108,7 +108,7 @@ footer div:hover{color:#e0c200;}
   <div class="user-left">
     👤 Welcome, 
     <span id="userEmail">Loading...</span>
-    <span class="verified-badge">✔</span>
+    <span id="verifiedTick" class="verified-badge" style="display:none;">✔</span>
   </div>
 
   <div class="wallet-right">
@@ -319,7 +319,12 @@ onAuthStateChanged(auth, async (user) => {
 
   if(!snap.exists()) return;
 
-  const data = snap.data();
+  // ✅ VERIFIED CHECK
+if(data.verified === true){
+  document.getElementById("verifiedTick").style.display = "inline-flex";
+} else {
+  document.getElementById("verifiedTick").style.display = "none";
+}
 
   const dailyIncome = data.dailyIncome || 0;
   let walletBalance = data.walletBalance || 0;
