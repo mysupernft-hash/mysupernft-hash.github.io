@@ -2,121 +2,113 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Direct Admin Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Admin</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:#0d0d0d;
+  background:#0f0f0f;
   color:#FFD700;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+  font-family:Arial;
+}
+
+header{
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+  background:#1a1a1a;
+}
+
+.container{
+  padding:10px;
 }
 
 .card{
   background:#1a1a1a;
-  padding:30px;
-  border-radius:12px;
-  width:320px;
-  text-align:center;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
 }
 
 input{
-  width:100%;
-  padding:10px;
-  margin:10px 0;
-  border:none;
-  border-radius:6px;
+  width:70px;
 }
 
 button{
-  width:100%;
-  padding:12px;
+  padding:5px 10px;
   background:#FFD700;
   border:none;
-  border-radius:8px;
   font-weight:bold;
   cursor:pointer;
 }
-
-button:hover{
-  background:#e6c200;
-}
-
-.error{
-  color:red;
-  margin-top:10px;
-}
 </style>
 </head>
-
 <body>
 
-<div class="card">
-  <h2>🔐 Direct Admin Login</h2>
+<header>🔥 SuperNFT Admin Dashboard</header>
 
-  <input type="email" id="email" placeholder="Admin Email">
-  <input type="password" id="password" placeholder="Password">
-  <input type="text" id="uid" placeholder="Enter UID">
-  <input type="password" id="pin" placeholder="Enter Admin PIN">
-
-  <button onclick="adminLogin()">Login</button>
-
-  <div id="error" class="error"></div>
-</div>
+<div class="container" id="users"></div>
 
 <script>
 
 firebase.initializeApp({
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 });
 
-const auth = firebase.auth();
+const db = firebase.firestore();
 
-/* 🔐 HARD ADMIN CREDENTIALS */
-const ADMIN_UID = "MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1";
-const ADMIN_PIN = "1449@MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1@shiva";
+/* DIRECT LOAD USERS (NO AUTH CHECK) */
 
-function adminLogin(){
+db.collection("users").get().then(snapshot=>{
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const uidInput = document.getElementById("uid").value;
-  const pinInput = document.getElementById("pin").value;
+  let html="";
 
-  /* 🔐 UID + PIN Check */
-  if(uidInput !== ADMIN_UID){
-    document.getElementById("error").innerText = "❌ Invalid UID";
-    return;
-  }
+  snapshot.forEach(doc=>{
 
-  if(pinInput !== ADMIN_PIN){
-    document.getElementById("error").innerText = "❌ Invalid PIN";
-    return;
-  }
+    const u = doc.data();
 
-  /* 🔥 Firebase Login */
-  auth.signInWithEmailAndPassword(email,password)
-  .then((cred)=>{
+    html += `
+    <div class="card">
+      <div>${u.email || "No Email"}</div>
+      <div>
+        Wallet: 
+        <input id="w_${doc.id}" value="${u.walletBalance || 0}">
+      </div>
+      <div>
+        Daily: 
+        <input id="d_${doc.id}" value="${u.dailyIncome || 0}">
+      </div>
+      <div>
+        Level: 
+        <input id="l_${doc.id}" value="${u.level || 1}">
+      </div>
+      <button onclick="saveUser('${doc.id}')">Save</button>
+    </div>
+    `;
 
-    if(cred.user.uid === ADMIN_UID){
-      window.location.href = "admin.html";
-    } else {
-      document.getElementById("error").innerText = "❌ Not Admin Account";
-      auth.signOut();
-    }
+  });
 
-  })
-  .catch(error=>{
-    document.getElementById("error").innerText = error.message;
+  document.getElementById("users").innerHTML = html;
+
+});
+
+/* SAVE FUNCTION */
+
+function saveUser(uid){
+
+  db.collection("users").doc(uid).update({
+    walletBalance:Number(document.getElementById("w_"+uid).value),
+    dailyIncome:Number(document.getElementById("d_"+uid).value),
+    level:Number(document.getElementById("l_"+uid).value)
+  }).then(()=>{
+    alert("Updated");
   });
 
 }
