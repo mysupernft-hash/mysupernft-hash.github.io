@@ -15,9 +15,7 @@ body{
   font-family:Arial;
   padding:20px;
 }
-h2{
-  text-align:center;
-}
+h2{text-align:center}
 table{
   width:100%;
   border-collapse:collapse;
@@ -28,9 +26,7 @@ th,td{
   padding:8px;
   text-align:center;
 }
-th{
-  background:#111;
-}
+th{background:#111}
 input,select{
   width:80px;
   padding:4px;
@@ -42,16 +38,10 @@ button{
   cursor:pointer;
   font-weight:bold;
 }
-button:hover{
-  background:#e6c200;
-}
+button:hover{background:#e6c200}
 .logout{
   float:right;
   margin-bottom:10px;
-}
-#status{
-  text-align:center;
-  margin-top:40px;
 }
 </style>
 </head>
@@ -85,6 +75,7 @@ button:hover{
 
 <script>
 
+// 🔥 FIREBASE CONFIG
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -94,9 +85,9 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-/* ============================= */
-/* 🔐 ADMIN CHECK */
-/* ============================= */
+// =============================
+// 🔐 ADMIN CHECK
+// =============================
 
 auth.onAuthStateChanged(async user => {
 
@@ -107,106 +98,105 @@ auth.onAuthStateChanged(async user => {
 
   try{
 
-    const snap = await db.collection("users").doc(user.uid).get();
+    const docRef = await db.collection("users").doc(user.uid).get();
 
-    if(!snap.exists){
+    if(!docRef.exists){
       document.getElementById("status").innerText =
         "❌ User document not found";
       return;
     }
 
-    const data = snap.data();
+    const data = docRef.data();
 
-    // ✅ ADMIN ACCESS CHECK
-    if(data.role === "superadmin" || data.isAdmin === true){
+    console.log("Admin Data:", data);
 
-      document.getElementById("status").style.display="none";
-      document.getElementById("panel").style.display="block";
-
-      loadUsers();
-
-    } else {
+    // ✅ SUPERADMIN CHECK
+    if(data.role !== "superadmin" && data.isAdmin !== true){
       document.getElementById("status").innerText =
-        "❌ Access denied (not admin)";
+        "❌ Access denied (not superadmin)";
+      return;
     }
 
+    // ✅ ACCESS GRANTED
+    document.getElementById("status").style.display="none";
+    document.getElementById("panel").style.display="block";
+
+    loadUsers();
+
   } catch(error){
+    console.error(error);
     document.getElementById("status").innerText =
-      "❌ Error: " + error.message;
+      "❌ Firestore permission error";
   }
 
 });
 
-/* ============================= */
-/* 👥 LOAD USERS */
-/* ============================= */
+// =============================
+// 👥 LOAD USERS
+// =============================
 
-function loadUsers(){
+async function loadUsers(){
 
-  db.collection("users").get().then(snapshot => {
+  const snapshot = await db.collection("users").get();
 
-    let html="";
+  let html="";
 
-    snapshot.forEach(doc => {
+  snapshot.forEach(doc => {
 
-      const u = doc.data();
+    const u = doc.data();
 
-      html += `
-      <tr>
-        <td>${u.email || ""}</td>
+    html += `
+    <tr>
+      <td>${u.email || ""}</td>
 
-        <td>
-          <input id="w_${doc.id}"
-          value="${u.walletBalance || 0}">
-        </td>
+      <td>
+        <input id="w_${doc.id}"
+        value="${u.walletBalance || 0}">
+      </td>
 
-        <td>
-          <input id="d_${doc.id}"
-          value="${u.dailyIncome || 0}">
-        </td>
+      <td>
+        <input id="d_${doc.id}"
+        value="${u.dailyIncome || 0}">
+      </td>
 
-        <td>
-          <input id="r_${doc.id}"
-          value="${u.referralEarnings || 0}">
-        </td>
+      <td>
+        <input id="r_${doc.id}"
+        value="${u.referralEarnings || 0}">
+      </td>
 
-        <td>
-          <input id="l_${doc.id}"
-          value="${u.level || 0}">
-        </td>
+      <td>
+        <input id="l_${doc.id}"
+        value="${u.level || 0}">
+      </td>
 
-        <td>
-          <select id="ban_${doc.id}">
-            <option value="false"
-            ${u.banned ? "" : "selected"}>No</option>
-            <option value="true"
-            ${u.banned ? "selected" : ""}>Yes</option>
-          </select>
-        </td>
+      <td>
+        <select id="ban_${doc.id}">
+          <option value="false"
+          ${u.banned ? "" : "selected"}>No</option>
+          <option value="true"
+          ${u.banned ? "selected" : ""}>Yes</option>
+        </select>
+      </td>
 
-        <td>
-          <button onclick="saveUser('${doc.id}')">
-          Save
-          </button>
-        </td>
-      </tr>
-      `;
-
-    });
-
-    document.getElementById("users").innerHTML = html;
-
+      <td>
+        <button onclick="saveUser('${doc.id}')">
+        Save
+        </button>
+      </td>
+    </tr>
+    `;
   });
 
+  document.getElementById("users").innerHTML = html;
 }
 
-/* ============================= */
-/* 💾 SAVE USER */
-/* ============================= */
+// =============================
+// 💾 SAVE USER
+// =============================
 
-function saveUser(uid){
+async function saveUser(uid){
 
-  db.collection("users").doc(uid).update({
+  await db.collection("users").doc(uid).update({
 
     walletBalance: Number(
       document.getElementById("w_"+uid).value
@@ -227,17 +217,14 @@ function saveUser(uid){
     banned:
       document.getElementById("ban_"+uid).value === "true"
 
-  }).then(()=>{
-    alert("✅ User Updated Successfully");
-  }).catch(error=>{
-    alert("Error: "+error.message);
   });
 
+  alert("✅ User Updated Successfully");
 }
 
-/* ============================= */
-/* 🔓 LOGOUT */
-/* ============================= */
+// =============================
+// 🔓 LOGOUT
+// =============================
 
 function logout(){
   auth.signOut().then(()=>{
