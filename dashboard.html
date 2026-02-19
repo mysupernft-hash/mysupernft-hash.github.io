@@ -59,6 +59,41 @@ footer{
   color:#FFD700;
   z-index:999;
 }
+.premium-footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:linear-gradient(to top,#0a0a0a,#111);
+  border-top:1px solid #FFD700;
+  display:flex;
+  justify-content:space-around;
+  padding:10px 0;
+  z-index:1000;
+  box-shadow:0 -5px 20px rgba(255,215,0,0.2);
+}
+
+.footer-btn{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  font-size:18px;
+  color:#FFD700;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.footer-btn span{
+  font-size:11px;
+  margin-top:4px;
+  letter-spacing:0.5px;
+}
+
+.footer-btn:hover{
+  transform:translateY(-4px);
+  text-shadow:0 0 12px #FFD700;
+}
+  
 .verified-badge{
   display:inline-flex;
   align-items:center;
@@ -223,13 +258,29 @@ footer{
     <!-- Your page content goes here -->
   </div>
 
-  <footer>
-    <div>📁 Investments</div>
-    <div>💳 Wallet</div>
-    <div>💸 Withdraw</div>
-    <div>💹 Live Earnings</div>
-    <div>👤 My Account</div>
-  </footer>
+  <footer class="premium-footer">
+
+  <div onclick="openPage('investments')" class="footer-btn">
+    📁
+    <span>Invest</span>
+  </div>
+
+  <div onclick="openPage('wallet')" class="footer-btn">
+    💳
+    <span>Wallet</span>
+  </div>
+
+  <div onclick="openPage('withdraw')" class="footer-btn">
+    💸
+    <span>Withdraw</span>
+  </div>
+
+  <div onclick="openPage('account')" class="footer-btn">
+    👤
+    <span>Account</span>
+  </div>
+
+</footer>
   
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
