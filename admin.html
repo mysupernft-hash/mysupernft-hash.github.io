@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Admin Panel</title>
+<title>SuperNFT Ultimate Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -17,9 +17,13 @@ body{
   color:#FFD700;
   padding:10px;
 }
+h2{text-align:center}
 
-h2{
-  text-align:center;
+.card{
+  background:#111;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:15px;
 }
 
 .search{
@@ -44,40 +48,36 @@ th,td{
 
 input,select{
   width:65px;
-  font-size:11px;
+  font-size:10px;
 }
 
 button{
-  padding:5px 7px;
+  padding:4px 6px;
   font-size:10px;
   border:none;
   cursor:pointer;
   font-weight:bold;
 }
 
-.saveBtn{
-  background:#FFD700;
-}
-
-.deleteBtn{
-  background:#ff4444;
-  color:#fff;
-}
+.saveBtn{background:#FFD700;}
+.deleteBtn{background:#ff4444;color:#fff;}
+.approveBtn{background:#00aa00;color:#fff;}
+.rejectBtn{background:#ff4444;color:#fff;}
 
 @media(max-width:768px){
-  table{ font-size:9px; }
-  input,select{ width:55px; }
+  table{font-size:9px;}
+  input,select{width:55px;}
 }
 </style>
 </head>
-
 <body>
 
-<h2>🔥 SuperNFT Admin Dashboard</h2>
+<h2>🔥 SuperNFT Ultimate Admin Panel</h2>
 
 <input type="text" id="search" class="search"
 placeholder="Search by Email or UID">
 
+<div class="card">
 <div style="overflow-x:auto;">
 <table>
 <thead>
@@ -90,7 +90,9 @@ placeholder="Search by Email or UID">
 <th>Deposit</th>
 <th>Withdraw</th>
 <th>Live</th>
+<th>Total</th>
 <th>Verified</th>
+<th>Role</th>
 <th>Ban</th>
 <th>Save</th>
 <th>Delete</th>
@@ -99,77 +101,97 @@ placeholder="Search by Email or UID">
 <tbody id="users"></tbody>
 </table>
 </div>
+</div>
+
+<div class="card">
+<h3>💸 Withdraw Requests</h3>
+<div style="overflow-x:auto;">
+<table>
+<thead>
+<tr>
+<th>Email</th>
+<th>Amount</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="withdrawTable"></tbody>
+</table>
+</div>
+</div>
 
 <script>
-
 firebase.initializeApp({
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
   projectId:"supernft-5b952"
 });
 
-const auth = firebase.auth();
-const db   = firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 
 let allUsers=[];
 
-/* AUTH CHECK */
 auth.onAuthStateChanged(user=>{
   if(!user){
     location.href="admin-login.html";
     return;
   }
   loadUsers();
+  loadWithdraws();
 });
 
-/* LOAD USERS REALTIME */
+/* ================= USERS ================= */
+
 function loadUsers(){
-
   db.collection("users").onSnapshot(snapshot=>{
-
     allUsers=[];
-
     snapshot.forEach(doc=>{
       allUsers.push({id:doc.id,...doc.data()});
     });
-
     renderUsers(allUsers);
-
   });
 }
 
-/* RENDER TABLE */
 function renderUsers(users){
-
   let html="";
-
   users.forEach(u=>{
+
+    const totalIncome =
+      (u.dailyIncome||0) +
+      (u.referralEarnings||0) +
+      (u.liveEarnings||0);
 
     html+=`
     <tr>
-
       <td>
-        <div style="font-weight:bold">
-          ${u.email||""}
-        </div>
-        <div style="color:#aaa;font-size:9px">
-          ${u.id}
-        </div>
+        <div style="font-weight:bold">${u.email||""}</div>
+        <div style="font-size:9px;color:#aaa">${u.id}</div>
       </td>
 
       <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
       <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
       <td><input id="ref_${u.id}" value="${u.referralEarnings||0}"></td>
       <td><input id="level_${u.id}" value="${u.level||1}"></td>
-
       <td><input id="deposit_${u.id}" value="${u.totalDeposit||0}"></td>
       <td><input id="withdraw_${u.id}" value="${u.totalWithdraw||0}"></td>
       <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
+
+      <td>${totalIncome}</td>
 
       <td>
         <select id="verified_${u.id}">
           <option value="false" ${u.verified?"":"selected"}>No</option>
           <option value="true" ${u.verified?"selected":""}>Yes</option>
+        </select>
+      </td>
+
+      <td>
+        <select id="role_${u.id}">
+          <option value="user" ${u.role==="user"?"selected":""}>User</option>
+          <option value="vip" ${u.role==="vip"?"selected":""}>VIP</option>
+          <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
+          <option value="superadmin" ${u.role==="superadmin"?"selected":""}>Super</option>
         </select>
       </td>
 
@@ -189,7 +211,6 @@ function renderUsers(users){
         <button class="deleteBtn"
         onclick="deleteUser('${u.id}')">X</button>
       </td>
-
     </tr>
     `;
   });
@@ -197,7 +218,6 @@ function renderUsers(users){
   document.getElementById("users").innerHTML=html;
 }
 
-/* SAVE USER */
 function saveUser(uid){
 
   const wallet   = Number(document.getElementById("wallet_"+uid).value)||0;
@@ -207,13 +227,14 @@ function saveUser(uid){
   const deposit  = Number(document.getElementById("deposit_"+uid).value)||0;
   const withdraw = Number(document.getElementById("withdraw_"+uid).value)||0;
   const live     = Number(document.getElementById("live_"+uid).value)||0;
+
   const verified = document.getElementById("verified_"+uid).value==="true";
+  const role     = document.getElementById("role_"+uid).value;
   const banned   = document.getElementById("ban_"+uid).value==="true";
 
   const totalIncome = daily + referral + live;
 
   db.collection("users").doc(uid).update({
-
     walletBalance: wallet,
     dailyIncome: daily,
     referralEarnings: referral,
@@ -223,39 +244,91 @@ function saveUser(uid){
     liveEarnings: live,
     totalIncome: totalIncome,
     verified: verified,
+    role: role,
     banned: banned
-
-  }).then(()=>{
-    alert("✅ User Updated Successfully");
-  });
-
+  }).then(()=>alert("Updated"));
 }
 
-/* DELETE USER */
 function deleteUser(uid){
-
-  if(confirm("Delete this user permanently?")){
+  if(confirm("Delete user permanently?")){
     db.collection("users").doc(uid).delete()
-    .then(()=>alert("User Deleted"));
+    .then(()=>alert("Deleted"));
   }
-
 }
 
 /* SEARCH */
 document.getElementById("search")
 .addEventListener("input",function(){
-
   const val=this.value.toLowerCase();
-
   const filtered=allUsers.filter(u=>
     (u.email||"").toLowerCase().includes(val) ||
     u.id.toLowerCase().includes(val)
   );
-
   renderUsers(filtered);
-
 });
-</script>
 
+/* ================= WITHDRAW ================= */
+
+function loadWithdraws(){
+  db.collection("withdrawRequests")
+  .orderBy("createdAt","desc")
+  .onSnapshot(snapshot=>{
+    let html="";
+    snapshot.forEach(doc=>{
+      const w=doc.data();
+      html+=`
+      <tr>
+        <td>${w.email}</td>
+        <td>$${w.amount}</td>
+        <td>${w.status}</td>
+        <td>
+          ${w.status==="pending" ? `
+          <button class="approveBtn"
+          onclick="approve('${doc.id}','${w.uid}',${w.amount})">
+          Approve</button>
+
+          <button class="rejectBtn"
+          onclick="reject('${doc.id}')">
+          Reject</button>
+          ` : "Done"}
+        </td>
+      </tr>
+      `;
+    });
+    document.getElementById("withdrawTable").innerHTML=html;
+  });
+}
+
+function approve(id,uid,amount){
+
+  const userRef=db.collection("users").doc(uid);
+  const withdrawRef=db.collection("withdrawRequests").doc(id);
+
+  db.runTransaction(async(transaction)=>{
+
+    const userDoc=await transaction.get(userRef);
+    if(!userDoc.exists) throw "User missing";
+
+    const newBal=(userDoc.data().walletBalance||0)-amount;
+    if(newBal<0) throw "Insufficient";
+
+    transaction.update(userRef,{
+      walletBalance:newBal,
+      totalWithdraw:(userDoc.data().totalWithdraw||0)+amount
+    });
+
+    transaction.update(withdrawRef,{
+      status:"approved",
+      receivedMessage:amount+"$ received in your Binance wallet"
+    });
+
+  }).then(()=>alert("Withdraw Approved"));
+}
+
+function reject(id){
+  db.collection("withdrawRequests").doc(id)
+  .update({status:"rejected"});
+}
+</script>
 </body>
 </html>
