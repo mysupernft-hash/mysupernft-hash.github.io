@@ -11,34 +11,30 @@
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial;
   background:#0f0f0f;
-  color:#FFD700;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
+  color:#FFD700;
 }
 
 .card{
   width:90%;
   max-width:350px;
   background:#1a1a1a;
-  padding:20px;
+  padding:25px;
   border-radius:12px;
   text-align:center;
-}
-
-h2{
-  margin-bottom:20px;
 }
 
 input{
   width:100%;
   padding:10px;
   margin-bottom:12px;
-  border-radius:8px;
   border:none;
+  border-radius:8px;
 }
 
 button{
@@ -51,14 +47,10 @@ button{
   cursor:pointer;
 }
 
-button:hover{
-  background:#e6c200;
-}
-
 .error{
-  margin-top:10px;
-  font-size:13px;
   color:red;
+  font-size:13px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -66,16 +58,13 @@ button:hover{
 <body>
 
 <div class="card">
-
   <h2>🔐 Admin Login</h2>
 
-  <input type="email" id="email" placeholder="Admin Email">
+  <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
 
   <button onclick="login()">Login</button>
-
   <div class="error" id="error"></div>
-
 </div>
 
 <script>
@@ -89,24 +78,18 @@ firebase.initializeApp({
 const auth = firebase.auth();
 
 function login(){
+  const email = emailInput = document.getElementById("email").value;
+  const pass = document.getElementById("password").value;
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  document.getElementById("error").innerText = "";
-
-  auth.signInWithEmailAndPassword(email,password)
+  auth.signInWithEmailAndPassword(email,pass)
   .then(()=>{
-      window.location.href="admin.html";
+    window.location.href="admin.html";
   })
-  .catch(error=>{
-      document.getElementById("error").innerText =
-        "❌ " + error.message;
+  .catch(e=>{
+    document.getElementById("error").innerText="❌ "+e.message;
   });
-
 }
 
 </script>
-
 </body>
 </html>
