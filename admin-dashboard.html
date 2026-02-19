@@ -8,28 +8,77 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body { background:#0d0d0d; color:#ffd700; font-family:Arial }
-table { width:100%; border-collapse:collapse; margin-top:20px }
-th,td { border:1px solid #333; padding:8px; text-align:center }
-th { background:#111 }
-input,select { width:90px }
-button { padding:6px 12px; background:#ffd700; border:none; cursor:pointer }
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0d0d0d;
+  color:#FFD700;
+}
+
+header{
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  background:#111;
+  font-weight:bold;
+}
+
+.container{
+  padding:10px;
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+th,td{
+  border:1px solid #333;
+  padding:6px;
+  text-align:center;
+}
+
+th{
+  background:#1a1a1a;
+}
+
+input,select{
+  width:70px;
+  padding:4px;
+  background:#000;
+  color:#FFD700;
+  border:1px solid #333;
+}
+
+button{
+  padding:6px 10px;
+  background:#FFD700;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  background:#e6c200;
+}
 </style>
 </head>
 
 <body>
 
-<h2 id="status">Checking admin access...</h2>
+<header>🔥 SuperNFT Direct Admin Panel</header>
 
-<div id="panel" style="display:none">
-<h2>Admin Dashboard</h2>
-
+<div class="container">
 <table>
 <thead>
 <tr>
 <th>Email</th>
-<th>Balance</th>
+<th>Wallet</th>
 <th>Daily</th>
 <th>Referral</th>
 <th>Level</th>
@@ -42,70 +91,110 @@ button { padding:6px 12px; background:#ffd700; border:none; cursor:pointer }
 </div>
 
 <script>
+
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
 });
 
-const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 
-// 🔐 ADMIN CHECK
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "admin-login.html";
-    return;
-  }
+/* 🚀 DIRECT LOAD USERS (NO AUTH CHECK) */
 
-  db.collection("admin").doc(user.uid).get().then(doc => {
-    if (!doc.exists) {
-      document.getElementById("status").innerText = "Access denied (not admin)";
-      return;
-    }
-
-    document.getElementById("status").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-    loadUsers();
-  });
-});
-
-// 👥 LOAD USERS
 function loadUsers(){
-  db.collection("users").get().then(snap => {
-    let html = "";
-    snap.forEach(doc => {
+
+  db.collection("users").get().then(snapshot => {
+
+    let html="";
+
+    snapshot.forEach(doc => {
+
       const u = doc.data();
+
       html += `
       <tr>
-        <td>${u.email||""}</td>
-        <td><input id="b_${doc.id}" value="${u.balance||0}"></td>
-        <td><input id="d_${doc.id}" value="${u.dailyIncome||0}"></td>
-        <td><input id="r_${doc.id}" value="${u.referralEarnings||0}"></td>
-        <td><input id="l_${doc.id}" value="${u.level||1}"></td>
+        <td>${u.email || ""}</td>
+
+        <td>
+          <input id="w_${doc.id}"
+          value="${u.walletBalance || 0}">
+        </td>
+
+        <td>
+          <input id="d_${doc.id}"
+          value="${u.dailyIncome || 0}">
+        </td>
+
+        <td>
+          <input id="r_${doc.id}"
+          value="${u.referralEarnings || 0}">
+        </td>
+
+        <td>
+          <input id="l_${doc.id}"
+          value="${u.level || 0}">
+        </td>
+
         <td>
           <select id="ban_${doc.id}">
-            <option value="false" ${u.banned?"":"selected"}>No</option>
-            <option value="true" ${u.banned?"selected":""}>Yes</option>
+            <option value="false"
+            ${u.banned ? "" : "selected"}>No</option>
+            <option value="true"
+            ${u.banned ? "selected" : ""}>Yes</option>
           </select>
         </td>
-        <td><button onclick="saveUser('${doc.id}')">Save</button></td>
-      </tr>`;
+
+        <td>
+          <button onclick="saveUser('${doc.id}')">
+          Save
+          </button>
+        </td>
+      </tr>
+      `;
     });
+
     document.getElementById("users").innerHTML = html;
+
+  }).catch(error=>{
+    alert("Firestore Permission Error:\n"+error.message);
   });
 }
 
-// 💾 SAVE USER
+loadUsers();
+
+/* 💾 SAVE USER */
+
 function saveUser(uid){
+
   db.collection("users").doc(uid).update({
-    balance: Number(document.getElementById("b_"+uid).value),
-    dailyIncome: Number(document.getElementById("d_"+uid).value),
-    referralEarnings: Number(document.getElementById("r_"+uid).value),
-    level: Number(document.getElementById("l_"+uid).value),
-    banned: document.getElementById("ban_"+uid).value === "true"
-  }).then(()=>alert("Saved"));
+
+    walletBalance: Number(
+      document.getElementById("w_"+uid).value
+    ),
+
+    dailyIncome: Number(
+      document.getElementById("d_"+uid).value
+    ),
+
+    referralEarnings: Number(
+      document.getElementById("r_"+uid).value
+    ),
+
+    level: Number(
+      document.getElementById("l_"+uid).value
+    ),
+
+    banned:
+      document.getElementById("ban_"+uid).value === "true"
+
+  }).then(()=>{
+    alert("✅ User Updated");
+  }).catch(error=>{
+    alert("Update Failed:\n"+error.message);
+  });
 }
+
 </script>
 
 </body>
