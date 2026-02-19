@@ -2,29 +2,114 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Login - SuperNFT</title>
+<title>SuperNFT Admin Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <style>
-body { background:#0d0d0d; color:#ffd700; font-family:Arial; text-align:center }
-input { padding:10px; margin:5px; width:250px }
-button { padding:10px 20px; background:#ffd700; border:none; cursor:pointer }
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#000000,#1a1a1a);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:#FFD700;
+}
+
+.container{
+  width:100%;
+  max-width:380px;
+  padding:20px;
+}
+
+.card{
+  background:#111;
+  padding:25px;
+  border-radius:18px;
+  box-shadow:0 0 30px rgba(255,215,0,0.2);
+}
+
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  margin-bottom:14px;
+  border:none;
+  border-radius:10px;
+  font-size:14px;
+}
+
+input:focus{
+  outline:none;
+  box-shadow:0 0 8px #FFD700;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:#FFD700;
+  color:#000;
+  font-weight:bold;
+  font-size:15px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#e6c200;
+}
+
+.error{
+  text-align:center;
+  color:red;
+  margin-top:10px;
+  font-size:13px;
+}
+
+.logo{
+  text-align:center;
+  font-size:26px;
+  margin-bottom:10px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Admin Login</h2>
+<div class="container">
+  <div class="card">
 
-<input id="email" placeholder="Email"><br>
-<input id="password" type="password" placeholder="Password"><br><br>
-<button onclick="login()">Login</button>
+    <div class="logo">🔥 SuperNFT Admin</div>
 
-<p id="msg"></p>
+    <h2>Secure Login</h2>
+
+    <input type="email" id="email" placeholder="Admin Email">
+    <input type="password" id="password" placeholder="Password">
+    <input type="text" id="uid" placeholder="Admin UID">
+    <input type="password" id="pin" placeholder="Admin PIN">
+
+    <button onclick="adminLogin()">Login</button>
+
+    <div id="error" class="error"></div>
+
+  </div>
+</div>
 
 <script>
+
 firebase.initializeApp({
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -33,18 +118,45 @@ firebase.initializeApp({
 
 const auth = firebase.auth();
 
-function login(){
-  const email = document.getElementById("email").value;
-  const pass  = document.getElementById("password").value;
+/* 🔐 Hard Admin Credentials */
+const ADMIN_UID = "MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1";
+const ADMIN_PIN = "1449@MsRwT7ZDW3XbzDgEpfJOXfS3Ejh1@shiva";
 
-  auth.signInWithEmailAndPassword(email, pass)
-    .then(() => {
-      window.location.href = "admin-dashboard.html";
-    })
-    .catch(err => {
-      document.getElementById("msg").innerText = err.message;
-    });
+function adminLogin(){
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const uidInput = document.getElementById("uid").value.trim();
+  const pinInput = document.getElementById("pin").value.trim();
+
+  const errorBox = document.getElementById("error");
+
+  if(uidInput !== ADMIN_UID){
+    errorBox.innerText = "❌ Invalid UID";
+    return;
+  }
+
+  if(pinInput !== ADMIN_PIN){
+    errorBox.innerText = "❌ Invalid PIN";
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(email,password)
+  .then((cred)=>{
+
+    if(cred.user.uid === ADMIN_UID){
+      window.location.href="admin.html";
+    } else {
+      errorBox.innerText = "❌ Not Admin Account";
+      auth.signOut();
+    }
+
+  })
+  .catch(err=>{
+    errorBox.innerText = err.message;
+  });
 }
+
 </script>
 
 </body>
