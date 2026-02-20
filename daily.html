@@ -128,38 +128,10 @@ if(!snap.exists()) return;
 const data=snap.data();
 
 let wallet = data.walletBalance || 0;
+let referral = data.referralEarnings || 0;
 
-// 🔥 2.5% of wallet
-let baseDaily = wallet * 0.025;
-
-// 🔥 Get today's date start
-const today = new Date();
-today.setHours(0,0,0,0);
-
-// 🔥 Fetch today's referral bonus from history
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-let todayReferral = 0;
-
-const q = query(
-  collection(db,"users",user.uid,"history"),
-  where("title","==","Referral Bonus")
-);
-
-const snapshot = await getDocs(q);
-
-snapshot.forEach(doc=>{
-  const h = doc.data();
-  if(h.createdAt?.seconds){
-    const date = new Date(h.createdAt.seconds*1000);
-    if(date >= today){
-      todayReferral += h.amount;
-    }
-  }
-});
-
-// 🔥 FINAL DAILY
-let daily = baseDaily + todayReferral;
+// 🔥 NEW DAILY FORMULA
+let daily = (wallet * 0.025) + referral;
 
 let live = data.liveEarnings || 0;
 let last = data.lastClaimTime?.toMillis?.() || Date.now();
