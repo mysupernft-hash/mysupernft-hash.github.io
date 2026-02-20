@@ -105,6 +105,20 @@ placeholder="Search by Email or UID">
 
 <div class="card">
 <h3>💸 Withdraw Requests</h3>
+  <div class="card">
+<h3>📜 Add Manual History</h3>
+
+<input type="text" id="historyUid" placeholder="Enter User UID">
+<input type="number" id="historyAmount" placeholder="Enter Amount">
+
+<select id="historyType">
+  <option value="Withdraw">Withdraw</option>
+  <option value="Activity Rewards">Activity Rewards</option>
+  <option value="Bonus">Bonus</option>
+</select>
+
+<button onclick="addHistoryEntry()">Add History</button>
+</div>
 <div style="overflow-x:auto;">
 <table>
 <thead>
