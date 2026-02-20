@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Ultimate Admin</title>
+<title>SuperNFT Admin Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -18,72 +18,51 @@ body{
   padding:10px;
 }
 h2{text-align:center}
-
 .card{
   background:#111;
   padding:12px;
   border-radius:10px;
   margin-bottom:15px;
 }
-
 table{
   width:100%;
   border-collapse:collapse;
   font-size:11px;
 }
-
 th,td{
   border:1px solid #333;
   padding:5px;
   text-align:center;
 }
-
 input,select{
-  width:65px;
+  width:70px;
   font-size:10px;
-  background:#222;
-  color:#FFD700;
-  border:1px solid #333;
 }
-
 button{
   padding:4px 6px;
   font-size:10px;
   border:none;
   cursor:pointer;
   font-weight:bold;
-  border-radius:4px;
 }
-
-.saveBtn{background:#FFD700;color:#000;}
+.saveBtn{background:#FFD700;}
 .deleteBtn{background:#ff4444;color:#fff;}
-.historyBtn{background:#00aa00;color:#fff;}
-
-#pagination{
-  text-align:center;
-  margin-top:10px;
-}
-#pagination button{
+.pagination button{
   margin:3px;
-  background:#333;
-  color:#FFD700;
-}
-#pagination button.active{
   background:#FFD700;
-  color:#000;
 }
 </style>
 </head>
 <body>
 
-<h2>🔥 SuperNFT Ultimate Admin Panel</h2>
+<h2>🔥 SuperNFT Admin Panel</h2>
 
 <div class="card">
 <div style="overflow-x:auto;">
 <table>
 <thead>
 <tr>
-<th>Email / UID</th>
+<th>Email</th>
 <th>Wallet</th>
 <th>Daily</th>
 <th>Referral</th>
@@ -91,20 +70,19 @@ button{
 <th>Deposit</th>
 <th>Withdraw</th>
 <th>Live</th>
-<th>Total</th>
 <th>Verified</th>
 <th>Role</th>
 <th>Ban</th>
 <th>Save</th>
-<th>Withdraw History</th>
 <th>Delete</th>
 </tr>
 </thead>
 <tbody id="users"></tbody>
 </table>
 </div>
-<div id="pagination"></div>
 </div>
+
+<div class="pagination" id="pagination"></div>
 
 <script>
 
@@ -119,7 +97,7 @@ const db=firebase.firestore();
 
 let allUsers=[];
 let currentPage=1;
-const perPage=10;
+const usersPerPage=10;
 
 auth.onAuthStateChanged(user=>{
   if(!user){
@@ -135,85 +113,81 @@ function loadUsers(){
     snapshot.forEach(doc=>{
       allUsers.push({id:doc.id,...doc.data()});
     });
-    renderUsers();
+    renderPage(1);
   });
 }
 
-function renderUsers(){
+function renderPage(page){
+  currentPage=page;
 
-  const start=(currentPage-1)*perPage;
-  const end=start+perPage;
+  const start=(page-1)*usersPerPage;
+  const end=start+usersPerPage;
   const users=allUsers.slice(start,end);
 
   let html="";
 
   users.forEach(u=>{
-
-    const total =
-      (u.walletBalance||0)+
-      (u.liveEarnings||0);
-
     html+=`
     <tr>
+      <td>${u.email||""}</td>
 
-    <td>
-      ${u.email||""}
-      <div style="font-size:9px;color:#888">${u.id}</div>
-    </td>
+      <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
+      <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
+      <td><input id="ref_${u.id}" value="${u.referralEarnings||0}"></td>
+      <td><input id="level_${u.id}" value="${u.level||1}"></td>
+      <td><input id="deposit_${u.id}" value="${u.totalDeposit||0}"></td>
+      <td><input id="withdraw_${u.id}" value="${u.totalWithdraw||0}"></td>
+      <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
 
-    <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
-    <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
-    <td><input id="ref_${u.id}" value="${u.referralEarnings||0}"></td>
-    <td><input id="level_${u.id}" value="${u.level||1}"></td>
-    <td><input id="deposit_${u.id}" value="${u.totalDeposit||0}"></td>
-    <td><input id="withdraw_${u.id}" value="${u.totalWithdraw||0}"></td>
-    <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
+      <td>
+        <select id="verified_${u.id}">
+          <option value="false" ${u.verified?"":"selected"}>No</option>
+          <option value="true" ${u.verified?"selected":""}>Yes</option>
+        </select>
+      </td>
 
-    <td>${total}</td>
+      <td>
+        <select id="role_${u.id}">
+          <option value="user" ${u.role==="user"?"selected":""}>User</option>
+          <option value="vip" ${u.role==="vip"?"selected":""}>VIP</option>
+          <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
+        </select>
+      </td>
 
-    <td>
-      <select id="verified_${u.id}">
-        <option value="false" ${u.verified?"":"selected"}>No</option>
-        <option value="true" ${u.verified?"selected":""}>Yes</option>
-      </select>
-    </td>
+      <td>
+        <select id="ban_${u.id}">
+          <option value="false" ${u.banned?"":"selected"}>No</option>
+          <option value="true" ${u.banned?"selected":""}>Yes</option>
+        </select>
+      </td>
 
-    <td>
-      <select id="role_${u.id}">
-        <option value="user" ${u.role==="user"?"selected":""}>User</option>
-        <option value="vip" ${u.role==="vip"?"selected":""}>VIP</option>
-        <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
-      </select>
-    </td>
+      <td>
+        <button class="saveBtn"
+        onclick="saveUser('${u.id}')">Save</button>
+      </td>
 
-    <td>
-      <select id="ban_${u.id}">
-        <option value="false" ${u.banned?"":"selected"}>No</option>
-        <option value="true" ${u.banned?"selected":""}>Yes</option>
-      </select>
-    </td>
-
-    <td>
-      <button class="saveBtn"
-      onclick="saveUser('${u.id}')">Save</button>
-    </td>
-
-    <td>
-      <button class="historyBtn"
-      onclick="viewHistory('${u.id}')">View</button>
-    </td>
-
-    <td>
-      <button class="deleteBtn"
-      onclick="deleteUser('${u.id}')">X</button>
-    </td>
-
+      <td>
+        <button class="deleteBtn"
+        onclick="deleteUser('${u.id}')">X</button>
+      </td>
     </tr>
     `;
   });
 
   document.getElementById("users").innerHTML=html;
+
   renderPagination();
+}
+
+function renderPagination(){
+  const totalPages=Math.ceil(allUsers.length/usersPerPage);
+  let html="";
+
+  for(let i=1;i<=totalPages;i++){
+    html+=`<button onclick="renderPage(${i})">${i}</button>`;
+  }
+
+  document.getElementById("pagination").innerHTML=html;
 }
 
 function saveUser(uid){
@@ -231,52 +205,33 @@ function saveUser(uid){
   const banned   = document.getElementById("ban_"+uid).value==="true";
 
   db.collection("users").doc(uid).update({
-    walletBalance:wallet,
-    dailyIncome:daily,
-    referralEarnings:referral,
-    level:level,
-    totalDeposit:deposit,
-    totalWithdraw:withdraw,
-    liveEarnings:live,
-    verified:verified,
-    role:role,
-    banned:banned
+    walletBalance: wallet,
+    dailyIncome: daily,
+    referralEarnings: referral,
+    level: level,
+    totalDeposit: deposit,
+    totalWithdraw: withdraw,
+    liveEarnings: live,
+    verified: verified,
+    role: role,
+    banned: banned
   }).then(()=>{
-    alert("User Updated");
+    alert("User Updated Successfully");
+  }).catch(err=>{
+    alert("Error: "+err.message);
   });
+
 }
 
 function deleteUser(uid){
   if(confirm("Delete user permanently?")){
     db.collection("users").doc(uid).delete()
-    .then(()=>alert("Deleted"));
+    .then(()=>alert("User Deleted"))
+    .catch(err=>alert(err.message));
   }
-}
-
-function viewHistory(uid){
-  window.open("user-history.html?uid="+uid,"_blank");
-}
-
-function renderPagination(){
-
-  const totalPages=Math.ceil(allUsers.length/perPage);
-  let buttons="";
-
-  for(let i=1;i<=totalPages;i++){
-    buttons+=`
-    <button class="${i===currentPage?'active':''}"
-    onclick="goPage(${i})">${i}</button>
-    `;
-  }
-
-  document.getElementById("pagination").innerHTML=buttons;
-}
-
-function goPage(page){
-  currentPage=page;
-  renderUsers();
 }
 
 </script>
+
 </body>
 </html>
