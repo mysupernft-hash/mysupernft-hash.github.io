@@ -26,14 +26,6 @@ h2{text-align:center}
   margin-bottom:15px;
 }
 
-.search{
-  width:100%;
-  padding:8px;
-  margin-bottom:10px;
-  border:none;
-  border-radius:6px;
-}
-
 table{
   width:100%;
   border-collapse:collapse;
@@ -46,9 +38,17 @@ th,td{
   text-align:center;
 }
 
+input,select{
+  width:65px;
+  font-size:10px;
+  background:#222;
+  color:#FFD700;
+  border:1px solid #333;
+}
+
 button{
-  padding:5px 8px;
-  font-size:11px;
+  padding:4px 6px;
+  font-size:10px;
   border:none;
   cursor:pointer;
   font-weight:bold;
@@ -57,20 +57,17 @@ button{
 
 .saveBtn{background:#FFD700;color:#000;}
 .deleteBtn{background:#ff4444;color:#fff;}
-.approveBtn{background:#00aa00;color:#fff;}
-.rejectBtn{background:#ff4444;color:#fff;}
+.historyBtn{background:#00aa00;color:#fff;}
 
 #pagination{
   text-align:center;
   margin-top:10px;
 }
-
 #pagination button{
   margin:3px;
   background:#333;
   color:#FFD700;
 }
-
 #pagination button.active{
   background:#FFD700;
   color:#000;
@@ -81,22 +78,25 @@ button{
 
 <h2>🔥 SuperNFT Ultimate Admin Panel</h2>
 
-<input type="text" id="search" class="search"
-placeholder="Search by Email or UID">
-
 <div class="card">
 <div style="overflow-x:auto;">
 <table>
 <thead>
 <tr>
-<th>Email</th>
+<th>Email / UID</th>
 <th>Wallet</th>
+<th>Daily</th>
 <th>Referral</th>
 <th>Level</th>
 <th>Deposit</th>
 <th>Withdraw</th>
+<th>Live</th>
 <th>Total</th>
+<th>Verified</th>
+<th>Role</th>
+<th>Ban</th>
 <th>Save</th>
+<th>Withdraw History</th>
 <th>Delete</th>
 </tr>
 </thead>
@@ -104,23 +104,6 @@ placeholder="Search by Email or UID">
 </table>
 </div>
 <div id="pagination"></div>
-</div>
-
-<div class="card">
-<h3>💸 Withdraw Requests</h3>
-<div style="overflow-x:auto;">
-<table>
-<thead>
-<tr>
-<th>Email</th>
-<th>Amount</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody id="withdrawTable"></tbody>
-</table>
-</div>
 </div>
 
 <script>
@@ -136,89 +119,133 @@ const db=firebase.firestore();
 
 let allUsers=[];
 let currentPage=1;
-const usersPerPage=10;
+const perPage=10;
 
-/* AUTH */
 auth.onAuthStateChanged(user=>{
   if(!user){
     location.href="admin-login.html";
     return;
   }
   loadUsers();
-  loadWithdraws();
 });
 
-/* LOAD USERS */
 function loadUsers(){
   db.collection("users").onSnapshot(snapshot=>{
     allUsers=[];
     snapshot.forEach(doc=>{
       allUsers.push({id:doc.id,...doc.data()});
     });
-    renderUsers(allUsers);
+    renderUsers();
   });
 }
 
-/* RENDER USERS */
-function renderUsers(users){
+function renderUsers(){
 
-  const start=(currentPage-1)*usersPerPage;
-  const end=start+usersPerPage;
-  const paginated=users.slice(start,end);
+  const start=(currentPage-1)*perPage;
+  const end=start+perPage;
+  const users=allUsers.slice(start,end);
 
   let html="";
 
-  paginated.forEach(u=>{
+  users.forEach(u=>{
 
-    const totalIncome=
-      (u.dailyIncome||0)+
-      (u.referralEarnings||0)+
+    const total =
+      (u.walletBalance||0)+
       (u.liveEarnings||0);
 
     html+=`
     <tr>
-      <td>${u.email||""}</td>
-      <td>${u.walletBalance||0}</td>
-      <td>${u.referralEarnings||0}</td>
-      <td>${u.level||1}</td>
-      <td>${u.totalDeposit||0}</td>
-      <td>${u.totalWithdraw||0}</td>
-      <td>${totalIncome}</td>
-      <td><button class="saveBtn">Save</button></td>
-      <td><button class="deleteBtn"
-        onclick="deleteUser('${u.id}')">X</button></td>
+
+    <td>
+      ${u.email||""}
+      <div style="font-size:9px;color:#888">${u.id}</div>
+    </td>
+
+    <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
+    <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
+    <td><input id="ref_${u.id}" value="${u.referralEarnings||0}"></td>
+    <td><input id="level_${u.id}" value="${u.level||1}"></td>
+    <td><input id="deposit_${u.id}" value="${u.totalDeposit||0}"></td>
+    <td><input id="withdraw_${u.id}" value="${u.totalWithdraw||0}"></td>
+    <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
+
+    <td>${total}</td>
+
+    <td>
+      <select id="verified_${u.id}">
+        <option value="false" ${u.verified?"":"selected"}>No</option>
+        <option value="true" ${u.verified?"selected":""}>Yes</option>
+      </select>
+    </td>
+
+    <td>
+      <select id="role_${u.id}">
+        <option value="user" ${u.role==="user"?"selected":""}>User</option>
+        <option value="vip" ${u.role==="vip"?"selected":""}>VIP</option>
+        <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
+      </select>
+    </td>
+
+    <td>
+      <select id="ban_${u.id}">
+        <option value="false" ${u.banned?"":"selected"}>No</option>
+        <option value="true" ${u.banned?"selected":""}>Yes</option>
+      </select>
+    </td>
+
+    <td>
+      <button class="saveBtn"
+      onclick="saveUser('${u.id}')">Save</button>
+    </td>
+
+    <td>
+      <button class="historyBtn"
+      onclick="viewHistory('${u.id}')">View</button>
+    </td>
+
+    <td>
+      <button class="deleteBtn"
+      onclick="deleteUser('${u.id}')">X</button>
+    </td>
+
     </tr>
     `;
   });
 
   document.getElementById("users").innerHTML=html;
-
-  renderPagination(users.length);
+  renderPagination();
 }
 
-/* PAGINATION */
-function renderPagination(totalUsers){
+function saveUser(uid){
 
-  const totalPages=Math.ceil(totalUsers/usersPerPage);
+  const wallet   = Number(document.getElementById("wallet_"+uid).value)||0;
+  const daily    = Number(document.getElementById("daily_"+uid).value)||0;
+  const referral = Number(document.getElementById("ref_"+uid).value)||0;
+  const level    = Number(document.getElementById("level_"+uid).value)||0;
+  const deposit  = Number(document.getElementById("deposit_"+uid).value)||0;
+  const withdraw = Number(document.getElementById("withdraw_"+uid).value)||0;
+  const live     = Number(document.getElementById("live_"+uid).value)||0;
 
-  let buttons="";
+  const verified = document.getElementById("verified_"+uid).value==="true";
+  const role     = document.getElementById("role_"+uid).value;
+  const banned   = document.getElementById("ban_"+uid).value==="true";
 
-  for(let i=1;i<=totalPages;i++){
-    buttons+=`
-      <button class="${i===currentPage?'active':''}"
-      onclick="goToPage(${i})">${i}</button>
-    `;
-  }
-
-  document.getElementById("pagination").innerHTML=buttons;
+  db.collection("users").doc(uid).update({
+    walletBalance:wallet,
+    dailyIncome:daily,
+    referralEarnings:referral,
+    level:level,
+    totalDeposit:deposit,
+    totalWithdraw:withdraw,
+    liveEarnings:live,
+    verified:verified,
+    role:role,
+    banned:banned
+  }).then(()=>{
+    alert("User Updated");
+  });
 }
 
-function goToPage(page){
-  currentPage=page;
-  renderUsers(allUsers);
-}
-
-/* DELETE USER */
 function deleteUser(uid){
   if(confirm("Delete user permanently?")){
     db.collection("users").doc(uid).delete()
@@ -226,65 +253,28 @@ function deleteUser(uid){
   }
 }
 
-/* SEARCH */
-document.getElementById("search")
-.addEventListener("input",function(){
-
-  const val=this.value.toLowerCase();
-
-  const filtered=allUsers.filter(u=>
-    (u.email||"").toLowerCase().includes(val) ||
-    u.id.toLowerCase().includes(val)
-  );
-
-  currentPage=1;
-  renderUsers(filtered);
-});
-
-/* WITHDRAW */
-function loadWithdraws(){
-  db.collection("withdrawRequests")
-  .orderBy("createdAt","desc")
-  .onSnapshot(snapshot=>{
-
-    let html="";
-
-    snapshot.forEach(doc=>{
-      const w=doc.data();
-
-      html+=`
-      <tr>
-        <td>${w.email}</td>
-        <td>$${w.amount}</td>
-        <td>${w.status}</td>
-        <td>
-          ${w.status==="pending" ? `
-          <button class="approveBtn"
-          onclick="approve('${doc.id}','${w.uid}',${w.amount})">
-          Approve</button>
-
-          <button class="rejectBtn"
-          onclick="reject('${doc.id}')">
-          Reject</button>
-          ` : "Done"}
-        </td>
-      </tr>
-      `;
-    });
-
-    document.getElementById("withdrawTable").innerHTML=html;
-  });
+function viewHistory(uid){
+  window.open("user-history.html?uid="+uid,"_blank");
 }
 
-function approve(id,uid,amount){
-  db.collection("withdrawRequests").doc(id)
-  .update({status:"approved"})
-  .then(()=>alert("Approved"));
+function renderPagination(){
+
+  const totalPages=Math.ceil(allUsers.length/perPage);
+  let buttons="";
+
+  for(let i=1;i<=totalPages;i++){
+    buttons+=`
+    <button class="${i===currentPage?'active':''}"
+    onclick="goPage(${i})">${i}</button>
+    `;
+  }
+
+  document.getElementById("pagination").innerHTML=buttons;
 }
 
-function reject(id){
-  db.collection("withdrawRequests").doc(id)
-  .update({status:"rejected"});
+function goPage(page){
+  currentPage=page;
+  renderUsers();
 }
 
 </script>
