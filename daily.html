@@ -36,17 +36,6 @@ header{
   justify-content:space-between;
   margin:8px 0;
 }
-.progress{
-  height:8px;
-  background:#222;
-  border-radius:6px;
-  overflow:hidden;
-}
-.progress-bar{
-  height:100%;
-  background:#FFD700;
-  width:0%;
-}
 canvas{
   background:#1a1a1a;
   border-radius:12px;
@@ -73,21 +62,6 @@ canvas{
 </div>
 
 <div class="card">
-  <div class="row"><span>NFT Income</span><span id="nftIncome">$0</span></div>
-  <div class="row"><span>Referral Bonus</span><span id="refIncome">$0</span></div>
-  <div class="row"><span>Team Commission</span><span id="teamIncome">$0</span></div>
-</div>
-
-<div class="card">
-  <div>VIP Level: <span id="vipLevel">0</span></div>
-  <div>Boost: <span id="boost">1x</span></div>
-  <div style="margin-top:10px;">Next Level Progress</div>
-  <div class="progress">
-    <div class="progress-bar" id="vipProgress"></div>
-  </div>
-</div>
-
-<div class="card">
   <canvas id="chart"></canvas>
 </div>
 
@@ -97,15 +71,12 @@ canvas{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-  getFirestore, doc, getDoc, updateDoc,
-  collection, query, where, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -126,81 +97,38 @@ if(!snap.exists()) return;
 const data=snap.data();
 
 let wallet = data.walletBalance || 0;
+let referral = data.referralEarnings || 0;
 
-// 🔥 2.5% of wallet
-let baseDaily = wallet * 0.025;
-
-// 🔥 Today's midnight
-const today = new Date();
-today.setHours(0,0,0,0);
-
-// 🔥 Fetch ONLY today's referral bonus
-let todayReferral = 0;
-
-const q = query(
-  collection(db,"users",user.uid,"history"),
-  where("title","==","Referral Bonus"),
-  where("createdAt",">=", today)
-);
-
-const snapshot = await getDocs(q);
-
-snapshot.forEach(doc=>{
-  todayReferral += doc.data().amount || 0;
-});
-
-// 🔥 FINAL DAILY RATE
-let daily = baseDaily + todayReferral;
+/* 🔥 DAILY FORMULA
+   2.5% of wallet
+   + full referral earnings added
+*/
+let daily = (wallet * 0.025) + referral;
 
 let live = 0;
-let last = Date.now();
 
 document.getElementById("dailyRate").innerText="$"+daily.toFixed(2);
 document.getElementById("hourRate").innerText="$"+(daily/24).toFixed(4);
 document.getElementById("secRate").innerText="$"+(daily/86400).toFixed(6);
 
-document.getElementById("nftIncome").innerText="$"+(data.nftIncome||0);
-document.getElementById("refIncome").innerText="$"+(data.referralEarnings||0);
-document.getElementById("teamIncome").innerText="$"+(data.teamIncome||0);
+const perSecond=(daily/86400);
 
-let level=data.level||0;
-let boost=1+(level*0.05);
+setInterval(()=>{
 
-document.getElementById("vipLevel").innerText=level;
-document.getElementById("boost").innerText=boost.toFixed(2)+"x";
-
-let progress=(level*10)%100;
-document.getElementById("vipProgress").style.width=progress+"%";
-
-const perSecond=(daily/86400)*boost;
-
-setInterval(async()=>{
-
+// Live earnings
 live += perSecond;
 document.getElementById("live").innerText=live.toFixed(6);
 
-// 🔥 Today Earnings
-const nowDate = new Date();
+// Today earnings
+const now = new Date();
 const midnight = new Date();
 midnight.setHours(0,0,0,0);
-const secondsToday = (nowDate - midnight) / 1000;
+
+const secondsToday = (now - midnight)/1000;
 const todayEarned = perSecond * secondsToday;
 
 document.getElementById("todayEarnings").innerText =
 "$"+todayEarned.toFixed(4);
-
-// 🔥 24h Auto Credit
-if(live >= daily){
-
-wallet += live;
-
-await updateDoc(userRef,{
-walletBalance:wallet
-});
-
-live = 0;
-
-}
 
 },1000);
 
@@ -211,7 +139,7 @@ data:{
 labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
 datasets:[{
 label:"Last 7 Days Income",
-data:data.incomeHistory||[1,2,3,2,4,3,5],
+data:data.incomeHistory || [5,8,6,9,7,10,12],
 backgroundColor:"#FFD700"
 }]
 },
