@@ -46,27 +46,34 @@ th,td{
   text-align:center;
 }
 
-input,select{
-  width:65px;
-  font-size:10px;
-}
-
 button{
-  padding:4px 6px;
-  font-size:10px;
+  padding:5px 8px;
+  font-size:11px;
   border:none;
   cursor:pointer;
   font-weight:bold;
+  border-radius:4px;
 }
 
-.saveBtn{background:#FFD700;}
+.saveBtn{background:#FFD700;color:#000;}
 .deleteBtn{background:#ff4444;color:#fff;}
 .approveBtn{background:#00aa00;color:#fff;}
 .rejectBtn{background:#ff4444;color:#fff;}
 
-@media(max-width:768px){
-  table{font-size:9px;}
-  input,select{width:55px;}
+#pagination{
+  text-align:center;
+  margin-top:10px;
+}
+
+#pagination button{
+  margin:3px;
+  background:#333;
+  color:#FFD700;
+}
+
+#pagination button.active{
+  background:#FFD700;
+  color:#000;
 }
 </style>
 </head>
@@ -82,18 +89,13 @@ placeholder="Search by Email or UID">
 <table>
 <thead>
 <tr>
-<th>Email / UID</th>
+<th>Email</th>
 <th>Wallet</th>
-<th>Daily</th>
 <th>Referral</th>
 <th>Level</th>
 <th>Deposit</th>
 <th>Withdraw</th>
-<th>Live</th>
 <th>Total</th>
-<th>Verified</th>
-<th>Role</th>
-<th>Ban</th>
 <th>Save</th>
 <th>Delete</th>
 </tr>
@@ -101,24 +103,11 @@ placeholder="Search by Email or UID">
 <tbody id="users"></tbody>
 </table>
 </div>
+<div id="pagination"></div>
 </div>
 
 <div class="card">
 <h3>💸 Withdraw Requests</h3>
-  <div class="card">
-<h3>📜 Add Manual History</h3>
-
-<input type="text" id="historyUid" placeholder="Enter User UID">
-<input type="number" id="historyAmount" placeholder="Enter Amount">
-
-<select id="historyType">
-  <option value="Withdraw">Withdraw</option>
-  <option value="Activity Rewards">Activity Rewards</option>
-  <option value="Bonus">Bonus</option>
-</select>
-
-<button onclick="addHistoryEntry()">Add History</button>
-</div>
 <div style="overflow-x:auto;">
 <table>
 <thead>
@@ -135,6 +124,7 @@ placeholder="Search by Email or UID">
 </div>
 
 <script>
+
 firebase.initializeApp({
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -145,7 +135,10 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 
 let allUsers=[];
+let currentPage=1;
+const usersPerPage=10;
 
+/* AUTH */
 auth.onAuthStateChanged(user=>{
   if(!user){
     location.href="admin-login.html";
@@ -155,50 +148,145 @@ auth.onAuthStateChanged(user=>{
   loadWithdraws();
 });
 
-/* ================= USERS ================= */
-
-function approve(id,uid,amount){
-
-  const userRef = db.collection("users").doc(uid);
-  const withdrawRef = db.collection("withdrawRequests").doc(id);
-
-  db.runTransaction(async(transaction)=>{
-
-    const userDoc = await transaction.get(userRef);
-    if(!userDoc.exists) throw "User missing";
-
-    const userData = userDoc.data();
-
-    const newBal = (userData.walletBalance||0) - amount;
-    if(newBal < 0) throw "Insufficient";
-
-    // 🔥 OLD HISTORY ARRAY
-    const oldHistory = userData.history || [];
-
-    // 🔥 ADD NEW HISTORY ENTRY
-    oldHistory.unshift({
-      title:"Withdraw",
-      amount:amount,
-      message: amount+"$ received in your Binance wallet",
-      createdAt: new Date()
+/* LOAD USERS */
+function loadUsers(){
+  db.collection("users").onSnapshot(snapshot=>{
+    allUsers=[];
+    snapshot.forEach(doc=>{
+      allUsers.push({id:doc.id,...doc.data()});
     });
-
-    transaction.update(userRef,{
-      walletBalance:newBal,
-      totalWithdraw:(userData.totalWithdraw||0)+amount,
-      history: oldHistory
-    });
-
-    transaction.update(withdrawRef,{
-      status:"approved"
-    });
-
-  }).then(()=>{
-    alert("Withdraw Approved & History Updated");
-  }).catch(err=>{
-    alert("Error: "+err);
+    renderUsers(allUsers);
   });
 }
+
+/* RENDER USERS */
+function renderUsers(users){
+
+  const start=(currentPage-1)*usersPerPage;
+  const end=start+usersPerPage;
+  const paginated=users.slice(start,end);
+
+  let html="";
+
+  paginated.forEach(u=>{
+
+    const totalIncome=
+      (u.dailyIncome||0)+
+      (u.referralEarnings||0)+
+      (u.liveEarnings||0);
+
+    html+=`
+    <tr>
+      <td>${u.email||""}</td>
+      <td>${u.walletBalance||0}</td>
+      <td>${u.referralEarnings||0}</td>
+      <td>${u.level||1}</td>
+      <td>${u.totalDeposit||0}</td>
+      <td>${u.totalWithdraw||0}</td>
+      <td>${totalIncome}</td>
+      <td><button class="saveBtn">Save</button></td>
+      <td><button class="deleteBtn"
+        onclick="deleteUser('${u.id}')">X</button></td>
+    </tr>
+    `;
+  });
+
+  document.getElementById("users").innerHTML=html;
+
+  renderPagination(users.length);
+}
+
+/* PAGINATION */
+function renderPagination(totalUsers){
+
+  const totalPages=Math.ceil(totalUsers/usersPerPage);
+
+  let buttons="";
+
+  for(let i=1;i<=totalPages;i++){
+    buttons+=`
+      <button class="${i===currentPage?'active':''}"
+      onclick="goToPage(${i})">${i}</button>
+    `;
+  }
+
+  document.getElementById("pagination").innerHTML=buttons;
+}
+
+function goToPage(page){
+  currentPage=page;
+  renderUsers(allUsers);
+}
+
+/* DELETE USER */
+function deleteUser(uid){
+  if(confirm("Delete user permanently?")){
+    db.collection("users").doc(uid).delete()
+    .then(()=>alert("Deleted"));
+  }
+}
+
+/* SEARCH */
+document.getElementById("search")
+.addEventListener("input",function(){
+
+  const val=this.value.toLowerCase();
+
+  const filtered=allUsers.filter(u=>
+    (u.email||"").toLowerCase().includes(val) ||
+    u.id.toLowerCase().includes(val)
+  );
+
+  currentPage=1;
+  renderUsers(filtered);
+});
+
+/* WITHDRAW */
+function loadWithdraws(){
+  db.collection("withdrawRequests")
+  .orderBy("createdAt","desc")
+  .onSnapshot(snapshot=>{
+
+    let html="";
+
+    snapshot.forEach(doc=>{
+      const w=doc.data();
+
+      html+=`
+      <tr>
+        <td>${w.email}</td>
+        <td>$${w.amount}</td>
+        <td>${w.status}</td>
+        <td>
+          ${w.status==="pending" ? `
+          <button class="approveBtn"
+          onclick="approve('${doc.id}','${w.uid}',${w.amount})">
+          Approve</button>
+
+          <button class="rejectBtn"
+          onclick="reject('${doc.id}')">
+          Reject</button>
+          ` : "Done"}
+        </td>
+      </tr>
+      `;
+    });
+
+    document.getElementById("withdrawTable").innerHTML=html;
+  });
+}
+
+function approve(id,uid,amount){
+  db.collection("withdrawRequests").doc(id)
+  .update({status:"approved"})
+  .then(()=>alert("Approved"));
+}
+
+function reject(id){
+  db.collection("withdrawRequests").doc(id)
+  .update({status:"rejected"});
+}
+
 </script>
 </body>
 </html>
