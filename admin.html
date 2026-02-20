@@ -168,11 +168,12 @@ function renderPage(page){
 
   users.forEach(u=>{
     html+=`
-    <tr>
-      <td class="email-cell">
-        <div>${u.email||""}</div>
-        <div class="uid">${u.id}</div>
-      </td>
+   <td class="email-cell" 
+    style="cursor:pointer"
+    onclick="openUserDetails('${u.id}')">
+  <div><b>${u.email||""}</b></div>
+  <div class="uid">${u.id}</div>
+</td>
 
       <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
       <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
@@ -274,6 +275,7 @@ function deleteUser(uid){
     .catch(err=>alert(err.message));
   }
 }
+  user-details.html?uid=USER_UID
 
 </script>
 
