@@ -127,10 +127,14 @@ if(!snap.exists()) return;
 
 const data=snap.data();
 
-let wallet=data.walletBalance||0;
-let daily=data.dailyIncome||0;
-let live=data.liveEarnings||0;
-let last=data.lastClaimTime?.toMillis?.() || Date.now();
+let wallet = data.walletBalance || 0;
+let referral = data.referralEarnings || 0;
+
+// 🔥 NEW DAILY FORMULA
+let daily = (wallet * 0.025) + referral;
+
+let live = data.liveEarnings || 0;
+let last = data.lastClaimTime?.toMillis?.() || Date.now();
 
 document.getElementById("dailyRate").innerText="$"+daily.toFixed(2);
 document.getElementById("hourRate").innerText="$"+(daily/24).toFixed(4);
