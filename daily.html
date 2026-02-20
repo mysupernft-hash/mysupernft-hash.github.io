@@ -127,12 +127,35 @@ if(!snap.exists()) return;
 
 const data=snap.data();
 
-let wallet = data.walletBalance || 0;
-let referral = data.referralEarnings || 0;
+// 🔥 2.5% wallet base
+let baseDaily = wallet * 0.025;
 
-// 🔥 NEW DAILY FORMULA
-let daily = (wallet * 0.025) + referral;
+// 🔥 Get today's midnight
+const today = new Date();
+today.setHours(0,0,0,0);
 
+// 🔥 Fetch today's referral bonus from history subcollection
+let todayReferral = 0;
+
+const referralQuery = query(
+  collection(db,"users",user.uid,"history"),
+  where("title","==","Referral Bonus")
+);
+
+const referralSnap = await getDocs(referralQuery);
+
+referralSnap.forEach(doc=>{
+  const h = doc.data();
+  if(h.createdAt?.seconds){
+    const refDate = new Date(h.createdAt.seconds * 1000);
+    if(refDate >= today){
+      todayReferral += h.amount;
+    }
+  }
+});
+
+// 🔥 FINAL DAILY (only today's referral)
+let daily = baseDaily + todayReferral;
 let live = data.liveEarnings || 0;
 let last = data.lastClaimTime?.toMillis?.() || Date.now();
 
