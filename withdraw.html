@@ -230,34 +230,43 @@ window.withdraw=async function(){
 
 function loadHistory(){
 
-  const historyRef=collection(db,"users",currentUser.uid,"history");
-  const q=query(historyRef, orderBy("createdAt","desc"));
+  const userRef = db.collection("users").doc(currentUser.uid);
 
-  onSnapshot(q,(snapshot)=>{
+  userRef.onSnapshot((doc)=>{
 
-    let html="";
+    if(!doc.exists){
+      document.getElementById("history").innerHTML = "No history found";
+      return;
+    }
 
-    snapshot.forEach(doc=>{
+    const data = doc.data();
+    const history = data.history || [];
 
-      const data=doc.data();
-      let time="";
+    let html = "";
 
-      if(data.createdAt?.seconds){
-        const date=new Date(data.createdAt.seconds*1000);
-        time=date.toLocaleString();
+    history.forEach(h=>{
+
+      let time = "";
+
+      if(h.createdAt){
+        const date = new Date(h.createdAt);
+        time = date.toLocaleString();
       }
 
-      html+=`
+      html += `
       <div class="history-card">
-        <div><b>${data.title || "Activity"}</b></div>
+        <div><b>${h.title}</b></div>
         <div>${time}</div>
-        <div class="success">+$${data.amount}</div>
-        <div>Success</div>
+        <div>+${h.amount}$</div>
+        <div class="approved">Success</div>
+        <div class="success-msg">
+          ${h.message || ""}
+        </div>
       </div>
       `;
     });
 
-    document.getElementById("history").innerHTML=
+    document.getElementById("history").innerHTML =
       html || "No history found";
 
   });
