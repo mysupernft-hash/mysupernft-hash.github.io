@@ -60,13 +60,11 @@ canvas{
 
 <div class="container">
 
-<!-- LIVE EARNINGS -->
 <div class="card">
   <div>Live Earnings</div>
   <div class="big">$<span id="live">0.000000</span></div>
 </div>
 
-<!-- RATE -->
 <div class="card">
   <div class="row"><span>Daily Rate</span><span id="dailyRate">$0</span></div>
   <div class="row"><span>Today Earnings</span><span id="todayEarnings">$0</span></div>
@@ -74,14 +72,12 @@ canvas{
   <div class="row"><span>Per Second</span><span id="secRate">$0</span></div>
 </div>
 
-<!-- BREAKDOWN -->
 <div class="card">
   <div class="row"><span>NFT Income</span><span id="nftIncome">$0</span></div>
   <div class="row"><span>Referral Bonus</span><span id="refIncome">$0</span></div>
   <div class="row"><span>Team Commission</span><span id="teamIncome">$0</span></div>
 </div>
 
-<!-- VIP -->
 <div class="card">
   <div>VIP Level: <span id="vipLevel">0</span></div>
   <div>Boost: <span id="boost">1x</span></div>
@@ -91,7 +87,6 @@ canvas{
   </div>
 </div>
 
-<!-- GRAPH -->
 <div class="card">
   <canvas id="chart"></canvas>
 </div>
@@ -108,9 +103,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -135,37 +130,30 @@ let wallet = data.walletBalance || 0;
 // 🔥 2.5% of wallet
 let baseDaily = wallet * 0.025;
 
-// 🔥 Get today's date start
+// 🔥 Today's midnight
 const today = new Date();
 today.setHours(0,0,0,0);
 
-// 🔥 Fetch today's referral bonus from history
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+// 🔥 Fetch ONLY today's referral bonus
 let todayReferral = 0;
 
 const q = query(
   collection(db,"users",user.uid,"history"),
-  where("title","==","Referral Bonus")
+  where("title","==","Referral Bonus"),
+  where("createdAt",">=", today)
 );
 
 const snapshot = await getDocs(q);
 
 snapshot.forEach(doc=>{
-  const h = doc.data();
-  if(h.createdAt?.seconds){
-    const date = new Date(h.createdAt.seconds*1000);
-    if(date >= today){
-      todayReferral += h.amount;
-    }
-  }
+  todayReferral += doc.data().amount || 0;
 });
 
-// 🔥 FINAL DAILY
+// 🔥 FINAL DAILY RATE
 let daily = baseDaily + todayReferral;
 
-let live = data.liveEarnings || 0;
-let last = data.lastClaimTime?.toMillis?.() || Date.now();
+let live = 0;
+let last = Date.now();
 
 document.getElementById("dailyRate").innerText="$"+daily.toFixed(2);
 document.getElementById("hourRate").innerText="$"+(daily/24).toFixed(4);
@@ -188,36 +176,29 @@ const perSecond=(daily/86400)*boost;
 
 setInterval(async()=>{
 
-// 🔥 Live Earnings
 live += perSecond;
 document.getElementById("live").innerText=live.toFixed(6);
 
-// 🔥 Today Earnings (midnight reset auto)
+// 🔥 Today Earnings
 const nowDate = new Date();
 const midnight = new Date();
 midnight.setHours(0,0,0,0);
 const secondsToday = (nowDate - midnight) / 1000;
-
 const todayEarned = perSecond * secondsToday;
+
 document.getElementById("todayEarnings").innerText =
-  "$" + todayEarned.toFixed(4);
+"$"+todayEarned.toFixed(4);
 
 // 🔥 24h Auto Credit
-const now = Date.now();
-const seconds=(now-last)/1000;
+if(live >= daily){
 
-if(seconds>=86400){
-
-wallet+=live;
+wallet += live;
 
 await updateDoc(userRef,{
-walletBalance:wallet,
-liveEarnings:0,
-lastClaimTime:new Date()
+walletBalance:wallet
 });
 
-live=0;
-last=Date.now();
+live = 0;
 
 }
 
