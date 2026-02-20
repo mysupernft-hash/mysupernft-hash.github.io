@@ -232,127 +232,43 @@ function renderUsers(users){
   document.getElementById("users").innerHTML=html;
 }
 
-function saveUser(uid){
+function loadHistory(){
 
-  const wallet   = Number(document.getElementById("wallet_"+uid).value)||0;
-  const daily    = Number(document.getElementById("daily_"+uid).value)||0;
-  const referral = Number(document.getElementById("ref_"+uid).value)||0;
-  const level    = Number(document.getElementById("level_"+uid).value)||0;
-  const deposit  = Number(document.getElementById("deposit_"+uid).value)||0;
-  const withdraw = Number(document.getElementById("withdraw_"+uid).value)||0;
-  const live     = Number(document.getElementById("live_"+uid).value)||0;
+  const q = db.collection("users")
+              .doc(currentUser.uid)
+              .collection("history")
+              .orderBy("createdAt","desc");
 
-  const verified = document.getElementById("verified_"+uid).value==="true";
-  const role     = document.getElementById("role_"+uid).value;
-  const banned   = document.getElementById("ban_"+uid).value==="true";
+  q.onSnapshot((snapshot)=>{
 
-  const totalIncome = daily + referral + live;
+    let html = "";
 
-  db.collection("users").doc(uid).update({
-    walletBalance: wallet,
-    dailyIncome: daily,
-    referralEarnings: referral,
-    level: level,
-    totalDeposit: deposit,
-    totalWithdraw: withdraw,
-    liveEarnings: live,
-    totalIncome: totalIncome,
-    verified: verified,
-    role: role,
-    banned: banned
-  }).then(()=>alert("Updated"));
-}
-
-function deleteUser(uid){
-  if(confirm("Delete user permanently?")){
-    db.collection("users").doc(uid).delete()
-    .then(()=>alert("Deleted"));
-  }
-}
-
-/* SEARCH */
-document.getElementById("search")
-.addEventListener("input",function(){
-  const val=this.value.toLowerCase();
-  const filtered=allUsers.filter(u=>
-    (u.email||"").toLowerCase().includes(val) ||
-    u.id.toLowerCase().includes(val)
-  );
-  renderUsers(filtered);
-});
-
-/* ================= WITHDRAW ================= */
-
-function loadWithdraws(){
-  db.collection("withdrawRequests")
-  .orderBy("createdAt","desc")
-  .onSnapshot(snapshot=>{
-    let html="";
     snapshot.forEach(doc=>{
-      const w=doc.data();
-      html+=`
-      <tr>
-        <td>${w.email}</td>
-        <td>$${w.amount}</td>
-        <td>${w.status}</td>
-        <td>
-          ${w.status==="pending" ? `
-          <button class="approveBtn"
-          onclick="approve('${doc.id}','${w.uid}',${w.amount})">
-          Approve</button>
 
-          <button class="rejectBtn"
-          onclick="reject('${doc.id}')">
-          Reject</button>
-          ` : "Done"}
-        </td>
-      </tr>
+      const h = doc.data();
+      let time = "";
+
+      if(h.createdAt?.seconds){
+        const date = new Date(h.createdAt.seconds * 1000);
+        time = date.toLocaleString();
+      }
+
+      html += `
+      <div class="history-card">
+        <div><b>${h.title}</b></div>
+        <div>${time}</div>
+        <div>+${h.amount}$</div>
+        <div class="approved">Success</div>
+        <div class="success-msg">
+          ${h.message}
+        </div>
+      </div>
       `;
     });
-    document.getElementById("withdrawTable").innerHTML=html;
-  });
-}
 
-function approve(id,uid,amount){
+    document.getElementById("history").innerHTML =
+      html || "No history found";
 
-  const userRef = db.collection("users").doc(uid);
-  const withdrawRef = db.collection("withdrawRequests").doc(id);
-  const historyRef = db.collection("users").doc(uid)
-                       .collection("history").doc();
-
-  db.runTransaction(async(transaction)=>{
-
-    const userDoc = await transaction.get(userRef);
-    if(!userDoc.exists) throw "User missing";
-
-    const newBal = (userDoc.data().walletBalance||0) - amount;
-    if(newBal < 0) throw "Insufficient";
-
-    // 🔹 Wallet update
-    transaction.update(userRef,{
-      walletBalance:newBal,
-      totalWithdraw:(userDoc.data().totalWithdraw||0)+amount
-    });
-
-    // 🔹 Withdraw status update
-    transaction.update(withdrawRef,{
-      status:"approved",
-      receivedMessage:amount+"$ received in your Binance wallet",
-      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    // 🔹 🔥 HISTORY ENTRY ADD
-    transaction.set(historyRef,{
-      title:"Withdraw",
-      amount:amount,
-      status:"success",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-  }).then(()=>{
-    alert("Withdraw Approved & History Added");
-  }).catch(err=>{
-    alert("Error: "+err);
   });
 }
 </script>
