@@ -397,10 +397,10 @@ let dailyIncome = (wallet * 0.025) + referral;
     // 🔥 24h Complete → Credit Wallet
     if(seconds >= 86400){
 
-      walletBalance += dailyIncome;
+      wallet += dailyIncome;
 
       updateDoc(userRef,{
-        walletBalance: walletBalance,
+        walletBalance: wallet,
         lastIncomeAt: new Date()
       });
 
@@ -417,10 +417,10 @@ let dailyIncome = (wallet * 0.025) + referral;
       "$" + live.toFixed(6);
 
     document.getElementById("walletBalanceP").innerText =
-      "$" + (walletBalance + live).toFixed(2);
+      "$" + (wallet + live).toFixed(2);
 
     document.getElementById("walletBalanceTop").innerText =
-      "$" + (walletBalance + live).toFixed(2);
+      "$" + (wallet + live).toFixed(2);
   }
 
   updateMining();
