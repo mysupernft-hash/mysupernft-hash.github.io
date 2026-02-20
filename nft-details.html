@@ -13,18 +13,15 @@ body{
   color:#FFD700;
   text-align:center;
 }
-
 header{
   padding:18px;
   background:#1a1a1a;
   font-size:22px;
   border-bottom:2px solid #FFD700;
 }
-
 .container{
   padding:20px;
 }
-
 .nft-img{
   width:90%;
   max-width:400px;
@@ -32,12 +29,10 @@ header{
   border:3px solid #FFD700;
   box-shadow:0 0 25px #FFD700;
 }
-
 .price{
   font-size:20px;
   margin:15px 0;
 }
-
 .calc-box{
   background:#1a1a1a;
   border-radius:12px;
@@ -46,13 +41,11 @@ header{
   max-width:400px;
   border:1px solid #FFD700;
 }
-
 .calc-row{
   display:flex;
   justify-content:space-between;
   margin:8px 0;
 }
-
 .buy-btn{
   background:#FFD700;
   color:#000;
@@ -64,11 +57,9 @@ header{
   margin-top:20px;
   width:220px;
 }
-
 .buy-btn:hover{
   background:#e6c200;
 }
-
 .status{
   margin-top:15px;
   font-size:14px;
@@ -110,7 +101,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  apiKey: "YOUR_API_KEY",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
 };
@@ -119,7 +110,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* NFT DATA (Same order as Dashboard) */
+/* NFT DATA */
 const NFTS=[
 {price:10,p:0.2,img:"images/IMG_0458.png"},
 {price:15,p:0.3,img:"images/IMG_0459.png"},
@@ -155,10 +146,7 @@ const NFTS=[
 
 const params = new URLSearchParams(window.location.search);
 let id = parseInt(params.get("id"));
-
-if(isNaN(id) || id < 0 || id >= NFTS.length){
-  id = 0;
-}
+if(isNaN(id) || id<0 || id>=NFTS.length){ id=0; }
 
 const nft = NFTS[id];
 
@@ -169,53 +157,55 @@ document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
 document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
 document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
 
-let currentUser = null;
+let currentUser=null;
 
 onAuthStateChanged(auth,(user)=>{
-  currentUser = user;
+  currentUser=user;
 });
 
 window.buyNFT = async function(){
 
-  const status = document.getElementById("status");
-  status.innerText = "";
+  const status=document.getElementById("status");
+  status.innerText="";
 
   if(!currentUser){
-    status.innerText = "Please login first.";
+    status.innerText="Please login first.";
     return;
   }
 
-  const userRef = doc(db,"users",currentUser.uid);
-  const snap = await getDoc(userRef);
+  const userRef=doc(db,"users",currentUser.uid);
+  const snap=await getDoc(userRef);
 
   if(!snap.exists()){
-    status.innerText = "User not found.";
+    status.innerText="User not found.";
     return;
   }
 
-  const data = snap.data();
-
-  const wallet = data.walletBalance || 0;
-  const daily  = data.dailyIncome || 0;
-  const purchased = data.purchasedNFTs || [];
+  const data=snap.data();
+  const wallet=data.walletBalance||0;
+  const daily=data.dailyIncome||0;
+  const purchased=data.purchasedNFTs||[];
 
   if(purchased.includes(id)){
-    status.innerText = "You already purchased this NFT.";
+    status.innerText="You already purchased this NFT.";
     return;
   }
 
-  if(wallet < nft.price){
-    status.innerText = "Insufficient Balance.";
+  if(wallet<nft.price){
+    status.innerText="Insufficient Balance.";
     return;
   }
 
   await updateDoc(userRef,{
     walletBalance: wallet - nft.price,
     dailyIncome: daily + nft.p,
-    purchasedNFTs: arrayUnion(id)
+    purchasedNFTs: arrayUnion(id),
+    lastIncomeAt: new Date() // 🔥 INSTANT MINING RESET
   });
 
-  status.innerText = "🎉 Purchase Successful!";
+  status.innerText="🎉 Purchase Successful!";
+  status.style.color="#00ff00";
+
   setTimeout(()=>{
     window.location.href="dashboard.html";
   },1500);
