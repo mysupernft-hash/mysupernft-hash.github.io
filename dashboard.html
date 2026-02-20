@@ -366,8 +366,11 @@ if(data.verified === true){
   document.getElementById("verifiedTick").style.display = "none";
 }
 
-  const dailyIncome = data.dailyIncome || 0;
-  let walletBalance = data.walletBalance || 0;
+  let wallet = data.walletBalance || 0;
+let referral = data.referralEarnings || 0;
+
+// 🔥 SAME FORMULA as daily.html
+let dailyIncome = (wallet * 0.025) + referral;
 
   // ⏳ First time setup
   if(!data.lastIncomeAt){
