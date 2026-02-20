@@ -157,118 +157,46 @@ auth.onAuthStateChanged(user=>{
 
 /* ================= USERS ================= */
 
-function loadUsers(){
-  db.collection("users").onSnapshot(snapshot=>{
-    allUsers=[];
-    snapshot.forEach(doc=>{
-      allUsers.push({id:doc.id,...doc.data()});
-    });
-    renderUsers(allUsers);
-  });
-}
+function approve(id,uid,amount){
 
-function renderUsers(users){
-  let html="";
-  users.forEach(u=>{
+  const userRef = db.collection("users").doc(uid);
+  const withdrawRef = db.collection("withdrawRequests").doc(id);
 
-    const totalIncome =
-      (u.dailyIncome||0) +
-      (u.referralEarnings||0) +
-      (u.liveEarnings||0);
+  db.runTransaction(async(transaction)=>{
 
-    html+=`
-    <tr>
-      <td>
-        <div style="font-weight:bold">${u.email||""}</div>
-        <div style="font-size:9px;color:#aaa">${u.id}</div>
-      </td>
+    const userDoc = await transaction.get(userRef);
+    if(!userDoc.exists) throw "User missing";
 
-      <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
-      <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
-      <td><input id="ref_${u.id}" value="${u.referralEarnings||0}"></td>
-      <td><input id="level_${u.id}" value="${u.level||1}"></td>
-      <td><input id="deposit_${u.id}" value="${u.totalDeposit||0}"></td>
-      <td><input id="withdraw_${u.id}" value="${u.totalWithdraw||0}"></td>
-      <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
+    const userData = userDoc.data();
 
-      <td>${totalIncome}</td>
+    const newBal = (userData.walletBalance||0) - amount;
+    if(newBal < 0) throw "Insufficient";
 
-      <td>
-        <select id="verified_${u.id}">
-          <option value="false" ${u.verified?"":"selected"}>No</option>
-          <option value="true" ${u.verified?"selected":""}>Yes</option>
-        </select>
-      </td>
+    // 🔥 OLD HISTORY ARRAY
+    const oldHistory = userData.history || [];
 
-      <td>
-        <select id="role_${u.id}">
-          <option value="user" ${u.role==="user"?"selected":""}>User</option>
-          <option value="vip" ${u.role==="vip"?"selected":""}>VIP</option>
-          <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
-          <option value="superadmin" ${u.role==="superadmin"?"selected":""}>Super</option>
-        </select>
-      </td>
-
-      <td>
-        <select id="ban_${u.id}">
-          <option value="false" ${u.banned?"":"selected"}>No</option>
-          <option value="true" ${u.banned?"selected":""}>Yes</option>
-        </select>
-      </td>
-
-      <td>
-        <button class="saveBtn"
-        onclick="saveUser('${u.id}')">Save</button>
-      </td>
-
-      <td>
-        <button class="deleteBtn"
-        onclick="deleteUser('${u.id}')">X</button>
-      </td>
-    </tr>
-    `;
-  });
-
-  document.getElementById("users").innerHTML=html;
-}
-
-function loadHistory(){
-
-  const q = db.collection("users")
-              .doc(currentUser.uid)
-              .collection("history")
-              .orderBy("createdAt","desc");
-
-  q.onSnapshot((snapshot)=>{
-
-    let html = "";
-
-    snapshot.forEach(doc=>{
-
-      const h = doc.data();
-      let time = "";
-
-      if(h.createdAt?.seconds){
-        const date = new Date(h.createdAt.seconds * 1000);
-        time = date.toLocaleString();
-      }
-
-      html += `
-      <div class="history-card">
-        <div><b>${h.title}</b></div>
-        <div>${time}</div>
-        <div>+${h.amount}$</div>
-        <div class="approved">Success</div>
-        <div class="success-msg">
-          ${h.message}
-        </div>
-      </div>
-      `;
+    // 🔥 ADD NEW HISTORY ENTRY
+    oldHistory.unshift({
+      title:"Withdraw",
+      amount:amount,
+      message: amount+"$ received in your Binance wallet",
+      createdAt: new Date()
     });
 
-    document.getElementById("history").innerHTML =
-      html || "No history found";
+    transaction.update(userRef,{
+      walletBalance:newBal,
+      totalWithdraw:(userData.totalWithdraw||0)+amount,
+      history: oldHistory
+    });
 
+    transaction.update(withdrawRef,{
+      status:"approved"
+    });
+
+  }).then(()=>{
+    alert("Withdraw Approved & History Updated");
+  }).catch(err=>{
+    alert("Error: "+err);
   });
 }
 </script>
