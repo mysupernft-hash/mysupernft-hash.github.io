@@ -69,6 +69,7 @@ canvas{
 <!-- RATE -->
 <div class="card">
   <div class="row"><span>Daily Rate</span><span id="dailyRate">$0</span></div>
+  <div class="row"><span>Today Earnings</span><span id="todayEarnings">$0</span></div>
   <div class="row"><span>Hourly</span><span id="hourRate">$0</span></div>
   <div class="row"><span>Per Second</span><span id="secRate">$0</span></div>
 </div>
@@ -122,7 +123,6 @@ return;
 
 const userRef=doc(db,"users",user.uid);
 const snap=await getDoc(userRef);
-
 if(!snap.exists()) return;
 
 const data=snap.data();
@@ -153,14 +153,24 @@ const perSecond=(daily/86400)*boost;
 
 setInterval(async()=>{
 
-const now=Date.now();
-const seconds=(now-last)/1000;
-
-live=live+(perSecond);
-
+// 🔥 Live Earnings
+live += perSecond;
 document.getElementById("live").innerText=live.toFixed(6);
 
-// 24 hour auto credit
+// 🔥 Today Earnings (midnight reset auto)
+const nowDate = new Date();
+const midnight = new Date();
+midnight.setHours(0,0,0,0);
+const secondsToday = (nowDate - midnight) / 1000;
+
+const todayEarned = perSecond * secondsToday;
+document.getElementById("todayEarnings").innerText =
+  "$" + todayEarned.toFixed(4);
+
+// 🔥 24h Auto Credit
+const now = Date.now();
+const seconds=(now-last)/1000;
+
 if(seconds>=86400){
 
 wallet+=live;
