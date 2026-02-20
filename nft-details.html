@@ -13,15 +13,18 @@ body{
   color:#FFD700;
   text-align:center;
 }
+
 header{
   padding:18px;
   background:#1a1a1a;
   font-size:22px;
   border-bottom:2px solid #FFD700;
 }
+
 .container{
   padding:20px;
 }
+
 .nft-img{
   width:90%;
   max-width:400px;
@@ -29,10 +32,12 @@ header{
   border:3px solid #FFD700;
   box-shadow:0 0 25px #FFD700;
 }
+
 .price{
   font-size:20px;
   margin:15px 0;
 }
+
 .calc-box{
   background:#1a1a1a;
   border-radius:12px;
@@ -41,11 +46,13 @@ header{
   max-width:400px;
   border:1px solid #FFD700;
 }
+
 .calc-row{
   display:flex;
   justify-content:space-between;
   margin:8px 0;
 }
+
 .buy-btn{
   background:#FFD700;
   color:#000;
@@ -57,9 +64,11 @@ header{
   margin-top:20px;
   width:220px;
 }
+
 .buy-btn:hover{
   background:#e6c200;
 }
+
 .status{
   margin-top:15px;
   font-size:14px;
@@ -91,7 +100,7 @@ header{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
   getFirestore, 
   doc, 
@@ -100,8 +109,9 @@ import {
   arrayUnion 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
   projectId: "supernft-5b952"
 };
@@ -110,8 +120,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* NFT DATA */
-const NFTS=[
+/* NFT LIST */
+const NFTS = [
 {price:10,p:0.2,img:"images/IMG_0458.png"},
 {price:15,p:0.3,img:"images/IMG_0459.png"},
 {price:20,p:0.4,img:"images/IMG_0460.png"},
@@ -144,12 +154,14 @@ const NFTS=[
 {price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
+/* GET NFT ID */
 const params = new URLSearchParams(window.location.search);
 let id = parseInt(params.get("id"));
-if(isNaN(id) || id<0 || id>=NFTS.length){ id=0; }
+if(isNaN(id) || id < 0 || id >= NFTS.length){ id = 0; }
 
 const nft = NFTS[id];
 
+/* DISPLAY NFT */
 document.getElementById("nftImage").src = nft.img;
 document.getElementById("price").innerText = "Price: $" + nft.price;
 document.getElementById("daily").innerText = "$" + nft.p.toFixed(2);
@@ -157,50 +169,47 @@ document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
 document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
 document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
 
-let currentUser=null;
-
-onAuthStateChanged(auth,(user)=>{
-  currentUser=user;
-});
-
+/* BUY FUNCTION */
 window.buyNFT = async function(){
 
-  const status=document.getElementById("status");
+  const status = document.getElementById("status");
   status.innerText="";
 
-  if(!currentUser){
+  const user = auth.currentUser;
+
+  if(!user){
     status.innerText="Please login first.";
     return;
   }
 
-  const userRef=doc(db,"users",currentUser.uid);
-  const snap=await getDoc(userRef);
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
 
   if(!snap.exists()){
     status.innerText="User not found.";
     return;
   }
 
-  const data=snap.data();
-  const wallet=data.walletBalance||0;
-  const daily=data.dailyIncome||0;
-  const purchased=data.purchasedNFTs||[];
+  const data = snap.data();
+  const wallet = data.walletBalance || 0;
+  const dailyIncome = data.dailyIncome || 0;
+  const purchased = data.purchasedNFTs || [];
 
   if(purchased.includes(id)){
     status.innerText="You already purchased this NFT.";
     return;
   }
 
-  if(wallet<nft.price){
+  if(wallet < nft.price){
     status.innerText="Insufficient Balance.";
     return;
   }
 
   await updateDoc(userRef,{
     walletBalance: wallet - nft.price,
-    dailyIncome: daily + nft.p,
+    dailyIncome: dailyIncome + nft.p,
     purchasedNFTs: arrayUnion(id),
-    lastIncomeAt: new Date() // 🔥 INSTANT MINING RESET
+    lastIncomeAt: new Date()
   });
 
   status.innerText="🎉 Purchase Successful!";
