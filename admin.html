@@ -18,12 +18,23 @@ body{
   padding:10px;
 }
 h2{text-align:center}
+
 .card{
   background:#111;
   padding:12px;
   border-radius:10px;
   margin-bottom:15px;
 }
+
+.search-box{
+  width:100%;
+  padding:8px;
+  margin-bottom:15px;
+  border:none;
+  border-radius:6px;
+  font-size:14px;
+}
+
 table{
   width:100%;
   border-collapse:collapse;
@@ -51,18 +62,30 @@ button{
   margin:3px;
   background:#FFD700;
 }
+
+.email-cell{
+  text-align:left;
+}
+.uid{
+  font-size:9px;
+  color:#aaa;
+}
 </style>
 </head>
 <body>
 
 <h2>🔥 SuperNFT Admin Panel</h2>
 
+<input type="text" id="searchInput"
+class="search-box"
+placeholder="🔍 Search by Email or UID">
+
 <div class="card">
 <div style="overflow-x:auto;">
 <table>
 <thead>
 <tr>
-<th>Email</th>
+<th>Email / UID</th>
 <th>Wallet</th>
 <th>Daily</th>
 <th>Referral</th>
@@ -96,6 +119,7 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 
 let allUsers=[];
+let filteredUsers=[];
 let currentPage=1;
 const usersPerPage=10;
 
@@ -113,23 +137,42 @@ function loadUsers(){
     snapshot.forEach(doc=>{
       allUsers.push({id:doc.id,...doc.data()});
     });
+    filteredUsers=[...allUsers];
     renderPage(1);
   });
 }
 
+/* SEARCH FUNCTION */
+document.getElementById("searchInput")
+.addEventListener("input",function(){
+
+  const value=this.value.toLowerCase();
+
+  filteredUsers=allUsers.filter(u=>
+    (u.email||"").toLowerCase().includes(value) ||
+    u.id.toLowerCase().includes(value)
+  );
+
+  renderPage(1);
+});
+
 function renderPage(page){
+
   currentPage=page;
 
   const start=(page-1)*usersPerPage;
   const end=start+usersPerPage;
-  const users=allUsers.slice(start,end);
+  const users=filteredUsers.slice(start,end);
 
   let html="";
 
   users.forEach(u=>{
     html+=`
     <tr>
-      <td>${u.email||""}</td>
+      <td class="email-cell">
+        <div>${u.email||""}</div>
+        <div class="uid">${u.id}</div>
+      </td>
 
       <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
       <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
@@ -180,7 +223,8 @@ function renderPage(page){
 }
 
 function renderPagination(){
-  const totalPages=Math.ceil(allUsers.length/usersPerPage);
+
+  const totalPages=Math.ceil(filteredUsers.length/usersPerPage);
   let html="";
 
   for(let i=1;i<=totalPages;i++){
