@@ -33,19 +33,6 @@ header{
   font-size:20px;
   margin:15px 0;
 }
-.calc-box{
-  background:#1a1a1a;
-  border-radius:12px;
-  padding:15px;
-  margin:20px auto;
-  max-width:400px;
-  border:1px solid #FFD700;
-}
-.calc-row{
-  display:flex;
-  justify-content:space-between;
-  margin:8px 0;
-}
 .buy-btn{
   background:#FFD700;
   color:#000;
@@ -56,9 +43,6 @@ header{
   cursor:pointer;
   margin-top:20px;
   width:220px;
-}
-.buy-btn:hover{
-  background:#e6c200;
 }
 .status{
   margin-top:15px;
@@ -75,11 +59,10 @@ header{
   <img id="nftImage" class="nft-img">
   <div class="price" id="price"></div>
 
-  <div class="calc-box">
-    <div class="calc-row"><span>Daily Income:</span><span id="daily"></span></div>
-    <div class="calc-row"><span>Weekly Income:</span><span id="weekly"></span></div>
-    <div class="calc-row"><span>Monthly Income:</span><span id="monthly"></span></div>
-    <div class="calc-row"><span>Yearly Income:</span><span id="yearly"></span></div>
+  <div>
+    <div>Daily Income: <span id="daily"></span></div>
+    <div>Weekly: <span id="weekly"></span></div>
+    <div>Monthly: <span id="monthly"></span></div>
   </div>
 
   <button class="buy-btn" onclick="buyNFT()">Buy NFT</button>
@@ -112,93 +95,95 @@ const db = getFirestore(app);
 /* NFT DATA */
 const NFTS=[
 {price:10,p:0.2,img:"images/IMG_0458.png"},
-{price:15,p:0.3,img:"images/IMG_0459.png"},
 {price:20,p:0.4,img:"images/IMG_0460.png"},
-{price:25,p:0.5,img:"images/IMG_0461.png"},
-{price:30,p:0.6,img:"images/IMG_0462.png"},
-{price:35,p:0.7,img:"images/IMG_0463.png"},
-{price:40,p:0.8,img:"images/IMG_0464.png"},
-{price:45,p:0.9,img:"images/IMG_0465.png"},
-{price:50,p:1,img:"images/IMG_0466.png"}
+{price:50,p:1,img:"images/IMG_0466.png"},
+{price:100,p:2.5,img:"images/IMG_0474.png"},
+{price:200,p:6.6,img:"images/IMG_0476.png"},
+{price:500,p:25,img:"images/IMG_0482.png"},
+{price:999,p:100,img:"images/IMG_0503.png"}
 ];
 
 const params = new URLSearchParams(window.location.search);
 let id = parseInt(params.get("id"));
-if(isNaN(id) || id < 0 || id >= NFTS.length){
-  id = 0;
-}
+if(isNaN(id) || id<0 || id>=NFTS.length) id=0;
 
 const nft = NFTS[id];
 
-document.getElementById("nftImage").src = nft.img;
-document.getElementById("price").innerText = "Price: $" + nft.price;
-document.getElementById("daily").innerText = "$" + nft.p.toFixed(2);
-document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
-document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
-document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
+document.getElementById("nftImage").src=nft.img;
+document.getElementById("price").innerText="Price: $"+nft.price;
+document.getElementById("daily").innerText="$"+nft.p.toFixed(2);
+document.getElementById("weekly").innerText="$"+(nft.p*7).toFixed(2);
+document.getElementById("monthly").innerText="$"+(nft.p*30).toFixed(2);
 
-let currentUser = null;
+let currentUser=null;
 
 onAuthStateChanged(auth,(user)=>{
-  currentUser = user;
+  if(!user){
+    document.getElementById("status").innerText="Please login first.";
+    return;
+  }
+  currentUser=user;
 });
 
-window.buyNFT = async function(){
+window.buyNFT=async function(){
 
-  const status = document.getElementById("status");
-  status.innerText = "";
+  const status=document.getElementById("status");
 
   if(!currentUser){
-    status.innerText = "Please login first.";
+    status.innerText="Please login first.";
     return;
   }
 
-  const userRef = doc(db,"users",currentUser.uid);
-  const snap = await getDoc(userRef);
-
+  const userRef=doc(db,"users",currentUser.uid);
+  const snap=await getDoc(userRef);
   if(!snap.exists()){
-    status.innerText = "User not found.";
+    status.innerText="User not found.";
     return;
   }
 
-  const data = snap.data();
+  const data=snap.data();
 
-  let wallet = data.walletBalance || 0;
-  let deposit = data.totalDeposit || 0;
-  let daily  = data.dailyIncome || 0;
-  const purchased = data.purchasedNFTs || [];
+  let wallet=data.walletBalance||0;
+  let deposit=data.totalDeposit||0;
+  let daily=data.dailyIncome||0;
+  let live=data.liveEarnings||0;
+  const purchased=data.purchasedNFTs||[];
 
   if(purchased.includes(id)){
-    status.innerText = "You already purchased this NFT.";
+    status.innerText="Already purchased.";
     return;
   }
 
-  const totalAvailable = wallet + deposit;
+  const totalAvailable=wallet+deposit;
 
-  if(totalAvailable < nft.price){
-    status.innerText = "Insufficient Balance.";
+  if(totalAvailable<nft.price){
+    status.innerText="Insufficient Balance.";
     return;
   }
 
-  // 🔥 Deduct from wallet first
-  let remaining = nft.price;
+  // Deduct from wallet first then deposit
+  let remaining=nft.price;
 
-  if(wallet >= remaining){
-    wallet -= remaining;
-  } else {
-    remaining -= wallet;
-    wallet = 0;
-    deposit -= remaining;
+  if(wallet>=remaining){
+    wallet-=remaining;
+  }else{
+    remaining-=wallet;
+    wallet=0;
+    deposit-=remaining;
   }
+
+  // 🔥 Instant reward
+  const instantReward=nft.p;
 
   await updateDoc(userRef,{
-    walletBalance: wallet,
+    walletBalance: wallet + instantReward,
     totalDeposit: deposit,
     dailyIncome: daily + nft.p,
+    liveEarnings: live + instantReward,
     purchasedNFTs: arrayUnion(id)
   });
 
-  status.innerText = "🎉 Purchase Successful!";
+  status.innerText="🎉 Purchase Successful!";
 
   setTimeout(()=>{
     window.location.href="dashboard.html";
@@ -206,6 +191,5 @@ window.buyNFT = async function(){
 };
 
 </script>
-
 </body>
 </html>
