@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Color Prediction</title>
+<title>SuperNFT Advanced Color Prediction</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial, sans-serif;
+  font-family:Arial;
   background:#000;
   color:#FFD700;
   text-align:center;
@@ -17,11 +17,10 @@ body{
 header{
   padding:20px;
   font-size:22px;
-  font-weight:bold;
   border-bottom:1px solid #FFD700;
 }
 
-.game-container{
+.container{
   max-width:500px;
   margin:20px auto;
   background:#111;
@@ -32,19 +31,14 @@ header{
 
 .wallet{
   font-size:18px;
-  margin-bottom:10px;
 }
 
 .timer{
-  font-size:22px;
+  font-size:26px;
   margin:15px 0;
 }
 
-.bet-section{
-  margin:10px 0;
-}
-
-.bet-section input{
+.bet input{
   padding:8px;
   width:100px;
   text-align:center;
@@ -66,78 +60,79 @@ header{
 .green{background:green;}
 .blue{background:blue;}
 
-.result{
-  font-size:18px;
-  margin-top:15px;
+.result-box{
+  margin-top:20px;
+  font-size:20px;
+  padding:10px;
 }
 
 .history{
   margin-top:20px;
-  text-align:left;
   max-height:150px;
   overflow-y:auto;
+  text-align:left;
   font-size:14px;
 }
 
 .history div{
-  padding:5px;
   border-bottom:1px solid #333;
+  padding:5px;
 }
 
 button:hover{
-  opacity:0.8;
+  opacity:0.85;
 }
 </style>
 </head>
 
 <body>
 
-<header>SuperNFT Demo Color Prediction</header>
+<header>SuperNFT Advanced Demo Prediction</header>
 
-<div class="game-container">
+<div class="container">
 
 <div class="wallet">
 Wallet: <span id="wallet">1000</span> Points
 </div>
 
 <div class="timer">
-Next Result In: <span id="time">30</span>s
+Next Result In: <span id="countdown">30</span>s
 </div>
 
-<div class="bet-section">
+<div class="bet">
 Bet Amount:
 <input type="number" id="betAmount" value="50" min="10">
 </div>
 
 <div class="colors">
-<button class="red" onclick="selectColor('red')">Red</button>
-<button class="green" onclick="selectColor('green')">Green</button>
-<button class="blue" onclick="selectColor('blue')">Blue</button>
+<button class="red" onclick="chooseColor('red')">Red</button>
+<button class="green" onclick="chooseColor('green')">Green</button>
+<button class="blue" onclick="chooseColor('blue')">Blue</button>
 </div>
 
-<div class="result" id="resultText"></div>
+<div class="result-box" id="result"></div>
 
 <div class="history" id="history"></div>
 
 </div>
 
-<audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
-<audio id="loseSound" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
-
 <script>
-let wallet = localStorage.getItem("wallet") ? parseInt(localStorage.getItem("wallet")) : 1000;
-document.getElementById("wallet").innerText = wallet;
+let wallet = localStorage.getItem("wallet") 
+  ? parseInt(localStorage.getItem("wallet")) 
+  : 1000;
 
-let selectedColor = null;
+let selected = null;
 let timer = 30;
 
-function selectColor(color){
-  selectedColor = color;
-  document.getElementById("resultText").innerText = 
+document.getElementById("wallet").innerText = wallet;
+
+function chooseColor(color){
+  selected = color;
+  document.getElementById("result").innerText = 
     "Selected: " + color.toUpperCase();
 }
 
-function generateResult(){
+function randomResult(){
   const colors = ["red","green","blue"];
   return colors[Math.floor(Math.random()*3)];
 }
@@ -148,42 +143,40 @@ function updateHistory(text){
   document.getElementById("history").prepend(div);
 }
 
-function gameRound(){
-  if(!selectedColor) return;
+function resolveRound(){
+  if(!selected) return;
 
   let bet = parseInt(document.getElementById("betAmount").value);
   if(bet > wallet || bet < 10){
-    alert("Invalid Bet Amount");
+    alert("Invalid Bet");
     return;
   }
 
-  const result = generateResult();
+  const result = randomResult();
 
-  if(selectedColor === result){
-    wallet += bet;
-    document.getElementById("resultText").innerText = 
-      "🎉 You Won! Result: " + result.toUpperCase();
-    document.getElementById("winSound").play();
-    updateHistory("WIN | +" + bet + " | " + result);
+  if(selected === result){
+    wallet += bet;  // 2x payout effect
+    document.getElementById("result").innerText =
+      "🎉 WIN! Result: " + result.toUpperCase();
+    updateHistory("WIN +" + bet + " | " + result);
   } else {
     wallet -= bet;
-    document.getElementById("resultText").innerText = 
-      "❌ You Lost! Result: " + result.toUpperCase();
-    document.getElementById("loseSound").play();
-    updateHistory("LOSS | -" + bet + " | " + result);
+    document.getElementById("result").innerText =
+      "❌ LOSS! Result: " + result.toUpperCase();
+    updateHistory("LOSS -" + bet + " | " + result);
   }
 
-  selectedColor = null;
+  selected = null;
   document.getElementById("wallet").innerText = wallet;
   localStorage.setItem("wallet", wallet);
 }
 
 setInterval(()=>{
   timer--;
-  document.getElementById("time").innerText = timer;
+  document.getElementById("countdown").innerText = timer;
 
   if(timer <= 0){
-    gameRound();
+    resolveRound();
     timer = 30;
   }
 
