@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT Rocket Multiplier</title>
+<title>SuperNFT Crash Demo</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial;
   background:#000;
+  font-family:Arial;
   color:#FFD700;
   text-align:center;
 }
@@ -26,11 +26,11 @@ header{
   background:#111;
   padding:20px;
   border-radius:15px;
-  box-shadow:0 0 20px #FFD700;
+  box-shadow:0 0 25px #FFD700;
 }
 
 .multiplier{
-  font-size:40px;
+  font-size:48px;
   margin:20px 0;
 }
 
@@ -39,19 +39,25 @@ button{
   margin:10px;
   border:none;
   border-radius:8px;
-  cursor:pointer;
   font-weight:bold;
+  cursor:pointer;
 }
 
 .start{background:#FFD700;color:#000;}
-.stop{background:red;color:#fff;}
+.cash{background:#00cc66;color:#000;}
+.crashed{color:red;}
+
+.wallet{
+  margin-bottom:15px;
+  font-size:18px;
+}
 
 .leaderboard{
   margin-top:20px;
   text-align:left;
-  font-size:14px;
   max-height:150px;
   overflow-y:auto;
+  font-size:14px;
 }
 
 .leaderboard div{
@@ -63,18 +69,20 @@ button{
 
 <body>
 
-<header>SuperNFT Rocket Multiplier Demo</header>
+<header>SuperNFT Crash Multiplier Demo</header>
 
 <div class="container">
 
-<div>
+<div class="wallet">
 Wallet: <span id="wallet">0</span> Points
 </div>
 
 <div class="multiplier" id="multiplier">1.00x</div>
 
-<button class="start" onclick="startGame()">Launch</button>
-<button class="stop" onclick="stopGame()">Cash Out</button>
+<button class="start" onclick="startGame()">Start</button>
+<button class="cash" onclick="cashOut()">Cash Out</button>
+
+<div id="status"></div>
 
 <div class="leaderboard" id="leaderboard"></div>
 
@@ -98,11 +106,13 @@ const db = getFirestore(app);
 
 let multiplier = 1.00;
 let interval;
+let crashPoint;
 let playing = false;
-let userId = null;
+let userId;
 
-const multiplierDisplay = document.getElementById("multiplier");
-const walletDisplay = document.getElementById("wallet");
+const multiplierEl = document.getElementById("multiplier");
+const walletEl = document.getElementById("wallet");
+const statusEl = document.getElementById("status");
 
 onAuthStateChanged(auth, async user => {
   if(!user){
@@ -111,44 +121,60 @@ onAuthStateChanged(auth, async user => {
   }
 
   userId = user.uid;
-  const userRef = doc(db, "users", userId);
+  const userRef = doc(db,"users",userId);
   const snap = await getDoc(userRef);
 
   if(!snap.exists()){
-    await setDoc(userRef, { wallet: 1000 });
-    walletDisplay.innerText = 1000;
+    await setDoc(userRef,{ wallet:1000 });
+    walletEl.innerText = 1000;
   } else {
-    walletDisplay.innerText = snap.data().wallet || 1000;
+    walletEl.innerText = snap.data().wallet || 1000;
   }
 
   loadLeaderboard();
 });
 
+function randomCrash(){
+  return (Math.random()*5 + 1).toFixed(2); // crash between 1x and 6x
+}
+
 function startGame(){
   if(playing) return;
+
   multiplier = 1.00;
+  crashPoint = randomCrash();
   playing = true;
+  statusEl.innerText = "";
+  multiplierEl.classList.remove("crashed");
 
   interval = setInterval(()=>{
-    multiplier += 0.01;
-    multiplierDisplay.innerText = multiplier.toFixed(2) + "x";
+    multiplier += 0.02;
+    multiplierEl.innerText = multiplier.toFixed(2)+"x";
+
+    if(multiplier >= crashPoint){
+      clearInterval(interval);
+      playing = false;
+      multiplierEl.classList.add("crashed");
+      statusEl.innerText = "💥 Crashed at "+ crashPoint +"x";
+    }
+
   },100);
 }
 
-async function stopGame(){
+async function cashOut(){
   if(!playing) return;
 
   clearInterval(interval);
   playing = false;
 
-  const userRef = doc(db, "users", userId);
+  const userRef = doc(db,"users",userId);
   const snap = await getDoc(userRef);
   let wallet = snap.data().wallet || 0;
 
-  let reward = Math.floor(multiplier * 10);
+  let reward = Math.floor(multiplier * 20);
   wallet += reward;
 
-  await updateDoc(userRef, { wallet: wallet });
+  await updateDoc(userRef,{ wallet: wallet });
 
   await addDoc(collection(db,"leaderboard"),{
     user:userId,
@@ -156,21 +182,21 @@ async function stopGame(){
     timestamp:Date.now()
   });
 
-  walletDisplay.innerText = wallet;
-  multiplierDisplay.innerText = "Cashed at " + multiplier.toFixed(2) + "x";
+  walletEl.innerText = wallet;
+  statusEl.innerText = "✅ Cashed at "+ multiplier.toFixed(2)+"x | +"+reward+" Points";
 
   loadLeaderboard();
 }
 
 async function loadLeaderboard(){
   const q = query(collection(db,"leaderboard"), orderBy("score","desc"), limit(5));
-  const querySnapshot = await getDocs(q);
+  const snap = await getDocs(q);
 
   const board = document.getElementById("leaderboard");
   board.innerHTML = "<strong>Top Scores:</strong><br>";
 
-  querySnapshot.forEach(doc=>{
-    board.innerHTML += "<div>"+ doc.data().score.toFixed(2) +"x</div>";
+  snap.forEach(doc=>{
+    board.innerHTML += "<div>"+ doc.data().score.toFixed(2)+"x</div>";
   });
 }
 
