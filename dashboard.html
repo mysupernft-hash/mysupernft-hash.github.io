@@ -41,6 +41,7 @@ footer{background:#1a1a1a;padding:15px;margin-top:20px;border-top:1px solid #272
 footer div{padding:5px;cursor:pointer;}
 footer div:hover{color:#e0c200;}
 
+/* Verified Badge (Optimized) */
 .verified-badge{
   display:inline-flex;
   align-items:center;
@@ -48,105 +49,101 @@ footer div:hover{color:#e0c200;}
   width:18px;
   height:18px;
   border-radius:50%;
-  background:linear-gradient(145deg,#FFD700,#e6c200);
-  color:#00ff00;
-  font-size:12px;
+  background:#FFD700;
+  color:#000;
+  font-size:11px;
   font-weight:bold;
   margin-left:6px;
-  box-shadow:0 0 10px #FFD700;
 }
 
-  .trading-icon{
+/* Trading Icon (Lightweight Version) */
+.trading-icon{
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:0.3s;
 }
 
 .trading-icon svg{
-  width:24px;
-  height:24px;
-  filter: drop-shadow(0 0 6px #FFD700);
-  transition:0.3s;
+  width:22px;
+  height:22px;
+  transition:transform 0.2s ease;
 }
 
 .trading-icon:hover svg{
-  transform:scale(1.15);
-  filter: drop-shadow(0 0 12px #FFD700);
+  transform:scale(1.1);
 }
-  #userBar{
+
+/* User Bar */
+#userBar{
   background:#111;
-  padding:8px 20px;
+  padding:8px 15px;
   font-size:14px;
-  border-bottom:1px solid #272727;
+  border-bottom:1px solid #222;
 }
 
-  .stats-wrapper{
-  margin:20px;
+/* Stats Section */
+.stats-wrapper{
+  margin:15px;
 }
 
+/* Use FLEX instead of GRID for better mobile stability */
 .stats-row{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-  margin-bottom:15px;
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
 }
 
 .stat-card{
+  flex:1;
   background:#1a1a1a;
-  padding:12px;
-  border-radius:10px;
+  padding:10px;
+  border-radius:8px;
   text-align:center;
   border:1px solid #FFD700;
-  transition:0.3s;
-}
-
-.stat-card:hover{
-  box-shadow:0 0 12px #FFD700;
 }
 
 .stat-card h3{
-  font-size:13px;
+  font-size:12px;
   color:#FFD700;
-  margin-bottom:6px;
+  margin-bottom:5px;
 }
 
 .stat-card p{
-  font-size:16px;
+  font-size:15px;
   font-weight:bold;
-  color:#ffffff;
-}
-  
-  .nft-tabs {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px;
-  flex-wrap: wrap;
+  color:#fff;
 }
 
-.tab {
-  background: #1a1a1a;
-  border: 1px solid #FFD700;
-  color: #FFD700;
-  padding: 10px 20px;
-  border-radius: 30px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
+/* NFT Tabs */
+.nft-tabs{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:15px;
+  flex-wrap:wrap;
 }
 
-.tab:hover {
-  background: #FFD700;
-  color: #000;
-  box-shadow: 0 0 12px #FFD700;
+.tab{
+  background:#1a1a1a;
+  border:1px solid #FFD700;
+  color:#FFD700;
+  padding:8px 16px;
+  border-radius:25px;
+  cursor:pointer;
+  font-weight:bold;
+  font-size:13px;
+  transition:0.2s ease;
 }
 
-.tab.active {
-  background: #FFD700;
-  color: #000;
-  box-shadow: 0 0 18px #FFD700;
+.tab:hover{
+  background:#FFD700;
+  color:#000;
+}
+
+.tab.active{
+  background:#FFD700;
+  color:#000;
 }
 @media(max-width:480px){.stats{grid-template-columns:repeat(2,1fr)} .nft-grid{grid-template-columns:repeat(2,1fr)} #sidebar{width:200px}}
 </style>
