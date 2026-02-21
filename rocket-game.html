@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Rocket Multiplier</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#000;
+  color:#FFD700;
+  text-align:center;
+}
+
+header{
+  padding:20px;
+  font-size:22px;
+  border-bottom:1px solid #FFD700;
+}
+
+.container{
+  max-width:500px;
+  margin:20px auto;
+  background:#111;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 0 20px #FFD700;
+}
+
+.multiplier{
+  font-size:40px;
+  margin:20px 0;
+}
+
+button{
+  padding:10px 20px;
+  margin:10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.start{background:#FFD700;color:#000;}
+.stop{background:red;color:#fff;}
+
+.leaderboard{
+  margin-top:20px;
+  text-align:left;
+  font-size:14px;
+  max-height:150px;
+  overflow-y:auto;
+}
+
+.leaderboard div{
+  border-bottom:1px solid #333;
+  padding:5px;
+}
+</style>
+</head>
+
+<body>
+
+<header>SuperNFT Rocket Multiplier Demo</header>
+
+<div class="container">
+
+<div>
+Wallet: <span id="wallet">0</span> Points
+</div>
+
+<div class="multiplier" id="multiplier">1.00x</div>
+
+<button class="start" onclick="startGame()">Launch</button>
+<button class="stop" onclick="stopGame()">Cash Out</button>
+
+<div class="leaderboard" id="leaderboard"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let multiplier = 1.00;
+let interval;
+let playing = false;
+let userId = null;
+
+const multiplierDisplay = document.getElementById("multiplier");
+const walletDisplay = document.getElementById("wallet");
+
+onAuthStateChanged(auth, async user => {
+  if(!user){
+    window.location.href = "login.html";
+    return;
+  }
+
+  userId = user.uid;
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+
+  if(!snap.exists()){
+    await setDoc(userRef, { wallet: 1000 });
+    walletDisplay.innerText = 1000;
+  } else {
+    walletDisplay.innerText = snap.data().wallet || 1000;
+  }
+
+  loadLeaderboard();
+});
+
+function startGame(){
+  if(playing) return;
+  multiplier = 1.00;
+  playing = true;
+
+  interval = setInterval(()=>{
+    multiplier += 0.01;
+    multiplierDisplay.innerText = multiplier.toFixed(2) + "x";
+  },100);
+}
+
+async function stopGame(){
+  if(!playing) return;
+
+  clearInterval(interval);
+  playing = false;
+
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+  let wallet = snap.data().wallet || 0;
+
+  let reward = Math.floor(multiplier * 10);
+  wallet += reward;
+
+  await updateDoc(userRef, { wallet: wallet });
+
+  await addDoc(collection(db,"leaderboard"),{
+    user:userId,
+    score:multiplier,
+    timestamp:Date.now()
+  });
+
+  walletDisplay.innerText = wallet;
+  multiplierDisplay.innerText = "Cashed at " + multiplier.toFixed(2) + "x";
+
+  loadLeaderboard();
+}
+
+async function loadLeaderboard(){
+  const q = query(collection(db,"leaderboard"), orderBy("score","desc"), limit(5));
+  const querySnapshot = await getDocs(q);
+
+  const board = document.getElementById("leaderboard");
+  board.innerHTML = "<strong>Top Scores:</strong><br>";
+
+  querySnapshot.forEach(doc=>{
+    board.innerHTML += "<div>"+ doc.data().score.toFixed(2) +"x</div>";
+  });
+}
+
+</script>
+
+</body>
+</html>
