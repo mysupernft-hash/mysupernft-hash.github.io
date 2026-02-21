@@ -18,14 +18,12 @@ body{
   padding:10px;
 }
 h2{text-align:center}
-
 .card{
   background:#111;
   padding:12px;
   border-radius:10px;
   margin-bottom:15px;
 }
-
 .search-box{
   width:100%;
   padding:8px;
@@ -34,7 +32,6 @@ h2{text-align:center}
   border-radius:6px;
   font-size:14px;
 }
-
 table{
   width:100%;
   border-collapse:collapse;
@@ -62,9 +59,9 @@ button{
   margin:3px;
   background:#FFD700;
 }
-
 .email-cell{
   text-align:left;
+  cursor:pointer;
 }
 .uid{
   font-size:9px;
@@ -142,7 +139,6 @@ function loadUsers(){
   });
 }
 
-/* SEARCH FUNCTION */
 document.getElementById("searchInput")
 .addEventListener("input",function(){
 
@@ -168,12 +164,12 @@ function renderPage(page){
 
   users.forEach(u=>{
     html+=`
-   <td class="email-cell" 
-    style="cursor:pointer"
-    onclick="openUserDetails('${u.id}')">
-  <div><b>${u.email||""}</b></div>
-  <div class="uid">${u.id}</div>
-</td>
+    <tr>
+      <td class="email-cell"
+          onclick="openUserDetails('${u.id}')">
+        <div><b>${u.email||""}</b></div>
+        <div class="uid">${u.id}</div>
+      </td>
 
       <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
       <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
@@ -219,7 +215,6 @@ function renderPage(page){
   });
 
   document.getElementById("users").innerHTML=html;
-
   renderPagination();
 }
 
@@ -233,6 +228,10 @@ function renderPagination(){
   }
 
   document.getElementById("pagination").innerHTML=html;
+}
+
+function openUserDetails(uid){
+  window.location.href="user-details.html?uid="+uid;
 }
 
 function saveUser(uid){
@@ -275,7 +274,6 @@ function deleteUser(uid){
     .catch(err=>alert(err.message));
   }
 }
-  user-details.html?uid=USER_UID
 
 </script>
 
