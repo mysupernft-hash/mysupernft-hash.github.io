@@ -37,8 +37,8 @@ a{color:#FFD700;text-decoration:none;}
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, deleteUser, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDocs, collection, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* 🔥 Firebase Config */
 const firebaseConfig = {
@@ -57,7 +57,6 @@ const db = getFirestore(app);
 /* 🔹 Auto-fill referral from URL */
 const urlParams = new URLSearchParams(window.location.search);
 const refFromURL = urlParams.get("ref");
-
 if (refFromURL) {
   document.getElementById("referralInput").value = refFromURL.toUpperCase();
 }
@@ -76,30 +75,35 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
 
   try {
 
-    // 🔎 Check referral exists
-    const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      alert("Invalid Referral Code!");
-      return;
-    }
-
-    // 🔹 Create user
+    // 1️⃣ Create Auth User First
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
+    // 2️⃣ Now authenticated → referral check allowed
+    const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      alert("Invalid Referral Code!");
+
+      // Delete invalid created user
+      await deleteUser(user);
+      return;
+    }
+
+    // 3️⃣ Generate new referral code
     const newReferralCode = "SNFT" + user.uid.substring(0,6).toUpperCase();
 
+    // 4️⃣ Save user document
     await setDoc(doc(db, "users", user.uid), {
       email: email,
+      referralCode: newReferralCode,
+      referredBy: referralCode,
+
       walletBalance: 0,
       dailyIncome: 0,
       liveEarnings: 0,
       totalDeposit: 0,
-
-      referralCode: newReferralCode,
-      referredBy: referralCode,
       referralEarnings: 0,
 
       role: "user",
@@ -110,18 +114,17 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
 
     await sendEmailVerification(user);
 
-    alert("Signup successful! Please verify your email.");
+    alert("Signup successful! Verify your email.");
     window.location.href = "verification.html";
 
   } catch (err) {
+    console.error(err);
 
     if (err.code === "auth/email-already-in-use") {
       alert("Email already registered");
     } else {
       alert(err.message);
     }
-
-    console.error(err);
   }
 
 });
