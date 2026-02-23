@@ -1,99 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Withdraw | SuperNFT</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0f0f0f;
-  color:#FFD700;
-}
-
-header{
-  background:#1a1a1a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
-
-.container{
-  padding:20px;
-}
-
-.card{
-  background:#1a1a1a;
-  border-radius:12px;
-  padding:20px;
-  margin-bottom:15px;
-}
-
-.balance{
-  font-size:28px;
-  font-weight:bold;
-}
-
-input{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:8px;
-  background:#272727;
-  color:#FFD700;
-  margin-top:10px;
-}
-
-button{
-  width:100%;
-  padding:12px;
-  margin-top:15px;
-  border:none;
-  border-radius:8px;
-  background:#FFD700;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-button:hover{
-  background:#e6c200;
-}
-
-.status{
-  margin-top:12px;
-  font-size:14px;
-}
-
-.history-card{
-  background:#111;
-  padding:12px;
-  border-radius:10px;
-  margin-top:10px;
-  border-left:4px solid #FFD700;
-}
-
-.success{
-  color:#00ff00;
-  font-weight:bold;
-}
-
-.back{
-  display:block;
-  text-align:center;
-  margin-top:20px;
-  padding:10px;
-  background:#272727;
-  border-radius:8px;
-  text-decoration:none;
-  color:#FFD700;
-}
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
+header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
+.container{padding:20px;}
+.card{background:#1a1a1a;border-radius:12px;padding:20px;margin-bottom:15px;}
+.balance{font-size:28px;font-weight:bold;}
+input{width:100%;padding:12px;border:none;border-radius:8px;background:#272727;color:#FFD700;margin-top:10px;}
+button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;background:#FFD700;color:#000;font-weight:bold;cursor:pointer;}
+.history-card{background:#111;padding:12px;border-radius:10px;margin-top:10px;border-left:4px solid #FFD700;}
+.success{color:#00ff00;font-weight:bold;}
 </style>
 </head>
-
 <body>
 
 <header>💸 Withdraw</header>
@@ -109,7 +32,7 @@ button:hover{
   <div>Withdraw Amount</div>
   <input type="number" id="amount" placeholder="Enter amount">
   <button onclick="withdraw()">Request Withdraw</button>
-  <div class="status" id="status"></div>
+  <div id="status"></div>
 </div>
 
 <div class="card">
@@ -117,25 +40,13 @@ button:hover{
   <div id="history">Loading...</div>
 </div>
 
-<a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
-
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  updateDoc,
-  collection,
-  addDoc,
-  serverTimestamp,
-  onSnapshot,
-  query,
-  orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -150,11 +61,9 @@ const db=getFirestore(app);
 let currentUser=null;
 let walletAmount=0;
 
-/* ================= AUTH ================= */
-
 onAuthStateChanged(auth,(user)=>{
   if(!user){
-    window.location.replace("login.html");
+    window.location="login.html";
     return;
   }
 
@@ -162,28 +71,18 @@ onAuthStateChanged(auth,(user)=>{
 
   const userRef=doc(db,"users",user.uid);
 
-  // 🔥 Realtime wallet sync
   onSnapshot(userRef,(snap)=>{
-    if(!snap.exists()) return;
     walletAmount=snap.data().walletBalance||0;
-    document.getElementById("walletBalance").innerText=
-      walletAmount.toFixed(2);
+    document.getElementById("walletBalance").innerText=walletAmount.toFixed(2);
   });
 
-  loadHistory();
+  loadHistory(user.uid);
 });
-
-/* ================= WITHDRAW ================= */
 
 window.withdraw=async function(){
 
-  const status=document.getElementById("status");
   const amount=Number(document.getElementById("amount").value);
-
-  if(!amount || amount<=0){
-    status.innerText="Enter valid amount";
-    return;
-  }
+  const status=document.getElementById("status");
 
   if(amount<10){
     status.innerText="Minimum withdraw is $10";
@@ -195,84 +94,71 @@ window.withdraw=async function(){
     return;
   }
 
-  status.innerText="Processing...";
-
   try{
 
-    const userRef=doc(db,"users",currentUser.uid);
-
-    // 1️⃣ Deduct wallet instantly
-    await updateDoc(userRef,{
-      walletBalance: walletAmount - amount
+    await updateDoc(doc(db,"users",currentUser.uid),{
+      walletBalance: walletAmount-amount
     });
 
-    // 2️⃣ Create withdraw request
-    await addDoc(collection(db,"withdrawRequests"),{
-      uid:currentUser.uid,
-      email:currentUser.email,
-      amount:amount,
-      status:"pending",
-      createdAt:serverTimestamp()
-    });
+    await addDoc(
+      collection(db,"users",currentUser.uid,"withdrawRequests"),
+      {
+        requestedAmount:amount,
+        approvedAmount:0,
+        status:"pending",
+        createdAt:serverTimestamp()
+      }
+    );
 
-    status.innerText="✅ Withdraw Requested Successfully";
-    status.style.color="#00ff00";
-    document.getElementById("amount").value="";
+    status.innerText="Withdraw request sent to admin";
 
   }catch(err){
     console.error(err);
-    status.innerText="Something went wrong.";
-    status.style.color="red";
+    status.innerText="Error occurred";
   }
 };
 
-/* ================= HISTORY (REALTIME) ================= */
+function loadHistory(uid){
 
-function loadHistory(){
+  const q=query(
+    collection(db,"users",uid,"withdrawRequests"),
+    orderBy("createdAt","desc")
+  );
 
-  const userRef = db.collection("users").doc(currentUser.uid);
+  onSnapshot(q,(snapshot)=>{
+    let html="";
 
-  userRef.onSnapshot((doc)=>{
+    snapshot.forEach(docSnap=>{
+      const d=docSnap.data();
 
-    if(!doc.exists){
-      document.getElementById("history").innerHTML = "No history found";
-      return;
-    }
+      let message="Pending";
+      let color="#FFD700";
+      let amount=d.requestedAmount;
 
-    const data = doc.data();
-    const history = data.history || [];
-
-    let html = "";
-
-    history.forEach(h=>{
-
-      let time = "";
-
-      if(h.createdAt){
-        const date = new Date(h.createdAt);
-        time = date.toLocaleString();
+      if(d.status==="approved"){
+        message="Money received in your Binance wallet";
+        color="#00ff00";
+        amount=d.approvedAmount;
       }
 
-      html += `
+      if(d.status==="rejected"){
+        message="Rejected";
+        color="red";
+      }
+
+      html+=`
       <div class="history-card">
-        <div><b>${h.title}</b></div>
-        <div>${time}</div>
-        <div>+${h.amount}$</div>
-        <div class="approved">Success</div>
-        <div class="success-msg">
-          ${h.message || ""}
-        </div>
+        <div><b>$${amount}</b></div>
+        <div style="color:${color};font-weight:bold;">${message}</div>
       </div>
       `;
     });
 
-    document.getElementById("history").innerHTML =
-      html || "No history found";
+    document.getElementById("history").innerHTML=html||"No history";
 
   });
 }
 
 </script>
-
 </body>
 </html>
