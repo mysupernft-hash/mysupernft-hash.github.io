@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Earnings Chart</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -34,8 +35,96 @@ body{
   <canvas id="earningsChart"></canvas>
 </div>
 
-<!-- Firebase + Chart Logic -->
-<script type="module" src="chart.js"></script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* 🔥 Firebase Config */
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let chart;
+
+/* ================= AUTH ================= */
+
+onAuthStateChanged(auth,(user)=>{
+
+  if(!user){
+    window.location="login.html";
+    return;
+  }
+
+  const userRef=doc(db,"users",user.uid);
+
+  onSnapshot(userRef,(snap)=>{
+
+    if(!snap.exists()) return;
+
+    const earnings=snap.data().liveEarnings || 0;
+    updateChart(earnings);
+
+  });
+
+});
+
+/* ================= CHART ================= */
+
+const ctx=document.getElementById("earningsChart").getContext("2d");
+
+chart=new Chart(ctx,{
+  type:"line",
+  data:{
+    labels:[],
+    datasets:[{
+      label:"Live Earnings ($)",
+      data:[],
+      borderColor:"#d4af37",
+      backgroundColor:"rgba(212,175,55,0.2)",
+      tension:0.3,
+      fill:true
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{ labels:{ color:"#d4af37" } }
+    },
+    scales:{
+      x:{ ticks:{ color:"#d4af37" } },
+      y:{ ticks:{ color:"#d4af37" } }
+    }
+  }
+});
+
+/* ================= UPDATE FUNCTION ================= */
+
+function updateChart(value){
+
+  const time=new Date().toLocaleTimeString();
+
+  chart.data.labels.push(time);
+  chart.data.datasets[0].data.push(value);
+
+  // Keep only last 10 points
+  if(chart.data.labels.length>10){
+    chart.data.labels.shift();
+    chart.data.datasets[0].data.shift();
+  }
+
+  chart.update();
+}
+
+</script>
 
 </body>
 </html>
