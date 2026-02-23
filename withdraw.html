@@ -15,8 +15,10 @@ input{width:100%;padding:12px;border:none;border-radius:8px;background:#272727;c
 button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;background:#FFD700;color:#000;font-weight:bold;cursor:pointer;}
 .history-card{background:#111;padding:12px;border-radius:10px;margin-top:10px;border-left:4px solid #FFD700;}
 .success{color:#00ff00;font-weight:bold;}
+.error{color:red;font-weight:bold;}
 </style>
 </head>
+
 <body>
 
 <header>💸 Withdraw</header>
@@ -31,7 +33,7 @@ button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;bac
 <div class="card">
   <div>Withdraw Amount</div>
   <input type="number" id="amount" placeholder="Enter amount">
-  <button onclick="withdraw()">Request Withdraw</button>
+  <button id="withdrawBtn">Request Withdraw</button>
   <div id="status"></div>
 </div>
 
@@ -46,7 +48,7 @@ button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;bac
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, updateDoc, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, collection, addDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -61,6 +63,11 @@ const db=getFirestore(app);
 let currentUser=null;
 let walletAmount=0;
 
+const balanceEl=document.getElementById("walletBalance");
+const historyEl=document.getElementById("history");
+const statusEl=document.getElementById("status");
+const withdrawBtn=document.getElementById("withdrawBtn");
+
 onAuthStateChanged(auth,(user)=>{
   if(!user){
     window.location="login.html";
@@ -72,34 +79,46 @@ onAuthStateChanged(auth,(user)=>{
   const userRef=doc(db,"users",user.uid);
 
   onSnapshot(userRef,(snap)=>{
+    if(!snap.exists()) return;
     walletAmount=snap.data().walletBalance||0;
-    document.getElementById("walletBalance").innerText=walletAmount.toFixed(2);
+    balanceEl.innerText=walletAmount.toFixed(2);
   });
 
   loadHistory(user.uid);
 });
 
-window.withdraw=async function(){
+/* ================= WITHDRAW ================= */
+
+withdrawBtn.addEventListener("click",async()=>{
 
   const amount=Number(document.getElementById("amount").value);
-  const status=document.getElementById("status");
+
+  if(!amount || amount<=0){
+    statusEl.innerHTML="<span class='error'>Enter valid amount</span>";
+    return;
+  }
 
   if(amount<10){
-    status.innerText="Minimum withdraw is $10";
+    statusEl.innerHTML="<span class='error'>Minimum withdraw is $10</span>";
     return;
   }
 
   if(amount>walletAmount){
-    status.innerText="Insufficient balance";
+    statusEl.innerHTML="<span class='error'>Insufficient balance</span>";
     return;
   }
 
   try{
 
+    withdrawBtn.disabled=true;
+    statusEl.innerText="Processing...";
+
+    // Deduct wallet
     await updateDoc(doc(db,"users",currentUser.uid),{
       walletBalance: walletAmount-amount
     });
 
+    // Create withdraw request (subcollection)
     await addDoc(
       collection(db,"users",currentUser.uid,"withdrawRequests"),
       {
@@ -110,55 +129,70 @@ window.withdraw=async function(){
       }
     );
 
-    status.innerText="Withdraw request sent to admin";
+    statusEl.innerHTML="<span class='success'>Withdraw request sent to admin</span>";
+    document.getElementById("amount").value="";
 
   }catch(err){
-    console.error(err);
-    status.innerText="Error occurred";
+    console.error("Withdraw Error:",err);
+    statusEl.innerHTML="<span class='error'>Error occurred</span>";
   }
-};
+
+  withdrawBtn.disabled=false;
+});
+
+/* ================= HISTORY ================= */
 
 function loadHistory(uid){
 
-  const q=query(
-    collection(db,"users",uid,"withdrawRequests"),
-    orderBy("createdAt","desc")
+  const withdrawRef = collection(db,"users",uid,"withdrawRequests");
+
+  onSnapshot(withdrawRef,
+    (snapshot)=>{
+
+      if(snapshot.empty){
+        historyEl.innerHTML="No withdraw history";
+        return;
+      }
+
+      let html="";
+
+      snapshot.forEach(docSnap=>{
+        const d=docSnap.data();
+
+        let message="Pending";
+        let color="#FFD700";
+        let amount=d.requestedAmount || 0;
+
+        if(d.status==="approved"){
+          message="Money received in your Binance wallet";
+          color="#00ff00";
+          amount=d.approvedAmount || d.requestedAmount;
+        }
+
+        if(d.status==="rejected"){
+          message="Rejected";
+          color="red";
+        }
+
+        html+=`
+        <div class="history-card">
+          <div><b>$${amount}</b></div>
+          <div style="color:${color};font-weight:bold;">${message}</div>
+        </div>
+        `;
+      });
+
+      historyEl.innerHTML=html;
+
+    },
+    (error)=>{
+      console.error("History Error:",error);
+      historyEl.innerHTML="Error loading history";
+    }
   );
-
-  onSnapshot(q,(snapshot)=>{
-    let html="";
-
-    snapshot.forEach(docSnap=>{
-      const d=docSnap.data();
-
-      let message="Pending";
-      let color="#FFD700";
-      let amount=d.requestedAmount;
-
-      if(d.status==="approved"){
-        message="Money received in your Binance wallet";
-        color="#00ff00";
-        amount=d.approvedAmount;
-      }
-
-      if(d.status==="rejected"){
-        message="Rejected";
-        color="red";
-      }
-
-      html+=`
-      <div class="history-card">
-        <div><b>$${amount}</b></div>
-        <div style="color:${color};font-weight:bold;">${message}</div>
-      </div>
-      `;
-    });
-
-    document.getElementById("history").innerHTML=html||"No history";
-
-  });
 }
 
 </script>
+
 </body>
 </html>
