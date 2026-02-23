@@ -1,90 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Withdraw | SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="assets/style.css">
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script src="assets/script.js"></script>
+<title>Admin Withdraw Panel</title>
+<style>
+body{background:#0f0f0f;color:#FFD700;font-family:Arial;padding:20px;}
+.card{background:#1a1a1a;padding:15px;border-radius:10px;margin-bottom:10px;}
+input{padding:8px;margin-top:8px;background:#272727;color:#FFD700;border:none;}
+button{margin-top:8px;padding:8px;background:#FFD700;border:none;}
+</style>
 </head>
 <body>
 
-<header>Admin Withdraw Requests</header>
-<nav>
-  <a href="admin-dashboard.html">Dashboard</a>
-  <a href="admin-users.html">Users</a>
-  <a href="admin-nfts.html">NFTs</a>
-  <a href="admin-deposits.html">Deposits</a>
-  <a href="admin-withdraw.html">Withdraw</a>
-  <a href="#" class="logout" onclick="logout()">Logout</a>
-</nav>
+<h2>Withdraw Requests</h2>
+<div id="requests"></div>
 
-<div class="main">
-<h2>All Withdraw Requests</h2>
+<script type="module">
 
-<table id="withdrawTable">
-<thead>
-<tr>
-<th>User Email</th>
-<th>Amount</th>
-<th>Status</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody></tbody>
-</table>
-</div>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collectionGroup, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<script>
-// 🔒 Protect page
-protectAdminPage();
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
 
-const db = firebase.firestore();
-const withdrawTable = document.getElementById("withdrawTable").getElementsByTagName("tbody")[0];
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-// 🔹 Load all withdraw requests
-function loadWithdraws(){
-  withdrawTable.innerHTML = "";
-  db.collection("withdraws").get().then(snapshot=>{
-    snapshot.forEach(doc=>{
-      const w = doc.data();
-      const row = withdrawTable.insertRow();
-      row.insertCell(0).innerText = w.userEmail;
-      row.insertCell(1).innerText = "$" + (w.amount || 0);
-      row.insertCell(2).innerText = w.status || "pending";
+onAuthStateChanged(auth,(user)=>{
+  if(!user){
+    window.location="login.html";
+    return;
+  }
+  loadRequests();
+});
 
-      const actionsCell = row.insertCell(3);
+function loadRequests(){
 
-      // Approve Button
-      const approveBtn = document.createElement("button");
-      approveBtn.innerText = "Approve";
-      approveBtn.onclick = ()=>{
-        db.collection("withdraws").doc(doc.id).update({status:"approved"})
-          .then(()=>{ alert("Withdraw approved"); loadWithdraws(); });
-      };
-      actionsCell.appendChild(approveBtn);
+  const requestsDiv=document.getElementById("requests");
 
-      // Reject Button
-      const rejectBtn = document.createElement("button");
-      rejectBtn.innerText = "Reject";
-      rejectBtn.onclick = ()=>{
-        db.collection("withdraws").doc(doc.id).update({status:"rejected"})
-          .then(()=>{ alert("Withdraw rejected"); loadWithdraws(); });
-      };
-      actionsCell.appendChild(rejectBtn);
+  const q=collectionGroup(db,"withdrawRequests");
+
+  onSnapshot(q,(snapshot)=>{
+    let html="";
+
+    snapshot.forEach(docSnap=>{
+      const d=docSnap.data();
+
+      if(d.status==="pending"){
+
+        html+=`
+        <div class="card">
+          <div>Requested: $${d.requestedAmount}</div>
+          <input type="number" id="amt-${docSnap.id}" placeholder="Approved amount">
+          <button onclick="approve('${docSnap.ref.path}','${docSnap.id}')">Approve</button>
+          <button onclick="reject('${docSnap.ref.path}')">Reject</button>
+        </div>
+        `;
+      }
     });
+
+    requestsDiv.innerHTML=html;
   });
 }
 
-// Initial load
-loadWithdraws();
-</script>
+window.approve=async function(path,id){
+  const amount=document.getElementById("amt-"+id).value;
+  await updateDoc(doc(db,path),{
+    status:"approved",
+    approvedAmount:Number(amount)
+  });
+};
 
+window.reject=async function(path){
+  await updateDoc(doc(db,path),{
+    status:"rejected"
+  });
+};
+
+</script>
 </body>
 </html>
