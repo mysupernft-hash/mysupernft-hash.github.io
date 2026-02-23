@@ -1,58 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Live Earnings | SuperNFT</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#0f0f0f;
-  color:#FFD700;
-  text-align:center;
-}
-
-header{
-  background:#1a1a1a;
-  padding:15px;
-  font-size:20px;
-  font-weight:bold;
-}
-
-.container{
-  padding:30px 20px;
-}
-
-.big{
-  font-size:38px;
-  font-weight:bold;
-  margin:20px 0;
-}
-
-.small{
-  font-size:14px;
-  opacity:0.7;
-}
-
-.card{
-  background:#1a1a1a;
-  padding:20px;
-  border-radius:12px;
-  margin-top:20px;
-}
-
-.back{
-  display:block;
-  margin-top:30px;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
-  border-radius:8px;
-  text-decoration:none;
-  font-weight:bold;
-}
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;text-align:center;}
+header{background:#1a1a1a;padding:15px;font-size:20px;font-weight:bold;}
+.container{padding:30px 20px;}
+.big{font-size:38px;font-weight:bold;margin:20px 0;}
+.small{font-size:14px;opacity:0.7;}
+.card{background:#1a1a1a;padding:20px;border-radius:12px;margin-top:20px;}
+.back{display:block;margin-top:30px;padding:12px;background:#FFD700;color:#000;border-radius:8px;text-decoration:none;font-weight:bold;}
 </style>
 </head>
 
@@ -67,7 +27,7 @@ header{
 
 <div class="card">
   Wallet Total:
-  <div class="big">$<span id="walletTotal">0</span></div>
+  <div class="big">$<span id="walletTotal">0.00</span></div>
 </div>
 
 <a href="dashboard.html" class="back">⬅ Back to Dashboard</a>
@@ -78,7 +38,7 @@ header{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -102,22 +62,31 @@ onAuthStateChanged(auth, async (user)=>{
 
   if(!snap.exists()) return;
 
-  const data = snap.data();
+  let data = snap.data();
 
-  const dailyIncome = data.dailyIncome || 0;
+  let dailyIncome = data.dailyIncome || 0;
   let walletBalance = data.walletBalance || 0;
 
-  // 🔥 if first time user
+  // If no income set
+  if(dailyIncome <= 0){
+    document.getElementById("liveEarnings").innerText="$0.000000";
+    document.getElementById("walletTotal").innerText=walletBalance.toFixed(2);
+    return;
+  }
+
+  // First time setup
   if(!data.lastIncomeAt){
     await updateDoc(userRef,{
-      lastIncomeAt: new Date()
+      lastIncomeAt: serverTimestamp()
     });
     return;
   }
 
   let lastIncomeAt = data.lastIncomeAt.toMillis();
 
-  function updateMining(){
+  let creditedToday = false;
+
+  async function updateMining(){
 
     const now = Date.now();
     const seconds = Math.floor((now - lastIncomeAt) / 1000);
@@ -125,14 +94,16 @@ onAuthStateChanged(auth, async (user)=>{
     const perSecond = dailyIncome / 86400;
     const live = perSecond * seconds;
 
-    // ✅ 24 hour complete → credit wallet
-    if(seconds >= 86400){
+    // Credit after 24 hours only once
+    if(seconds >= 86400 && !creditedToday){
+
+      creditedToday = true;
 
       walletBalance += dailyIncome;
 
-      updateDoc(userRef,{
+      await updateDoc(userRef,{
         walletBalance: walletBalance,
-        lastIncomeAt: new Date()
+        lastIncomeAt: serverTimestamp()
       });
 
       lastIncomeAt = Date.now();
