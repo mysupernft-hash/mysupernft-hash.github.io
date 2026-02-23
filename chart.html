@@ -3,45 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Earnings Chart</title>
+<title>SuperNFT - Live Earnings</title>
 
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
   margin:0;
   background:#0b0b10;
-  color:#d4af37;
+  color:#FFD700;
   font-family:Segoe UI;
 }
-.chart-container{
+
+header{
+  text-align:center;
+  padding:20px;
+  font-size:22px;
+  font-weight:bold;
+  background:#111;
+}
+
+.chart-wrapper{
   width:95%;
-  max-width:600px;
-  height:320px;
-  margin:90px auto;
+  max-width:750px;
+  height:380px;
+  margin:50px auto;
   background:#0f172a;
-  padding:15px;
-  border-radius:12px;
-  box-shadow:0 0 20px rgba(212,175,55,.3);
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 0 25px rgba(255,215,0,0.3);
 }
 </style>
 </head>
 
 <body>
 
-<h2 style="text-align:center;">📈 Live Earnings</h2>
+<header>📈 Live Earnings Chart</header>
 
-<div class="chart-container">
+<div class="chart-wrapper">
   <canvas id="earningsChart"></canvas>
 </div>
 
 <script type="module">
 
+/* ================= FIREBASE IMPORT ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config */
+/* ================= FIREBASE CONFIG ================= */
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -52,10 +63,62 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-let chart;
+/* ================= INIT CHART FIRST ================= */
+const ctx=document.getElementById("earningsChart").getContext("2d");
 
-/* ================= AUTH ================= */
+const earningsChart=new Chart(ctx,{
+  type:"line",
+  data:{
+    labels:[],
+    datasets:[{
+      label:"Live Earnings ($)",
+      data:[],
+      borderColor:"#FFD700",
+      backgroundColor:"rgba(255,215,0,0.2)",
+      borderWidth:2,
+      tension:0.4,
+      fill:true,
+      pointRadius:3,
+      pointBackgroundColor:"#FFD700"
+    }]
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{ labels:{ color:"#FFD700" }}
+    },
+    scales:{
+      x:{
+        ticks:{ color:"#FFD700" },
+        grid:{ color:"rgba(255,215,0,0.1)" }
+      },
+      y:{
+        ticks:{ color:"#FFD700" },
+        grid:{ color:"rgba(255,215,0,0.1)" }
+      }
+    }
+  }
+});
 
+/* ================= UPDATE CHART FUNCTION ================= */
+function updateChart(value){
+
+  const time=new Date().toLocaleTimeString();
+
+  earningsChart.data.labels.push(time);
+  earningsChart.data.datasets[0].data.push(value);
+
+  // Keep last 20 points
+  if(earningsChart.data.labels.length>20){
+    earningsChart.data.labels.shift();
+    earningsChart.data.datasets[0].data.shift();
+  }
+
+  earningsChart.update();
+}
+
+/* ================= AUTH + FIRESTORE ================= */
 onAuthStateChanged(auth,(user)=>{
 
   if(!user){
@@ -67,62 +130,23 @@ onAuthStateChanged(auth,(user)=>{
 
   onSnapshot(userRef,(snap)=>{
 
-    if(!snap.exists()) return;
+    if(!snap.exists()){
+      console.log("User document not found");
+      return;
+    }
 
-    const earnings=snap.data().liveEarnings || 0;
+    const data=snap.data();
+
+    // 🔥 IMPORTANT: Make sure Firestore field name matches
+    const earnings=data.liveEarnings || 0;
+
     updateChart(earnings);
 
+  },(error)=>{
+    console.error("Firestore Error:",error);
   });
 
 });
-
-/* ================= CHART ================= */
-
-const ctx=document.getElementById("earningsChart").getContext("2d");
-
-chart=new Chart(ctx,{
-  type:"line",
-  data:{
-    labels:[],
-    datasets:[{
-      label:"Live Earnings ($)",
-      data:[],
-      borderColor:"#d4af37",
-      backgroundColor:"rgba(212,175,55,0.2)",
-      tension:0.3,
-      fill:true
-    }]
-  },
-  options:{
-    responsive:true,
-    maintainAspectRatio:false,
-    plugins:{
-      legend:{ labels:{ color:"#d4af37" } }
-    },
-    scales:{
-      x:{ ticks:{ color:"#d4af37" } },
-      y:{ ticks:{ color:"#d4af37" } }
-    }
-  }
-});
-
-/* ================= UPDATE FUNCTION ================= */
-
-function updateChart(value){
-
-  const time=new Date().toLocaleTimeString();
-
-  chart.data.labels.push(time);
-  chart.data.datasets[0].data.push(value);
-
-  // Keep only last 10 points
-  if(chart.data.labels.length>10){
-    chart.data.labels.shift();
-    chart.data.datasets[0].data.shift();
-  }
-
-  chart.update();
-}
 
 </script>
 
