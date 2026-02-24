@@ -33,40 +33,29 @@ header{
 .row{
   display:flex;
   justify-content:space-between;
+  align-items:center;
   margin:6px 0;
   font-size:14px;
 }
-.big{
-  font-size:18px;
+input{
+  background:#272727;
+  border:none;
+  border-radius:6px;
+  padding:6px;
+  color:#FFD700;
+}
+.btn-small{
+  background:#FFD700;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
   font-weight:bold;
 }
-.grid-2{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-}
-.progress{
-  background:#333;
-  height:8px;
-  border-radius:5px;
-  margin-top:6px;
-}
-.progress-bar{
-  height:100%;
-  background:#FFD700;
-  width:0%;
-}
-.btn{
-  display:block;
-  text-align:center;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
-  border-radius:8px;
-  margin-top:8px;
-  text-decoration:none;
-  font-weight:bold;
-}
+.big{font-size:18px;font-weight:bold;}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.progress{background:#333;height:8px;border-radius:5px;margin-top:6px;}
+.progress-bar{height:100%;background:#FFD700;width:0%;}
 .small{font-size:13px;opacity:0.8;}
 </style>
 </head>
@@ -77,11 +66,18 @@ header{
 
 <div class="container">
 
-<!-- 1️⃣ BASIC INFO -->
+<!-- BASIC INFO -->
 <div class="card">
 <div class="section-title">Basic Info</div>
 
-<div class="row"><span>Name</span><span id="name">-</span></div>
+<div class="row">
+  <span>Name</span>
+  <div>
+    <input type="text" id="nameInput" placeholder="Enter Name">
+    <button class="btn-small" onclick="saveName()">Save</button>
+  </div>
+</div>
+
 <div class="row"><span>Email</span><span id="email">-</span></div>
 <div class="row"><span>UID</span><span id="uid">-</span></div>
 <div class="row"><span>Referral Code</span><span id="refCode">-</span></div>
@@ -90,61 +86,12 @@ header{
 <div class="row"><span>Join Date</span><span id="joinDate">-</span></div>
 </div>
 
-<!-- 2️⃣ FINANCIAL OVERVIEW -->
-<div class="card">
-<div class="section-title">Financial Overview</div>
-<div class="grid-2">
-<div>Wallet<div class="big">$<span id="wallet">0</span></div></div>
-<div>Daily<div class="big">$<span id="daily">0</span></div></div>
-<div>Live<div class="big">$<span id="live">0</span></div></div>
-<div>Total Income<div class="big">$<span id="totalIncome">0</span></div></div>
-<div>Referral<div class="big">$<span id="referral">0</span></div></div>
-<div>Team Commission<div class="big">$<span id="teamCommission">0</span></div></div>
-<div>Total Deposit<div class="big">$<span id="deposit">0</span></div></div>
-<div>Total Withdraw<div class="big">$<span id="withdraw">0</span></div></div>
-</div>
-</div>
-
-<!-- 3️⃣ VIP SYSTEM -->
-<div class="card">
-<div class="section-title">VIP / Level System</div>
-<div id="badge">⭐</div>
-<div class="small">Commission: <span id="commission">5%</span></div>
-<div class="small">Next Level Progress</div>
-<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-<div class="small" id="progressText">0%</div>
-</div>
-
-<!-- 4️⃣ TEAM SUMMARY -->
-<div class="card">
-<div class="section-title">Team Summary</div>
-<div class="row"><span>Total Members</span><span id="teamCount">0</span></div>
-<div class="row"><span>Level 1 Members</span><span id="level1">0</span></div>
-<div class="row"><span>Level 2–10 Members</span><span id="levelDeep">0</span></div>
-<div class="row"><span>Active Members</span><span id="activeMembers">0</span></div>
-<div class="row"><span>Network Bonus</span><span>$0</span></div>
-</div>
-
-<!-- 5️⃣ ACTIVITY -->
-<div class="card">
-<div class="section-title">Activity</div>
-<div class="row"><span>Last Login</span><span id="lastLogin">-</span></div>
-</div>
-
-<!-- 6️⃣ SECURITY -->
-<div class="card">
-<div class="section-title">Security</div>
-<div class="row"><span>Email Verified</span><span id="verified">✔</span></div>
-<div class="row"><span>Account Freeze</span><span id="freeze">No</span></div>
-<a href="#" class="btn">Change Password</a>
-</div>
-
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -156,67 +103,58 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+let currentUser;
+
 onAuthStateChanged(auth, async(user)=>{
 if(!user){location.href="login.html";return;}
+currentUser=user;
 
 document.getElementById("email").innerText=user.email;
 document.getElementById("uid").innerText=user.uid;
-document.getElementById("lastLogin").innerText=new Date().toLocaleString();
-document.getElementById("verified").innerText=user.emailVerified?"✔":"❌";
 
 const snap=await getDoc(doc(db,"users",user.uid));
 if(!snap.exists()) return;
 const d=snap.data();
 
-/* Name Added */
-document.getElementById("name").innerText =
-d.name || user.displayName || "Not Set";
+document.getElementById("nameInput").value =
+d.name || user.displayName || "";
 
-/* Basic */
 document.getElementById("refCode").innerText=d.referralCode||"-";
 document.getElementById("vipLevel").innerText="VIP "+(d.level||0);
 document.getElementById("joinDate").innerText=d.createdAt?.toDate().toLocaleDateString()||"-";
 document.getElementById("status").innerText=d.banned?"BANNED":"ACTIVE";
 
-/* Financial */
-document.getElementById("wallet").innerText=d.walletBalance||0;
-document.getElementById("daily").innerText=d.dailyIncome||0;
-document.getElementById("referral").innerText=d.referralEarnings||0;
-document.getElementById("deposit").innerText=d.totalDeposit||0;
-document.getElementById("withdraw").innerText=d.totalWithdraw||0;
-document.getElementById("teamCommission").innerText=d.teamCommission||0;
-
-let live=d.liveEarnings||0;
-setInterval(()=>{
-live+= (d.dailyIncome||0)/86400;
-document.getElementById("live").innerText=live.toFixed(6);
-},1000);
-
-let total=(d.liveEarnings||0)+(d.referralEarnings||0);
-document.getElementById("totalIncome").innerText=total.toFixed(2);
-
-/* VIP */
-let level=d.level||0;
-let commission=5;
-if(level>=3) commission=8;
-if(level>=5) commission=12;
-if(level>=8) commission=18;
-document.getElementById("commission").innerText=commission+"%";
-
-let progress=(d.totalDeposit||0)/1000*100;
-if(progress>100) progress=100;
-document.getElementById("progressBar").style.width=progress+"%";
-document.getElementById("progressText").innerText=progress.toFixed(0)+"%";
-
-/* Team */
-const refCol=collection(db,"users",user.uid,"referrals");
-const refSnap=await getDocs(refCol);
-document.getElementById("teamCount").innerText=refSnap.size;
-document.getElementById("level1").innerText=refSnap.size;
-document.getElementById("levelDeep").innerText=0;
-document.getElementById("activeMembers").innerText=refSnap.size;
-
 });
+
+/* SAVE NAME */
+window.saveName = async function(){
+
+const newName=document.getElementById("nameInput").value.trim();
+if(!newName){
+alert("Name cannot be empty");
+return;
+}
+
+try{
+
+// Update Firestore
+await updateDoc(doc(db,"users",currentUser.uid),{
+name:newName
+});
+
+// Update Firebase Auth
+await updateProfile(currentUser,{
+displayName:newName
+});
+
+alert("Name updated successfully");
+
+}catch(err){
+alert("Error: "+err.message);
+}
+
+}
+
 </script>
 
 </body>
