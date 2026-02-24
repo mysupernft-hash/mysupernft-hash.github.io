@@ -68,7 +68,6 @@ tr{background:#111;}
 <h2>👤 User Details</h2>
 
 <div class="card">
-
 <label>Wallet</label>
 <input id="wallet">
 
@@ -96,12 +95,10 @@ tr{background:#111;}
 <option value="false">No</option>
 <option value="true">Yes</option>
 </select>
-
 </div>
 
 <div class="card">
 <h3>💸 Withdraw History</h3>
-
 <table>
 <thead>
 <tr>
@@ -113,7 +110,6 @@ tr{background:#111;}
 </thead>
 <tbody id="withdrawTable"></tbody>
 </table>
-
 </div>
 
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
@@ -126,50 +122,63 @@ authDomain:"supernft-5b952.firebaseapp.com",
 projectId:"supernft-5b952"
 });
 
-const db=firebase.firestore();
-const params=new URLSearchParams(window.location.search);
-const uid=params.get("uid");
+const db = firebase.firestore();
 
-let withdrawHistory=[];
+const params = new URLSearchParams(window.location.search);
+const uid = params.get("uid");
 
-/* LOAD USER */
-db.collection("users").doc(uid).onSnapshot(doc=>{
-const u=doc.data();
-if(!u) return;
+if(!uid){
+alert("UID missing in URL");
+}
 
-wallet.value=u.walletBalance||0;
-deposit.value=u.totalDeposit||0;
-referral.value=u.referralEarnings||0;
-level.value=u.level||0;
-live.value=u.liveEarnings||0;
-role.value=u.role||"user";
-verified.value=u.verified?"true":"false";
+let withdrawHistory = [];
 
-withdrawHistory=u.withdrawHistory||[];
-renderWithdraw();
-});
+/* LOAD USER ONCE */
+db.collection("users").doc(uid).get().then(doc=>{
 
-/* RENDER WITHDRAW TABLE */
-function renderWithdraw(){
-
-if(!withdrawHistory || withdrawHistory.length===0){
-withdrawTable.innerHTML="<tr><td colspan='4'>No Withdraw History</td></tr>";
+if(!doc.exists){
+alert("User not found");
 return;
 }
 
-let html="";
+const u = doc.data();
+
+wallet.value = u.walletBalance || 0;
+deposit.value = u.totalDeposit || 0;
+referral.value = u.referralEarnings || 0;
+level.value = u.level || 0;
+live.value = u.liveEarnings || 0;
+role.value = u.role || "user";
+verified.value = u.verified ? "true" : "false";
+
+withdrawHistory = u.withdrawHistory || [];
+renderWithdraw();
+
+});
+
+/* RENDER TABLE */
+function renderWithdraw(){
+
+const table = document.getElementById("withdrawTable");
+
+if(!withdrawHistory || withdrawHistory.length === 0){
+table.innerHTML = "<tr><td colspan='4'>No Withdraw History</td></tr>";
+return;
+}
+
+let html = "";
 
 withdrawHistory.forEach((w,index)=>{
 
-html+=`
+html += `
 <tr>
 
 <td>
-<input type="number" id="req-${index}" value="${w.requestedAmount||0}">
+<input type="number" id="req-${index}" value="${w.requestedAmount || 0}">
 </td>
 
 <td>
-<input type="number" id="app-${index}" value="${w.approvedAmount||0}">
+<input type="number" id="app-${index}" value="${w.approvedAmount || 0}">
 </td>
 
 <td>
@@ -181,32 +190,31 @@ html+=`
 </td>
 
 <td>
-<button class="deleteBtn" onclick="removeWithdraw(${index})">X</button>
+<button class="deleteBtn" onclick="deleteRow(${index})">X</button>
 </td>
 
-</tr>`;
+</tr>
+`;
 });
 
-withdrawTable.innerHTML=html;
+table.innerHTML = html;
 }
 
 /* DELETE ROW */
-function removeWithdraw(index){
+function deleteRow(index){
 withdrawHistory.splice(index,1);
 renderWithdraw();
 }
 
-/* SAVE EVERYTHING */
+/* SAVE */
 function saveUser(){
 
-// Update withdraw from inputs
 withdrawHistory.forEach((w,index)=>{
 
 w.requestedAmount = Number(document.getElementById(`req-${index}`).value);
 w.approvedAmount = Number(document.getElementById(`app-${index}`).value);
 w.status = document.getElementById(`status-${index}`).value;
 
-// Auto message for user side
 if(w.status === "approved"){
 w.message = `You received $${w.approvedAmount} in your bank`;
 }else{
@@ -215,7 +223,6 @@ w.message = "";
 
 });
 
-// Update Firestore
 db.collection("users").doc(uid).update({
 walletBalance:Number(wallet.value),
 totalDeposit:Number(deposit.value),
@@ -226,7 +233,9 @@ role:role.value,
 verified:verified.value==="true",
 withdrawHistory:withdrawHistory
 }).then(()=>{
-alert("User Updated Successfully");
+alert("Updated Successfully");
+}).catch(err=>{
+alert("Error: "+err.message);
 });
 
 }
