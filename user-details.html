@@ -2,38 +2,125 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Withdraw History | SuperNFT</title>
+<title>User Details | SuperNFT Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background:#0f0f0f;
+  background:#0d0d0d;
   color:#FFD700;
-  padding:20px;
+  padding:15px;
 }
 .card{
-  background:#1a1a1a;
+  background:#111;
   padding:15px;
   border-radius:10px;
-  margin-bottom:10px;
+  margin-bottom:15px;
 }
-.status-approved{color:#00ff00;font-weight:bold;}
-.status-pending{color:orange;font-weight:bold;}
-.status-rejected{color:red;font-weight:bold;}
+input,select{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  margin-bottom:10px;
+  border:none;
+  border-radius:6px;
+  background:#1a1a1a;
+  color:#FFD700;
+}
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.saveBtn{
+  background:#FFD700;
+  color:black;
+  width:100%;
+  margin-top:20px;
+}
+.deleteBtn{
+  background:red;
+  color:white;
+}
+.addBtn{
+  background:#333;
+  color:#FFD700;
+  margin-top:10px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td{
+  padding:8px;
+  text-align:center;
+}
+th{background:#1a1a1a;}
+tr{background:#111;}
 </style>
 </head>
 
 <body>
 
-<h2>💸 Withdraw History</h2>
+<h2>👤 User Details</h2>
 
-<div id="history"></div>
+<div class="card">
+<label>Wallet</label>
+<input id="wallet">
+
+<label>Deposit</label>
+<input id="deposit">
+
+<label>Referral Earnings</label>
+<input id="referral">
+
+<label>Level</label>
+<input id="level">
+
+<label>Live Earnings</label>
+<input id="live">
+
+<label>Role</label>
+<select id="role">
+<option value="user">User</option>
+<option value="vip">VIP</option>
+<option value="admin">Admin</option>
+</select>
+
+<label>Verified</label>
+<select id="verified">
+<option value="false">No</option>
+<option value="true">Yes</option>
+</select>
+</div>
+
+<div class="card">
+<h3>💸 Withdraw History</h3>
+
+<table>
+<thead>
+<tr>
+<th>Requested</th>
+<th>Approved</th>
+<th>Status</th>
+<th>Delete</th>
+</tr>
+</thead>
+<tbody id="withdrawTable"></tbody>
+</table>
+
+<button onclick="addWithdraw()" class="addBtn">Add Withdraw</button>
+</div>
+
+<button class="saveBtn" onclick="saveUser()">Save Changes</button>
 
 <script>
 
@@ -43,59 +130,143 @@ authDomain:"supernft-5b952.firebaseapp.com",
 projectId:"supernft-5b952"
 });
 
-const auth = firebase.auth();
 const db = firebase.firestore();
+const params = new URLSearchParams(window.location.search);
+const uid = params.get("uid");
 
-auth.onAuthStateChanged(user=>{
+let withdrawHistory = [];
 
-if(!user){
-document.getElementById("history").innerHTML="Please login first.";
-return;
-}
-
-db.collection("users").doc(user.uid).onSnapshot(doc=>{
-
+/* LOAD USER ONCE */
+db.collection("users").doc(uid).get().then(doc=>{
 if(!doc.exists){
-document.getElementById("history").innerHTML="No data found.";
+alert("User not found");
 return;
 }
 
-const data = doc.data();
-const withdrawHistory = data.withdrawHistory || [];
+const u = doc.data();
 
-if(withdrawHistory.length === 0){
-document.getElementById("history").innerHTML="No Withdraw History";
+wallet.value = u.walletBalance || 0;
+deposit.value = u.totalDeposit || 0;
+referral.value = u.referralEarnings || 0;
+level.value = u.level || 0;
+live.value = u.liveEarnings || 0;
+role.value = u.role || "user";
+verified.value = u.verified ? "true" : "false";
+
+withdrawHistory = u.withdrawHistory || [];
+renderWithdraw();
+});
+
+/* RENDER */
+function renderWithdraw(){
+
+const table = document.getElementById("withdrawTable");
+
+if(!withdrawHistory.length){
+table.innerHTML="<tr><td colspan='4'>No Withdraw History</td></tr>";
 return;
 }
 
 let html="";
 
-// Latest first
-withdrawHistory.slice().reverse().forEach(w=>{
-
-let statusClass="";
-if(w.status==="approved") statusClass="status-approved";
-if(w.status==="pending") statusClass="status-pending";
-if(w.status==="rejected") statusClass="status-rejected";
+withdrawHistory.forEach((w,index)=>{
 
 html+=`
-<div class="card">
-<div><b>Requested:</b> $${w.requestedAmount||0}</div>
-<div><b>Approved:</b> $${w.approvedAmount||0}</div>
-<div class="${statusClass}">
-Status: ${w.status||"pending"}
-</div>
-<div>${w.message||""}</div>
-</div>
+<tr>
+
+<td>
+<input type="number" id="req-${index}" value="${w.requestedAmount||0}">
+</td>
+
+<td>
+<input type="number" id="app-${index}" value="${w.approvedAmount||0}">
+</td>
+
+<td>
+<select id="status-${index}">
+<option value="pending" ${w.status==="pending"?"selected":""}>Pending</option>
+<option value="approved" ${w.status==="approved"?"selected":""}>Approved</option>
+<option value="rejected" ${w.status==="rejected"?"selected":""}>Rejected</option>
+</select>
+</td>
+
+<td>
+<button class="deleteBtn" onclick="deleteRow(${index})">X</button>
+</td>
+
+</tr>
 `;
+});
+
+table.innerHTML = html;
+}
+
+/* ADD WITH DUPLICATE CHECK */
+function addWithdraw(){
+
+// prevent multiple blank rows
+const existsBlank = withdrawHistory.some(w =>
+w.requestedAmount===0 &&
+w.approvedAmount===0 &&
+w.status==="pending"
+);
+
+if(existsBlank){
+alert("Empty withdraw row already exists.");
+return;
+}
+
+withdrawHistory.push({
+requestedAmount:0,
+approvedAmount:0,
+status:"pending",
+message:"",
+createdAt:new Date().toISOString()
+});
+
+renderWithdraw();
+}
+
+/* DELETE */
+function deleteRow(index){
+withdrawHistory.splice(index,1);
+renderWithdraw();
+}
+
+/* SAVE */
+function saveUser(){
+
+withdrawHistory.forEach((w,index)=>{
+
+w.requestedAmount = Number(document.getElementById(`req-${index}`).value);
+w.approvedAmount = Number(document.getElementById(`app-${index}`).value);
+w.status = document.getElementById(`status-${index}`).value;
+
+// Auto message for user side
+if(w.status==="approved"){
+w.message = `You received $${w.approvedAmount} in your bank`;
+}else{
+w.message = "";
+}
 
 });
 
-document.getElementById("history").innerHTML=html;
-
+db.collection("users").doc(uid).update({
+walletBalance:Number(wallet.value),
+totalDeposit:Number(deposit.value),
+referralEarnings:Number(referral.value),
+level:Number(level.value),
+liveEarnings:Number(live.value),
+role:role.value,
+verified:verified.value==="true",
+withdrawHistory:withdrawHistory
+}).then(()=>{
+alert("Updated Successfully");
+}).catch(err=>{
+alert("Error: "+err.message);
 });
 
-});
+}
 
 </script>
 
