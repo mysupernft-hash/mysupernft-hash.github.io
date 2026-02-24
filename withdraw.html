@@ -62,15 +62,15 @@ button{
 
 <div class="card">
 <h3>📜 History</h3>
-<div id="history"></div>
+<div id="history">Loading...</div>
 </div>
 
 <script>
 
 firebase.initializeApp({
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 });
 
 const auth = firebase.auth();
@@ -78,94 +78,97 @@ const db = firebase.firestore();
 
 let currentUser;
 
-/* LOGIN REQUIRED */
+/* 🔐 LOGIN REQUIRED (as per your rule) */
 auth.onAuthStateChanged(user=>{
-if(!user){
-alert("Login required");
-window.location.href="login.html";
-return;
-}
-currentUser = user;
-loadHistory();
+  if(!user){
+    alert("Login required");
+    window.location.href="login.html";
+    return;
+  }
+
+  currentUser = user;
+  loadHistory();
 });
 
-/* REQUEST WITHDRAW */
+/* 💰 REQUEST WITHDRAW */
 function requestWithdraw(){
 
-const amount = Number(document.getElementById("amount").value);
+  const amount = Number(document.getElementById("amount").value);
 
-if(!amount || amount<=0){
-alert("Enter valid amount");
-return;
+  if(!amount || amount <= 0){
+    alert("Enter valid amount");
+    return;
+  }
+
+  db.collection("users").doc(currentUser.uid).get().then(doc=>{
+
+    if(!doc.exists){
+      alert("User data not found");
+      return;
+    }
+
+    const data = doc.data();
+    let withdrawHistory = data.withdrawHistory || [];
+
+    withdrawHistory.push({
+      requestedAmount: amount,
+      approvedAmount: 0,
+      status: "pending",
+      message: "",
+      createdAt: new Date().toISOString()
+    });
+
+    db.collection("users").doc(currentUser.uid).update({
+      withdrawHistory: withdrawHistory
+    }).then(()=>{
+      document.getElementById("amount").value="";
+      document.getElementById("msg").innerText="Withdraw request submitted.";
+    });
+
+  });
+
 }
 
-db.collection("users").doc(currentUser.uid).get().then(doc=>{
-
-const data = doc.data();
-let withdrawHistory = data.withdrawHistory || [];
-
-// Add new pending request
-withdrawHistory.push({
-requestedAmount:amount,
-approvedAmount:0,
-status:"pending",
-message:"",
-createdAt:new Date().toISOString()
-});
-
-db.collection("users").doc(currentUser.uid).update({
-withdrawHistory:withdrawHistory
-}).then(()=>{
-document.getElementById("amount").value="";
-document.getElementById("msg").innerText="Withdraw request submitted.";
-});
-
-});
-
-}
-
-/* LOAD HISTORY */
+/* 📜 LOAD HISTORY */
 function loadHistory(){
 
-db.collection("users").doc(currentUser.uid).onSnapshot(doc=>{
+  db.collection("users").doc(currentUser.uid).onSnapshot(doc=>{
 
-if(!doc.exists){
-document.getElementById("history").innerHTML="No history found.";
-return;
-}
+    if(!doc.exists){
+      document.getElementById("history").innerHTML="No data found.";
+      return;
+    }
 
-const data = doc.data();
-const withdrawHistory = data.withdrawHistory || [];
+    const data = doc.data();
+    const withdrawHistory = data.withdrawHistory || [];
 
-if(withdrawHistory.length===0){
-document.getElementById("history").innerHTML="No Withdraw History";
-return;
-}
+    if(withdrawHistory.length === 0){
+      document.getElementById("history").innerHTML="No Withdraw History";
+      return;
+    }
 
-let html="";
+    let html="";
 
-// Latest first
-withdrawHistory.slice().reverse().forEach(w=>{
+    withdrawHistory.slice().reverse().forEach(w=>{
 
-let statusClass="";
-if(w.status==="approved") statusClass="status-approved";
-if(w.status==="pending") statusClass="status-pending";
-if(w.status==="rejected") statusClass="status-rejected";
+      let statusClass="";
+      if(w.status==="approved") statusClass="status-approved";
+      if(w.status==="pending") statusClass="status-pending";
+      if(w.status==="rejected") statusClass="status-rejected";
 
-html+=`
-<div class="card">
-<div><b>Requested:</b> $${w.requestedAmount||0}</div>
-<div><b>Approved:</b> $${w.approvedAmount||0}</div>
-<div class="${statusClass}">Status: ${w.status}</div>
-<div>${w.message||""}</div>
-</div>
-`;
+      html+=`
+      <div class="card">
+        <div><b>Requested:</b> $${w.requestedAmount||0}</div>
+        <div><b>Approved:</b> $${w.approvedAmount||0}</div>
+        <div class="${statusClass}">Status: ${w.status}</div>
+        <div>${w.message||""}</div>
+      </div>
+      `;
+    });
 
-});
+    document.getElementById("history").innerHTML=html;
 
-document.getElementById("history").innerHTML=html;
-
-});
+  });
 
 }
 
