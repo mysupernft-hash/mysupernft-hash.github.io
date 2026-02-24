@@ -342,9 +342,7 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  // 👤 Email Show
-  document.getElementById("userEmail").textContent =
-    user.email || "User";
+  // 🔥 Show Name Instead of Email
 
   const userRef = doc(db,"users",user.uid);
   const snap = await getDoc(userRef);
