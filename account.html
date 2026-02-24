@@ -54,9 +54,6 @@ input{
 }
 .big{font-size:18px;font-weight:bold;}
 .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
-.progress{background:#333;height:8px;border-radius:5px;margin-top:6px;}
-.progress-bar{height:100%;background:#FFD700;width:0%;}
-.small{font-size:13px;opacity:0.8;}
 </style>
 </head>
 
@@ -72,8 +69,8 @@ input{
 
 <div class="row">
   <span>Name</span>
-  <div>
-    <input type="text" id="nameInput" placeholder="Enter Name">
+  <div style="display:flex;gap:6px;">
+    <input type="text" id="nameInput">
     <button class="btn-small" onclick="saveName()">Save</button>
   </div>
 </div>
@@ -116,8 +113,9 @@ const snap=await getDoc(doc(db,"users",user.uid));
 if(!snap.exists()) return;
 const d=snap.data();
 
+/* Load Name Properly */
 document.getElementById("nameInput").value =
-d.name || user.displayName || "";
+d.name || user.displayName || user.email.split("@")[0];
 
 document.getElementById("refCode").innerText=d.referralCode||"-";
 document.getElementById("vipLevel").innerText="VIP "+(d.level||0);
@@ -126,10 +124,11 @@ document.getElementById("status").innerText=d.banned?"BANNED":"ACTIVE";
 
 });
 
-/* SAVE NAME */
+/* SAVE NAME FUNCTION */
 window.saveName = async function(){
 
 const newName=document.getElementById("nameInput").value.trim();
+
 if(!newName){
 alert("Name cannot be empty");
 return;
