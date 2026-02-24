@@ -2,44 +2,32 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Withdraw | SuperNFT</title>
-
 <style>
 body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
-header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
 .container{padding:20px;}
 .card{background:#1a1a1a;border-radius:12px;padding:20px;margin-bottom:15px;}
-.balance{font-size:28px;font-weight:bold;}
-input{width:100%;padding:12px;border:none;border-radius:8px;background:#272727;color:#FFD700;margin-top:10px;}
-button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;background:#FFD700;color:#000;font-weight:bold;cursor:pointer;}
 .history-card{background:#111;padding:12px;border-radius:10px;margin-top:10px;border-left:4px solid #FFD700;}
 .success{color:#00ff00;font-weight:bold;}
 .error{color:red;font-weight:bold;}
+button{padding:10px;margin-top:10px;background:#FFD700;border:none;}
+input{padding:10px;width:100%;margin-top:10px;background:#272727;color:#FFD700;border:none;}
 </style>
 </head>
-
 <body>
-
-<header>💸 Withdraw</header>
 
 <div class="container">
 
 <div class="card">
-  <div>Available Balance</div>
-  <div class="balance">$<span id="walletBalance">0.00</span></div>
+<h3>Withdraw Amount</h3>
+<input type="number" id="amount" placeholder="Enter amount">
+<button id="withdrawBtn">Request Withdraw</button>
+<div id="status"></div>
 </div>
 
 <div class="card">
-  <div>Withdraw Amount</div>
-  <input type="number" id="amount" placeholder="Enter amount">
-  <button id="withdrawBtn">Request Withdraw</button>
-  <div id="status"></div>
-</div>
-
-<div class="card">
-  <h3>📜 History</h3>
-  <div id="history">Loading...</div>
+<h3>📜 History</h3>
+<div id="history">Loading...</div>
 </div>
 
 </div>
@@ -48,7 +36,7 @@ button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;bac
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, updateDoc, collection, addDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, updateDoc, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -61,12 +49,10 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 
 let currentUser=null;
-let walletAmount=0;
+let walletBalance=0;
 
-const balanceEl=document.getElementById("walletBalance");
 const historyEl=document.getElementById("history");
 const statusEl=document.getElementById("status");
-const withdrawBtn=document.getElementById("withdrawBtn");
 
 onAuthStateChanged(auth,(user)=>{
   if(!user){
@@ -76,12 +62,11 @@ onAuthStateChanged(auth,(user)=>{
 
   currentUser=user;
 
-  const userRef=doc(db,"users",user.uid);
-
-  onSnapshot(userRef,(snap)=>{
-    if(!snap.exists()) return;
-    walletAmount=snap.data().walletBalance||0;
-    balanceEl.innerText=walletAmount.toFixed(2);
+  // Get wallet balance
+  onSnapshot(doc(db,"users",user.uid),(snap)=>{
+    if(snap.exists()){
+      walletBalance=snap.data().walletBalance || 0;
+    }
   });
 
   loadHistory(user.uid);
@@ -89,7 +74,7 @@ onAuthStateChanged(auth,(user)=>{
 
 /* ================= WITHDRAW ================= */
 
-withdrawBtn.addEventListener("click",async()=>{
+document.getElementById("withdrawBtn").addEventListener("click",async()=>{
 
   const amount=Number(document.getElementById("amount").value);
 
@@ -98,27 +83,19 @@ withdrawBtn.addEventListener("click",async()=>{
     return;
   }
 
-  if(amount<10){
-    statusEl.innerHTML="<span class='error'>Minimum withdraw is $10</span>";
-    return;
-  }
-
-  if(amount>walletAmount){
+  if(amount>walletBalance){
     statusEl.innerHTML="<span class='error'>Insufficient balance</span>";
     return;
   }
 
   try{
 
-    withdrawBtn.disabled=true;
-    statusEl.innerText="Processing...";
-
     // Deduct wallet
     await updateDoc(doc(db,"users",currentUser.uid),{
-      walletBalance: walletAmount-amount
+      walletBalance: walletBalance-amount
     });
 
-    // Create withdraw request (subcollection)
+    // Create subcollection request
     await addDoc(
       collection(db,"users",currentUser.uid,"withdrawRequests"),
       {
@@ -129,67 +106,63 @@ withdrawBtn.addEventListener("click",async()=>{
       }
     );
 
-    statusEl.innerHTML="<span class='success'>Withdraw request sent to admin</span>";
-    document.getElementById("amount").value="";
+    statusEl.innerHTML="<span class='success'>Withdraw request sent</span>";
 
   }catch(err){
-    console.error("Withdraw Error:",err);
-    statusEl.innerHTML="<span class='error'>Error occurred</span>";
+    console.error(err);
+    statusEl.innerHTML="<span class='error'>Permission or path error</span>";
   }
 
-  withdrawBtn.disabled=false;
 });
 
 /* ================= HISTORY ================= */
 
 function loadHistory(uid){
 
-  const withdrawRef = collection(db,"users",uid,"withdrawRequests");
+  const withdrawRef=collection(db,"users",uid,"withdrawRequests");
 
-  onSnapshot(withdrawRef,
-    (snapshot)=>{
+  onSnapshot(withdrawRef,(snapshot)=>{
 
-      if(snapshot.empty){
-        historyEl.innerHTML="No withdraw history";
-        return;
+    if(snapshot.empty){
+      historyEl.innerHTML="No withdraw history";
+      return;
+    }
+
+    let html="";
+
+    snapshot.forEach(docSnap=>{
+      const d=docSnap.data();
+
+      let msg="Pending";
+      let color="#FFD700";
+      let amount=d.requestedAmount;
+
+      if(d.status==="approved"){
+        msg="Money received in your Binance wallet";
+        color="#00ff00";
+        amount=d.approvedAmount;
       }
 
-      let html="";
+      if(d.status==="rejected"){
+        msg="Rejected";
+        color="red";
+      }
 
-      snapshot.forEach(docSnap=>{
-        const d=docSnap.data();
+      html+=`
+      <div class="history-card">
+        <div><b>$${amount}</b></div>
+        <div style="color:${color};font-weight:bold;">${msg}</div>
+      </div>
+      `;
+    });
 
-        let message="Pending";
-        let color="#FFD700";
-        let amount=d.requestedAmount || 0;
+    historyEl.innerHTML=html;
 
-        if(d.status==="approved"){
-          message="Money received in your Binance wallet";
-          color="#00ff00";
-          amount=d.approvedAmount || d.requestedAmount;
-        }
+  },(error)=>{
+    console.error("History Error:",error);
+    historyEl.innerHTML="<span class='error'>Permission denied</span>";
+  });
 
-        if(d.status==="rejected"){
-          message="Rejected";
-          color="red";
-        }
-
-        html+=`
-        <div class="history-card">
-          <div><b>$${amount}</b></div>
-          <div style="color:${color};font-weight:bold;">${message}</div>
-        </div>
-        `;
-      });
-
-      historyEl.innerHTML=html;
-
-    },
-    (error)=>{
-      console.error("History Error:",error);
-      historyEl.innerHTML="Error loading history";
-    }
-  );
 }
 
 </script>
