@@ -34,39 +34,50 @@ button:hover{
 .link-box{
   word-break:break-all;
   margin-top:8px;
+}
+.user-box{
+  background:#111;
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px;
   font-size:14px;
+}
+.small{
+  font-size:12px;
+  color:#ccc;
 }
 </style>
 </head>
-
 <body>
 
 <h2>👥 My Referrals</h2>
 
-<!-- Existing Referral Code -->
 <div class="card">
   <div><b>Your Referral Code</b></div>
   <div id="refCode">Loading...</div>
 </div>
 
-<!-- ✅ NEW FULL LINK SECTION -->
 <div class="card">
   <div><b>Full Referral Link</b></div>
   <div id="fullReferralLink" class="link-box">Loading...</div>
   <button onclick="copyFullReferral()">Copy Link</button>
 </div>
 
-<!-- Existing Referral Stats (Untouched) -->
 <div class="card">
   <div><b>Total Referrals</b></div>
   <div id="refCount">0</div>
+</div>
+
+<div class="card">
+  <div><b>Referred Users</b></div>
+  <div id="referralList">Loading...</div>
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -89,22 +100,43 @@ onAuthStateChanged(auth, async(user)=>{
   if(!snap.exists()) return;
 
   const data = snap.data();
+  const referralCode = data.referralCode;
 
-  // Show Referral Code
-  document.getElementById("refCode").innerText =
-    data.referralCode || "N/A";
+  // Show referral code
+  document.getElementById("refCode").innerText = referralCode;
 
-  // ✅ Full Referral Link
+  // Full link
   const fullLink =
-    "https://mysupernft-hash.github.io/signup.html?ref=" +
-    data.referralCode;
+    "https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
 
   document.getElementById("fullReferralLink").innerText = fullLink;
 
-  // Existing Referral Count (if using subcollection)
-  const refCol = collection(db,"users",user.uid,"referrals");
-  const refSnap = await getDocs(refCol);
-  document.getElementById("refCount").innerText = refSnap.size;
+  // 🔥 Get referred users
+  const q = query(collection(db,"users"), where("referredBy","==",referralCode));
+  const querySnapshot = await getDocs(q);
+
+  document.getElementById("refCount").innerText = querySnapshot.size;
+
+  let html = "";
+
+  if(querySnapshot.empty){
+    html = "No referrals yet.";
+  } else {
+    querySnapshot.forEach(doc=>{
+      const u = doc.data();
+      const joinDate = u.createdAt?.toDate().toLocaleString() || "-";
+
+      html += `
+        <div class="user-box">
+          <div><b>${u.name || "No Name"}</b></div>
+          <div>${u.email}</div>
+          <div class="small">Joined: ${joinDate}</div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("referralList").innerHTML = html;
 
 });
 
