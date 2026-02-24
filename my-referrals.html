@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>My Referrals</title>
+<title>My Referrals | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -38,6 +38,13 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
+button:hover{
+  background:#e6c200;
+}
+.link-box{
+  word-break:break-all;
+  margin-top:8px;
+}
 </style>
 </head>
 <body>
@@ -51,7 +58,7 @@ button{
 
 <div class="card">
   <b>Full Referral Link</b>
-  <div id="fullReferralLink">Loading...</div>
+  <div id="fullReferralLink" class="link-box">Loading...</div>
   <button onclick="copyLink()">Copy</button>
 </div>
 
@@ -94,14 +101,16 @@ onAuthStateChanged(auth, async(user)=>{
   const data = snap.data();
   const code = data.referralCode;
 
+  // Show referral code
   document.getElementById("refCode").innerText = code;
 
+  // Show full referral link
   const fullLink =
     "https://mysupernft-hash.github.io/signup.html?ref=" + code;
 
   document.getElementById("fullReferralLink").innerText = fullLink;
 
-  // 🔥 RULE SAFE READ
+  // 🔥 RULE SAFE — Read subcollection
   const refCol = collection(db,"users",user.uid,"referrals");
   const refSnap = await getDocs(refCol);
 
@@ -114,13 +123,20 @@ onAuthStateChanged(auth, async(user)=>{
   } else {
 
     refSnap.forEach(doc=>{
+
       const u = doc.data();
+
+      // ✅ FIXED NAME LOGIC
+      const displayName =
+        u.name ||
+        (u.email ? u.email.split("@")[0] : "User");
+
       const join =
         u.joinedAt?.toDate().toLocaleString() || "-";
 
       html += `
         <div class="user-box">
-          <b>${u.name || "No Name"}</b><br>
+          <b>${displayName}</b><br>
           ${u.email || ""}<br>
           <div class="small">Joined: ${join}</div>
         </div>
@@ -133,11 +149,11 @@ onAuthStateChanged(auth, async(user)=>{
 
 });
 
+// Copy link function
 window.copyLink=function(){
-  navigator.clipboard.writeText(
-    document.getElementById("fullReferralLink").innerText
-  );
-  alert("Copied!");
+  const text = document.getElementById("fullReferralLink").innerText;
+  navigator.clipboard.writeText(text);
+  alert("Referral link copied!");
 }
 
 </script>
