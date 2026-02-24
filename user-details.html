@@ -48,26 +48,19 @@ button{padding:8px 12px;border:none;cursor:pointer;font-weight:bold;border-radiu
 
 <label>Role</label>
 <select id="role">
-  <option value="user">User</option>
-  <option value="vip">VIP</option>
-  <option value="admin">Admin</option>
+<option value="user">User</option>
+<option value="vip">VIP</option>
+<option value="admin">Admin</option>
 </select>
 
 <label>Verified</label>
 <select id="verified">
-  <option value="false">No</option>
-  <option value="true">Yes</option>
+<option value="false">No</option>
+<option value="true">Yes</option>
 </select>
 
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
 <button class="deleteBtn" onclick="deleteUser()">Delete User</button>
-</div>
-
-<div class="card">
-<h3>🖼 Purchased NFTs</h3>
-<div id="nftList"></div>
-<input type="number" id="newNFT" placeholder="Enter NFT ID (0-29)">
-<button onclick="addNFT()">Add NFT</button>
 </div>
 
 <div class="card">
@@ -79,179 +72,170 @@ button{padding:8px 12px;border:none;cursor:pointer;font-weight:bold;border-radiu
 <script>
 
 firebase.initializeApp({
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 });
 
 const db=firebase.firestore();
-
 const params=new URLSearchParams(window.location.search);
 const uid=params.get("uid");
+
 document.getElementById("uid").innerText=uid;
 
-const NFTS=[{price:10,p:0.2},{price:15,p:0.3},{price:20,p:0.4},{price:25,p:0.5},
-{price:30,p:0.6},{price:35,p:0.7},{price:40,p:0.8},{price:45,p:0.9},
-{price:50,p:1},{price:55,p:1.3},{price:60,p:1.5},{price:65,p:1.63},
-{price:70,p:1.75},{price:75,p:1.88},{price:80,p:2},{price:90,p:2.25},
-{price:100,p:2.5},{price:150,p:5},{price:200,p:6.6},{price:250,p:8.25},
-{price:300,p:10},{price:350,p:11.6},{price:400,p:13.3},{price:450,p:15},
-{price:499,p:25},{price:599,p:30},{price:699,p:40},{price:799,p:30},
-{price:899,p:45},{price:999,p:100}];
-
-let currentNFTs=[];
 let withdrawHistory=[];
 
 db.collection("users").doc(uid).onSnapshot(doc=>{
-  const u=doc.data();
-  if(!u) return;
+const u=doc.data();
+if(!u) return;
 
-  email.innerText=u.email||"";
-  wallet.value=u.walletBalance||0;
-  deposit.value=u.totalDeposit||0;
-  referral.value=u.referralEarnings||0;
-  level.value=u.level||0;
-  live.value=u.liveEarnings||0;
-  role.value=u.role||"user";
-  verified.value=u.verified?"true":"false";
+email.innerText=u.email||"";
+wallet.value=u.walletBalance||0;
+deposit.value=u.totalDeposit||0;
+referral.value=u.referralEarnings||0;
+level.value=u.level||0;
+live.value=u.liveEarnings||0;
+role.value=u.role||"user";
+verified.value=u.verified?"true":"false";
 
-  currentNFTs=u.purchasedNFTs||[];
-  withdrawHistory=u.withdrawHistory||[];
-
-  renderNFTs();
-  renderWithdraw();
+withdrawHistory=u.withdrawHistory||[];
+renderWithdraw();
 });
-
-/* NFT SECTION */
-function renderNFTs(){
-  let html="";
-  currentNFTs.forEach((id,index)=>{
-    html+=`<div class="sectionBox">
-      NFT ID: ${id}
-      <button onclick="removeNFT(${index})">Remove</button>
-    </div>`;
-  });
-  nftList.innerHTML=html||"No NFTs";
-}
-
-function addNFT(){
-  const id=parseInt(newNFT.value);
-  if(isNaN(id)||id<0||id>=NFTS.length){alert("Invalid NFT ID");return;}
-  currentNFTs.push(id);
-  newNFT.value="";
-  saveNFTChanges();
-}
-
-function removeNFT(index){
-  currentNFTs.splice(index,1);
-  saveNFTChanges();
-}
-
-function saveNFTChanges(){
-  let totalDaily=0;
-  currentNFTs.forEach(id=> totalDaily+=NFTS[id].p);
-  db.collection("users").doc(uid).update({
-    purchasedNFTs:currentNFTs,
-    dailyIncome:totalDaily
-  });
-}
-
-/* WITHDRAW SECTION */
-function renderWithdraw(){
-
-  if(withdrawHistory.length===0){
-    withdrawList.innerHTML="No Withdraw History";
-    return;
-  }
-
-  let html="";
-
-  withdrawHistory.forEach((w,index)=>{
-
-    html+=`
-    <div class="sectionBox">
-
-      <label>Requested Amount</label>
-      <input type="number" value="${w.requestedAmount||0}"
-      onchange="updateWithdraw(${index},'requestedAmount',this.value)">
-
-      <label>Approved Amount</label>
-      <input type="number" value="${w.approvedAmount||0}"
-      onchange="updateWithdraw(${index},'approvedAmount',this.value)">
-
-      <label>Status</label>
-      <select onchange="updateWithdraw(${index},'status',this.value)">
-        <option value="pending" ${w.status==="pending"?"selected":""}>Pending</option>
-        <option value="approved" ${w.status==="approved"?"selected":""}>Approved</option>
-        <option value="rejected" ${w.status==="rejected"?"selected":""}>Rejected</option>
-      </select>
-
-      <button style="background:red;color:white"
-      onclick="removeWithdraw(${index})">Delete</button>
-
-    </div>`;
-  });
-
-  withdrawList.innerHTML=html;
-}
-
-function updateWithdraw(index,field,value){
-
-  if(field==="requestedAmount"||field==="approvedAmount"){
-    withdrawHistory[index][field]=Number(value);
-  }else{
-    withdrawHistory[index][field]=value;
-  }
-
-  if(withdrawHistory[index].status==="approved"){
-    withdrawHistory[index].message="Money received in your Binance wallet";
-  }
-
-  saveWithdraw();
-}
-
-function removeWithdraw(index){
-  withdrawHistory.splice(index,1);
-  saveWithdraw();
-}
-
-function addWithdraw(){
-  withdrawHistory.push({
-    requestedAmount:0,
-    approvedAmount:0,
-    status:"pending",
-    createdAt:new Date().toISOString()
-  });
-  saveWithdraw();
-}
-
-function saveWithdraw(){
-  db.collection("users").doc(uid).update({
-    withdrawHistory:withdrawHistory
-  }).then(()=>renderWithdraw());
-}
 
 /* SAVE USER */
 function saveUser(){
-  db.collection("users").doc(uid).update({
-    walletBalance:Number(wallet.value),
-    totalDeposit:Number(deposit.value),
-    referralEarnings:Number(referral.value),
-    level:Number(level.value),
-    liveEarnings:Number(live.value),
-    role:role.value,
-    verified:verified.value==="true"
-  }).then(()=>alert("User Updated"));
+db.collection("users").doc(uid).update({
+walletBalance:Number(wallet.value),
+totalDeposit:Number(deposit.value),
+referralEarnings:Number(referral.value),
+level:Number(level.value),
+liveEarnings:Number(live.value),
+role:role.value,
+verified:verified.value==="true"
+}).then(()=>alert("User Updated"));
 }
 
 function deleteUser(){
-  if(confirm("Delete this user permanently?")){
-    db.collection("users").doc(uid).delete()
-    .then(()=>{
-      alert("User Deleted");
-      window.location.href="admin.html";
-    });
-  }
+if(confirm("Delete this user permanently?")){
+db.collection("users").doc(uid).delete()
+.then(()=>{
+alert("User Deleted");
+window.location.href="admin.html";
+});
+}
+}
+
+/* ================= WITHDRAW SECTION ================= */
+
+function renderWithdraw(){
+
+if(withdrawHistory.length===0){
+withdrawList.innerHTML="No Withdraw History";
+return;
+}
+
+let html="";
+
+withdrawHistory.forEach((w,index)=>{
+
+html+=`
+<div class="sectionBox">
+
+<label>Requested Amount</label>
+<input type="number" id="req-${index}" value="${w.requestedAmount||0}">
+
+<label>Approved Amount</label>
+<input type="number" id="app-${index}" value="${w.approvedAmount||0}">
+
+<label>Status</label>
+<select id="status-${index}">
+<option value="pending" ${w.status==="pending"?"selected":""}>Pending</option>
+<option value="approved" ${w.status==="approved"?"selected":""}>Approved</option>
+<option value="rejected" ${w.status==="rejected"?"selected":""}>Rejected</option>
+</select>
+
+<label>Message</label>
+<input type="text" id="msg-${index}" value="${w.message||""}">
+
+<button class="saveBtn" onclick="saveSingleWithdraw(${index})">Save</button>
+<button style="background:red;color:white"
+onclick="removeWithdraw(${index})">Delete</button>
+
+</div>`;
+});
+
+withdrawList.innerHTML=html;
+}
+
+function saveSingleWithdraw(index){
+
+const oldEntry = withdrawHistory[index];
+
+const newRequested = Number(document.getElementById(`req-${index}`).value);
+const newApproved = Number(document.getElementById(`app-${index}`).value);
+const newStatus = document.getElementById(`status-${index}`).value;
+const newMessage = document.getElementById(`msg-${index}`).value;
+
+let walletChange = 0;
+
+/* Approval Logic */
+
+// Pending → Approved
+if(oldEntry.status !== "approved" && newStatus === "approved"){
+walletChange -= newApproved;
+}
+
+// Approved → Rejected
+if(oldEntry.status === "approved" && newStatus === "rejected"){
+walletChange += oldEntry.approvedAmount;
+}
+
+// Approved amount changed
+if(oldEntry.status === "approved" && newStatus === "approved"){
+const diff = oldEntry.approvedAmount - newApproved;
+walletChange += diff;
+}
+
+withdrawHistory[index] = {
+requestedAmount:newRequested,
+approvedAmount:newApproved,
+status:newStatus,
+message:newMessage,
+createdAt:oldEntry.createdAt||new Date().toISOString()
+};
+
+db.collection("users").doc(uid).get().then(doc=>{
+const currentWallet = doc.data().walletBalance || 0;
+
+db.collection("users").doc(uid).update({
+walletBalance: currentWallet + walletChange,
+withdrawHistory: withdrawHistory
+}).then(()=>{
+alert("Withdraw Updated + Wallet Adjusted");
+});
+});
+
+}
+
+function removeWithdraw(index){
+withdrawHistory.splice(index,1);
+db.collection("users").doc(uid).update({
+withdrawHistory: withdrawHistory
+}).then(()=>renderWithdraw());
+}
+
+function addWithdraw(){
+withdrawHistory.push({
+requestedAmount:0,
+approvedAmount:0,
+status:"pending",
+message:"",
+createdAt:new Date().toISOString()
+});
+
+db.collection("users").doc(uid).update({
+withdrawHistory: withdrawHistory
+}).then(()=>renderWithdraw());
 }
 
 </script>
