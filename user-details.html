@@ -33,16 +33,31 @@ input,select{
   color:#FFD700;
 }
 button{
-  padding:10px;
+  padding:12px;
   border:none;
   border-radius:6px;
   font-weight:bold;
   cursor:pointer;
 }
-.saveBtn{background:#FFD700;color:black;width:100%;margin-top:15px;}
-.deleteBtn{background:red;color:white;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{padding:8px;text-align:center;}
+.saveBtn{
+  background:#FFD700;
+  color:black;
+  width:100%;
+  margin-top:20px;
+}
+.deleteBtn{
+  background:red;
+  color:white;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td{
+  padding:8px;
+  text-align:center;
+}
 th{background:#1a1a1a;}
 tr{background:#111;}
 </style>
@@ -99,11 +114,9 @@ tr{background:#111;}
 <tbody id="withdrawTable"></tbody>
 </table>
 
-<button onclick="addWithdraw()">Add Withdraw</button>
-
 </div>
 
-<!-- SAVE BUTTON LAST -->
+<!-- ONLY SAVE BUTTON -->
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
 
 <script>
@@ -137,7 +150,7 @@ withdrawHistory=u.withdrawHistory||[];
 renderWithdraw();
 });
 
-/* RENDER */
+/* RENDER TABLE */
 function renderWithdraw(){
 
 if(withdrawHistory.length===0){
@@ -178,25 +191,13 @@ html+=`
 withdrawTable.innerHTML=html;
 }
 
-/* ADD */
-function addWithdraw(){
-withdrawHistory.push({
-requestedAmount:0,
-approvedAmount:0,
-status:"pending",
-message:"",
-createdAt:new Date().toISOString()
-});
-renderWithdraw();
-}
-
-/* DELETE */
+/* DELETE ENTRY */
 function removeWithdraw(index){
 withdrawHistory.splice(index,1);
 renderWithdraw();
 }
 
-/* SAVE */
+/* SAVE USER + WITHDRAW */
 function saveUser(){
 
 withdrawHistory.forEach((w,index)=>{
