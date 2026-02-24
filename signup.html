@@ -41,7 +41,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, createUserWithEmailAndPassword, deleteUser, sendEmailVerification, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDocs, collection, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 Firebase Config */
+/* Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain: "supernft-5b952.firebaseapp.com",
@@ -55,9 +55,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* =========================
-   🔥 AUTO REFERRAL SYSTEM
-========================= */
+/* ======================
+   AUTO REFERRAL SYSTEM
+====================== */
 
 const urlParams = new URLSearchParams(window.location.search);
 const refFromURL = urlParams.get("ref");
@@ -65,12 +65,12 @@ const refFromURL = urlParams.get("ref");
 if (refFromURL) {
   const refInput = document.getElementById("referralInput");
   refInput.value = refFromURL.toUpperCase();
-  refInput.readOnly = true; // prevent editing
+  refInput.readOnly = true;
 }
 
-/* =========================
-   🚀 SIGNUP LOGIC
-========================= */
+/* ======================
+   SIGNUP LOGIC
+====================== */
 
 document.getElementById("signupBtn").addEventListener("click", async () => {
 
@@ -86,27 +86,27 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
 
   try {
 
-    // 1️⃣ Create Firebase Auth User
+    // 1️⃣ Create Auth user
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
-    // 2️⃣ Set displayName in Firebase Auth
+    // 2️⃣ Save display name
     await updateProfile(user, { displayName: name });
 
-    // 3️⃣ Check referral code exists
+    // 3️⃣ Check referral exists
     const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
       alert("Invalid Referral Code!");
-      await deleteUser(user); // delete wrong signup
+      await deleteUser(user);
       return;
     }
 
-    // 4️⃣ Generate new referral code for this user
+    // 4️⃣ Generate new referral code
     const newReferralCode = "SNFT" + user.uid.substring(0,6).toUpperCase();
 
-    // 5️⃣ Save user document in Firestore
+    // 5️⃣ Save user data
     await setDoc(doc(db, "users", user.uid), {
       name: name,
       email: email,
@@ -132,8 +132,6 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
 
   } catch (err) {
 
-    console.error(err);
-
     if (err.code === "auth/email-already-in-use") {
       alert("Email already registered");
     } else {
@@ -143,6 +141,7 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
   }
 
 });
+
 </script>
 
 </body>
