@@ -22,13 +22,9 @@ a{color:#FFD700;text-decoration:none;}
 <div class="container">
   <h2>Sign Up</h2>
 
-  <!-- ✅ NAME REQUIRED -->
   <input type="text" id="name" placeholder="Full Name" required>
-
   <input type="email" id="email" placeholder="Email" required>
   <input type="password" id="password" placeholder="Password" required>
-
-  <!-- ✅ REFERRAL REQUIRED -->
   <input type="text" id="referralInput" placeholder="Referral Code (Required)" required>
 
   <button id="signupBtn">Sign Up</button>
@@ -59,14 +55,23 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* 🔹 Auto-fill referral from URL */
+/* =========================
+   🔥 AUTO REFERRAL SYSTEM
+========================= */
+
 const urlParams = new URLSearchParams(window.location.search);
 const refFromURL = urlParams.get("ref");
+
 if (refFromURL) {
-  document.getElementById("referralInput").value = refFromURL.toUpperCase();
+  const refInput = document.getElementById("referralInput");
+  refInput.value = refFromURL.toUpperCase();
+  refInput.readOnly = true; // prevent editing
 }
 
-/* 🔹 Signup Logic */
+/* =========================
+   🚀 SIGNUP LOGIC
+========================= */
+
 document.getElementById("signupBtn").addEventListener("click", async () => {
 
   const name = document.getElementById("name").value.trim();
@@ -75,63 +80,58 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
   const referralCode = document.getElementById("referralInput").value.trim().toUpperCase();
 
   if (!name || !email || !password || !referralCode) {
-    alert("Name and Referral Code are required.");
+    alert("All fields including Name and Referral Code are required.");
     return;
   }
 
   try {
 
-    // 1️⃣ Create Auth User
+    // 1️⃣ Create Firebase Auth User
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
-    // 🔥 Set displayName
-    await updateProfile(user, {
-      displayName: name
-    });
+    // 2️⃣ Set displayName in Firebase Auth
+    await updateProfile(user, { displayName: name });
 
-    // 2️⃣ Check referral
+    // 3️⃣ Check referral code exists
     const q = query(collection(db, "users"), where("referralCode", "==", referralCode));
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
       alert("Invalid Referral Code!");
-      await deleteUser(user);
+      await deleteUser(user); // delete wrong signup
       return;
     }
 
-    // 3️⃣ Generate referral code
+    // 4️⃣ Generate new referral code for this user
     const newReferralCode = "SNFT" + user.uid.substring(0,6).toUpperCase();
 
-    // 4️⃣ Save user document
+    // 5️⃣ Save user document in Firestore
     await setDoc(doc(db, "users", user.uid), {
-
-      name: name,   // ✅ SAVED HERE
+      name: name,
       email: email,
       referralCode: newReferralCode,
       referredBy: referralCode,
-
       walletBalance: 0,
       dailyIncome: 0,
       liveEarnings: 0,
       totalDeposit: 0,
       totalWithdraw: 0,
       referralEarnings: 0,
-
       role: "user",
       banned: false,
       verified: false,
       level: 1,
-
       createdAt: serverTimestamp()
     });
 
     await sendEmailVerification(user);
 
-    alert("Signup successful! Verify your email.");
+    alert("Signup successful! Please verify your email.");
     window.location.href = "verification.html";
 
   } catch (err) {
+
     console.error(err);
 
     if (err.code === "auth/email-already-in-use") {
@@ -139,10 +139,10 @@ document.getElementById("signupBtn").addEventListener("click", async () => {
     } else {
       alert(err.message);
     }
+
   }
 
 });
-
 </script>
 
 </body>
