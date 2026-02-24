@@ -116,7 +116,6 @@ tr{background:#111;}
 
 </div>
 
-<!-- ONLY SAVE BUTTON -->
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
 
 <script>
@@ -150,10 +149,10 @@ withdrawHistory=u.withdrawHistory||[];
 renderWithdraw();
 });
 
-/* RENDER TABLE */
+/* RENDER WITHDRAW TABLE */
 function renderWithdraw(){
 
-if(withdrawHistory.length===0){
+if(!withdrawHistory || withdrawHistory.length===0){
 withdrawTable.innerHTML="<tr><td colspan='4'>No Withdraw History</td></tr>";
 return;
 }
@@ -191,30 +190,32 @@ html+=`
 withdrawTable.innerHTML=html;
 }
 
-/* DELETE ENTRY */
+/* DELETE ROW */
 function removeWithdraw(index){
 withdrawHistory.splice(index,1);
 renderWithdraw();
 }
 
-/* SAVE USER + WITHDRAW */
+/* SAVE EVERYTHING */
 function saveUser(){
 
+// Update withdraw from inputs
 withdrawHistory.forEach((w,index)=>{
 
-w.requestedAmount=Number(document.getElementById(`req-${index}`).value);
-w.approvedAmount=Number(document.getElementById(`app-${index}`).value);
-w.status=document.getElementById(`status-${index}`).value;
+w.requestedAmount = Number(document.getElementById(`req-${index}`).value);
+w.approvedAmount = Number(document.getElementById(`app-${index}`).value);
+w.status = document.getElementById(`status-${index}`).value;
 
-/* AUTO MESSAGE */
-if(w.status==="approved"){
-w.message=`You received $${w.approvedAmount} in your bank`;
+// Auto message for user side
+if(w.status === "approved"){
+w.message = `You received $${w.approvedAmount} in your bank`;
 }else{
-w.message="";
+w.message = "";
 }
 
 });
 
+// Update Firestore
 db.collection("users").doc(uid).update({
 walletBalance:Number(wallet.value),
 totalDeposit:Number(deposit.value),
@@ -224,7 +225,9 @@ liveEarnings:Number(live.value),
 role:role.value,
 verified:verified.value==="true",
 withdrawHistory:withdrawHistory
-}).then(()=>alert("User Updated Successfully"));
+}).then(()=>{
+alert("User Updated Successfully");
+});
 
 }
 
