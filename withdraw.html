@@ -2,158 +2,100 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Withdraw | SuperNFT</title>
+<title>Withdraw History | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
-.container{padding:20px;}
-.card{background:#1a1a1a;border-radius:12px;padding:20px;margin-bottom:15px;}
-.history-card{background:#111;padding:12px;border-radius:10px;margin-top:10px;border-left:4px solid #FFD700;}
-.success{color:#00ff00;font-weight:bold;}
-.error{color:red;font-weight:bold;}
-button{padding:10px;margin-top:10px;background:#FFD700;border:none;}
-input{padding:10px;width:100%;margin-top:10px;background:#272727;color:#FFD700;border:none;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
+  padding:20px;
+}
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+.status-approved{color:#00ff00;font-weight:bold;}
+.status-pending{color:orange;font-weight:bold;}
+.status-rejected{color:red;font-weight:bold;}
 </style>
 </head>
+
 <body>
 
-<div class="container">
+<h2>💸 Withdraw History</h2>
 
-<div class="card">
-<h3>Withdraw Amount</h3>
-<input type="number" id="amount" placeholder="Enter amount">
-<button id="withdrawBtn">Request Withdraw</button>
-<div id="status"></div>
-</div>
+<div id="history"></div>
 
-<div class="card">
-<h3>📜 History</h3>
-<div id="history">Loading...</div>
-</div>
+<script>
 
-</div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
-};
-
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-let currentUser=null;
-let walletBalance=0;
-let withdrawHistory=[];
-
-const historyEl=document.getElementById("history");
-const statusEl=document.getElementById("status");
-
-onAuthStateChanged(auth,(user)=>{
-  if(!user){
-    window.location="login.html";
-    return;
-  }
-
-  currentUser=user;
-
-  onSnapshot(doc(db,"users",user.uid),(snap)=>{
-    if(!snap.exists()) return;
-
-    const data=snap.data();
-
-    walletBalance=data.walletBalance || 0;
-    withdrawHistory=data.withdrawHistory || [];
-
-    renderHistory();
-  });
-
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 });
 
-/* ================= WITHDRAW ================= */
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-document.getElementById("withdrawBtn").addEventListener("click",async()=>{
+auth.onAuthStateChanged(user=>{
 
-  const amount=Number(document.getElementById("amount").value);
-
-  if(!amount || amount<=0){
-    statusEl.innerHTML="<span class='error'>Enter valid amount</span>";
-    return;
-  }
-
-  if(amount>walletBalance){
-    statusEl.innerHTML="<span class='error'>Insufficient balance</span>";
-    return;
-  }
-
-  try{
-
-    const newEntry={
-      requestedAmount:amount,
-      approvedAmount:0,
-      status:"pending",
-      createdAt:new Date().toISOString()
-    };
-
-    await updateDoc(doc(db,"users",currentUser.uid),{
-      walletBalance: walletBalance-amount,
-      withdrawHistory: [...withdrawHistory,newEntry]
-    });
-
-    statusEl.innerHTML="<span class='success'>Withdraw request sent</span>";
-
-  }catch(err){
-    console.error(err);
-    statusEl.innerHTML="<span class='error'>Permission error</span>";
-  }
-
-});
-
-/* ================= RENDER HISTORY ================= */
-
-function renderHistory(){
-
-  if(withdrawHistory.length===0){
-    historyEl.innerHTML="No withdraw history";
-    return;
-  }
-
-  let html="";
-
-  withdrawHistory.slice().reverse().forEach(d=>{
-
-    let msg="Pending";
-    let color="#FFD700";
-    let amount=d.requestedAmount;
-
-    if(d.status==="approved"){
-      msg="Money received in your Binance wallet";
-      color="#00ff00";
-      amount=d.approvedAmount;
-    }
-
-    if(d.status==="rejected"){
-      msg="Rejected";
-      color="red";
-    }
-
-    html+=`
-    <div class="history-card">
-      <div><b>$${amount}</b></div>
-      <div style="color:${color};font-weight:bold;">${msg}</div>
-    </div>
-    `;
-  });
-
-  historyEl.innerHTML=html;
+if(!user){
+document.getElementById("history").innerHTML="Please login first.";
+return;
 }
+
+db.collection("users").doc(user.uid).onSnapshot(doc=>{
+
+if(!doc.exists){
+document.getElementById("history").innerHTML="No data found.";
+return;
+}
+
+const data = doc.data();
+const withdrawHistory = data.withdrawHistory || [];
+
+if(withdrawHistory.length === 0){
+document.getElementById("history").innerHTML="No Withdraw History";
+return;
+}
+
+let html="";
+
+// Latest first
+withdrawHistory.slice().reverse().forEach(w=>{
+
+let statusClass="";
+if(w.status==="approved") statusClass="status-approved";
+if(w.status==="pending") statusClass="status-pending";
+if(w.status==="rejected") statusClass="status-rejected";
+
+html+=`
+<div class="card">
+<div><b>Requested:</b> $${w.requestedAmount||0}</div>
+<div><b>Approved:</b> $${w.approvedAmount||0}</div>
+<div class="${statusClass}">
+Status: ${w.status||"pending"}
+</div>
+<div>${w.message||""}</div>
+</div>
+`;
+
+});
+
+document.getElementById("history").innerHTML=html;
+
+});
+
+});
 
 </script>
 
