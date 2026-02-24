@@ -9,12 +9,64 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#0d0d0d;color:#FFD700;padding:15px;}
-.card{background:#111;padding:15px;border-radius:10px;margin-bottom:15px;}
-input,select{width:100%;padding:8px;margin-top:5px;margin-bottom:10px;border:none;border-radius:6px;}
-button{padding:8px 12px;border:none;cursor:pointer;font-weight:bold;border-radius:6px;margin-top:5px;}
-.saveBtn{background:#FFD700;}
-.sectionBox{background:#1a1a1a;padding:10px;border-radius:8px;margin-bottom:10px;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0d0d0d;
+  color:#FFD700;
+  padding:15px;
+}
+
+h2{text-align:center;}
+
+.card{
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
+}
+
+input,select{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  margin-bottom:10px;
+  border:none;
+  border-radius:6px;
+  background:#1a1a1a;
+  color:#FFD700;
+}
+
+button{
+  padding:8px 12px;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+  border-radius:6px;
+  margin-top:5px;
+}
+
+.saveBtn{background:#FFD700;color:black;}
+.deleteBtn{background:red;color:white;}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th,td{
+  padding:8px;
+  text-align:center;
+}
+
+th{
+  background:#1a1a1a;
+}
+
+tr{
+  background:#111;
+}
 </style>
 </head>
 
@@ -56,16 +108,29 @@ button{padding:8px 12px;border:none;cursor:pointer;font-weight:bold;border-radiu
 
 <div class="card">
 <h3>💸 Withdraw History</h3>
-<div id="withdrawList"></div>
-<button onclick="addWithdraw()">Add Withdraw</button>
+
+<table>
+<thead>
+<tr>
+<th>Requested</th>
+<th>Approved</th>
+<th>Status</th>
+<th>Message</th>
+<th>Delete</th>
+</tr>
+</thead>
+<tbody id="withdrawTable"></tbody>
+</table>
+
+<button class="saveBtn" onclick="addWithdraw()">Add Withdraw</button>
 </div>
 
 <script>
 
 firebase.initializeApp({
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 });
 
 const db=firebase.firestore();
@@ -76,99 +141,105 @@ let withdrawHistory=[];
 
 /* LOAD USER */
 db.collection("users").doc(uid).onSnapshot(doc=>{
-const u=doc.data();
-if(!u) return;
+  const u=doc.data();
+  if(!u) return;
 
-wallet.value=u.walletBalance||0;
-deposit.value=u.totalDeposit||0;
-referral.value=u.referralEarnings||0;
-level.value=u.level||0;
-live.value=u.liveEarnings||0;
-role.value=u.role||"user";
-verified.value=u.verified?"true":"false";
+  wallet.value=u.walletBalance||0;
+  deposit.value=u.totalDeposit||0;
+  referral.value=u.referralEarnings||0;
+  level.value=u.level||0;
+  live.value=u.liveEarnings||0;
+  role.value=u.role||"user";
+  verified.value=u.verified?"true":"false";
 
-withdrawHistory=u.withdrawHistory||[];
-renderWithdraw();
+  withdrawHistory=u.withdrawHistory||[];
+  renderWithdraw();
 });
 
-/* RENDER WITHDRAW SIMPLE */
+/* RENDER TABLE */
 function renderWithdraw(){
 
-if(withdrawHistory.length===0){
-withdrawList.innerHTML="No Withdraw History";
-return;
-}
+  if(withdrawHistory.length===0){
+    withdrawTable.innerHTML="<tr><td colspan='5'>No Withdraw History</td></tr>";
+    return;
+  }
 
-let html="";
+  let html="";
 
-withdrawHistory.forEach((w,index)=>{
+  withdrawHistory.forEach((w,index)=>{
 
-html+=`
-<div class="sectionBox">
+    html+=`
+    <tr>
 
-<label>Requested Amount</label>
-<input type="number" id="req-${index}" value="${w.requestedAmount||0}">
+      <td>
+        <input type="number" id="req-${index}" value="${w.requestedAmount||0}">
+      </td>
 
-<label>Approved Amount</label>
-<input type="number" id="app-${index}" value="${w.approvedAmount||0}">
+      <td>
+        <input type="number" id="app-${index}" value="${w.approvedAmount||0}">
+      </td>
 
-<label>Status</label>
-<select id="status-${index}">
-<option value="pending" ${w.status==="pending"?"selected":""}>Pending</option>
-<option value="approved" ${w.status==="approved"?"selected":""}>Approved</option>
-<option value="rejected" ${w.status==="rejected"?"selected":""}>Rejected</option>
-</select>
+      <td>
+        <select id="status-${index}">
+          <option value="pending" ${w.status==="pending"?"selected":""}>Pending</option>
+          <option value="approved" ${w.status==="approved"?"selected":""}>Approved</option>
+          <option value="rejected" ${w.status==="rejected"?"selected":""}>Rejected</option>
+        </select>
+      </td>
 
-<label>Message</label>
-<input type="text" id="msg-${index}" value="${w.message||""}">
+      <td>
+        <input type="text" id="msg-${index}" value="${w.message||""}">
+      </td>
 
-<button onclick="removeWithdraw(${index})" style="background:red;color:white">Delete</button>
+      <td>
+        <button class="deleteBtn" onclick="removeWithdraw(${index})">X</button>
+      </td>
 
-</div>`;
-});
+    </tr>`;
+  });
 
-withdrawList.innerHTML=html;
+  withdrawTable.innerHTML=html;
 }
 
 /* ADD */
 function addWithdraw(){
-withdrawHistory.push({
-requestedAmount:0,
-approvedAmount:0,
-status:"pending",
-message:"",
-createdAt:new Date().toISOString()
-});
-renderWithdraw();
+  withdrawHistory.push({
+    requestedAmount:0,
+    approvedAmount:0,
+    status:"pending",
+    message:"",
+    createdAt:new Date().toISOString()
+  });
+  renderWithdraw();
 }
 
 /* DELETE */
 function removeWithdraw(index){
-withdrawHistory.splice(index,1);
-renderWithdraw();
+  withdrawHistory.splice(index,1);
+  renderWithdraw();
 }
 
-/* SAVE USER + WITHDRAW (SIMPLE) */
+/* SAVE USER + WITHDRAW */
 function saveUser(){
 
-// Update withdrawHistory from inputs
-withdrawHistory.forEach((w,index)=>{
-w.requestedAmount=Number(document.getElementById(`req-${index}`).value);
-w.approvedAmount=Number(document.getElementById(`app-${index}`).value);
-w.status=document.getElementById(`status-${index}`).value;
-w.message=document.getElementById(`msg-${index}`).value;
-});
+  // Update withdraw from table inputs
+  withdrawHistory.forEach((w,index)=>{
+    w.requestedAmount=Number(document.getElementById(`req-${index}`).value);
+    w.approvedAmount=Number(document.getElementById(`app-${index}`).value);
+    w.status=document.getElementById(`status-${index}`).value;
+    w.message=document.getElementById(`msg-${index}`).value;
+  });
 
-db.collection("users").doc(uid).update({
-walletBalance:Number(wallet.value),
-totalDeposit:Number(deposit.value),
-referralEarnings:Number(referral.value),
-level:Number(level.value),
-liveEarnings:Number(live.value),
-role:role.value,
-verified:verified.value==="true",
-withdrawHistory:withdrawHistory
-}).then(()=>alert("User Updated"));
+  db.collection("users").doc(uid).update({
+    walletBalance:Number(wallet.value),
+    totalDeposit:Number(deposit.value),
+    referralEarnings:Number(referral.value),
+    level:Number(level.value),
+    liveEarnings:Number(live.value),
+    role:role.value,
+    verified:verified.value==="true",
+    withdrawHistory:withdrawHistory
+  }).then(()=>alert("User Updated Successfully"));
 
 }
 
