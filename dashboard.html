@@ -351,6 +351,10 @@ onAuthStateChanged(auth, async (user) => {
 
   const data = snap.data();
 
+  // ✅ SHOW NAME (NOT EMAIL)
+document.getElementById("userEmail").textContent =
+  data.name || user.displayName || user.email.split("@")[0];
+
   const totalDeposit = data.totalDeposit || 0;
 
 // ✅ Dashboard Total Deposit Update
