@@ -78,36 +78,49 @@ const db = firebase.firestore();
 
 let currentUser;
 
-/* 🔐 LOGIN REQUIRED (as per your rule) */
+/* 🔐 LOGIN REQUIRED */
 auth.onAuthStateChanged(user=>{
   if(!user){
     alert("Login required");
     window.location.href="login.html";
     return;
   }
-
   currentUser = user;
   loadHistory();
 });
 
-/* 💰 REQUEST WITHDRAW */
+/* 💰 REQUEST WITH BALANCE CHECK */
 function requestWithdraw(){
 
   const amount = Number(document.getElementById("amount").value);
+  const msgBox = document.getElementById("msg");
+
+  msgBox.innerText = "";
 
   if(!amount || amount <= 0){
-    alert("Enter valid amount");
+    msgBox.innerText = "Enter valid amount";
+    msgBox.style.color = "red";
     return;
   }
 
   db.collection("users").doc(currentUser.uid).get().then(doc=>{
 
     if(!doc.exists){
-      alert("User data not found");
+      msgBox.innerText = "User data not found";
+      msgBox.style.color = "red";
       return;
     }
 
     const data = doc.data();
+    const walletBalance = Number(data.walletBalance || 0);
+
+    // 🔥 BALANCE CHECK
+    if(amount > walletBalance){
+      msgBox.innerText = "Insufficient Balance";
+      msgBox.style.color = "red";
+      return;
+    }
+
     let withdrawHistory = data.withdrawHistory || [];
 
     withdrawHistory.push({
@@ -122,7 +135,8 @@ function requestWithdraw(){
       withdrawHistory: withdrawHistory
     }).then(()=>{
       document.getElementById("amount").value="";
-      document.getElementById("msg").innerText="Withdraw request submitted.";
+      msgBox.innerText="Withdraw request submitted.";
+      msgBox.style.color="lime";
     });
 
   });
