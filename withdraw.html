@@ -43,6 +43,10 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
+#msg{
+  margin-top:10px;
+  font-weight:bold;
+}
 .status-approved{color:#00ff00;font-weight:bold;}
 .status-pending{color:orange;font-weight:bold;}
 .status-rejected{color:red;font-weight:bold;}
@@ -92,14 +96,15 @@ auth.onAuthStateChanged(user=>{
 /* 💰 REQUEST WITH BALANCE CHECK */
 function requestWithdraw(){
 
-  const amount = Number(document.getElementById("amount").value);
+  const amountInput = document.getElementById("amount");
   const msgBox = document.getElementById("msg");
+  const amount = Number(amountInput.value);
 
   msgBox.innerText = "";
+  msgBox.style.color = "red";
 
   if(!amount || amount <= 0){
     msgBox.innerText = "Enter valid amount";
-    msgBox.style.color = "red";
     return;
   }
 
@@ -107,17 +112,15 @@ function requestWithdraw(){
 
     if(!doc.exists){
       msgBox.innerText = "User data not found";
-      msgBox.style.color = "red";
       return;
     }
 
     const data = doc.data();
     const walletBalance = Number(data.walletBalance || 0);
 
-    // 🔥 BALANCE CHECK
+    // 🔥 MAIN BALANCE CHECK
     if(amount > walletBalance){
-      msgBox.innerText = "Insufficient Balance";
-      msgBox.style.color = "red";
+      msgBox.innerText = "❌ Insufficient Balance";
       return;
     }
 
@@ -134,11 +137,13 @@ function requestWithdraw(){
     db.collection("users").doc(currentUser.uid).update({
       withdrawHistory: withdrawHistory
     }).then(()=>{
-      document.getElementById("amount").value="";
-      msgBox.innerText="Withdraw request submitted.";
+      amountInput.value="";
       msgBox.style.color="lime";
+      msgBox.innerText="✅ Withdraw request submitted";
     });
 
+  }).catch(err=>{
+    msgBox.innerText = "Error: " + err.message;
   });
 
 }
