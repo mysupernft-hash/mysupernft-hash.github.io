@@ -67,9 +67,53 @@ button{
   font-size:9px;
   color:#aaa;
 }
+
+/* 🔔 Notification Styles */
+#notifContainer{
+  position:fixed;
+  top:15px;
+  right:20px;
+  cursor:pointer;
+  z-index:1000;
+}
+#notifCount{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  color:white;
+  border-radius:50%;
+  padding:3px 7px;
+  font-size:12px;
+  display:none;
+}
+#notifBox{
+  display:none;
+  position:fixed;
+  top:50px;
+  right:20px;
+  width:280px;
+  background:#111;
+  padding:15px;
+  border-radius:10px;
+  max-height:350px;
+  overflow:auto;
+  z-index:1000;
+}
 </style>
 </head>
 <body>
+
+<!-- 🔔 Notification Bell -->
+<div id="notifContainer">
+  <span style="font-size:26px;">🔔</span>
+  <span id="notifCount">0</span>
+</div>
+
+<div id="notifBox">
+  <h3>Withdraw Notifications</h3>
+  <div id="notifList">Loading...</div>
+</div>
 
 <h2>🔥 SuperNFT Admin Panel</h2>
 
@@ -126,7 +170,69 @@ auth.onAuthStateChanged(user=>{
     return;
   }
   loadUsers();
+  loadNotifications();   // 🔔 load bell
 });
+
+/* 🔔 LOAD WITHDRAW NOTIFICATIONS */
+function loadNotifications(){
+  db.collection("users").onSnapshot(snapshot=>{
+    let notifications=[];
+    let count=0;
+
+    snapshot.forEach(doc=>{
+      const data=doc.data();
+      const history=data.withdrawHistory||[];
+
+      history.forEach(w=>{
+        if(w.status==="pending"){
+          count++;
+          notifications.push({
+            uid:doc.id,
+            email:data.email||doc.id,
+            amount:w.requestedAmount||0
+          });
+        }
+      });
+    });
+
+    const notifCount=document.getElementById("notifCount");
+    const notifList=document.getElementById("notifList");
+
+    if(count>0){
+      notifCount.style.display="block";
+      notifCount.innerText=count;
+    }else{
+      notifCount.style.display="none";
+    }
+
+    if(notifications.length===0){
+      notifList.innerHTML="No Pending Withdrawals";
+      return;
+    }
+
+    let html="";
+    notifications.forEach(n=>{
+      html+=`
+      <div style="margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:5px;">
+        <b>${n.email}</b><br>
+        Amount: $${n.amount}<br>
+        <button onclick="openUserDetails('${n.uid}')"
+        style="background:#FFD700;color:black;padding:4px;border:none;border-radius:5px;margin-top:5px;">
+        Open
+        </button>
+      </div>
+      `;
+    });
+
+    notifList.innerHTML=html;
+  });
+}
+
+/* Toggle notification box */
+document.getElementById("notifContainer").onclick=function(){
+  const box=document.getElementById("notifBox");
+  box.style.display = box.style.display==="block" ? "none" : "block";
+};
 
 function loadUsers(){
   db.collection("users").onSnapshot(snapshot=>{
@@ -139,27 +245,22 @@ function loadUsers(){
   });
 }
 
+/* Rest of your original code unchanged below */
 document.getElementById("searchInput")
 .addEventListener("input",function(){
-
   const value=this.value.toLowerCase();
-
   filteredUsers=allUsers.filter(u=>
     (u.email||"").toLowerCase().includes(value) ||
     u.id.toLowerCase().includes(value)
   );
-
   renderPage(1);
 });
 
 function renderPage(page){
-
   currentPage=page;
-
   const start=(page-1)*usersPerPage;
   const end=start+usersPerPage;
   const users=filteredUsers.slice(start,end);
-
   let html="";
 
   users.forEach(u=>{
@@ -170,7 +271,6 @@ function renderPage(page){
         <div><b>${u.email||""}</b></div>
         <div class="uid">${u.id}</div>
       </td>
-
       <td><input id="wallet_${u.id}" value="${u.walletBalance||0}"></td>
       <td><input id="daily_${u.id}" value="${u.dailyIncome||0}"></td>
       <td><input id="ref_${u.id}" value="${u.referralEarnings||0}"></td>
@@ -178,14 +278,12 @@ function renderPage(page){
       <td><input id="deposit_${u.id}" value="${u.totalDeposit||0}"></td>
       <td><input id="withdraw_${u.id}" value="${u.totalWithdraw||0}"></td>
       <td><input id="live_${u.id}" value="${u.liveEarnings||0}"></td>
-
       <td>
         <select id="verified_${u.id}">
           <option value="false" ${u.verified?"":"selected"}>No</option>
           <option value="true" ${u.verified?"selected":""}>Yes</option>
         </select>
       </td>
-
       <td>
         <select id="role_${u.id}">
           <option value="user" ${u.role==="user"?"selected":""}>User</option>
@@ -193,19 +291,16 @@ function renderPage(page){
           <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
         </select>
       </td>
-
       <td>
         <select id="ban_${u.id}">
           <option value="false" ${u.banned?"":"selected"}>No</option>
           <option value="true" ${u.banned?"selected":""}>Yes</option>
         </select>
       </td>
-
       <td>
         <button class="saveBtn"
         onclick="saveUser('${u.id}')">Save</button>
       </td>
-
       <td>
         <button class="deleteBtn"
         onclick="deleteUser('${u.id}')">X</button>
@@ -219,14 +314,11 @@ function renderPage(page){
 }
 
 function renderPagination(){
-
   const totalPages=Math.ceil(filteredUsers.length/usersPerPage);
   let html="";
-
   for(let i=1;i<=totalPages;i++){
     html+=`<button onclick="renderPage(${i})">${i}</button>`;
   }
-
   document.getElementById("pagination").innerHTML=html;
 }
 
@@ -235,7 +327,6 @@ function openUserDetails(uid){
 }
 
 function saveUser(uid){
-
   const wallet   = Number(document.getElementById("wallet_"+uid).value)||0;
   const daily    = Number(document.getElementById("daily_"+uid).value)||0;
   const referral = Number(document.getElementById("ref_"+uid).value)||0;
@@ -243,7 +334,6 @@ function saveUser(uid){
   const deposit  = Number(document.getElementById("deposit_"+uid).value)||0;
   const withdraw = Number(document.getElementById("withdraw_"+uid).value)||0;
   const live     = Number(document.getElementById("live_"+uid).value)||0;
-
   const verified = document.getElementById("verified_"+uid).value==="true";
   const role     = document.getElementById("role_"+uid).value;
   const banned   = document.getElementById("ban_"+uid).value==="true";
@@ -259,12 +349,8 @@ function saveUser(uid){
     verified: verified,
     role: role,
     banned: banned
-  }).then(()=>{
-    alert("User Updated Successfully");
-  }).catch(err=>{
-    alert("Error: "+err.message);
-  });
-
+  }).then(()=>alert("User Updated Successfully"))
+    .catch(err=>alert("Error: "+err.message));
 }
 
 function deleteUser(uid){
