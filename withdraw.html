@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Withdraw History | SuperNFT</title>
+<title>Withdraw | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -21,7 +21,27 @@ body{
   background:#1a1a1a;
   padding:15px;
   border-radius:10px;
-  margin-bottom:10px;
+  margin-bottom:15px;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  background:#272727;
+  color:#FFD700;
+}
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  background:#FFD700;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
 }
 .status-approved{color:#00ff00;font-weight:bold;}
 .status-pending{color:orange;font-weight:bold;}
@@ -31,9 +51,19 @@ body{
 
 <body>
 
-<h2>💸 Withdraw History</h2>
+<h2>💸 Withdraw</h2>
 
+<div class="card">
+<h3>Request Withdraw</h3>
+<input type="number" id="amount" placeholder="Enter Amount">
+<button onclick="requestWithdraw()">Submit Request</button>
+<div id="msg"></div>
+</div>
+
+<div class="card">
+<h3>📜 History</h3>
 <div id="history"></div>
+</div>
 
 <script>
 
@@ -46,24 +76,68 @@ projectId:"supernft-5b952"
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-auth.onAuthStateChanged(user=>{
+let currentUser;
 
+/* LOGIN REQUIRED */
+auth.onAuthStateChanged(user=>{
 if(!user){
-document.getElementById("history").innerHTML="Please login first.";
+alert("Login required");
+window.location.href="login.html";
+return;
+}
+currentUser = user;
+loadHistory();
+});
+
+/* REQUEST WITHDRAW */
+function requestWithdraw(){
+
+const amount = Number(document.getElementById("amount").value);
+
+if(!amount || amount<=0){
+alert("Enter valid amount");
 return;
 }
 
-db.collection("users").doc(user.uid).onSnapshot(doc=>{
+db.collection("users").doc(currentUser.uid).get().then(doc=>{
+
+const data = doc.data();
+let withdrawHistory = data.withdrawHistory || [];
+
+// Add new pending request
+withdrawHistory.push({
+requestedAmount:amount,
+approvedAmount:0,
+status:"pending",
+message:"",
+createdAt:new Date().toISOString()
+});
+
+db.collection("users").doc(currentUser.uid).update({
+withdrawHistory:withdrawHistory
+}).then(()=>{
+document.getElementById("amount").value="";
+document.getElementById("msg").innerText="Withdraw request submitted.";
+});
+
+});
+
+}
+
+/* LOAD HISTORY */
+function loadHistory(){
+
+db.collection("users").doc(currentUser.uid).onSnapshot(doc=>{
 
 if(!doc.exists){
-document.getElementById("history").innerHTML="No data found.";
+document.getElementById("history").innerHTML="No history found.";
 return;
 }
 
 const data = doc.data();
 const withdrawHistory = data.withdrawHistory || [];
 
-if(withdrawHistory.length === 0){
+if(withdrawHistory.length===0){
 document.getElementById("history").innerHTML="No Withdraw History";
 return;
 }
@@ -82,9 +156,7 @@ html+=`
 <div class="card">
 <div><b>Requested:</b> $${w.requestedAmount||0}</div>
 <div><b>Approved:</b> $${w.approvedAmount||0}</div>
-<div class="${statusClass}">
-Status: ${w.status||"pending"}
-</div>
+<div class="${statusClass}">Status: ${w.status}</div>
 <div>${w.message||""}</div>
 </div>
 `;
@@ -95,7 +167,7 @@ document.getElementById("history").innerHTML=html;
 
 });
 
-});
+}
 
 </script>
 
