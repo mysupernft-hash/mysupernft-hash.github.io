@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
@@ -130,14 +131,28 @@ authDomain:"supernft-5b952.firebaseapp.com",
 projectId:"supernft-5b952"
 });
 
+const auth = firebase.auth();
 const db = firebase.firestore();
+
 const params = new URLSearchParams(window.location.search);
 const uid = params.get("uid");
 
 let withdrawHistory = [];
 
-/* LOAD USER ONCE */
+/* LOGIN REQUIRED (your rule requirement) */
+auth.onAuthStateChanged(user=>{
+if(!user){
+alert("Login required");
+window.location.href="admin-login.html";
+return;
+}
+loadUserData();
+});
+
+function loadUserData(){
+
 db.collection("users").doc(uid).get().then(doc=>{
+
 if(!doc.exists){
 alert("User not found");
 return;
@@ -155,7 +170,10 @@ verified.value = u.verified ? "true" : "false";
 
 withdrawHistory = u.withdrawHistory || [];
 renderWithdraw();
+
 });
+
+}
 
 /* RENDER */
 function renderWithdraw(){
@@ -173,15 +191,8 @@ withdrawHistory.forEach((w,index)=>{
 
 html+=`
 <tr>
-
-<td>
-<input type="number" id="req-${index}" value="${w.requestedAmount||0}">
-</td>
-
-<td>
-<input type="number" id="app-${index}" value="${w.approvedAmount||0}">
-</td>
-
+<td><input type="number" id="req-${index}" value="${w.requestedAmount||0}"></td>
+<td><input type="number" id="app-${index}" value="${w.approvedAmount||0}"></td>
 <td>
 <select id="status-${index}">
 <option value="pending" ${w.status==="pending"?"selected":""}>Pending</option>
@@ -189,11 +200,7 @@ html+=`
 <option value="rejected" ${w.status==="rejected"?"selected":""}>Rejected</option>
 </select>
 </td>
-
-<td>
-<button class="deleteBtn" onclick="deleteRow(${index})">X</button>
-</td>
-
+<td><button class="deleteBtn" onclick="deleteRow(${index})">X</button></td>
 </tr>
 `;
 });
@@ -201,10 +208,9 @@ html+=`
 table.innerHTML = html;
 }
 
-/* ADD WITH DUPLICATE CHECK */
+/* ADD (no duplicate blank row) */
 function addWithdraw(){
 
-// prevent multiple blank rows
 const existsBlank = withdrawHistory.some(w =>
 w.requestedAmount===0 &&
 w.approvedAmount===0 &&
@@ -242,7 +248,6 @@ w.requestedAmount = Number(document.getElementById(`req-${index}`).value);
 w.approvedAmount = Number(document.getElementById(`app-${index}`).value);
 w.status = document.getElementById(`status-${index}`).value;
 
-// Auto message for user side
 if(w.status==="approved"){
 w.message = `You received $${w.approvedAmount} in your bank`;
 }else{
