@@ -63,10 +63,18 @@ button{padding:8px 12px;border:none;cursor:pointer;font-weight:bold;border-radiu
 <button class="deleteBtn" onclick="deleteUser()">Delete User</button>
 </div>
 
+<!-- TOGGLE BUTTON -->
+<button id="toggleWithdrawBtn" class="saveBtn" onclick="toggleWithdraw()">
+💸 Show Withdraw History
+</button>
+
+<!-- WITHDRAW SECTION -->
+<div id="withdrawSection" style="display:none;">
 <div class="card">
 <h3>💸 Withdraw History</h3>
 <div id="withdrawList"></div>
 <button onclick="addWithdraw()">Add Manual Withdraw</button>
+</div>
 </div>
 
 <script>
@@ -85,6 +93,7 @@ document.getElementById("uid").innerText=uid;
 
 let withdrawHistory=[];
 
+/* LOAD USER */
 db.collection("users").doc(uid).onSnapshot(doc=>{
 const u=doc.data();
 if(!u) return;
@@ -125,8 +134,21 @@ window.location.href="admin.html";
 }
 }
 
-/* ================= WITHDRAW SECTION ================= */
+/* TOGGLE */
+function toggleWithdraw(){
+const section=document.getElementById("withdrawSection");
+const btn=document.getElementById("toggleWithdrawBtn");
 
+if(section.style.display==="none"){
+section.style.display="block";
+btn.innerText="❌ Hide Withdraw History";
+}else{
+section.style.display="none";
+btn.innerText="💸 Show Withdraw History";
+}
+}
+
+/* RENDER WITHDRAW */
 function renderWithdraw(){
 
 if(withdrawHistory.length===0){
@@ -167,36 +189,35 @@ onclick="removeWithdraw(${index})">Delete</button>
 withdrawList.innerHTML=html;
 }
 
+/* SAVE SINGLE WITH AUTO WALLET LOGIC */
 function saveSingleWithdraw(index){
 
-const oldEntry = withdrawHistory[index];
+const oldEntry=withdrawHistory[index];
 
-const newRequested = Number(document.getElementById(`req-${index}`).value);
-const newApproved = Number(document.getElementById(`app-${index}`).value);
-const newStatus = document.getElementById(`status-${index}`).value;
-const newMessage = document.getElementById(`msg-${index}`).value;
+const newRequested=Number(document.getElementById(`req-${index}`).value);
+const newApproved=Number(document.getElementById(`app-${index}`).value);
+const newStatus=document.getElementById(`status-${index}`).value;
+const newMessage=document.getElementById(`msg-${index}`).value;
 
-let walletChange = 0;
-
-/* Approval Logic */
+let walletChange=0;
 
 // Pending → Approved
-if(oldEntry.status !== "approved" && newStatus === "approved"){
-walletChange -= newApproved;
+if(oldEntry.status!=="approved" && newStatus==="approved"){
+walletChange-=newApproved;
 }
 
 // Approved → Rejected
-if(oldEntry.status === "approved" && newStatus === "rejected"){
-walletChange += oldEntry.approvedAmount;
+if(oldEntry.status==="approved" && newStatus==="rejected"){
+walletChange+=oldEntry.approvedAmount;
 }
 
-// Approved amount changed
-if(oldEntry.status === "approved" && newStatus === "approved"){
-const diff = oldEntry.approvedAmount - newApproved;
-walletChange += diff;
+// Approved amount edited
+if(oldEntry.status==="approved" && newStatus==="approved"){
+const diff=oldEntry.approvedAmount-newApproved;
+walletChange+=diff;
 }
 
-withdrawHistory[index] = {
+withdrawHistory[index]={
 requestedAmount:newRequested,
 approvedAmount:newApproved,
 status:newStatus,
@@ -205,22 +226,19 @@ createdAt:oldEntry.createdAt||new Date().toISOString()
 };
 
 db.collection("users").doc(uid).get().then(doc=>{
-const currentWallet = doc.data().walletBalance || 0;
+const currentWallet=doc.data().walletBalance||0;
 
 db.collection("users").doc(uid).update({
-walletBalance: currentWallet + walletChange,
-withdrawHistory: withdrawHistory
-}).then(()=>{
-alert("Withdraw Updated + Wallet Adjusted");
+walletBalance:currentWallet+walletChange,
+withdrawHistory:withdrawHistory
+}).then(()=>alert("Withdraw Updated + Wallet Adjusted"));
 });
-});
-
 }
 
 function removeWithdraw(index){
 withdrawHistory.splice(index,1);
 db.collection("users").doc(uid).update({
-withdrawHistory: withdrawHistory
+withdrawHistory:withdrawHistory
 }).then(()=>renderWithdraw());
 }
 
@@ -234,7 +252,7 @@ createdAt:new Date().toISOString()
 });
 
 db.collection("users").doc(uid).update({
-withdrawHistory: withdrawHistory
+withdrawHistory:withdrawHistory
 }).then(()=>renderWithdraw());
 }
 
