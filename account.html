@@ -80,6 +80,8 @@ header{
 <!-- 1️⃣ BASIC INFO -->
 <div class="card">
 <div class="section-title">Basic Info</div>
+
+<div class="row"><span>Name</span><span id="name">-</span></div>
 <div class="row"><span>Email</span><span id="email">-</span></div>
 <div class="row"><span>UID</span><span id="uid">-</span></div>
 <div class="row"><span>Referral Code</span><span id="refCode">-</span></div>
@@ -123,40 +125,16 @@ header{
 <div class="row"><span>Network Bonus</span><span>$0</span></div>
 </div>
 
-<!-- 5️⃣ INCOME BREAKDOWN -->
-<div class="card">
-<div class="section-title">Income Breakdown</div>
-<div class="row"><span>NFT Income</span><span>$0</span></div>
-<div class="row"><span>Referral Bonus</span><span>$0</span></div>
-<div class="row"><span>Team Commission</span><span>$0</span></div>
-<div class="row"><span>Pool Reward</span><span>$0</span></div>
-<div class="row"><span>Rank Salary</span><span>$0</span></div>
-<div class="row"><span>Global Bonus</span><span>$0</span></div>
-</div>
-
-<!-- 6️⃣ PASSIVE BONUS -->
-<div class="card">
-<div class="section-title">Passive / Network Bonus</div>
-<div class="row"><span>Unilevel Income</span><span>$0</span></div>
-<div class="row"><span>Global Turnover Bonus</span><span>$0</span></div>
-<div class="row"><span>Rank Salary</span><span>$0</span></div>
-<div class="row"><span>Auto Pool Reward</span><span>$0</span></div>
-</div>
-
-<!-- 7️⃣ ACTIVITY -->
+<!-- 5️⃣ ACTIVITY -->
 <div class="card">
 <div class="section-title">Activity</div>
 <div class="row"><span>Last Login</span><span id="lastLogin">-</span></div>
-<div class="row"><span>Last Purchase</span><span>-</span></div>
-<div class="row"><span>Last Withdraw</span><span>-</span></div>
-<div class="row"><span>Last Referral</span><span>-</span></div>
 </div>
 
-<!-- 8️⃣ SECURITY -->
+<!-- 6️⃣ SECURITY -->
 <div class="card">
 <div class="section-title">Security</div>
 <div class="row"><span>Email Verified</span><span id="verified">✔</span></div>
-<div class="row"><span>2FA</span><span>Coming Soon</span></div>
 <div class="row"><span>Account Freeze</span><span id="freeze">No</span></div>
 <a href="#" class="btn">Change Password</a>
 </div>
@@ -190,6 +168,10 @@ const snap=await getDoc(doc(db,"users",user.uid));
 if(!snap.exists()) return;
 const d=snap.data();
 
+/* Name Added */
+document.getElementById("name").innerText =
+d.name || user.displayName || "Not Set";
+
 /* Basic */
 document.getElementById("refCode").innerText=d.referralCode||"-";
 document.getElementById("vipLevel").innerText="VIP "+(d.level||0);
@@ -201,7 +183,7 @@ document.getElementById("wallet").innerText=d.walletBalance||0;
 document.getElementById("daily").innerText=d.dailyIncome||0;
 document.getElementById("referral").innerText=d.referralEarnings||0;
 document.getElementById("deposit").innerText=d.totalDeposit||0;
-document.getElementById("withdraw").innerText=d.withdraw||0;
+document.getElementById("withdraw").innerText=d.totalWithdraw||0;
 document.getElementById("teamCommission").innerText=d.teamCommission||0;
 
 let live=d.liveEarnings||0;
