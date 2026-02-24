@@ -63,12 +63,10 @@ button{padding:8px 12px;border:none;cursor:pointer;font-weight:bold;border-radiu
 <button class="deleteBtn" onclick="deleteUser()">Delete User</button>
 </div>
 
-<!-- TOGGLE BUTTON -->
 <button id="toggleWithdrawBtn" class="saveBtn" onclick="toggleWithdraw()">
 💸 Show Withdraw History
 </button>
 
-<!-- WITHDRAW SECTION -->
 <div id="withdrawSection" style="display:none;">
 <div class="card">
 <h3>💸 Withdraw History</h3>
@@ -88,7 +86,6 @@ projectId:"supernft-5b952"
 const db=firebase.firestore();
 const params=new URLSearchParams(window.location.search);
 const uid=params.get("uid");
-
 document.getElementById("uid").innerText=uid;
 
 let withdrawHistory=[];
@@ -111,34 +108,10 @@ withdrawHistory=u.withdrawHistory||[];
 renderWithdraw();
 });
 
-/* SAVE USER */
-function saveUser(){
-db.collection("users").doc(uid).update({
-walletBalance:Number(wallet.value),
-totalDeposit:Number(deposit.value),
-referralEarnings:Number(referral.value),
-level:Number(level.value),
-liveEarnings:Number(live.value),
-role:role.value,
-verified:verified.value==="true"
-}).then(()=>alert("User Updated"));
-}
-
-function deleteUser(){
-if(confirm("Delete this user permanently?")){
-db.collection("users").doc(uid).delete()
-.then(()=>{
-alert("User Deleted");
-window.location.href="admin.html";
-});
-}
-}
-
 /* TOGGLE */
 function toggleWithdraw(){
 const section=document.getElementById("withdrawSection");
 const btn=document.getElementById("toggleWithdrawBtn");
-
 if(section.style.display==="none"){
 section.style.display="block";
 btn.innerText="❌ Hide Withdraw History";
@@ -179,27 +152,27 @@ html+=`
 <label>Message</label>
 <input type="text" id="msg-${index}" value="${w.message||""}">
 
-<button class="saveBtn" onclick="saveSingleWithdraw(${index})">Save</button>
-<button style="background:red;color:white"
-onclick="removeWithdraw(${index})">Delete</button>
-
 </div>`;
 });
 
 withdrawList.innerHTML=html;
 }
 
-/* SAVE SINGLE WITH AUTO WALLET LOGIC */
-function saveSingleWithdraw(index){
+/* SAVE USER + WITHDRAW */
+function saveUser(){
 
-const oldEntry=withdrawHistory[index];
+db.collection("users").doc(uid).get().then(doc=>{
+
+const userData=doc.data();
+let walletChange=0;
+
+// Process Withdraw Updates
+withdrawHistory.forEach((oldEntry,index)=>{
 
 const newRequested=Number(document.getElementById(`req-${index}`).value);
 const newApproved=Number(document.getElementById(`app-${index}`).value);
 const newStatus=document.getElementById(`status-${index}`).value;
 const newMessage=document.getElementById(`msg-${index}`).value;
-
-let walletChange=0;
 
 // Pending → Approved
 if(oldEntry.status!=="approved" && newStatus==="approved"){
@@ -211,7 +184,7 @@ if(oldEntry.status==="approved" && newStatus==="rejected"){
 walletChange+=oldEntry.approvedAmount;
 }
 
-// Approved amount edited
+// Approved amount changed
 if(oldEntry.status==="approved" && newStatus==="approved"){
 const diff=oldEntry.approvedAmount-newApproved;
 walletChange+=diff;
@@ -225,23 +198,24 @@ message:newMessage,
 createdAt:oldEntry.createdAt||new Date().toISOString()
 };
 
-db.collection("users").doc(uid).get().then(doc=>{
-const currentWallet=doc.data().walletBalance||0;
-
-db.collection("users").doc(uid).update({
-walletBalance:currentWallet+walletChange,
-withdrawHistory:withdrawHistory
-}).then(()=>alert("Withdraw Updated + Wallet Adjusted"));
 });
-}
 
-function removeWithdraw(index){
-withdrawHistory.splice(index,1);
 db.collection("users").doc(uid).update({
+walletBalance:Number(wallet.value)+walletChange,
+totalDeposit:Number(deposit.value),
+referralEarnings:Number(referral.value),
+level:Number(level.value),
+liveEarnings:Number(live.value),
+role:role.value,
+verified:verified.value==="true",
 withdrawHistory:withdrawHistory
-}).then(()=>renderWithdraw());
+}).then(()=>alert("User + Withdraw Updated"));
+
+});
+
 }
 
+/* ADD WITHDRAW */
 function addWithdraw(){
 withdrawHistory.push({
 requestedAmount:0,
@@ -250,10 +224,18 @@ status:"pending",
 message:"",
 createdAt:new Date().toISOString()
 });
+renderWithdraw();
+}
 
-db.collection("users").doc(uid).update({
-withdrawHistory:withdrawHistory
-}).then(()=>renderWithdraw());
+/* DELETE USER */
+function deleteUser(){
+if(confirm("Delete this user permanently?")){
+db.collection("users").doc(uid).delete()
+.then(()=>{
+alert("User Deleted");
+window.location.href="admin.html";
+});
+}
 }
 
 </script>
