@@ -33,7 +33,7 @@ input,select{
   color:#FFD700;
 }
 button{
-  padding:12px;
+  padding:10px 14px;
   border:none;
   border-radius:6px;
   font-weight:bold;
@@ -48,6 +48,11 @@ button{
 .deleteBtn{
   background:red;
   color:white;
+}
+.addBtn{
+  background:#333;
+  color:#FFD700;
+  margin-top:10px;
 }
 table{
   width:100%;
@@ -99,6 +104,7 @@ tr{background:#111;}
 
 <div class="card">
 <h3>💸 Withdraw History</h3>
+
 <table>
 <thead>
 <tr>
@@ -110,6 +116,8 @@ tr{background:#111;}
 </thead>
 <tbody id="withdrawTable"></tbody>
 </table>
+
+<button onclick="addWithdraw()" class="addBtn">Add Withdraw</button>
 </div>
 
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
@@ -123,19 +131,13 @@ projectId:"supernft-5b952"
 });
 
 const db = firebase.firestore();
-
 const params = new URLSearchParams(window.location.search);
 const uid = params.get("uid");
-
-if(!uid){
-alert("UID missing in URL");
-}
 
 let withdrawHistory = [];
 
 /* LOAD USER ONCE */
 db.collection("users").doc(uid).get().then(doc=>{
-
 if(!doc.exists){
 alert("User not found");
 return;
@@ -153,32 +155,31 @@ verified.value = u.verified ? "true" : "false";
 
 withdrawHistory = u.withdrawHistory || [];
 renderWithdraw();
-
 });
 
-/* RENDER TABLE */
+/* RENDER */
 function renderWithdraw(){
 
 const table = document.getElementById("withdrawTable");
 
-if(!withdrawHistory || withdrawHistory.length === 0){
-table.innerHTML = "<tr><td colspan='4'>No Withdraw History</td></tr>";
+if(!withdrawHistory.length){
+table.innerHTML="<tr><td colspan='4'>No Withdraw History</td></tr>";
 return;
 }
 
-let html = "";
+let html="";
 
 withdrawHistory.forEach((w,index)=>{
 
-html += `
+html+=`
 <tr>
 
 <td>
-<input type="number" id="req-${index}" value="${w.requestedAmount || 0}">
+<input type="number" id="req-${index}" value="${w.requestedAmount||0}">
 </td>
 
 <td>
-<input type="number" id="app-${index}" value="${w.approvedAmount || 0}">
+<input type="number" id="app-${index}" value="${w.approvedAmount||0}">
 </td>
 
 <td>
@@ -200,7 +201,33 @@ html += `
 table.innerHTML = html;
 }
 
-/* DELETE ROW */
+/* ADD WITH DUPLICATE CHECK */
+function addWithdraw(){
+
+// prevent multiple blank rows
+const existsBlank = withdrawHistory.some(w =>
+w.requestedAmount===0 &&
+w.approvedAmount===0 &&
+w.status==="pending"
+);
+
+if(existsBlank){
+alert("Empty withdraw row already exists.");
+return;
+}
+
+withdrawHistory.push({
+requestedAmount:0,
+approvedAmount:0,
+status:"pending",
+message:"",
+createdAt:new Date().toISOString()
+});
+
+renderWithdraw();
+}
+
+/* DELETE */
 function deleteRow(index){
 withdrawHistory.splice(index,1);
 renderWithdraw();
@@ -215,7 +242,8 @@ w.requestedAmount = Number(document.getElementById(`req-${index}`).value);
 w.approvedAmount = Number(document.getElementById(`app-${index}`).value);
 w.status = document.getElementById(`status-${index}`).value;
 
-if(w.status === "approved"){
+// Auto message for user side
+if(w.status==="approved"){
 w.message = `You received $${w.approvedAmount} in your bank`;
 }else{
 w.message = "";
