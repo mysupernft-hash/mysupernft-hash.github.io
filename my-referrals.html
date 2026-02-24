@@ -2,8 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>My Referrals</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Referrals | SuperNFT</title>
 
 <style>
 body{
@@ -19,6 +19,16 @@ body{
   border-radius:12px;
   margin-bottom:15px;
 }
+.user-box{
+  background:#111;
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px;
+}
+.small{
+  font-size:12px;
+  color:#ccc;
+}
 button{
   padding:8px 12px;
   border:none;
@@ -27,24 +37,6 @@ button{
   color:#000;
   font-weight:bold;
   cursor:pointer;
-}
-button:hover{
-  background:#e6c200;
-}
-.link-box{
-  word-break:break-all;
-  margin-top:8px;
-}
-.user-box{
-  background:#111;
-  padding:10px;
-  border-radius:8px;
-  margin-top:10px;
-  font-size:14px;
-}
-.small{
-  font-size:12px;
-  color:#ccc;
 }
 </style>
 </head>
@@ -59,25 +51,25 @@ button:hover{
 
 <div class="card">
   <b>Full Referral Link</b>
-  <div id="fullReferralLink" class="link-box">Loading...</div>
-  <button onclick="copyFullReferral()">Copy Link</button>
+  <div id="fullReferralLink">Loading...</div>
+  <button onclick="copyLink()">Copy</button>
 </div>
 
 <div class="card">
   <b>Total Referrals</b>
-  <div id="refCount">0</div>
+  <div id="count">0</div>
 </div>
 
 <div class="card">
-  <b>Referred Users</b>
-  <div id="referralList">Loading...</div>
+  <b>Referral Users</b>
+  <div id="list">Loading...</div>
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -92,7 +84,7 @@ const db=getFirestore(app);
 onAuthStateChanged(auth, async(user)=>{
 
   if(!user){
-    window.location.href="login.html";
+    location.href="login.html";
     return;
   }
 
@@ -100,61 +92,52 @@ onAuthStateChanged(auth, async(user)=>{
   if(!snap.exists()) return;
 
   const data = snap.data();
-  const referralCode = data.referralCode;
+  const code = data.referralCode;
 
-  // Show referral code
-  document.getElementById("refCode").innerText = referralCode;
+  document.getElementById("refCode").innerText = code;
 
-  // Full link
   const fullLink =
-    "https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
+    "https://mysupernft-hash.github.io/signup.html?ref=" + code;
 
   document.getElementById("fullReferralLink").innerText = fullLink;
 
-  // 🔥 UNLIMITED REFERRALS QUERY
-  const q = query(
-    collection(db,"users"),
-    where("referredBy","==",referralCode),
-    orderBy("createdAt","desc")
-  );
+  // 🔥 RULE SAFE READ
+  const refCol = collection(db,"users",user.uid,"referrals");
+  const refSnap = await getDocs(refCol);
 
-  const querySnapshot = await getDocs(q);
+  document.getElementById("count").innerText = refSnap.size;
 
-  let html = "";
-  let count = 0;
+  let html="";
 
-  if(querySnapshot.empty){
-    html = "No referrals yet.";
+  if(refSnap.empty){
+    html="No referrals yet.";
   } else {
 
-    querySnapshot.forEach(doc=>{
+    refSnap.forEach(doc=>{
       const u = doc.data();
-      count++;
-
-      const joinDate =
-        u.createdAt?.toDate().toLocaleString() || "-";
+      const join =
+        u.joinedAt?.toDate().toLocaleString() || "-";
 
       html += `
         <div class="user-box">
-          <div><b>${u.name || "No Name"}</b></div>
-          <div>${u.email || ""}</div>
-          <div class="small">Joined: ${joinDate}</div>
+          <b>${u.name || "No Name"}</b><br>
+          ${u.email || ""}<br>
+          <div class="small">Joined: ${join}</div>
         </div>
       `;
     });
 
   }
 
-  document.getElementById("refCount").innerText = count;
-  document.getElementById("referralList").innerHTML = html;
+  document.getElementById("list").innerHTML = html;
 
 });
 
-// Copy function
-window.copyFullReferral = function(){
-  const text = document.getElementById("fullReferralLink").innerText;
-  navigator.clipboard.writeText(text);
-  alert("Referral link copied!");
+window.copyLink=function(){
+  navigator.clipboard.writeText(
+    document.getElementById("fullReferralLink").innerText
+  );
+  alert("Copied!");
 }
 
 </script>
