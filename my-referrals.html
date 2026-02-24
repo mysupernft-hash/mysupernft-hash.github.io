@@ -53,23 +53,23 @@ button:hover{
 <h2>👥 My Referrals</h2>
 
 <div class="card">
-  <div><b>Your Referral Code</b></div>
+  <b>Your Referral Code</b>
   <div id="refCode">Loading...</div>
 </div>
 
 <div class="card">
-  <div><b>Full Referral Link</b></div>
+  <b>Full Referral Link</b>
   <div id="fullReferralLink" class="link-box">Loading...</div>
   <button onclick="copyFullReferral()">Copy Link</button>
 </div>
 
 <div class="card">
-  <div><b>Total Referrals</b></div>
+  <b>Total Referrals</b>
   <div id="refCount">0</div>
 </div>
 
 <div class="card">
-  <div><b>Referred Users</b></div>
+  <b>Referred Users</b>
   <div id="referralList">Loading...</div>
 </div>
 
@@ -77,7 +77,7 @@ button:hover{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -111,31 +111,41 @@ onAuthStateChanged(auth, async(user)=>{
 
   document.getElementById("fullReferralLink").innerText = fullLink;
 
-  // 🔥 Get referred users
-  const q = query(collection(db,"users"), where("referredBy","==",referralCode));
+  // 🔥 UNLIMITED REFERRALS QUERY
+  const q = query(
+    collection(db,"users"),
+    where("referredBy","==",referralCode),
+    orderBy("createdAt","desc")
+  );
+
   const querySnapshot = await getDocs(q);
 
-  document.getElementById("refCount").innerText = querySnapshot.size;
-
   let html = "";
+  let count = 0;
 
   if(querySnapshot.empty){
     html = "No referrals yet.";
   } else {
+
     querySnapshot.forEach(doc=>{
       const u = doc.data();
-      const joinDate = u.createdAt?.toDate().toLocaleString() || "-";
+      count++;
+
+      const joinDate =
+        u.createdAt?.toDate().toLocaleString() || "-";
 
       html += `
         <div class="user-box">
           <div><b>${u.name || "No Name"}</b></div>
-          <div>${u.email}</div>
+          <div>${u.email || ""}</div>
           <div class="small">Joined: ${joinDate}</div>
         </div>
       `;
     });
+
   }
 
+  document.getElementById("refCount").innerText = count;
   document.getElementById("referralList").innerHTML = html;
 
 });
