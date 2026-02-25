@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Top Referral Users</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  background:#0f0f0f;
+  color:#FFD700;
+  font-family:Arial;
+  padding:20px;
+}
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:12px;
+}
+.small{
+  font-size:12px;
+  color:#aaa;
+}
+h2{
+  text-align:center;
+}
+</style>
+</head>
+<body>
+
+<h2>🔥 Users With 10+ Referrals</h2>
+<div id="list">Loading...</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+onAuthStateChanged(auth, async(user)=>{
+
+  if(!user){
+    location.href="admin-login.html";
+    return;
+  }
+
+  // 🔥 Check role (frontend control only)
+  const currentUserDoc = await getDoc(doc(db,"users",user.uid));
+
+  if(!currentUserDoc.exists()){
+    location.href="dashboard.html";
+    return;
+  }
+
+  const currentUserData = currentUserDoc.data();
+
+  if(currentUserData.role !== "admin"){
+    location.href="dashboard.html";
+    return;
+  }
+
+  // 🔥 Load all users
+  const usersSnap = await getDocs(collection(db,"users"));
+
+  let html="";
+
+  for(const userDoc of usersSnap.docs){
+
+    const userData = userDoc.data();
+    const uid = userDoc.id;
+
+    // Check referrals subcollection
+    const refSnap = await getDocs(
+      collection(db,"users",uid,"referrals")
+    );
+
+    if(refSnap.size >= 10){
+
+      html += `
+        <div class="card">
+          <b>${userData.name || userData.email}</b><br>
+          ${userData.email}<br>
+          <div class="small">
+            Total Referrals: ${refSnap.size}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  document.getElementById("list").innerHTML =
+    html || "No users with 10+ referrals.";
+
+});
+
+</script>
+
+</body>
+</html>
