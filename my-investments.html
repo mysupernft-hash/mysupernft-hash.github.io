@@ -34,7 +34,7 @@ body{
     box-shadow:0 0 15px #00ff66, 0 0 25px #00ff66;
   }
 }
-  
+
 header{
   padding:18px;
   background:#1a1a1a;
@@ -98,8 +98,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* SAME NFT ARRAY */
-const NFTS=[
+/* NFT ARRAY */
+const NFTS = [
 {price:10,p:0.2,img:"images/IMG_0458.png"},
 {price:15,p:0.3,img:"images/IMG_0459.png"},
 {price:20,p:0.4,img:"images/IMG_0460.png"},
@@ -141,48 +141,53 @@ onAuthStateChanged(auth, async(user)=>{
     return;
   }
 
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
+  try{
 
-  if(!snap.exists()){
-    container.innerHTML = `<div class="empty">User data not found</div>`;
-    return;
+    const snap = await getDoc(doc(db,"users",user.uid));
+
+    if(!snap.exists()){
+      container.innerHTML = `<div class="empty">User data not found</div>`;
+      return;
+    }
+
+    const purchased = snap.data().purchasedNFTs || [];
+
+    if(purchased.length === 0){
+      container.innerHTML = `<div class="empty">You have not purchased any NFT yet.</div>`;
+      return;
+    }
+
+    container.innerHTML = "";
+
+    purchased.forEach(id => {
+
+      const nft = NFTS[id];
+      if(!nft) return;
+
+      container.innerHTML += `
+        <div class="card">
+          <img src="${nft.img}" onerror="this.src='images/IMG_0458.png'">
+          <div class="row">
+            <span>Price</span>
+            <span>$${nft.price}</span>
+          </div>
+          <div class="row">
+            <span>Daily Income</span>
+            <span>$${nft.p}</span>
+          </div>
+          <div class="row">
+            <span>Yearly Income</span>
+            <span>$${(nft.p*365).toFixed(2)}</span>
+          </div>
+          <div class="mining-status">🟢 Mining Started</div>
+        </div>
+      `;
+    });
+
+  }catch(err){
+    container.innerHTML = `<div class="empty">Error loading investments</div>`;
+    console.error(err);
   }
-
-  const data = snap.data();
-  const purchased = data.purchasedNFTs || [];
-
-  if(purchased.length === 0){
-    container.innerHTML = `<div class="empty">You have not purchased any NFT yet.</div>`;
-    return;
-  }
-
-  container.innerHTML = "";
-
-  purchased.forEach(id => {
-
-    const nft = NFTS[id];
-    if(!nft) return;
-
-    container.innerHTML += `
-      <div class="card">
-        <img src="${nft.img}">
-        <div class="row">
-          <span>Price</span>
-          <span>$${nft.price}</span>
-        </div>
-        <div class="row">
-          <span>Daily Income</span>
-          <span>$${nft.p}</span>
-        </div>
-        <div class="row">
-          <span>Yearly Income</span>
-          <span>$${(nft.p*365).toFixed(2)}</span>
-        </div>
-        <div class="mining-status">🟢 Mining Started</div>
-      </div>
-    `;
-  });
 
 });
 
