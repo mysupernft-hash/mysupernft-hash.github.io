@@ -61,6 +61,24 @@ tr{background:#111;}
 </select>
 </div>
 
+<!-- 💎 NFT SECTION ADDED -->
+<div class="card">
+<h3>🖼 Purchased NFTs</h3>
+
+<table>
+<thead>
+<tr>
+<th>NFT ID</th>
+<th>Delete</th>
+</tr>
+</thead>
+<tbody id="nftTable"></tbody>
+</table>
+
+<button onclick="addNFT()" class="addBtn">Add NFT</button>
+</div>
+
+<!-- 💸 WITHDRAW SECTION -->
 <div class="card">
 <h3>💸 Withdraw History</h3>
 
@@ -96,15 +114,15 @@ const params = new URLSearchParams(window.location.search);
 const uid = params.get("uid");
 
 let withdrawHistory = [];
+let purchasedNFTs = [];
 
-/* 🔐 LOGIN REQUIRED (as per your rule) */
+/* AUTH */
 auth.onAuthStateChanged(user=>{
   if(!user){
     alert("Login required");
     window.location.href="admin-login.html";
     return;
   }
-
   loadUserData();
 });
 
@@ -126,13 +144,47 @@ function loadUserData(){
     verified.value = u.verified ? "true" : "false";
 
     withdrawHistory = u.withdrawHistory || [];
+    purchasedNFTs = u.purchasedNFTs || [];
+
     renderWithdraw();
-  }).catch(err=>{
-    alert("Error: " + err.message);
+    renderNFTs();
   });
 }
 
-/* RENDER */
+/* NFT RENDER */
+function renderNFTs(){
+  const table = document.getElementById("nftTable");
+
+  if(!purchasedNFTs.length){
+    table.innerHTML="<tr><td colspan='2'>No NFTs</td></tr>";
+    return;
+  }
+
+  let html="";
+
+  purchasedNFTs.forEach((id,index)=>{
+    html+=`
+      <tr>
+        <td><input type="number" id="nft-${index}" value="${id}"></td>
+        <td><button class="deleteBtn" onclick="deleteNFT(${index})">X</button></td>
+      </tr>
+    `;
+  });
+
+  table.innerHTML = html;
+}
+
+function addNFT(){
+  purchasedNFTs.push(0);
+  renderNFTs();
+}
+
+function deleteNFT(index){
+  purchasedNFTs.splice(index,1);
+  renderNFTs();
+}
+
+/* WITHDRAW RENDER */
 function renderWithdraw(){
   const table = document.getElementById("withdrawTable");
 
@@ -163,19 +215,7 @@ function renderWithdraw(){
   table.innerHTML = html;
 }
 
-/* ADD */
 function addWithdraw(){
-  const existsBlank = withdrawHistory.some(w =>
-    w.requestedAmount===0 &&
-    w.approvedAmount===0 &&
-    w.status==="pending"
-  );
-
-  if(existsBlank){
-    alert("Empty withdraw row already exists.");
-    return;
-  }
-
   withdrawHistory.push({
     requestedAmount:0,
     approvedAmount:0,
@@ -183,11 +223,9 @@ function addWithdraw(){
     message:"",
     createdAt:new Date().toISOString()
   });
-
   renderWithdraw();
 }
 
-/* DELETE */
 function deleteRow(index){
   withdrawHistory.splice(index,1);
   renderWithdraw();
@@ -195,6 +233,10 @@ function deleteRow(index){
 
 /* SAVE */
 function saveUser(){
+
+  purchasedNFTs = purchasedNFTs.map((_,index)=>
+    Number(document.getElementById(`nft-${index}`).value)
+  );
 
   withdrawHistory.forEach((w,index)=>{
     w.requestedAmount = Number(document.getElementById(`req-${index}`).value);
@@ -204,7 +246,7 @@ function saveUser(){
     if(w.status==="approved"){
       w.message = `You received $${w.approvedAmount} in your bank`;
     }else{
-      w.message = "";
+      w.message="";
     }
   });
 
@@ -216,11 +258,10 @@ function saveUser(){
     liveEarnings:Number(live.value),
     role:role.value,
     verified:verified.value==="true",
-    withdrawHistory:withdrawHistory
+    withdrawHistory:withdrawHistory,
+    purchasedNFTs:purchasedNFTs
   }).then(()=>{
     alert("Updated Successfully");
-  }).catch(err=>{
-    alert("Error: "+err.message);
   });
 
 }
