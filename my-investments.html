@@ -13,6 +13,28 @@ body{
   color:#FFD700;
 }
 
+/* 🔥 GREEN GLOW MINING EFFECT */
+.mining-status{
+  margin-top:10px;
+  padding:6px 10px;
+  border-radius:8px;
+  background:#001a00;
+  color:#00ff66;
+  font-weight:bold;
+  text-align:center;
+  animation:greenGlow 1.5s infinite alternate;
+  box-shadow:0 0 8px #00ff66;
+}
+
+@keyframes greenGlow{
+  from{
+    box-shadow:0 0 5px #00ff66, 0 0 10px #00ff66;
+  }
+  to{
+    box-shadow:0 0 15px #00ff66, 0 0 25px #00ff66;
+  }
+}
+  
 header{
   padding:18px;
   background:#1a1a1a;
@@ -157,6 +179,7 @@ onAuthStateChanged(auth, async(user)=>{
           <span>Yearly Income</span>
           <span>$${(nft.p*365).toFixed(2)}</span>
         </div>
+        <div class="mining-status">🟢 Mining Started</div>
       </div>
     `;
   });
