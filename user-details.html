@@ -61,14 +61,14 @@ tr{background:#111;}
 </select>
 </div>
 
-<!-- 💎 NFT SECTION ADDED -->
+<!-- 💎 NFT SECTION -->
 <div class="card">
 <h3>🖼 Purchased NFTs</h3>
 
 <table>
 <thead>
 <tr>
-<th>NFT ID</th>
+<th>Amount</th>
 <th>Delete</th>
 </tr>
 </thead>
@@ -115,6 +115,14 @@ const uid = params.get("uid");
 
 let withdrawHistory = [];
 let purchasedNFTs = [];
+
+/* NFT PRICES */
+const NFT_PRICES = [
+10,15,20,25,30,35,40,45,50,
+55,60,65,70,75,80,90,100,
+150,200,250,300,350,400,450,
+499,599,699,799,899,999
+];
 
 /* AUTH */
 auth.onAuthStateChanged(user=>{
@@ -163,10 +171,21 @@ function renderNFTs(){
   let html="";
 
   purchasedNFTs.forEach((id,index)=>{
+
     html+=`
       <tr>
-        <td><input type="number" id="nft-${index}" value="${id}"></td>
-        <td><button class="deleteBtn" onclick="deleteNFT(${index})">X</button></td>
+        <td>
+          <select id="nft-${index}">
+            ${NFT_PRICES.map((price,i)=>`
+              <option value="${i}" ${id===i?"selected":""}>
+                $${price}
+              </option>
+            `).join("")}
+          </select>
+        </td>
+        <td>
+          <button class="deleteBtn" onclick="deleteNFT(${index})">X</button>
+        </td>
       </tr>
     `;
   });
