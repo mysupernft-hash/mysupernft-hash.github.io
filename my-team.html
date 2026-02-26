@@ -6,14 +6,60 @@
 <title>My Team | SuperNFT</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
-header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
+}
+header{
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
 .container{padding:15px;}
-.card{background:#1a1a1a;padding:15px;border-radius:12px;margin-bottom:15px;}
-.member{background:#111;padding:8px;margin-bottom:8px;border-radius:8px;font-size:13px;}
-.member span{display:block;color:#aaa;font-size:12px;}
-button{background:#FFD700;border:none;padding:8px 12px;border-radius:6px;font-weight:bold;cursor:pointer;margin-top:10px;}
-.section-title{font-weight:bold;margin-bottom:10px;}
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+.row{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+}
+.big{
+  font-size:20px;
+  font-weight:bold;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.small-card{
+  background:#111;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  font-size:13px;
+}
+.small-card span{
+  display:block;
+  font-size:16px;
+  font-weight:bold;
+  margin-top:5px;
+}
+.history-box{
+  background:#111;
+  padding:10px;
+  border-radius:8px;
+  margin-top:8px;
+  font-size:12px;
+}
 </style>
 </head>
 
@@ -23,22 +69,40 @@ button{background:#FFD700;border:none;padding:8px 12px;border-radius:6px;font-we
 
 <div class="container">
 
+<!-- USER INFO -->
 <div class="card">
-<div class="section-title">Level 1 Members (20%)</div>
-<div id="l1List"></div>
-<button onclick="loadMore('l1')">Load More</button>
+<div id="userName">Loading...</div>
+<div style="font-size:12px;">UID: <span id="uid">---</span></div>
 </div>
 
+<!-- WALLET -->
 <div class="card">
-<div class="section-title">Level 2 Members (15%)</div>
-<div id="l2List"></div>
-<button onclick="loadMore('l2')">Load More</button>
+<div class="row">
+<div>Wallet Balance</div>
+<div class="big">$<span id="wallet">0</span></div>
+</div>
 </div>
 
+<!-- LEVEL COUNTS -->
 <div class="card">
-<div class="section-title">Level 3 Members (10%)</div>
-<div id="l3List"></div>
-<button onclick="loadMore('l3')">Load More</button>
+<h3>Level Structure</h3>
+<div class="grid-3">
+<div class="small-card">L1 (20%)<span id="l1">0</span></div>
+<div class="small-card">L2 (15%)<span id="l2">0</span></div>
+<div class="small-card">L3 (10%)<span id="l3">0</span></div>
+</div>
+</div>
+
+<!-- COMMISSION -->
+<div class="card">
+<h3>Total Referral Earnings</h3>
+<div class="big">$<span id="referralEarnings">0</span></div>
+</div>
+
+<!-- COMMISSION HISTORY -->
+<div class="card">
+<h3>Commission History</h3>
+<div id="commissionHistory">Loading...</div>
 </div>
 
 </div>
@@ -47,7 +111,7 @@ button{background:#FFD700;border:none;padding:8px 12px;border-radius:6px;font-we
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, query, where, getDocs, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -59,162 +123,78 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-let currentUser;
-let lastDoc = { l1:null, l2:null, l3:null };
-
 onAuthStateChanged(auth, async(user)=>{
 
 if(!user){
-  window.location.href="login.html";
-  return;
+location.href="login.html";
+return;
 }
 
-currentUser=user;
+document.getElementById("uid").innerText=user.uid;
 
-await loadLevel1();
+const userRef=doc(db,"users",user.uid);
+const snap=await getDoc(userRef);
 
-});
+if(!snap.exists()) return;
 
-/* ================= LEVEL 1 ================= */
+const data=snap.data();
 
-async function loadLevel1(){
+document.getElementById("userName").innerText=data.name || user.email;
+document.getElementById("wallet").innerText=data.walletBalance||0;
+document.getElementById("referralEarnings").innerText=data.referralEarnings||0;
 
-let q;
+/* =====================
+   🔥 LEVEL COUNT SYSTEM
+===================== */
 
-if(!lastDoc.l1){
-  q=query(
-    collection(db,"users"),
-    where("referredByUid","==",currentUser.uid),
-    limit(10)
-  );
-}else{
-  q=query(
-    collection(db,"users"),
-    where("referredByUid","==",currentUser.uid),
-    startAfter(lastDoc.l1),
-    limit(10)
-  );
-}
+// Level 1
+const q1=query(collection(db,"users"),where("referredByUid","==",user.uid));
+const snap1=await getDocs(q1);
+document.getElementById("l1").innerText=snap1.size;
 
-const snap=await getDocs(q);
+let level2Count=0;
+let level3Count=0;
 
-if(snap.empty) return;
+// Level 2
+for(const doc1 of snap1.docs){
+  const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
+  const snap2=await getDocs(q2);
+  level2Count+=snap2.size;
 
-lastDoc.l1=snap.docs[snap.docs.length-1];
-
-snap.forEach(doc=>{
-  const d=doc.data();
-  document.getElementById("l1List").innerHTML+=`
-  <div class="member">
-    ${d.name || "No Name"}
-    <span>${d.email}</span>
-  </div>`;
-});
-
-}
-
-/* ================= LEVEL 2 ================= */
-
-async function loadLevel2(){
-
-if(!lastDoc.l2){
-  document.getElementById("l2List").innerHTML="";
-}
-
-const l1Query=query(
-  collection(db,"users"),
-  where("referredByUid","==",currentUser.uid)
-);
-
-const l1Snap=await getDocs(l1Query);
-
-let l1Ids=l1Snap.docs.map(d=>d.id);
-
-let count=0;
-
-for(const id of l1Ids){
-
-  const q=query(
-    collection(db,"users"),
-    where("referredByUid","==",id),
-    limit(10)
-  );
-
-  const snap=await getDocs(q);
-
-  snap.forEach(doc=>{
-    if(count<10){
-      const d=doc.data();
-      document.getElementById("l2List").innerHTML+=`
-      <div class="member">
-        ${d.name || "No Name"}
-        <span>${d.email}</span>
-      </div>`;
-      count++;
-    }
-  });
-}
-
-}
-
-/* ================= LEVEL 3 ================= */
-
-async function loadLevel3(){
-
-const l1Query=query(
-  collection(db,"users"),
-  where("referredByUid","==",currentUser.uid)
-);
-
-const l1Snap=await getDocs(l1Query);
-
-let count=0;
-
-for(const l1Doc of l1Snap.docs){
-
-  const l2Query=query(
-    collection(db,"users"),
-    where("referredByUid","==",l1Doc.id)
-  );
-
-  const l2Snap=await getDocs(l2Query);
-
-  for(const l2Doc of l2Snap.docs){
-
-    const l3Query=query(
-      collection(db,"users"),
-      where("referredByUid","==",l2Doc.id),
-      limit(10)
-    );
-
-    const l3Snap=await getDocs(l3Query);
-
-    l3Snap.forEach(doc=>{
-      if(count<10){
-        const d=doc.data();
-        document.getElementById("l3List").innerHTML+=`
-        <div class="member">
-          ${d.name || "No Name"}
-          <span>${d.email}</span>
-        </div>`;
-        count++;
-      }
-    });
-
+  // Level 3
+  for(const doc2 of snap2.docs){
+    const q3=query(collection(db,"users"),where("referredByUid","==",doc2.id));
+    const snap3=await getDocs(q3);
+    level3Count+=snap3.size;
   }
 }
 
+document.getElementById("l2").innerText=level2Count;
+document.getElementById("l3").innerText=level3Count;
+
+/* =====================
+   🔥 COMMISSION HISTORY
+===================== */
+
+const historyContainer=document.getElementById("commissionHistory");
+const history=data.commissionHistory||[];
+
+if(history.length===0){
+historyContainer.innerHTML="No commission yet.";
+}else{
+let html="";
+history.slice().reverse().forEach(h=>{
+html+=`
+<div class="history-box">
+Level ${h.level} → $${h.amount}<br>
+Deposit: $${h.depositAmount}
+</div>
+`;
+});
+historyContainer.innerHTML=html;
 }
 
-/* LOAD MORE BUTTON */
-
-window.loadMore = function(level){
-
-if(level==="l1") loadLevel1();
-if(level==="l2") loadLevel2();
-if(level==="l3") loadLevel3();
-
-};
+});
 
 </script>
 
