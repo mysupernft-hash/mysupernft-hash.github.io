@@ -130,18 +130,29 @@ footer div:hover{color:#e0c200;}
 </div>
 </header>
 
-<div id="userBar" style="display:flex;justify-content:space-between;align-items:center;">
+<div id="userBar" style="
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 20px;
+  background:#111;
+  border-bottom:1px solid #272727;
+  font-size:14px;
+">
 
-  <div style="display:flex;align-items:center;gap:8px;">
-    👤 Welcome, 
-    <span id="userEmail">Loading...</span>
-    <span id="verifiedTick" class="verified-badge" style="display:none;">✔</span>
+  <!-- LEFT SIDE -->
+  <div style="display:flex;align-items:center;gap:6px;font-weight:bold;">
+    👤 Welcome,
+    <span id="userEmail" style="color:#FFD700;">Shiva</span>
+    <span id="verifiedTick" class="verified-badge" style="display:inline-flex;">✔</span>
   </div>
 
-  <div style="display:flex;align-items:center;gap:15px;">
+  <!-- RIGHT SIDE -->
+  <div style="display:flex;align-items:center;gap:18px;font-weight:bold;">
 
-    <!-- 🔔 Notification Bell -->
-    <div onclick="openAnnouncement()" style="position:relative;cursor:pointer;font-size:18px;">
+    <!-- 🔔 Bell -->
+    <div onclick="openAnnouncement()" 
+         style="position:relative;cursor:pointer;font-size:18px;">
       🔔
       <span id="announceBadge" style="
         position:absolute;
@@ -155,11 +166,15 @@ footer div:hover{color:#e0c200;}
       ">1</span>
     </div>
 
-    💰<span id="walletBalanceTop">0.00</span>
+    <!-- 💰 Wallet -->
+    <div style="display:flex;align-items:center;gap:4px;color:#00ff66;">
+      💰
+      <span id="walletBalanceTop">0.00</span>
+    </div>
 
   </div>
 
-  </div>
+</div>
 
 <div id="sidebar">
   <h2>Menu</h2>
