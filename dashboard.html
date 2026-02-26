@@ -442,6 +442,22 @@ let dailyIncome = (wallet * 0.025) + referral;
   setInterval(updateMining,1000);
 
 });
+
+
+  window.openAnnouncement = function(){
+  localStorage.setItem("announcementRead","true");
+  window.location.href="announcement.html";
+};
+
+window.addEventListener("load",()=>{
+  const read = localStorage.getItem("announcementRead");
+  if(read==="true"){
+    const badge = document.getElementById("announceBadge");
+    if(badge) badge.style.display="none";
+  }
+});
+
+
 </script>
   <script>
 if ("serviceWorker" in navigator) {
