@@ -113,22 +113,16 @@ a{text-decoration:none;color:#FFD700;}
   </div>
 </div>
 
-<!-- MY TEAM -->
+<!-- 5 LEVEL MLM -->
 <div class="card">
-  <div class="section-title">My Team</div>
+  <div class="section-title">5 Level MLM Structure</div>
   <div class="grid-3">
-    <div class="small-card">
-      Valid Members
-      <span id="teamCount">0</span>
-    </div>
-    <div class="small-card">
-      Community Rewards
-      <span id="teamReward">0</span>
-    </div>
-    <div class="small-card">
-      Community Orders
-      <span id="teamOrders">0</span>
-    </div>
+    <div class="small-card">Level 1 (20%)<span id="l1">0</span></div>
+    <div class="small-card">Level 2 (15%)<span id="l2">0</span></div>
+    <div class="small-card">Level 3 (10%)<span id="l3">0</span></div>
+    <div class="small-card">Level 4 (7.5%)<span id="l4">0</span></div>
+    <div class="small-card">Level 5 (5%)<span id="l5">0</span></div>
+    <div class="small-card">Total Team<span id="teamCount">0</span></div>
   </div>
 </div>
 
@@ -147,44 +141,6 @@ a{text-decoration:none;color:#FFD700;}
   </div>
 </div>
 
-<!-- MY ORDERS -->
-<div class="card">
-  <div class="section-title">My Orders</div>
-  <div class="grid-3">
-    <div class="small-card">
-      Orders
-      <span id="orders">0</span>
-    </div>
-    <div class="small-card">
-      Processing
-      <span id="processing">0</span>
-    </div>
-    <div class="small-card">
-      Completed
-      <span id="completed">0</span>
-    </div>
-  </div>
-</div>
-
-<!-- COMMON FUNCTIONS -->
-<div class="card">
-  <div class="section-title">Common Functions</div>
-  <div class="grid-3">
-    <a href="deposit.html" class="small-card">
-      Deposit
-      <span>💰</span>
-    </a>
-    <a href="withdraw.html" class="small-card">
-      Withdraw
-      <span>💸</span>
-    </a>
-    <a href="settings.html" class="small-card">
-      Settings
-      <span>⚙️</span>
-    </a>
-  </div>
-</div>
-
 <div class="footer">
 SuperNFT Community Panel
 </div>
@@ -195,7 +151,7 @@ SuperNFT Community Panel
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -219,7 +175,6 @@ document.getElementById("uid").innerText=user.uid;
 
 const userRef=doc(db,"users",user.uid);
 const snap=await getDoc(userRef);
-
 if(!snap.exists()) return;
 
 const data=snap.data();
@@ -227,23 +182,49 @@ const data=snap.data();
 document.getElementById("wallet").innerText=data.walletBalance||0;
 document.getElementById("daily").innerText=data.dailyIncome||0;
 document.getElementById("totalIncome").innerText=data.liveEarnings||0;
-document.getElementById("teamReward").innerText=data.referralEarnings||0;
 
-// TEAM COUNT
-const refCol=collection(db,"users",user.uid,"referrals");
-const refSnap=await getDocs(refCol);
-let teamSize=refSnap.size;
+/* 🔥 5 LEVEL MLM SYSTEM */
 
-document.getElementById("teamCount").innerText=teamSize;
+let levelCounts = [0,0,0,0,0];
 
-// AUTO LEVEL SYSTEM
+async function getLevelMembers(referralCode, level){
+
+  if(level >= 5) return;
+
+  const q = query(
+    collection(db,"users"),
+    where("referredBy","==", referralCode)
+  );
+
+  const snapshot = await getDocs(q);
+
+  levelCounts[level] += snapshot.size;
+
+  for(const docSnap of snapshot.docs){
+    const child = docSnap.data();
+    await getLevelMembers(child.referralCode, level+1);
+  }
+}
+
+await getLevelMembers(data.referralCode, 0);
+
+document.getElementById("l1").innerText = levelCounts[0];
+document.getElementById("l2").innerText = levelCounts[1];
+document.getElementById("l3").innerText = levelCounts[2];
+document.getElementById("l4").innerText = levelCounts[3];
+document.getElementById("l5").innerText = levelCounts[4];
+
+const totalTeam = levelCounts.reduce((a,b)=>a+b,0);
+document.getElementById("teamCount").innerText = totalTeam;
+
+/* 🔥 AUTO LEVEL SYSTEM */
 let level=0;
-let points=(teamSize*10)+(data.referralEarnings||0);
+let points=(totalTeam*10)+(data.referralEarnings||0);
 
-if(teamSize>=50 && data.referralEarnings>=500){level=4;}
-else if(teamSize>=20 && data.referralEarnings>=200){level=3;}
-else if(teamSize>=10 && data.referralEarnings>=100){level=2;}
-else if(teamSize>=5){level=1;}
+if(totalTeam>=50 && data.referralEarnings>=500){level=4;}
+else if(totalTeam>=20 && data.referralEarnings>=200){level=3;}
+else if(totalTeam>=10 && data.referralEarnings>=100){level=2;}
+else if(totalTeam>=5){level=1;}
 else{level=0;}
 
 document.getElementById("level").innerText=level;
