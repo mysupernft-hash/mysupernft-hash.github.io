@@ -5,9 +5,182 @@
 <title>Deposit | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser;
+
+onAuthStateChanged(auth,(user)=>{
+  if(!user){
+    window.location.href="login.html";
+    return;
+  }
+  currentUser=user;
+});
+
+window.makeDeposit = async function(){
+
+  const amount = Number(document.getElementById("amount").value);
+  const msg = document.getElementById("msg");
+
+  msg.innerText="";
+  msg.style.color="red";
+
+  if(!amount || amount<=0){
+    msg.innerText="Enter valid amount";
+    return;
+  }
+
+  await processDeposit(currentUser.uid, amount);
+
+  msg.style.color="lime";
+  msg.innerText="Deposit successful with Level 3 commission!";
+  document.getElementById("amount").value="";
+};
+
+async function processDeposit(userId, depositAmount){
+
+  const userRef = doc(db,"users",userId);
+  const userSnap = await getDoc(userRef);
+  if(!userSnap.exists()) return;
+
+  const userData = userSnap.data();
+
+  /* =========================
+     1️⃣ UPDATE DEPOSITOR
+  ========================= */
+
+  await updateDoc(userRef,{
+    totalDeposit:(userData.totalDeposit||0)+depositAmount,
+    walletBalance:(userData.walletBalance||0)+depositAmount
+  });
+
+  /* =========================
+     LEVEL 1 → 20%
+  ========================= */
+
+  if(userData.referredByUid){
+
+    const L1Ref = doc(db,"users",userData.referredByUid);
+    const L1Snap = await getDoc(L1Ref);
+
+    if(L1Snap.exists()){
+
+      const L1Data = L1Snap.data();
+      const commission = depositAmount * 0.20;
+
+      await updateDoc(L1Ref,{
+        walletBalance:(L1Data.walletBalance||0)+commission,
+        referralEarnings:(L1Data.referralEarnings||0)+commission
+      });
+
+      // 🔥 Save Commission History (Subcollection)
+      await addDoc(
+        collection(db,"users",userData.referredByUid,"commissionHistory"),
+        {
+          fromUser:userId,
+          level:1,
+          commission:commission,
+          depositAmount:depositAmount,
+          createdAt:serverTimestamp()
+        }
+      );
+
+      /* =========================
+         LEVEL 2 → 15%
+      ========================= */
+
+      if(L1Data.referredByUid){
+
+        const L2Ref = doc(db,"users",L1Data.referredByUid);
+        const L2Snap = await getDoc(L2Ref);
+
+        if(L2Snap.exists()){
+
+          const L2Data = L2Snap.data();
+          const commission2 = depositAmount * 0.15;
+
+          await updateDoc(L2Ref,{
+            walletBalance:(L2Data.walletBalance||0)+commission2,
+            referralEarnings:(L2Data.referralEarnings||0)+commission2
+          });
+
+          await addDoc(
+            collection(db,"users",L1Data.referredByUid,"commissionHistory"),
+            {
+              fromUser:userId,
+              level:2,
+              commission:commission2,
+              depositAmount:depositAmount,
+              createdAt:serverTimestamp()
+            }
+          );
+
+          /* =========================
+             LEVEL 3 → 10%
+          ========================= */
+
+          if(L2Data.referredByUid){
+
+            const L3Ref = doc(db,"users",L2Data.referredByUid);
+            const L3Snap = await getDoc(L3Ref);
+
+            if(L3Snap.exists()){
+
+              const commission3 = depositAmount * 0.10;
+
+              await updateDoc(L3Ref,{
+                walletBalance:(L2Data.walletBalance||0)+commission3,
+                referralEarnings:(L2Data.referralEarnings||0)+commission3
+              });
+
+              await addDoc(
+                collection(db,"users",L2Data.referredByUid,"commissionHistory"),
+                {
+                  fromUser:userId,
+                  level:3,
+                  commission:commission3,
+                  depositAmount:depositAmount,
+                  createdAt:serverTimestamp()
+                }
+              );
+
+            }
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+}
+
+</script>
 
 <style>
 body{
@@ -42,10 +215,7 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-#msg{
-  margin-top:10px;
-  font-weight:bold;
-}
+#msg{margin-top:10px;font-weight:bold;}
 </style>
 </head>
 
@@ -54,139 +224,10 @@ button{
 <h2>💰 Deposit</h2>
 
 <div class="card">
-  <input type="number" id="depositAmount" placeholder="Enter Deposit Amount">
-  <button onclick="makeDeposit()">Deposit Now</button>
+  <input type="number" id="amount" placeholder="Enter Deposit Amount">
+  <button onclick="makeDeposit()">Deposit</button>
   <div id="msg"></div>
 </div>
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let currentUser = null;
-
-onAuthStateChanged(auth, user=>{
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
-  currentUser = user;
-});
-
-window.makeDeposit = async function(){
-
-  const amount = Number(document.getElementById("depositAmount").value);
-  const msg = document.getElementById("msg");
-
-  msg.innerText="";
-  msg.style.color="red";
-
-  if(!amount || amount <= 0){
-    msg.innerText="Enter valid amount";
-    return;
-  }
-
-  await processDeposit(currentUser.uid, amount);
-
-  msg.style.color="lime";
-  msg.innerText="Deposit successful with Level 3 commission!";
-  document.getElementById("depositAmount").value="";
-};
-
-/* =====================================
-   🔥 LEVEL 3 AUTO COMMISSION FUNCTION
-===================================== */
-
-async function processDeposit(userId, depositAmount){
-
-  const userRef = doc(db, "users", userId);
-  const userSnap = await getDoc(userRef);
-
-  if(!userSnap.exists()) return;
-
-  const userData = userSnap.data();
-
-  // 1️⃣ Update Depositor
-  await updateDoc(userRef, {
-    totalDeposit: (userData.totalDeposit || 0) + depositAmount,
-    walletBalance: (userData.walletBalance || 0) + depositAmount
-  });
-
-  // 🔥 LEVEL 1
-  if(userData.referredByUid){
-
-    const L1Ref = doc(db, "users", userData.referredByUid);
-    const L1Snap = await getDoc(L1Ref);
-
-    if(L1Snap.exists()){
-
-      const L1Data = L1Snap.data();
-      const L1Commission = depositAmount * 0.20;
-
-      await updateDoc(L1Ref, {
-        walletBalance: (L1Data.walletBalance || 0) + L1Commission,
-        referralEarnings: (L1Data.referralEarnings || 0) + L1Commission
-      });
-
-      // 🔥 LEVEL 2
-      if(L1Data.referredByUid){
-
-        const L2Ref = doc(db, "users", L1Data.referredByUid);
-        const L2Snap = await getDoc(L2Ref);
-
-        if(L2Snap.exists()){
-
-          const L2Data = L2Snap.data();
-          const L2Commission = depositAmount * 0.15;
-
-          await updateDoc(L2Ref, {
-            walletBalance: (L2Data.walletBalance || 0) + L2Commission,
-            referralEarnings: (L2Data.referralEarnings || 0) + L2Commission
-          });
-
-          // 🔥 LEVEL 3
-          if(L2Data.referredByUid){
-
-            const L3Ref = doc(db, "users", L2Data.referredByUid);
-            const L3Snap = await getDoc(L3Ref);
-
-            if(L3Snap.exists()){
-
-              const L3Data = L3Snap.data();
-              const L3Commission = depositAmount * 0.10;
-
-              await updateDoc(L3Ref, {
-                walletBalance: (L3Data.walletBalance || 0) + L3Commission,
-                referralEarnings: (L3Data.referralEarnings || 0) + L3Commission
-              });
-
-            }
-
-          }
-
-        }
-
-      }
-
-    }
-
-  }
-
-}
-
-</script>
 
 </body>
 </html>
