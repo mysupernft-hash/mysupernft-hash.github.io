@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
+<title>MLM Pro | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Team | SuperNFT</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial,sans-serif;
+  font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
 }
@@ -17,91 +17,77 @@ header{
   padding:15px;
   text-align:center;
   font-size:20px;
-  font-weight:bold;
 }
 .container{padding:15px;}
+
 .card{
   background:#1a1a1a;
   padding:15px;
   border-radius:12px;
   margin-bottom:15px;
 }
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:8px;
+
+.tree{
+  text-align:center;
 }
-.big{
-  font-size:20px;
+
+.node{
+  display:inline-block;
+  background:#111;
+  padding:10px 15px;
+  border-radius:10px;
+  margin:10px;
+  border:1px solid #FFD700;
+  font-size:13px;
+  min-width:120px;
+}
+
+.level-title{
+  margin-top:15px;
   font-weight:bold;
 }
-.grid-3{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-.small-card{
+
+.stat-box{
   background:#111;
   padding:12px;
   border-radius:10px;
   text-align:center;
-  font-size:13px;
+  margin-bottom:10px;
 }
-.small-card span{
-  display:block;
-  font-size:16px;
-  font-weight:bold;
-  margin-top:5px;
-}
-.history-box{
-  background:#111;
-  padding:10px;
-  border-radius:8px;
-  margin-top:8px;
-  font-size:12px;
-}
+.big{font-size:18px;font-weight:bold;}
 </style>
 </head>
-
 <body>
 
-<header>👥 My Team</header>
+<header>🌳 MLM PRO SYSTEM</header>
 
 <div class="container">
 
-<!-- USER INFO -->
 <div class="card">
-<div id="userName">Loading...</div>
-<div style="font-size:12px;">UID: <span id="uid">---</span></div>
+<div class="stat-box">
+Total Network: <span class="big" id="totalNetwork">0</span>
 </div>
-
-<!-- WALLET -->
-<div class="card">
-<div class="row">
-<div>Wallet Balance</div>
-<div class="big">$<span id="wallet">0</span></div>
+<div class="stat-box">
+Total Commission: $<span class="big" id="totalCommission">0</span>
 </div>
 </div>
 
-<!-- LEVEL COUNTS -->
-<div class="card">
-<h3>Level Structure</h3>
-<div class="grid-3">
-<div class="small-card">L1 (20%)<span id="l1">0</span></div>
-<div class="small-card">L2 (15%)<span id="l2">0</span></div>
-<div class="small-card">L3 (10%)<span id="l3">0</span></div>
-</div>
+<div class="card tree">
+<div class="level-title">YOU</div>
+<div class="node" id="youNode">Loading...</div>
+
+<div class="level-title">Level 1 (20%)</div>
+<div id="level1"></div>
+
+<div class="level-title">Level 2 (15%)</div>
+<div id="level2"></div>
+
+<div class="level-title">Level 3 (10%)</div>
+<div id="level3"></div>
 </div>
 
-<!-- COMMISSION -->
 <div class="card">
-<h3>Total Referral Earnings</h3>
-<div class="big">$<span id="referralEarnings">0</span></div>
-</div>
-
-<!-- COMMISSION HISTORY -->
-<div class="card">
-<h3>Commission History</h3>
+<h3>💰 Commission History</h3>
 <div id="commissionHistory">Loading...</div>
 </div>
 
@@ -111,12 +97,12 @@ header{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
+apiKey:"YOUR_KEY",
+authDomain:"YOUR_DOMAIN",
+projectId:"YOUR_PROJECT"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -125,74 +111,81 @@ const db=getFirestore(app);
 
 onAuthStateChanged(auth, async(user)=>{
 
-if(!user){
-location.href="login.html";
-return;
-}
-
-document.getElementById("uid").innerText=user.uid;
+if(!user){ location.href="login.html"; return; }
 
 const userRef=doc(db,"users",user.uid);
 const snap=await getDoc(userRef);
-
 if(!snap.exists()) return;
 
 const data=snap.data();
 
-document.getElementById("userName").innerText=data.name || user.email;
-document.getElementById("wallet").innerText=data.walletBalance||0;
-document.getElementById("referralEarnings").innerText=data.referralEarnings||0;
+document.getElementById("youNode").innerHTML=
+`<b>${data.name}</b><br>$${data.totalDeposit||0}`;
 
-/* =====================
-   🔥 LEVEL COUNT SYSTEM
-===================== */
+let totalNetwork=0;
+let totalCommission=0;
 
-// Level 1
-const q1=query(collection(db,"users"),where("referredByUid","==",user.uid));
-const snap1=await getDocs(q1);
-document.getElementById("l1").innerText=snap1.size;
+async function loadLevel(parentUid, levelContainer, percent){
 
-let level2Count=0;
-let level3Count=0;
+const refCol=collection(db,"users",parentUid,"referrals");
+const refSnap=await getDocs(refCol);
 
-// Level 2
-for(const doc1 of snap1.docs){
-  const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
-  const snap2=await getDocs(q2);
-  level2Count+=snap2.size;
-
-  // Level 3
-  for(const doc2 of snap2.docs){
-    const q3=query(collection(db,"users"),where("referredByUid","==",doc2.id));
-    const snap3=await getDocs(q3);
-    level3Count+=snap3.size;
-  }
-}
-
-document.getElementById("l2").innerText=level2Count;
-document.getElementById("l3").innerText=level3Count;
-
-/* =====================
-   🔥 COMMISSION HISTORY
-===================== */
-
-const historyContainer=document.getElementById("commissionHistory");
-const history=data.commissionHistory||[];
-
-if(history.length===0){
-historyContainer.innerHTML="No commission yet.";
-}else{
 let html="";
-history.slice().reverse().forEach(h=>{
+
+for(const docSnap of refSnap.docs){
+
+const childUid=docSnap.id;
+const childRef=doc(db,"users",childUid);
+const childSnap=await getDoc(childRef);
+
+if(!childSnap.exists()) continue;
+
+const child=childSnap.data();
+
+totalNetwork++;
+
+const commission=(child.totalDeposit||0)*percent/100;
+totalCommission+=commission;
+
 html+=`
-<div class="history-box">
-Level ${h.level} → $${h.amount}<br>
-Deposit: $${h.depositAmount}
+<div class="node">
+<b>${child.name||"No Name"}</b><br>
+Deposit: $${child.totalDeposit||0}<br>
+Commission: $${commission.toFixed(2)}
 </div>
 `;
-});
-historyContainer.innerHTML=html;
+
 }
+
+levelContainer.innerHTML=html;
+}
+
+await loadLevel(user.uid,document.getElementById("level1"),20);
+
+const level1Refs=await getDocs(collection(db,"users",user.uid,"referrals"));
+for(const l1 of level1Refs.docs){
+await loadLevel(l1.id,document.getElementById("level2"),15);
+
+const level2Refs=await getDocs(collection(db,"users",l1.id,"referrals"));
+for(const l2 of level2Refs.docs){
+await loadLevel(l2.id,document.getElementById("level3"),10);
+}
+}
+
+document.getElementById("totalNetwork").innerText=totalNetwork;
+document.getElementById("totalCommission").innerText=totalCommission.toFixed(2);
+
+/* Commission History */
+const history=data.commissionHistory||[];
+let h="";
+if(history.length===0){
+h="No Commission Yet";
+}else{
+history.slice().reverse().forEach(c=>{
+h+=`<div>$${c.amount} from ${c.from} (L${c.level})</div>`;
+});
+}
+document.getElementById("commissionHistory").innerHTML=h;
 
 });
 
