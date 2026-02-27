@@ -93,6 +93,9 @@ header{
 </div>
 </div>
 
+<!-- LEVEL USERS DISPLAY -->
+<div id="levelUsers"></div>
+
 <!-- COMMISSION -->
 <div class="card">
 <h3>Total Referral Earnings</h3>
@@ -134,7 +137,6 @@ document.getElementById("uid").innerText=user.uid;
 
 const userRef=doc(db,"users",user.uid);
 const snap=await getDoc(userRef);
-
 if(!snap.exists()) return;
 
 const data=snap.data();
@@ -143,38 +145,95 @@ document.getElementById("userName").innerText=data.name || user.email;
 document.getElementById("wallet").innerText=data.walletBalance||0;
 document.getElementById("referralEarnings").innerText=data.referralEarnings||0;
 
-/* =====================
-   🔥 LEVEL COUNT SYSTEM
-===================== */
+let levelUsersHTML="";
 
-// Level 1
+/* ========= LEVEL 1 ========= */
+
 const q1=query(collection(db,"users"),where("referredByUid","==",user.uid));
 const snap1=await getDocs(q1);
+
 document.getElementById("l1").innerText=snap1.size;
 
+levelUsersHTML+=`<div class="card"><h3>Level 1 Users</h3>`;
+
+snap1.forEach(doc1=>{
+const u=doc1.data();
+levelUsersHTML+=`
+<div class="history-box">
+<b>${u.name || "No Name"}</b><br>
+${u.email || ""}<br>
+Deposit: $${u.totalDeposit || 0}
+</div>
+`;
+});
+
+levelUsersHTML+=`</div>`;
+
+/* ========= LEVEL 2 ========= */
+
 let level2Count=0;
-let level3Count=0;
+let level2HTML=`<div class="card"><h3>Level 2 Users</h3>`;
 
-// Level 2
 for(const doc1 of snap1.docs){
-  const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
-  const snap2=await getDocs(q2);
-  level2Count+=snap2.size;
 
-  // Level 3
-  for(const doc2 of snap2.docs){
-    const q3=query(collection(db,"users"),where("referredByUid","==",doc2.id));
-    const snap3=await getDocs(q3);
-    level3Count+=snap3.size;
-  }
+const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
+const snap2=await getDocs(q2);
+
+level2Count+=snap2.size;
+
+snap2.forEach(doc2=>{
+const u2=doc2.data();
+level2HTML+=`
+<div class="history-box">
+<b>${u2.name || "No Name"}</b><br>
+${u2.email || ""}<br>
+Deposit: $${u2.totalDeposit || 0}
+</div>
+`;
+});
 }
 
+level2HTML+=`</div>`;
 document.getElementById("l2").innerText=level2Count;
+
+/* ========= LEVEL 3 ========= */
+
+let level3Count=0;
+let level3HTML=`<div class="card"><h3>Level 3 Users</h3>`;
+
+for(const doc1 of snap1.docs){
+
+const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
+const snap2=await getDocs(q2);
+
+for(const doc2 of snap2.docs){
+
+const q3=query(collection(db,"users"),where("referredByUid","==",doc2.id));
+const snap3=await getDocs(q3);
+
+level3Count+=snap3.size;
+
+snap3.forEach(doc3=>{
+const u3=doc3.data();
+level3HTML+=`
+<div class="history-box">
+<b>${u3.name || "No Name"}</b><br>
+${u3.email || ""}<br>
+Deposit: $${u3.totalDeposit || 0}
+</div>
+`;
+});
+}
+}
+
+level3HTML+=`</div>`;
 document.getElementById("l3").innerText=level3Count;
 
-/* =====================
-   🔥 COMMISSION HISTORY
-===================== */
+/* ADD ALL TO PAGE */
+document.getElementById("levelUsers").innerHTML =
+levelUsersHTML + level2HTML + level3HTML;
+
+/* ========= COMMISSION HISTORY ========= */
 
 const historyContainer=document.getElementById("commissionHistory");
 const history=data.commissionHistory||[];
