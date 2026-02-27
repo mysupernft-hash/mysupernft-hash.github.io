@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="assets/style.css">
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -42,48 +41,149 @@
 </div>
 
 <script>
-// 🔒 Protect page
+
 protectAdminPage();
 
 const db = firebase.firestore();
-const depositsTable = document.getElementById("depositsTable").getElementsByTagName("tbody")[0];
+const depositsTable = document
+.getElementById("depositsTable")
+.getElementsByTagName("tbody")[0];
 
-// 🔹 Load all deposits
 function loadDeposits(){
+
   depositsTable.innerHTML = "";
+
   db.collection("deposits").get().then(snapshot=>{
+
     snapshot.forEach(doc=>{
+
       const d = doc.data();
       const row = depositsTable.insertRow();
-      row.insertCell(0).innerText = d.userEmail;
+
+      row.insertCell(0).innerText = d.userEmail || "N/A";
       row.insertCell(1).innerText = "$" + (d.amount || 0);
       row.insertCell(2).innerText = d.status || "pending";
 
       const actionsCell = row.insertCell(3);
 
-      // Approve Button
       const approveBtn = document.createElement("button");
       approveBtn.innerText = "Approve";
-      approveBtn.onclick = ()=>{
-        db.collection("deposits").doc(doc.id).update({status:"approved"})
-          .then(()=>{ alert("Deposit approved"); loadDeposits(); });
+
+      approveBtn.onclick = async ()=>{
+
+        if(d.status === "approved"){
+          alert("Already approved");
+          return;
+        }
+
+        const depositAmount = Number(d.amount || 0);
+        const userId = d.userId;
+
+        if(!userId){
+          alert("User ID missing in deposit document");
+          return;
+        }
+
+        const userRef = db.collection("users").doc(userId);
+        const userSnap = await userRef.get();
+
+        if(!userSnap.exists){
+          alert("User not found");
+          return;
+        }
+
+        const userData = userSnap.data();
+
+        // ✅ Update total deposit
+        await userRef.update({
+          totalDeposit: (userData.totalDeposit || 0) + depositAmount
+        });
+
+        // ✅ Update deposit status
+        await db.collection("deposits").doc(doc.id).update({
+          status:"approved"
+        });
+
+        // ✅ Distribute Commission
+        await distributeCommission(userId, depositAmount);
+
+        alert("Deposit Approved & Commission Distributed");
+        loadDeposits();
       };
+
       actionsCell.appendChild(approveBtn);
 
-      // Reject Button
       const rejectBtn = document.createElement("button");
       rejectBtn.innerText = "Reject";
+
       rejectBtn.onclick = ()=>{
-        db.collection("deposits").doc(doc.id).update({status:"rejected"})
-          .then(()=>{ alert("Deposit rejected"); loadDeposits(); });
+        db.collection("deposits").doc(doc.id)
+        .update({status:"rejected"})
+        .then(()=>{
+          alert("Deposit rejected");
+          loadDeposits();
+        });
       };
+
       actionsCell.appendChild(rejectBtn);
+
     });
+
   });
 }
 
-// Initial load
+/* =============================
+   🔥 LEVEL 1 / 2 / 3 COMMISSION
+============================= */
+
+async function distributeCommission(userId, amount){
+
+  const percentages = [0.20, 0.15, 0.10];
+
+  let currentUserId = userId;
+
+  for(let level = 0; level < 3; level++){
+
+    const userSnap = await db.collection("users")
+    .doc(currentUserId).get();
+
+    if(!userSnap.exists) break;
+
+    const userData = userSnap.data();
+    const parentId = userData.referredByUid;
+
+    if(!parentId) break;
+
+    const commission = amount * percentages[level];
+
+    const parentRef = db.collection("users").doc(parentId);
+    const parentSnap = await parentRef.get();
+
+    if(parentSnap.exists){
+
+      const parentData = parentSnap.data();
+
+      await parentRef.update({
+        referralEarnings:
+          (parentData.referralEarnings || 0) + commission,
+
+        commissionHistory:
+          firebase.firestore.FieldValue.arrayUnion({
+            level: level + 1,
+            amount: commission,
+            depositAmount: amount,
+            fromUser: userId,
+            createdAt: new Date()
+          })
+      });
+    }
+
+    currentUserId = parentId;
+  }
+}
+
 loadDeposits();
+
 </script>
 
 </body>
