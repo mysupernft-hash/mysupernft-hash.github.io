@@ -10,82 +10,29 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0d0d0d;
-  color:#FFD700;
-}
-
-header{
-  background:#111;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
-
-nav{
-  background:#1a1a1a;
-  padding:10px;
-  display:flex;
-  gap:15px;
-  flex-wrap:wrap;
-}
-
-nav a{
-  color:#FFD700;
-  text-decoration:none;
-}
-
-.main{
-  padding:20px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th, td{
-  border:1px solid #333;
-  padding:10px;
-  text-align:center;
-}
-
-button{
-  padding:5px 10px;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.approve{
-  background:green;
-  color:white;
-}
-
-.reject{
-  background:red;
-  color:white;
-}
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
+header{background:#111;padding:15px;text-align:center;font-size:20px;}
+nav{background:#1a1a1a;padding:10px;text-align:center;}
+nav a{color:#FFD700;margin:0 10px;text-decoration:none;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{border:1px solid #333;padding:10px;text-align:center;}
+button{padding:6px 10px;border:none;border-radius:6px;margin:2px;cursor:pointer;}
+.approve{background:#00cc66;color:white;}
+.reject{background:red;color:white;}
 </style>
 </head>
-
 <body>
 
 <header>Admin Deposits</header>
 
 <nav>
-  <a href="admin-dashboard.html">Dashboard</a>
-  <a href="admin-users.html">Users</a>
-  <a href="admin-deposits.html">Deposits</a>
-  <a href="admin-withdraw.html">Withdraw</a>
+<a href="admin-dashboard.html">Dashboard</a>
+<a href="admin-users.html">Users</a>
+<a href="admin-withdraw.html">Withdraw</a>
+<a href="logout.html">Logout</a>
 </nav>
 
-<div class="main">
-<h2>All Deposit Requests</h2>
+<h2 style="text-align:center;">Deposit Requests</h2>
 
 <table>
 <thead>
@@ -100,104 +47,96 @@ button{
 <tbody id="depositBody"></tbody>
 </table>
 
-</div>
-
 <script>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952"
-};
-
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+});
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-const depositBody = document.getElementById("depositBody");
-
 auth.onAuthStateChanged(user=>{
-  if(!user){
-    location.href="admin-login.html";
-    return;
-  }
-  loadDeposits();
+
+if(!user){
+  location.href="admin-login.html";
+  return;
+}
+
+loadDeposits();
+
 });
 
 function loadDeposits(){
-  depositBody.innerHTML = "";
 
-  db.collection("depositRequests")
-  .orderBy("createdAt","desc")
-  .onSnapshot(snapshot=>{
+const body = document.getElementById("depositBody");
+body.innerHTML="";
 
-    depositBody.innerHTML = "";
+db.collection("depositRequests")
+.get()
+.then(snapshot=>{
 
-    snapshot.forEach(doc=>{
-      const d = doc.data();
+snapshot.forEach(doc=>{
 
-      const row = document.createElement("tr");
+const d = doc.data();
 
-      row.innerHTML = `
-        <td>${d.email}</td>
-        <td>$${d.amount}</td>
-        <td>${d.txid}</td>
-        <td>${d.status}</td>
-        <td>
-          ${
-            d.status === "pending"
-            ?
-            `<button class="approve" onclick="approveDeposit('${doc.id}','${d.userId}',${d.amount})">Approve</button>
-             <button class="reject" onclick="rejectDeposit('${doc.id}')">Reject</button>`
-            :
-            "Completed"
-          }
-        </td>
-      `;
+const row = body.insertRow();
 
-      depositBody.appendChild(row);
-    });
+row.insertCell(0).innerText = d.email || "-";
+row.insertCell(1).innerText = "$"+(d.amount||0);
+row.insertCell(2).innerText = d.txid || "-";
+row.insertCell(3).innerText = d.status || "pending";
 
-  });
-}
+const actionCell = row.insertCell(4);
 
-/* ✅ APPROVE */
-function approveDeposit(depositId, userId, amount){
+const approveBtn = document.createElement("button");
+approveBtn.innerText="Approve";
+approveBtn.className="approve";
+approveBtn.onclick = ()=>approveDeposit(doc.id,d);
+actionCell.appendChild(approveBtn);
 
-  const userRef = db.collection("users").doc(userId);
-  const depositRef = db.collection("depositRequests").doc(depositId);
+const rejectBtn = document.createElement("button");
+rejectBtn.innerText="Reject";
+rejectBtn.className="reject";
+rejectBtn.onclick = ()=>rejectDeposit(doc.id);
+actionCell.appendChild(rejectBtn);
 
-  db.runTransaction(async (transaction)=>{
+});
 
-    const userDoc = await transaction.get(userRef);
-
-    if(!userDoc.exists) return;
-
-    const currentDeposit = userDoc.data().totalDeposit || 0;
-
-    transaction.update(userRef,{
-      totalDeposit: currentDeposit + amount
-    });
-
-    transaction.update(depositRef,{
-      status:"approved"
-    });
-
-  }).then(()=>{
-    alert("Deposit Approved & User Balance Updated");
-  });
+})
+.catch(err=>{
+console.log(err.message);
+});
 
 }
 
-/* ❌ REJECT */
-function rejectDeposit(depositId){
-  db.collection("depositRequests")
-  .doc(depositId)
-  .update({status:"rejected"})
-  .then(()=>{
-    alert("Deposit Rejected");
-  });
+function approveDeposit(id,data){
+
+if(data.status==="approved"){
+alert("Already approved");
+return;
+}
+
+db.collection("depositRequests").doc(id).update({
+status:"approved"
+}).then(()=>{
+alert("Approved");
+loadDeposits();
+});
+
+}
+
+function rejectDeposit(id){
+
+db.collection("depositRequests").doc(id).update({
+status:"rejected"
+}).then(()=>{
+alert("Rejected");
+loadDeposits();
+});
+
 }
 
 </script>
