@@ -6,49 +6,14 @@
 <title>My Team | SuperNFT</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#0f0f0f;
-  color:#FFD700;
-}
-header{
-  background:#1a1a1a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
+header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
 .container{padding:15px;}
-.card{
-  background:#1a1a1a;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-.grid-3{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-.small-card{
-  background:#111;
-  padding:12px;
-  border-radius:10px;
-  text-align:center;
-  font-size:13px;
-}
-.small-card span{
-  display:block;
-  font-size:18px;
-  font-weight:bold;
-  margin-top:5px;
-}
-.big{
-  font-size:22px;
-  font-weight:bold;
-  text-align:center;
-}
+.card{background:#1a1a1a;padding:15px;border-radius:12px;margin-bottom:15px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.small-card{background:#111;padding:12px;border-radius:10px;text-align:center;font-size:13px;}
+.small-card span{display:block;font-size:18px;font-weight:bold;margin-top:5px;}
+.big{font-size:22px;font-weight:bold;text-align:center;}
 </style>
 </head>
 
@@ -58,13 +23,11 @@ header{
 
 <div class="container">
 
-<!-- USER -->
 <div class="card">
 <div id="userName">Loading...</div>
 <div style="font-size:12px;">UID: <span id="uid">---</span></div>
 </div>
 
-<!-- LEVEL COUNTS -->
 <div class="card">
 <h3>Level Structure</h3>
 <div class="grid-3">
@@ -74,7 +37,6 @@ header{
 </div>
 </div>
 
-<!-- LEVEL COMMISSION -->
 <div class="card">
 <h3>Level Wise Commission Earned</h3>
 <div class="grid-3">
@@ -84,7 +46,6 @@ header{
 </div>
 </div>
 
-<!-- TOTAL -->
 <div class="card">
 <h3>Total Referral Earnings</h3>
 <div class="big">$<span id="totalEarn">0</span></div>
@@ -96,20 +57,12 @@ header{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  collection, 
-  getDocs, 
-  query, 
-  where 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -118,82 +71,99 @@ const db=getFirestore(app);
 
 onAuthStateChanged(auth, async(user)=>{
 
-  if(!user){
-    location.href="login.html";
-    return;
+if(!user){
+location.href="login.html";
+return;
+}
+
+document.getElementById("uid").innerText=user.uid;
+
+const userRef=doc(db,"users",user.uid);
+const snap=await getDoc(userRef);
+if(!snap.exists()) return;
+
+const data=snap.data();
+document.getElementById("userName").innerText=data.name || user.email;
+
+const myReferralCode = data.referralCode;
+
+/* =========================
+   GET ALL USERS (SAFE METHOD)
+========================= */
+
+const allUsersSnap = await getDocs(collection(db,"users"));
+
+let level1=[];
+let level2=[];
+let level3=[];
+
+/* =========================
+   LEVEL 1
+========================= */
+
+allUsersSnap.forEach(docSnap=>{
+  const u = docSnap.data();
+
+  if(
+    u.referredByUid === user.uid ||
+    u.referredBy === myReferralCode
+  ){
+    level1.push(docSnap.id);
   }
+});
 
-  document.getElementById("uid").innerText=user.uid;
+document.getElementById("l1").innerText=level1.length;
 
-  const userRef=doc(db,"users",user.uid);
-  const snap=await getDoc(userRef);
-  if(!snap.exists()) return;
+/* =========================
+   LEVEL 2
+========================= */
 
-  const data=snap.data();
-  document.getElementById("userName").innerText=data.name || user.email;
+allUsersSnap.forEach(docSnap=>{
+  const u = docSnap.data();
 
-  /* =====================
-     LEVEL 1
-  ===================== */
-  const q1=query(collection(db,"users"),
-  where("referredByUid","==",user.uid));
-  const snap1=await getDocs(q1);
-
-  document.getElementById("l1").innerText=snap1.size;
-
-  /* =====================
-     LEVEL 2
-  ===================== */
-  let level2Count=0;
-  let level2Ids=[];
-
-  for(const doc1 of snap1.docs){
-    const q2=query(collection(db,"users"),
-    where("referredByUid","==",doc1.id));
-    const snap2=await getDocs(q2);
-
-    level2Count+=snap2.size;
-    snap2.forEach(d=>level2Ids.push(d.id));
+  if(level1.includes(u.referredByUid)){
+    level2.push(docSnap.id);
   }
+});
 
-  document.getElementById("l2").innerText=level2Count;
+document.getElementById("l2").innerText=level2.length;
 
-  /* =====================
-     LEVEL 3
-  ===================== */
-  let level3Count=0;
+/* =========================
+   LEVEL 3
+========================= */
 
-  for(const uid2 of level2Ids){
-    const q3=query(collection(db,"users"),
-    where("referredByUid","==",uid2));
-    const snap3=await getDocs(q3);
-    level3Count+=snap3.size;
+allUsersSnap.forEach(docSnap=>{
+  const u = docSnap.data();
+
+  if(level2.includes(u.referredByUid)){
+    level3.push(docSnap.id);
   }
+});
 
-  document.getElementById("l3").innerText=level3Count;
+document.getElementById("l3").innerText=level3.length;
 
-  /* =====================
-     COMMISSION CALCULATION
-  ===================== */
+/* =========================
+   COMMISSION CALCULATION
+========================= */
 
-  const history=data.commissionHistory || [];
+let l1Earn=0;
+let l2Earn=0;
+let l3Earn=0;
 
-  let l1Earn=0;
-  let l2Earn=0;
-  let l3Earn=0;
+const history=data.commissionHistory || [];
 
-  history.forEach(h=>{
-    if(h.level==1) l1Earn+=Number(h.amount||0);
-    if(h.level==2) l2Earn+=Number(h.amount||0);
-    if(h.level==3) l3Earn+=Number(h.amount||0);
-  });
+history.forEach(h=>{
+  if(h.level==1) l1Earn+=Number(h.amount||0);
+  if(h.level==2) l2Earn+=Number(h.amount||0);
+  if(h.level==3) l3Earn+=Number(h.amount||0);
+});
 
-  document.getElementById("l1Earn").innerText=l1Earn.toFixed(2);
-  document.getElementById("l2Earn").innerText=l2Earn.toFixed(2);
-  document.getElementById("l3Earn").innerText=l3Earn.toFixed(2);
+document.getElementById("l1Earn").innerText=l1Earn.toFixed(2);
+document.getElementById("l2Earn").innerText=l2Earn.toFixed(2);
+document.getElementById("l3Earn").innerText=l3Earn.toFixed(2);
 
-  document.getElementById("totalEarn").innerText=
-  (l1Earn+l2Earn+l3Earn).toFixed(2);
+document.getElementById("totalEarn").innerText=
+(l1Earn+l2Earn+l3Earn).toFixed(2);
 
 });
 
