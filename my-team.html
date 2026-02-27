@@ -6,60 +6,14 @@
 <title>My Team | SuperNFT</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#0f0f0f;
-  color:#FFD700;
-}
-header{
-  background:#1a1a1a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
+header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
 .container{padding:15px;}
-.card{
-  background:#1a1a1a;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-.row{
-  display:flex;
-  justify-content:space-between;
-  margin-top:8px;
-}
-.big{
-  font-size:20px;
-  font-weight:bold;
-}
-.grid-3{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-}
-.small-card{
-  background:#111;
-  padding:12px;
-  border-radius:10px;
-  text-align:center;
-  font-size:13px;
-}
-.small-card span{
-  display:block;
-  font-size:16px;
-  font-weight:bold;
-  margin-top:5px;
-}
-.history-box{
-  background:#111;
-  padding:10px;
-  border-radius:8px;
-  margin-top:8px;
-  font-size:12px;
-}
+.card{background:#1a1a1a;padding:15px;border-radius:12px;margin-bottom:15px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.small-card{background:#111;padding:12px;border-radius:10px;text-align:center;font-size:13px;}
+.small-card span{display:block;font-size:18px;font-weight:bold;margin-top:5px;}
+.big{font-size:20px;font-weight:bold;}
 </style>
 </head>
 
@@ -69,18 +23,10 @@ header{
 
 <div class="container">
 
-<!-- USER INFO -->
+<!-- USER -->
 <div class="card">
 <div id="userName">Loading...</div>
 <div style="font-size:12px;">UID: <span id="uid">---</span></div>
-</div>
-
-<!-- WALLET -->
-<div class="card">
-<div class="row">
-<div>Wallet Balance</div>
-<div class="big">$<span id="wallet">0</span></div>
-</div>
 </div>
 
 <!-- LEVEL COUNTS -->
@@ -93,19 +39,20 @@ header{
 </div>
 </div>
 
-<!-- LEVEL USERS DISPLAY -->
-<div id="levelUsers"></div>
-
-<!-- COMMISSION -->
+<!-- LEVEL COMMISSION -->
 <div class="card">
-<h3>Total Referral Earnings</h3>
-<div class="big">$<span id="referralEarnings">0</span></div>
+<h3>Level Wise Commission Earned</h3>
+<div class="grid-3">
+<div class="small-card">L1 Earned<span>$<span id="l1Earn">0</span></span></div>
+<div class="small-card">L2 Earned<span>$<span id="l2Earn">0</span></span></div>
+<div class="small-card">L3 Earned<span>$<span id="l3Earn">0</span></span></div>
+</div>
 </div>
 
-<!-- COMMISSION HISTORY -->
+<!-- TOTAL -->
 <div class="card">
-<h3>Commission History</h3>
-<div id="commissionHistory">Loading...</div>
+<h3>Total Referral Earnings</h3>
+<div class="big">$<span id="totalEarn">0</span></div>
 </div>
 
 </div>
@@ -142,116 +89,55 @@ if(!snap.exists()) return;
 const data=snap.data();
 
 document.getElementById("userName").innerText=data.name || user.email;
-document.getElementById("wallet").innerText=data.walletBalance||0;
-document.getElementById("referralEarnings").innerText=data.referralEarnings||0;
 
-let levelUsersHTML="";
-
-/* ========= LEVEL 1 ========= */
+/* =====================
+   🔥 LEVEL COUNTS
+===================== */
 
 const q1=query(collection(db,"users"),where("referredByUid","==",user.uid));
 const snap1=await getDocs(q1);
-
 document.getElementById("l1").innerText=snap1.size;
 
-levelUsersHTML+=`<div class="card"><h3>Level 1 Users</h3>`;
-
-snap1.forEach(doc1=>{
-const u=doc1.data();
-levelUsersHTML+=`
-<div class="history-box">
-<b>${u.name || "No Name"}</b><br>
-${u.email || ""}<br>
-Deposit: $${u.totalDeposit || 0}
-</div>
-`;
-});
-
-levelUsersHTML+=`</div>`;
-
-/* ========= LEVEL 2 ========= */
-
 let level2Count=0;
-let level2HTML=`<div class="card"><h3>Level 2 Users</h3>`;
-
-for(const doc1 of snap1.docs){
-
-const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
-const snap2=await getDocs(q2);
-
-level2Count+=snap2.size;
-
-snap2.forEach(doc2=>{
-const u2=doc2.data();
-level2HTML+=`
-<div class="history-box">
-<b>${u2.name || "No Name"}</b><br>
-${u2.email || ""}<br>
-Deposit: $${u2.totalDeposit || 0}
-</div>
-`;
-});
-}
-
-level2HTML+=`</div>`;
-document.getElementById("l2").innerText=level2Count;
-
-/* ========= LEVEL 3 ========= */
-
 let level3Count=0;
-let level3HTML=`<div class="card"><h3>Level 3 Users</h3>`;
 
 for(const doc1 of snap1.docs){
+  const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
+  const snap2=await getDocs(q2);
+  level2Count+=snap2.size;
 
-const q2=query(collection(db,"users"),where("referredByUid","==",doc1.id));
-const snap2=await getDocs(q2);
-
-for(const doc2 of snap2.docs){
-
-const q3=query(collection(db,"users"),where("referredByUid","==",doc2.id));
-const snap3=await getDocs(q3);
-
-level3Count+=snap3.size;
-
-snap3.forEach(doc3=>{
-const u3=doc3.data();
-level3HTML+=`
-<div class="history-box">
-<b>${u3.name || "No Name"}</b><br>
-${u3.email || ""}<br>
-Deposit: $${u3.totalDeposit || 0}
-</div>
-`;
-});
-}
+  for(const doc2 of snap2.docs){
+    const q3=query(collection(db,"users"),where("referredByUid","==",doc2.id));
+    const snap3=await getDocs(q3);
+    level3Count+=snap3.size;
+  }
 }
 
-level3HTML+=`</div>`;
+document.getElementById("l2").innerText=level2Count;
 document.getElementById("l3").innerText=level3Count;
 
-/* ADD ALL TO PAGE */
-document.getElementById("levelUsers").innerHTML =
-levelUsersHTML + level2HTML + level3HTML;
+/* =====================
+   🔥 LEVEL COMMISSION CALC
+===================== */
 
-/* ========= COMMISSION HISTORY ========= */
+const history = data.commissionHistory || [];
 
-const historyContainer=document.getElementById("commissionHistory");
-const history=data.commissionHistory||[];
+let l1Earn=0;
+let l2Earn=0;
+let l3Earn=0;
 
-if(history.length===0){
-historyContainer.innerHTML="No commission yet.";
-}else{
-let html="";
-history.slice().reverse().forEach(h=>{
-html+=`
-<div class="history-box">
-Level ${h.level} → $${h.amount}<br>
-Deposit: $${h.depositAmount}
-</div>
-`;
+history.forEach(h=>{
+  if(h.level===1) l1Earn += h.amount;
+  if(h.level===2) l2Earn += h.amount;
+  if(h.level===3) l3Earn += h.amount;
 });
-historyContainer.innerHTML=html;
-}
+
+document.getElementById("l1Earn").innerText=l1Earn.toFixed(2);
+document.getElementById("l2Earn").innerText=l2Earn.toFixed(2);
+document.getElementById("l3Earn").innerText=l3Earn.toFixed(2);
+
+document.getElementById("totalEarn").innerText=
+(l1Earn + l2Earn + l3Earn).toFixed(2);
 
 });
 
