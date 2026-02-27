@@ -1,38 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Deposits | SuperNFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Deposits</title>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
-header{background:#111;padding:15px;text-align:center;font-size:20px;}
-nav{background:#1a1a1a;padding:10px;text-align:center;}
-nav a{color:#FFD700;margin:0 10px;text-decoration:none;}
+body{background:#0f0f0f;color:#FFD700;font-family:Arial;margin:0;padding:20px;}
 table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{border:1px solid #333;padding:10px;text-align:center;}
-button{padding:6px 10px;border:none;border-radius:6px;margin:2px;cursor:pointer;}
-.approve{background:#00cc66;color:white;}
+th,td{border:1px solid #333;padding:8px;text-align:center;}
+button{padding:6px 10px;margin:2px;border:none;border-radius:6px;cursor:pointer;}
+.approve{background:green;color:white;}
 .reject{background:red;color:white;}
 </style>
 </head>
 <body>
 
-<header>Admin Deposits</header>
-
-<nav>
-<a href="admin-dashboard.html">Dashboard</a>
-<a href="admin-users.html">Users</a>
-<a href="admin-withdraw.html">Withdraw</a>
-<a href="logout.html">Logout</a>
-</nav>
-
-<h2 style="text-align:center;">Deposit Requests</h2>
+<h2>Admin Deposit Requests</h2>
 
 <table>
 <thead>
@@ -44,15 +31,15 @@ button{padding:6px 10px;border:none;border-radius:6px;margin:2px;cursor:pointer;
 <th>Action</th>
 </tr>
 </thead>
-<tbody id="depositBody"></tbody>
+<tbody id="body"></tbody>
 </table>
 
 <script>
 
 firebase.initializeApp({
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 });
 
 const auth = firebase.auth();
@@ -61,8 +48,8 @@ const db = firebase.firestore();
 auth.onAuthStateChanged(user=>{
 
 if(!user){
-  location.href="admin-login.html";
-  return;
+alert("Login Required");
+return;
 }
 
 loadDeposits();
@@ -71,43 +58,41 @@ loadDeposits();
 
 function loadDeposits(){
 
-const body = document.getElementById("depositBody");
-body.innerHTML="";
-
-db.collection("depositRequests")
-.get()
+db.collection("depositRequests").get()
 .then(snapshot=>{
+
+const body=document.getElementById("body");
+body.innerHTML="";
 
 snapshot.forEach(doc=>{
 
-const d = doc.data();
+const d=doc.data();
+const row=body.insertRow();
 
-const row = body.insertRow();
+row.insertCell(0).innerText=d.email||"-";
+row.insertCell(1).innerText="$"+(d.amount||0);
+row.insertCell(2).innerText=d.txid||"-";
+row.insertCell(3).innerText=d.status||"pending";
 
-row.insertCell(0).innerText = d.email || "-";
-row.insertCell(1).innerText = "$"+(d.amount||0);
-row.insertCell(2).innerText = d.txid || "-";
-row.insertCell(3).innerText = d.status || "pending";
+const action=row.insertCell(4);
 
-const actionCell = row.insertCell(4);
+const approve=document.createElement("button");
+approve.innerText="Approve";
+approve.className="approve";
+approve.onclick=()=>approveDeposit(doc.id,d);
+action.appendChild(approve);
 
-const approveBtn = document.createElement("button");
-approveBtn.innerText="Approve";
-approveBtn.className="approve";
-approveBtn.onclick = ()=>approveDeposit(doc.id,d);
-actionCell.appendChild(approveBtn);
-
-const rejectBtn = document.createElement("button");
-rejectBtn.innerText="Reject";
-rejectBtn.className="reject";
-rejectBtn.onclick = ()=>rejectDeposit(doc.id);
-actionCell.appendChild(rejectBtn);
+const reject=document.createElement("button");
+reject.innerText="Reject";
+reject.className="reject";
+reject.onclick=()=>rejectDeposit(doc.id);
+action.appendChild(reject);
 
 });
 
 })
 .catch(err=>{
-console.log(err.message);
+alert("Firestore Error: "+err.message);
 });
 
 }
@@ -115,15 +100,19 @@ console.log(err.message);
 function approveDeposit(id,data){
 
 if(data.status==="approved"){
-alert("Already approved");
+alert("Already Approved");
 return;
 }
 
 db.collection("depositRequests").doc(id).update({
 status:"approved"
-}).then(()=>{
+})
+.then(()=>{
 alert("Approved");
 loadDeposits();
+})
+.catch(err=>{
+alert(err.message);
 });
 
 }
@@ -132,9 +121,13 @@ function rejectDeposit(id){
 
 db.collection("depositRequests").doc(id).update({
 status:"rejected"
-}).then(()=>{
+})
+.then(()=>{
 alert("Rejected");
 loadDeposits();
+})
+.catch(err=>{
+alert(err.message);
 });
 
 }
