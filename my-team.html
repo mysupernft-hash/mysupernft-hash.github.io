@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,14 +13,14 @@ header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-wei
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
 .small-card{background:#111;padding:12px;border-radius:10px;text-align:center;font-size:13px;}
 .small-card span{display:block;font-size:18px;font-weight:bold;margin-top:5px;}
-.big{font-size:22px;font-weight:bold;text-align:center;}
+.big{font-size:20px;font-weight:bold;text-align:center;}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-</head>
 
+</head>
 <body>
 
 <header>👥 My Team</header>
@@ -44,35 +44,37 @@ header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-wei
 <div class="card">
 <h3>Level Wise Commission Earned</h3>
 <div class="grid-3">
-<div class="small-card">L1 Earned<span>$<span id="l1Earn">0</span></span></div>
-<div class="small-card">L2 Earned<span>$<span id="l2Earn">0</span></span></div>
-<div class="small-card">L3 Earned<span>$<span id="l3Earn">0</span></span></div>
+<div class="small-card">L1 Earned<span>$<span id="l1Earn">0.00</span></span></div>
+<div class="small-card">L2 Earned<span>$<span id="l2Earn">0.00</span></span></div>
+<div class="small-card">L3 Earned<span>$<span id="l3Earn">0.00</span></span></div>
 </div>
 </div>
 
 <div class="card">
 <h3>Total Referral Earnings</h3>
-<div class="big">$<span id="totalEarn">0</span></div>
+<div class="big">$<span id="totalEarn">0.00</span></div>
 </div>
 
 </div>
 
 <script>
 
-firebase.initializeApp({
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
-});
+const firebaseConfig = {
+  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain: "supernft-5b952.firebaseapp.com",
+  projectId: "supernft-5b952"
+};
+
+firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-auth.onAuthStateChanged(async user=>{
+auth.onAuthStateChanged(async(user)=>{
 
 if(!user){
-location.href="login.html";
-return;
+  window.location.href="login.html";
+  return;
 }
 
 document.getElementById("uid").innerText=user.uid;
@@ -80,61 +82,75 @@ document.getElementById("uid").innerText=user.uid;
 const userDoc = await db.collection("users").doc(user.uid).get();
 if(!userDoc.exists) return;
 
-const data = userDoc.data();
-document.getElementById("userName").innerText=data.name || user.email;
+const userData = userDoc.data();
+document.getElementById("userName").innerText = userData.name || user.email;
 
-/* ================= LEVEL COUNTS ================= */
+/* ===========================
+   LEVEL STRUCTURE COUNT
+=========================== */
 
 let level1 = [];
 let level2 = [];
 let level3 = [];
 
-// Level 1
+// 🔥 Level 1
 const l1Snap = await db.collection("users")
 .where("referredByUid","==",user.uid)
 .get();
 
-l1Snap.forEach(d=>level1.push(d.id));
-document.getElementById("l1").innerText=level1.length;
+level1 = l1Snap.docs;
+document.getElementById("l1").innerText = level1.length;
 
-// Level 2
-for(const uid of level1){
-const snap = await db.collection("users")
-.where("referredByUid","==",uid)
-.get();
-snap.forEach(d=>level2.push(d.id));
+// 🔥 Level 2
+for(const l1User of level1){
+  const l2Snap = await db.collection("users")
+  .where("referredByUid","==",l1User.id)
+  .get();
+
+  level2.push(...l2Snap.docs);
 }
-document.getElementById("l2").innerText=level2.length;
+document.getElementById("l2").innerText = level2.length;
 
-// Level 3
-for(const uid of level2){
-const snap = await db.collection("users")
-.where("referredByUid","==",uid)
-.get();
-snap.forEach(d=>level3.push(d.id));
+// 🔥 Level 3
+for(const l2User of level2){
+  const l3Snap = await db.collection("users")
+  .where("referredByUid","==",l2User.id)
+  .get();
+
+  level3.push(...l3Snap.docs);
 }
-document.getElementById("l3").innerText=level3.length;
+document.getElementById("l3").innerText = level3.length;
 
-/* ================= COMMISSION CALC ================= */
+/* ===========================
+   COMMISSION CALCULATION
+=========================== */
 
 let l1Earn=0;
 let l2Earn=0;
 let l3Earn=0;
 
-const history = data.commissionHistory || [];
+// Loop all users & find commission given to you
+const allUsers = await db.collection("users").get();
 
-history.forEach(h=>{
-if(h.level==1) l1Earn += Number(h.amount||0);
-if(h.level==2) l2Earn += Number(h.amount||0);
-if(h.level==3) l3Earn += Number(h.amount||0);
+allUsers.forEach(doc=>{
+  const data = doc.data();
+  const history = data.commissionHistory || [];
+
+  history.forEach(h=>{
+    if(h.toUid === user.uid){
+      if(h.level===1) l1Earn += Number(h.amount||0);
+      if(h.level===2) l2Earn += Number(h.amount||0);
+      if(h.level===3) l3Earn += Number(h.amount||0);
+    }
+  });
 });
 
-document.getElementById("l1Earn").innerText=l1Earn.toFixed(2);
-document.getElementById("l2Earn").innerText=l2Earn.toFixed(2);
-document.getElementById("l3Earn").innerText=l3Earn.toFixed(2);
+document.getElementById("l1Earn").innerText = l1Earn.toFixed(2);
+document.getElementById("l2Earn").innerText = l2Earn.toFixed(2);
+document.getElementById("l3Earn").innerText = l3Earn.toFixed(2);
 
-document.getElementById("totalEarn").innerText=
-(l1Earn+l2Earn+l3Earn).toFixed(2);
+const total = l1Earn + l2Earn + l3Earn;
+document.getElementById("totalEarn").innerText = total.toFixed(2);
 
 });
 
