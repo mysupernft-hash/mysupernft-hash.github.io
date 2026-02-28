@@ -5,20 +5,13 @@
 <title>My Referrals | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <style>
 body{
   margin:0;
   font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
-  padding:15px;
-}
-h2{
-  text-align:center;
+  padding:20px;
 }
 .card{
   background:#1a1a1a;
@@ -44,7 +37,6 @@ button{
   color:#000;
   font-weight:bold;
   cursor:pointer;
-  margin-top:10px;
 }
 button:hover{
   background:#e6c200;
@@ -54,6 +46,12 @@ button:hover{
   margin-top:8px;
 }
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 </head>
 <body>
 
@@ -67,7 +65,7 @@ button:hover{
 <div class="card">
   <b>Full Referral Link</b>
   <div id="fullReferralLink" class="link-box">Loading...</div>
-  <button onclick="copyLink()">Copy Link</button>
+  <button onclick="copyLink()">Copy</button>
 </div>
 
 <div class="card">
@@ -102,47 +100,66 @@ const userDoc = await db.collection("users").doc(user.uid).get();
 if(!userDoc.exists) return;
 
 const data = userDoc.data();
-const code = data.referralCode || "N/A";
+const referralCode = data.referralCode;
 
-document.getElementById("refCode").innerText = code;
+// Show code
+document.getElementById("refCode").innerText = referralCode;
 
+// Full link
 const fullLink =
-"https://mysupernft-hash.github.io/signup.html?ref=" + code;
+"https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
 
 document.getElementById("fullReferralLink").innerText = fullLink;
 
-// 🔥 DIRECT QUERY FROM MAIN USERS COLLECTION
-const snapshot = await db.collection("users")
+// 🔥 MAIN FIX SYSTEM
+
+let allRefs = new Map(); // Prevent duplicates
+
+// 1️⃣ UID Based (New System)
+const uidSnap = await db.collection("users")
 .where("referredByUid","==",user.uid)
 .get();
 
-document.getElementById("count").innerText = snapshot.size;
+uidSnap.forEach(doc=>{
+allRefs.set(doc.id, doc.data());
+});
 
+// 2️⃣ Code Based (Old System)
+const codeSnap = await db.collection("users")
+.where("referredBy","==",referralCode)
+.get();
+
+codeSnap.forEach(doc=>{
+allRefs.set(doc.id, doc.data());
+});
+
+// Convert map to array
+const referrals = Array.from(allRefs.values());
+
+document.getElementById("count").innerText = referrals.length;
+
+// Build UI
 let html="";
 
-if(snapshot.empty){
+if(referrals.length===0){
 html="No referrals yet.";
 }
 else{
 
-snapshot.forEach(doc=>{
-
-const u = doc.data();
+referrals.forEach(u=>{
 
 const displayName =
 u.name ||
 (u.email ? u.email.split("@")[0] : "User");
 
-const joinDate =
-u.createdAt && u.createdAt.toDate
-? u.createdAt.toDate().toLocaleString()
-: "-";
+const join =
+u.createdAt?.toDate().toLocaleString() || "-";
 
-html+=`
+html += `
 <div class="user-box">
 <b>${displayName}</b><br>
 ${u.email || ""}<br>
-<div class="small">Joined: ${joinDate}</div>
+<div class="small">Joined: ${join}</div>
 </div>
 `;
 
@@ -154,6 +171,7 @@ document.getElementById("list").innerHTML = html;
 
 });
 
+// Copy
 function copyLink(){
 const text = document.getElementById("fullReferralLink").innerText;
 navigator.clipboard.writeText(text);
