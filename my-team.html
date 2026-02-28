@@ -10,7 +10,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-
 body{
   margin:0;
   font-family:Arial;
@@ -19,81 +18,56 @@ body{
 }
 
 header{
-  background:#1a1a1a;
-  padding:18px;
   text-align:center;
+  padding:15px;
   font-size:20px;
   font-weight:bold;
-  letter-spacing:1px;
+  background:#1a1a1a;
 }
 
 .container{
   padding:15px;
-  max-width:500px;
-  margin:auto;
 }
 
 .card{
   background:#1a1a1a;
-  padding:18px;
-  border-radius:14px;
-  margin-bottom:18px;
-  box-shadow:0 0 10px rgba(0,0,0,0.4);
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:15px;
 }
 
-.user-name{
+.title{
+  font-size:14px;
+  opacity:0.8;
+}
+
+.value{
   font-size:18px;
   font-weight:bold;
+  margin-top:5px;
 }
 
-.uid{
-  font-size:12px;
-  color:#aaa;
-  margin-top:4px;
-  word-break:break-all;
-}
-
-.section-title{
-  font-size:16px;
-  margin-bottom:12px;
-  font-weight:bold;
-}
-
-.grid-3{
+.grid{
   display:grid;
-  grid-template-columns:1fr 1fr 1fr;
+  grid-template-columns:repeat(3,1fr);
   gap:10px;
+  margin-top:10px;
 }
 
-.small-card{
+.box{
   background:#111;
-  padding:14px 10px;
-  border-radius:12px;
+  padding:10px;
+  border-radius:8px;
   text-align:center;
   font-size:13px;
 }
 
-.small-card span{
+.box span{
   display:block;
-  font-size:18px;
+  font-size:16px;
   font-weight:bold;
-  margin-top:6px;
+  margin-top:5px;
 }
-
-.big{
-  font-size:22px;
-  font-weight:bold;
-  text-align:center;
-  margin-top:10px;
-}
-
-/* 📱 Extra Mobile Optimization */
-@media(max-width:400px){
-  .grid-3{
-    grid-template-columns:1fr;
-  }
-}
-
 </style>
 </head>
 <body>
@@ -102,39 +76,124 @@ header{
 
 <div class="container">
 
-<!-- USER INFO -->
 <div class="card">
-  <div class="user-name" id="userName">Shiva</div>
-  <div class="uid">UID: <span id="uid">---</span></div>
+<div id="userName" class="value">Loading...</div>
+<div class="title">UID: <span id="uid">---</span></div>
 </div>
 
-<!-- LEVEL STRUCTURE -->
 <div class="card">
-  <div class="section-title">Level Structure</div>
-  <div class="grid-3">
-    <div class="small-card">L1 (20%)<span id="l1">1</span></div>
-    <div class="small-card">L2 (15%)<span id="l2">0</span></div>
-    <div class="small-card">L3 (10%)<span id="l3">0</span></div>
-  </div>
+<div class="title">Level Structure</div>
+<div class="grid">
+<div class="box">L1 (20%)<span id="l1">0</span></div>
+<div class="box">L2 (15%)<span id="l2">0</span></div>
+<div class="box">L3 (10%)<span id="l3">0</span></div>
+</div>
 </div>
 
-<!-- LEVEL COMMISSION -->
 <div class="card">
-  <div class="section-title">Level Wise Commission</div>
-  <div class="grid-3">
-    <div class="small-card">L1 Earned<span>$<span id="l1Earn">70.00</span></span></div>
-    <div class="small-card">L2 Earned<span>$<span id="l2Earn">0.00</span></span></div>
-    <div class="small-card">L3 Earned<span>$<span id="l3Earn">0.00</span></span></div>
-  </div>
+<div class="title">Level Wise Commission</div>
+<div class="grid">
+<div class="box">L1 Earn<span>$<span id="l1Earn">0</span></span></div>
+<div class="box">L2 Earn<span>$<span id="l2Earn">0</span></span></div>
+<div class="box">L3 Earn<span>$<span id="l3Earn">0</span></span></div>
+</div>
 </div>
 
-<!-- TOTAL -->
 <div class="card">
-  <div class="section-title">Total Referral Earnings</div>
-  <div class="big">$<span id="totalEarn">70.00</span></div>
+<div class="title">Total Referral Earnings</div>
+<div class="value">$<span id="totalEarn">0</span></div>
 </div>
 
 </div>
+
+<script>
+
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(async user=>{
+
+if(!user){
+location.href="login.html";
+return;
+}
+
+document.getElementById("uid").innerText = user.uid;
+
+const userDoc = await db.collection("users").doc(user.uid).get();
+if(!userDoc.exists) return;
+
+const data = userDoc.data();
+
+document.getElementById("userName").innerText =
+data.name || user.email;
+
+/* ===== LEVEL STRUCTURE ===== */
+
+let level1=[];
+let level2=[];
+let level3=[];
+
+// Level 1
+const l1Snap = await db.collection("users")
+.where("referredByUid","==",user.uid).get();
+
+level1 = l1Snap.docs;
+document.getElementById("l1").innerText = level1.length;
+
+// Level 2
+for(const d1 of level1){
+const l2Snap = await db.collection("users")
+.where("referredByUid","==",d1.id).get();
+level2.push(...l2Snap.docs);
+}
+document.getElementById("l2").innerText = level2.length;
+
+// Level 3
+for(const d2 of level2){
+const l3Snap = await db.collection("users")
+.where("referredByUid","==",d2.id).get();
+level3.push(...l3Snap.docs);
+}
+document.getElementById("l3").innerText = level3.length;
+
+/* ===== LEVEL COMMISSION ===== */
+
+let l1Earn=0;
+let l2Earn=0;
+let l3Earn=0;
+
+if(data.commissionHistory && data.commissionHistory.length>0){
+
+data.commissionHistory.forEach(h=>{
+if(Number(h.level)===1) l1Earn+=Number(h.amount||0);
+if(Number(h.level)===2) l2Earn+=Number(h.amount||0);
+if(Number(h.level)===3) l3Earn+=Number(h.amount||0);
+});
+
+}else{
+
+// fallback
+l1Earn = Number(data.referralEarnings||0);
+
+}
+
+document.getElementById("l1Earn").innerText=l1Earn.toFixed(2);
+document.getElementById("l2Earn").innerText=l2Earn.toFixed(2);
+document.getElementById("l3Earn").innerText=l3Earn.toFixed(2);
+
+document.getElementById("totalEarn").innerText=
+Number(data.referralEarnings||0).toFixed(2);
+
+});
+
+</script>
 
 </body>
 </html>
