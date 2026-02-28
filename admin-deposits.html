@@ -46,14 +46,11 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 auth.onAuthStateChanged(user=>{
-
 if(!user){
 alert("Login Required");
 return;
 }
-
 loadDeposits();
-
 });
 
 function loadDeposits(){
@@ -90,31 +87,158 @@ action.appendChild(reject);
 
 });
 
-})
-.catch(err=>{
-alert("Firestore Error: "+err.message);
 });
 
 }
 
-function approveDeposit(id,data){
+async function approveDeposit(id,data){
 
 if(data.status==="approved"){
 alert("Already Approved");
 return;
 }
 
-db.collection("depositRequests").doc(id).update({
-status:"approved"
-})
-.then(()=>{
-alert("Approved");
-loadDeposits();
-})
-.catch(err=>{
-alert(err.message);
+const depositAmount = Number(data.amount);
+const userId = data.userId;
+
+const userRef = db.collection("users").doc(userId);
+const userSnap = await userRef.get();
+
+if(!userSnap.exists){
+alert("User not found");
+return;
+}
+
+const userData = userSnap.data();
+
+// ✅ Update user totalDeposit
+await userRef.update({
+totalDeposit:(userData.totalDeposit||0)+depositAmount
 });
 
+// =============================
+// 🔥 LEVEL 1 COMMISSION (20%)
+// =============================
+
+const level1Uid = userData.referredByUid;
+
+if(level1Uid){
+
+const level1Ref = db.collection("users").doc(level1Uid);
+const level1Snap = await level1Ref.get();
+
+if(level1Snap.exists){
+
+const commission = depositAmount * 0.20;
+const refData = level1Snap.data();
+const history = refData.commissionHistory || [];
+
+history.push({
+level:1,
+amount:commission,
+depositAmount:depositAmount,
+date:new Date()
+});
+
+await level1Ref.update({
+walletBalance:(refData.walletBalance||0)+commission,
+referralEarnings:(refData.referralEarnings||0)+commission,
+commissionHistory:history
+});
+
+}
+}
+
+// =============================
+// 🔥 LEVEL 2 COMMISSION (15%)
+// =============================
+
+if(level1Uid){
+
+const level1Snap = await db.collection("users").doc(level1Uid).get();
+const level1Data = level1Snap.data();
+const level2Uid = level1Data.referredByUid;
+
+if(level2Uid){
+
+const level2Ref = db.collection("users").doc(level2Uid);
+const level2Snap = await level2Ref.get();
+
+if(level2Snap.exists){
+
+const commission = depositAmount * 0.15;
+const refData = level2Snap.data();
+const history = refData.commissionHistory || [];
+
+history.push({
+level:2,
+amount:commission,
+depositAmount:depositAmount,
+date:new Date()
+});
+
+await level2Ref.update({
+walletBalance:(refData.walletBalance||0)+commission,
+referralEarnings:(refData.referralEarnings||0)+commission,
+commissionHistory:history
+});
+
+}
+}
+}
+
+// =============================
+// 🔥 LEVEL 3 COMMISSION (10%)
+// =============================
+
+if(level1Uid){
+
+const level1Snap = await db.collection("users").doc(level1Uid).get();
+const level1Data = level1Snap.data();
+const level2Uid = level1Data.referredByUid;
+
+if(level2Uid){
+
+const level2Snap = await db.collection("users").doc(level2Uid).get();
+const level2Data = level2Snap.data();
+const level3Uid = level2Data.referredByUid;
+
+if(level3Uid){
+
+const level3Ref = db.collection("users").doc(level3Uid);
+const level3Snap = await level3Ref.get();
+
+if(level3Snap.exists){
+
+const commission = depositAmount * 0.10;
+const refData = level3Snap.data();
+const history = refData.commissionHistory || [];
+
+history.push({
+level:3,
+amount:commission,
+depositAmount:depositAmount,
+date:new Date()
+});
+
+await level3Ref.update({
+walletBalance:(refData.walletBalance||0)+commission,
+referralEarnings:(refData.referralEarnings||0)+commission,
+commissionHistory:history
+});
+
+}
+}
+}
+}
+
+// ✅ Mark deposit approved
+await db.collection("depositRequests").doc(id).update({
+status:"approved"
+});
+
+alert("Deposit Approved + Commission Distributed");
+loadDeposits();
 }
 
 function rejectDeposit(id){
@@ -125,9 +249,6 @@ status:"rejected"
 .then(()=>{
 alert("Rejected");
 loadDeposits();
-})
-.catch(err=>{
-alert(err.message);
 });
 
 }
