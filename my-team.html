@@ -15,12 +15,8 @@ header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-wei
 .small-card span{display:block;font-size:18px;font-weight:bold;margin-top:5px;}
 .big{font-size:20px;font-weight:bold;text-align:center;}
 </style>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 </head>
+
 <body>
 
 <header>👥 My Team</header>
@@ -57,92 +53,111 @@ header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-wei
 
 </div>
 
-<script>
+<script type="module">
 
-const firebaseConfig = {
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-auth.onAuthStateChanged(async(user)=>{
+onAuthStateChanged(auth, async(user)=>{
 
 if(!user){
-  window.location.href="login.html";
-  return;
+location.href="login.html";
+return;
 }
 
 document.getElementById("uid").innerText=user.uid;
 
-const userDoc = await db.collection("users").doc(user.uid).get();
-if(!userDoc.exists) return;
+const userRef=doc(db,"users",user.uid);
+const snap=await getDoc(userRef);
+if(!snap.exists()) return;
 
-const userData = userDoc.data();
-document.getElementById("userName").innerText=userData.name || user.email;
+const userData=snap.data();
 
-/* ==========================
+document.getElementById("userName").innerText=
+userData.name || user.email;
+
+/* =====================
    🔥 LEVEL STRUCTURE COUNT
-========================== */
+===================== */
 
-let l1 = 0;
-let l2 = 0;
-let l3 = 0;
+let l1Count=0;
+let l2Count=0;
+let l3Count=0;
 
-// LEVEL 1
-const level1Snap = await db.collection("users")
-.where("referredByUid","==",user.uid)
-.get();
+// Level 1
+const level1Query=query(
+collection(db,"users"),
+where("referredByUid","==",user.uid)
+);
+const level1Snap=await getDocs(level1Query);
+l1Count = level1Snap.size;
+document.getElementById("l1").innerText=l1Count;
 
-l1 = level1Snap.size;
+// Level 2
+for(const l1Doc of level1Snap.docs){
 
-// LEVEL 2
-for(const doc1 of level1Snap.docs){
-  const level2Snap = await db.collection("users")
-  .where("referredByUid","==",doc1.id)
-  .get();
+const level2Query=query(
+collection(db,"users"),
+where("referredByUid","==",l1Doc.id)
+);
+const level2Snap=await getDocs(level2Query);
 
-  l2 += level2Snap.size;
+l2Count += level2Snap.size;
 
-  // LEVEL 3
-  for(const doc2 of level2Snap.docs){
-    const level3Snap = await db.collection("users")
-    .where("referredByUid","==",doc2.id)
-    .get();
+// Level 3
+for(const l2Doc of level2Snap.docs){
 
-    l3 += level3Snap.size;
-  }
+const level3Query=query(
+collection(db,"users"),
+where("referredByUid","==",l2Doc.id)
+);
+const level3Snap=await getDocs(level3Query);
+
+l3Count += level3Snap.size;
+
 }
 
-document.getElementById("l1").innerText = l1;
-document.getElementById("l2").innerText = l2;
-document.getElementById("l3").innerText = l3;
+}
 
-/* ==========================
-   🔥 COMMISSION CALCULATION
-========================== */
+document.getElementById("l2").innerText=l2Count;
+document.getElementById("l3").innerText=l3Count;
 
-let l1Earn = 0;
-let l2Earn = 0;
-let l3Earn = 0;
+/* =====================
+   🔥 LEVEL COMMISSION CALCULATION
+===================== */
 
-const history = userData.commissionHistory || [];
+let l1Earn=0;
+let l2Earn=0;
+let l3Earn=0;
 
-history.forEach(h=>{
-  if(h.level == 1) l1Earn += Number(h.amount || 0);
-  if(h.level == 2) l2Earn += Number(h.amount || 0);
-  if(h.level == 3) l3Earn += Number(h.amount || 0);
+const history=userData.commissionHistory || [];
+
+history.forEach(entry=>{
+if(entry.level===1) l1Earn+=Number(entry.amount||0);
+if(entry.level===2) l2Earn+=Number(entry.amount||0);
+if(entry.level===3) l3Earn+=Number(entry.amount||0);
 });
 
-document.getElementById("l1Earn").innerText = l1Earn.toFixed(2);
-document.getElementById("l2Earn").innerText = l2Earn.toFixed(2);
-document.getElementById("l3Earn").innerText = l3Earn.toFixed(2);
+document.getElementById("l1Earn").innerText=l1Earn.toFixed(2);
+document.getElementById("l2Earn").innerText=l2Earn.toFixed(2);
+document.getElementById("l3Earn").innerText=l3Earn.toFixed(2);
 
-// 🔥 TOTAL REFERRAL EARNINGS DIRECT FROM FIRESTORE
-document.getElementById("totalEarn").innerText =
+/* =====================
+   🔥 TOTAL COMMISSION
+===================== */
+
+document.getElementById("totalEarn").innerText=
 Number(userData.referralEarnings || 0).toFixed(2);
 
 });
