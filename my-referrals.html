@@ -5,13 +5,20 @@
 <title>My Referrals | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <style>
 body{
   margin:0;
   font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
-  padding:20px;
+  padding:15px;
+}
+h2{
+  text-align:center;
 }
 .card{
   background:#1a1a1a;
@@ -37,6 +44,7 @@ button{
   color:#000;
   font-weight:bold;
   cursor:pointer;
+  margin-top:10px;
 }
 button:hover{
   background:#e6c200;
@@ -59,7 +67,7 @@ button:hover{
 <div class="card">
   <b>Full Referral Link</b>
   <div id="fullReferralLink" class="link-box">Loading...</div>
-  <button onclick="copyLink()">Copy</button>
+  <button onclick="copyLink()">Copy Link</button>
 </div>
 
 <div class="card">
@@ -72,88 +80,84 @@ button:hover{
   <div id="list">Loading...</div>
 </div>
 
-<script type="module">
+<script>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+});
 
-const firebaseConfig={
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
-};
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+auth.onAuthStateChanged(async user=>{
 
-onAuthStateChanged(auth, async(user)=>{
+if(!user){
+location.href="login.html";
+return;
+}
 
-  if(!user){
-    location.href="login.html";
-    return;
-  }
+const userDoc = await db.collection("users").doc(user.uid).get();
+if(!userDoc.exists) return;
 
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(!snap.exists()) return;
+const data = userDoc.data();
+const code = data.referralCode || "N/A";
 
-  const data = snap.data();
-  const code = data.referralCode;
+document.getElementById("refCode").innerText = code;
 
-  // Show referral code
-  document.getElementById("refCode").innerText = code;
+const fullLink =
+"https://mysupernft-hash.github.io/signup.html?ref=" + code;
 
-  // Show full referral link
-  const fullLink =
-    "https://mysupernft-hash.github.io/signup.html?ref=" + code;
+document.getElementById("fullReferralLink").innerText = fullLink;
 
-  document.getElementById("fullReferralLink").innerText = fullLink;
+// 🔥 DIRECT QUERY FROM MAIN USERS COLLECTION
+const snapshot = await db.collection("users")
+.where("referredByUid","==",user.uid)
+.get();
 
-  // 🔥 RULE SAFE — Read subcollection
-  const refCol = collection(db,"users",user.uid,"referrals");
-  const refSnap = await getDocs(refCol);
+document.getElementById("count").innerText = snapshot.size;
 
-  document.getElementById("count").innerText = refSnap.size;
+let html="";
 
-  let html="";
+if(snapshot.empty){
+html="No referrals yet.";
+}
+else{
 
-  if(refSnap.empty){
-    html="No referrals yet.";
-  } else {
+snapshot.forEach(doc=>{
 
-    refSnap.forEach(doc=>{
+const u = doc.data();
 
-      const u = doc.data();
+const displayName =
+u.name ||
+(u.email ? u.email.split("@")[0] : "User");
 
-      // ✅ FIXED NAME LOGIC
-      const displayName =
-        u.name ||
-        (u.email ? u.email.split("@")[0] : "User");
+const joinDate =
+u.createdAt && u.createdAt.toDate
+? u.createdAt.toDate().toLocaleString()
+: "-";
 
-      const join =
-        u.joinedAt?.toDate().toLocaleString() || "-";
-
-      html += `
-        <div class="user-box">
-          <b>${displayName}</b><br>
-          ${u.email || ""}<br>
-          <div class="small">Joined: ${join}</div>
-        </div>
-      `;
-    });
-
-  }
-
-  document.getElementById("list").innerHTML = html;
+html+=`
+<div class="user-box">
+<b>${displayName}</b><br>
+${u.email || ""}<br>
+<div class="small">Joined: ${joinDate}</div>
+</div>
+`;
 
 });
 
-// Copy link function
-window.copyLink=function(){
-  const text = document.getElementById("fullReferralLink").innerText;
-  navigator.clipboard.writeText(text);
-  alert("Referral link copied!");
+}
+
+document.getElementById("list").innerHTML = html;
+
+});
+
+function copyLink(){
+const text = document.getElementById("fullReferralLink").innerText;
+navigator.clipboard.writeText(text);
+alert("Referral link copied!");
 }
 
 </script>
