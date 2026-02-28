@@ -2,117 +2,60 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Pro Profit Simulator</title>
+<title>SuperNFT PRO MLM Growth Simulator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#0f0f0f;
-  color:#FFD700;
-}
-header{
-  background:#1a1a1a;
-  padding:15px;
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-}
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
+header{background:#1a1a1a;padding:15px;text-align:center;font-size:18px;font-weight:bold;}
 .container{padding:15px;}
-.card{
-  background:#1a1a1a;
-  padding:15px;
-  border-radius:14px;
-  margin-bottom:15px;
-}
-input,select{
-  width:100%;
-  padding:10px;
-  margin-bottom:10px;
-  border-radius:8px;
-  border:none;
-}
-button{
-  width:100%;
-  padding:12px;
-  background:#FFD700;
-  color:#000;
-  font-weight:bold;
-  border:none;
-  border-radius:10px;
-}
-.row{
-  display:flex;
-  justify-content:space-between;
-  padding:6px 0;
-  border-bottom:1px solid #333;
-}
+.card{background:#1a1a1a;padding:15px;border-radius:14px;margin-bottom:15px;}
+input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;}
+button{width:100%;padding:12px;background:#FFD700;color:#000;font-weight:bold;border:none;border-radius:10px;}
+.row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #333;}
 .green{color:#22c55e;}
-.progress{
-  height:10px;
-  background:#111;
-  border-radius:10px;
-  overflow:hidden;
-  margin-top:5px;
-}
-.bar{
-  height:100%;
-  background:#FFD700;
-  width:0%;
-}
 canvas{background:#111;border-radius:10px;padding:10px;}
+.small{font-size:12px;opacity:0.8;}
 </style>
 </head>
 
 <body>
 
-<header>🚀 SuperNFT Ultimate Profit Simulator</header>
+<header>🚀 SuperNFT PRO MLM Growth Simulator</header>
 
 <div class="container">
 
 <div class="card">
-<h3>Investment Setup</h3>
+<h3>Team Setup</h3>
 
-<input type="number" id="investment" placeholder="NFT Investment Amount ($)">
-<input type="number" id="roi" placeholder="Daily ROI % (example 1.5)">
+<input type="number" id="l1" placeholder="Level 1 Members">
+<input type="number" id="l2" placeholder="Level 2 Members">
+<input type="number" id="l3" placeholder="Level 3 Members">
 
-<select id="compound">
-<option value="simple">Simple Interest</option>
-<option value="daily">Compound Daily</option>
-<option value="monthly">Compound Monthly</option>
-</select>
+<input type="number" id="avg" placeholder="Average Deposit Per Member ($)">
 
-<select id="vip">
-<option value="0">VIP 0 (0% Boost)</option>
-<option value="5">VIP 1 (+5%)</option>
-<option value="8">VIP 2 (+8%)</option>
-<option value="12">VIP 3 (+12%)</option>
-<option value="20">VIP 5 (+20%)</option>
-</select>
-
-<input type="number" id="team" placeholder="Team Members Count">
-<input type="number" id="teamVolume" placeholder="Team Avg Investment ($)">
-
-<button onclick="calculate()">Calculate Profit</button>
+<button onclick="calculate()">Simulate Growth</button>
 </div>
 
 <div class="card">
-<h3>Results</h3>
+<h3>Commission Breakdown</h3>
 
-<div class="row"><span>Daily Income</span><b class="green" id="daily">$0</b></div>
-<div class="row"><span>Monthly Income</span><b class="green" id="monthly">$0</b></div>
-<div class="row"><span>Yearly Income</span><b class="green" id="yearly">$0</b></div>
-<div class="row"><span>Team Commission</span><b class="green" id="teamIncome">$0</b></div>
-<div class="row"><span>Total 365 Days</span><b class="green" id="total">$0</b></div>
-<div class="row"><span>Break Even (Days)</span><b class="green" id="breakeven">0</b></div>
+<div class="row"><span>L1 (20%)</span><b class="green">$<span id="l1Income">0</span></b></div>
+<div class="row"><span>L2 (15%)</span><b class="green">$<span id="l2Income">0</span></b></div>
+<div class="row"><span>L3 (10%)</span><b class="green">$<span id="l3Income">0</span></b></div>
+
+<div class="row"><span>Total Commission</span><b class="green">$<span id="totalIncome">0</span></b></div>
 
 </div>
 
 <div class="card">
-<h3>📈 365 Day Projection</h3>
+<h3>Growth Scenarios</h3>
+<div id="scenarios" class="small"></div>
+</div>
+
+<div class="card">
+<h3>📈 12 Month Projection</h3>
 <canvas id="chart"></canvas>
 </div>
 
@@ -124,53 +67,49 @@ let chart;
 
 function calculate(){
 
-let invest = parseFloat(document.getElementById("investment").value)||0;
-let roi = parseFloat(document.getElementById("roi").value)||0;
-let compoundType = document.getElementById("compound").value;
-let vipBoost = parseFloat(document.getElementById("vip").value)||0;
-let teamMembers = parseFloat(document.getElementById("team").value)||0;
-let teamVolume = parseFloat(document.getElementById("teamVolume").value)||0;
+let l1 = parseFloat(document.getElementById("l1").value)||0;
+let l2 = parseFloat(document.getElementById("l2").value)||0;
+let l3 = parseFloat(document.getElementById("l3").value)||0;
+let avg = parseFloat(document.getElementById("avg").value)||0;
 
-roi = roi + (roi * vipBoost/100);
+// Commission rates
+let L1_RATE = 0.20;
+let L2_RATE = 0.15;
+let L3_RATE = 0.10;
 
-let dailyIncome = invest * roi/100;
-let total = 0;
-let balance = invest;
+// Calculate income
+let l1Income = l1 * avg * L1_RATE;
+let l2Income = l2 * avg * L2_RATE;
+let l3Income = l3 * avg * L3_RATE;
 
+let total = l1Income + l2Income + l3Income;
+
+// Update UI
+document.getElementById("l1Income").innerText = l1Income.toFixed(2);
+document.getElementById("l2Income").innerText = l2Income.toFixed(2);
+document.getElementById("l3Income").innerText = l3Income.toFixed(2);
+document.getElementById("totalIncome").innerText = total.toFixed(2);
+
+// ===== SCENARIOS =====
+
+let teamSizes = [10,20,50,100,500,1000];
+let html = "";
+
+teamSizes.forEach(size=>{
+let scenarioProfit = size * avg * 0.20;
+html += `Team ${size} → $${scenarioProfit.toFixed(0)} potential (L1 only)<br>`;
+});
+
+document.getElementById("scenarios").innerHTML = html;
+
+// ===== PROJECTION CHART =====
+
+let monthlyGrowth = total;
 let dataPoints = [];
 
-for(let i=1;i<=365;i++){
-
-if(compoundType==="simple"){
-total += dailyIncome;
+for(let i=1;i<=12;i++){
+dataPoints.push((monthlyGrowth*i).toFixed(2));
 }
-else if(compoundType==="daily"){
-balance += balance * roi/100;
-total = balance - invest;
-}
-else if(compoundType==="monthly"){
-if(i%30===0){
-balance += balance * roi/100 * 30;
-}
-total = balance - invest;
-}
-
-dataPoints.push(total.toFixed(2));
-}
-
-let teamIncome = teamMembers * teamVolume * 0.05; // 5% team commission
-
-let yearly = total;
-let monthly = yearly/12;
-
-let breakEvenDays = invest/dailyIncome;
-
-document.getElementById("daily").innerText="$"+dailyIncome.toFixed(2);
-document.getElementById("monthly").innerText="$"+monthly.toFixed(2);
-document.getElementById("yearly").innerText="$"+yearly.toFixed(2);
-document.getElementById("teamIncome").innerText="$"+teamIncome.toFixed(2);
-document.getElementById("total").innerText="$"+(yearly+teamIncome).toFixed(2);
-document.getElementById("breakeven").innerText=Math.ceil(breakEvenDays);
 
 drawChart(dataPoints);
 }
@@ -182,9 +121,9 @@ if(chart) chart.destroy();
 chart = new Chart(document.getElementById("chart"),{
 type:"line",
 data:{
-labels:Array.from({length:365},(_,i)=>i+1),
+labels:["1","2","3","4","5","6","7","8","9","10","11","12"],
 datasets:[{
-label:"365 Day Growth",
+label:"12 Month Income",
 data:data,
 borderColor:"#FFD700",
 fill:false
@@ -192,8 +131,7 @@ fill:false
 },
 options:{
 responsive:true,
-plugins:{legend:{display:false}},
-scales:{x:{display:false}}
+plugins:{legend:{display:false}}
 }
 });
 }
