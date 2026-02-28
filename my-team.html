@@ -6,14 +6,49 @@
 <title>My Team | SuperNFT</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#0f0f0f;color:#FFD700;}
-header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-weight:bold;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
+}
+header{
+  background:#1a1a1a;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
 .container{padding:15px;}
-.card{background:#1a1a1a;padding:15px;border-radius:12px;margin-bottom:15px;}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.small-card{background:#111;padding:12px;border-radius:10px;text-align:center;font-size:13px;}
-.small-card span{display:block;font-size:18px;font-weight:bold;margin-top:5px;}
-.big{font-size:20px;font-weight:bold;text-align:center;}
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.small-card{
+  background:#111;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  font-size:13px;
+}
+.small-card span{
+  display:block;
+  font-size:18px;
+  font-weight:bold;
+  margin-top:5px;
+}
+.big{
+  font-size:20px;
+  font-weight:bold;
+  text-align:center;
+}
 </style>
 </head>
 
@@ -23,29 +58,33 @@ header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-wei
 
 <div class="container">
 
+<!-- USER INFO -->
 <div class="card">
-<div id="userName">Loading...</div>
-<div style="font-size:12px;">UID: <span id="uid">---</span></div>
+  <div id="userName">Loading...</div>
+  <div style="font-size:12px;">UID: <span id="uid">---</span></div>
 </div>
 
+<!-- LEVEL STRUCTURE -->
 <div class="card">
 <h3>Level Structure</h3>
 <div class="grid-3">
-<div class="small-card">L1 (20%)<span id="l1">0</span></div>
-<div class="small-card">L2 (15%)<span id="l2">0</span></div>
-<div class="small-card">L3 (10%)<span id="l3">0</span></div>
+  <div class="small-card">L1 (20%)<span id="l1">0</span></div>
+  <div class="small-card">L2 (15%)<span id="l2">0</span></div>
+  <div class="small-card">L3 (10%)<span id="l3">0</span></div>
 </div>
 </div>
 
+<!-- LEVEL COMMISSION -->
 <div class="card">
 <h3>Level Wise Commission Earned</h3>
 <div class="grid-3">
-<div class="small-card">L1 Earned<span>$<span id="l1Earn">0.00</span></span></div>
-<div class="small-card">L2 Earned<span>$<span id="l2Earn">0.00</span></span></div>
-<div class="small-card">L3 Earned<span>$<span id="l3Earn">0.00</span></span></div>
+  <div class="small-card">L1 Earned<span>$<span id="l1Earn">0.00</span></span></div>
+  <div class="small-card">L2 Earned<span>$<span id="l2Earn">0.00</span></span></div>
+  <div class="small-card">L3 Earned<span>$<span id="l3Earn">0.00</span></span></div>
 </div>
 </div>
 
+<!-- TOTAL -->
 <div class="card">
 <h3>Total Referral Earnings</h3>
 <div class="big">$<span id="totalEarn">0.00</span></div>
@@ -53,112 +92,95 @@ header{background:#1a1a1a;padding:15px;text-align:center;font-size:20px;font-wei
 
 </div>
 
+<!-- Firebase -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig={
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
+const firebaseConfig = {
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-onAuthStateChanged(auth, async(user)=>{
+onAuthStateChanged(auth, async (user)=>{
 
-if(!user){
-location.href="login.html";
-return;
-}
+  if(!user){
+    window.location.href="login.html";
+    return;
+  }
 
-document.getElementById("uid").innerText=user.uid;
+  document.getElementById("uid").innerText = user.uid;
 
-const userRef=doc(db,"users",user.uid);
-const snap=await getDoc(userRef);
-if(!snap.exists()) return;
+  const userSnap = await getDoc(doc(db,"users",user.uid));
+  if(!userSnap.exists()) return;
 
-const userData=snap.data();
+  const userData = userSnap.data();
 
-document.getElementById("userName").innerText=
-userData.name || user.email;
+  document.getElementById("userName").innerText =
+    userData.name || user.email;
 
-/* =====================
-   🔥 LEVEL STRUCTURE COUNT
-===================== */
+  /* =========================
+     LEVEL STRUCTURE COUNT
+  ========================== */
 
-let l1Count=0;
-let l2Count=0;
-let l3Count=0;
+  let l1Docs = [];
+  let l2Docs = [];
+  let l3Docs = [];
 
-// Level 1
-const level1Query=query(
-collection(db,"users"),
-where("referredByUid","==",user.uid)
-);
-const level1Snap=await getDocs(level1Query);
-l1Count = level1Snap.size;
-document.getElementById("l1").innerText=l1Count;
+  // LEVEL 1
+  const q1 = query(collection(db,"users"),
+                   where("referredByUid","==",user.uid));
+  const snap1 = await getDocs(q1);
+  l1Docs = snap1.docs;
+  document.getElementById("l1").innerText = l1Docs.length;
 
-// Level 2
-for(const l1Doc of level1Snap.docs){
+  // LEVEL 2
+  for(const doc1 of l1Docs){
+    const q2 = query(collection(db,"users"),
+                     where("referredByUid","==",doc1.id));
+    const snap2 = await getDocs(q2);
+    l2Docs.push(...snap2.docs);
+  }
+  document.getElementById("l2").innerText = l2Docs.length;
 
-const level2Query=query(
-collection(db,"users"),
-where("referredByUid","==",l1Doc.id)
-);
-const level2Snap=await getDocs(level2Query);
+  // LEVEL 3
+  for(const doc2 of l2Docs){
+    const q3 = query(collection(db,"users"),
+                     where("referredByUid","==",doc2.id));
+    const snap3 = await getDocs(q3);
+    l3Docs.push(...snap3.docs);
+  }
+  document.getElementById("l3").innerText = l3Docs.length;
 
-l2Count += level2Snap.size;
+  /* =========================
+     LEVEL COMMISSION CALC
+  ========================== */
 
-// Level 3
-for(const l2Doc of level2Snap.docs){
+  let l1Earn = 0;
+  let l2Earn = 0;
+  let l3Earn = 0;
 
-const level3Query=query(
-collection(db,"users"),
-where("referredByUid","==",l2Doc.id)
-);
-const level3Snap=await getDocs(level3Query);
+  const history = userData.commissionHistory || [];
 
-l3Count += level3Snap.size;
+  history.forEach(h=>{
+    if(Number(h.level) === 1) l1Earn += Number(h.amount || 0);
+    if(Number(h.level) === 2) l2Earn += Number(h.amount || 0);
+    if(Number(h.level) === 3) l3Earn += Number(h.amount || 0);
+  });
 
-}
+  document.getElementById("l1Earn").innerText = l1Earn.toFixed(2);
+  document.getElementById("l2Earn").innerText = l2Earn.toFixed(2);
+  document.getElementById("l3Earn").innerText = l3Earn.toFixed(2);
 
-}
-
-document.getElementById("l2").innerText=l2Count;
-document.getElementById("l3").innerText=l3Count;
-
-/* =====================
-   🔥 LEVEL COMMISSION CALCULATION
-===================== */
-
-let l1Earn=0;
-let l2Earn=0;
-let l3Earn=0;
-
-const history=userData.commissionHistory || [];
-
-history.forEach(entry=>{
-if(entry.level===1) l1Earn+=Number(entry.amount||0);
-if(entry.level===2) l2Earn+=Number(entry.amount||0);
-if(entry.level===3) l3Earn+=Number(entry.amount||0);
-});
-
-document.getElementById("l1Earn").innerText=l1Earn.toFixed(2);
-document.getElementById("l2Earn").innerText=l2Earn.toFixed(2);
-document.getElementById("l3Earn").innerText=l3Earn.toFixed(2);
-
-/* =====================
-   🔥 TOTAL COMMISSION
-===================== */
-
-document.getElementById("totalEarn").innerText=
-Number(userData.referralEarnings || 0).toFixed(2);
+  document.getElementById("totalEarn").innerText =
+    Number(userData.referralEarnings || 0).toFixed(2);
 
 });
 
