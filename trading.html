@@ -1,142 +1,241 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT Trading</title>
 
+<script src="https://s3.tradingview.com/tv.js"></script>
+
 <style>
-body {
-    margin: 0;
-    background-color: #000000;
-    font-family: Arial, sans-serif;
-    color: #ffffff;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
+  overflow:hidden;
 }
 
-/* NAVBAR */
-nav {
-    background-color: #0a0a0a;
-    padding: 18px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #d4af37;
+header{
+  background:#111;
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #333;
 }
 
-nav .logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #d4af37;
-    letter-spacing: 1px;
+.symbol-box{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 25px;
-    margin: 0;
+#symbolName{
+  font-weight:bold;
+  font-size:18px;
 }
 
-nav ul li a {
-    text-decoration: none;
-    color: #ffffff;
-    font-size: 16px;
-    transition: 0.3s;
+#livePrice{
+  color:#00ff66;
+  font-weight:bold;
 }
 
-nav ul li a:hover {
-    color: #d4af37;
+.search-box{
+  padding:6px;
+  border-radius:6px;
+  border:none;
+  width:140px;
 }
 
-.active {
-    color: #d4af37;
-    font-weight: bold;
+button{
+  padding:6px 10px;
+  background:#FFD700;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-/* HEADER */
-header {
-    text-align: center;
-    padding: 60px 20px 20px 20px;
+.container{
+  display:flex;
+  height:calc(100vh - 60px);
 }
 
-h1 {
-    font-size: 40px;
-    margin-bottom: 10px;
-    color: #d4af37;
+.chart-area{
+  flex:3;
 }
 
-p {
-    color: #bbbbbb;
+.watchlist{
+  flex:1;
+  background:#111;
+  border-left:1px solid #333;
+  overflow-y:auto;
+  padding:10px;
 }
 
-/* SECTION */
-.section {
-    max-width: 1200px;
-    margin: auto;
-    padding: 20px;
+.watch-item{
+  padding:8px;
+  border-bottom:1px solid #222;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
 }
 
-/* FOOTER */
-footer {
-    margin-top: 60px;
-    padding: 25px;
-    text-align: center;
-    color: #888;
-    font-size: 14px;
-    border-top: 1px solid #d4af37;
+.watch-item:hover{
+  background:#1a1a1a;
+}
+
+.green{color:#00ff66;}
+.red{color:#ff4d4d;}
+
+@media(max-width:900px){
+  .watchlist{display:none;}
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
-<nav>
-    <div class="logo">SuperNFT</div>
-    <ul>
-        <li><a href="trading.html" class="active">Trading</a></li>
-    </ul>
-</nav>
 <header>
-<h1>SuperNFT Crypto Trading</h1>
-<p>Premium Real-Time Crypto Market Dashboard</p>
+
+<div class="symbol-box">
+  <div id="symbolName">BTCUSDT</div>
+  <div id="livePrice">$...</div>
+</div>
+
+<div>
+  <input type="text" id="searchInput" class="search-box" placeholder="Search e.g. ETHUSDT">
+  <button onclick="searchSymbol()">Search</button>
+</div>
+
 </header>
 
-<div class="section">
+<div class="container">
 
-<!-- ADVANCED CHART -->
-<div id="tradingview_chart" style="height:600px;"></div>
+<div class="chart-area">
+  <div id="tradingview_chart" style="height:100%;"></div>
+</div>
 
-<script src="https://s3.tradingview.com/tv.js"></script>
+<div class="watchlist" id="watchlist">
+  <h3>Watchlist</h3>
+</div>
+
+</div>
+
 <script>
-new TradingView.widget({
+
+let currentSymbol = "BTCUSDT";
+let widget;
+
+// 🔥 Load TradingView Chart
+function loadChart(symbol){
+
+  currentSymbol = symbol;
+  document.getElementById("symbolName").innerText = symbol;
+
+  if(widget) widget.remove();
+
+  widget = new TradingView.widget({
     "width": "100%",
-    "height": 600,
-    "symbol": "BINANCE:BTCUSDT",
-    "interval": "D",
+    "height": "100%",
+    "symbol": "BINANCE:" + symbol,
+    "interval": "15",
     "timezone": "Etc/UTC",
     "theme": "dark",
     "style": "1",
     "locale": "en",
+    "toolbar_bg": "#111",
     "enable_publishing": false,
-    "allow_symbol_change": true,
-    "watchlist": [
-        "BINANCE:BTCUSDT",
-        "BINANCE:ETHUSDT",
-        "BINANCE:BNBUSDT",
-        "BINANCE:SOLUSDT",
-        "BINANCE:XRPUSDT",
-        "BINANCE:ADAUSDT"
-    ],
+    "hide_top_toolbar": false,
     "container_id": "tradingview_chart"
-});
+  });
+
+  loadPrice();
+}
+
+// 🔎 Search Function
+function searchSymbol(){
+  const input = document.getElementById("searchInput").value.toUpperCase();
+  if(!input) return;
+  loadChart(input);
+}
+
+// 💰 Live Price Fetch
+async function loadPrice(){
+
+  try{
+    const res = await fetch(
+      "https://api.binance.com/api/v3/ticker/price?symbol=" + currentSymbol
+    );
+
+    const data = await res.json();
+    document.getElementById("livePrice").innerText =
+      "$" + parseFloat(data.price).toFixed(4);
+
+  }catch(e){
+    document.getElementById("livePrice").innerText="N/A";
+  }
+
+}
+
+setInterval(loadPrice,5000);
+
+// ⭐ Default Watchlist Coins
+const coins = [
+"BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT",
+"XRPUSDT","DOGEUSDT","ADAUSDT","AVAXUSDT",
+"DOTUSDT","MATICUSDT","TRXUSDT","LINKUSDT"
+];
+
+function loadWatchlist(){
+
+  const list = document.getElementById("watchlist");
+
+  coins.forEach(symbol=>{
+
+    const div = document.createElement("div");
+    div.className="watch-item";
+    div.innerHTML = `
+      <span>${symbol}</span>
+      <span id="price-${symbol}">...</span>
+    `;
+
+    div.onclick = ()=>loadChart(symbol);
+    list.appendChild(div);
+
+    fetchPrice(symbol);
+  });
+
+}
+
+// 📊 Watchlist Price
+async function fetchPrice(symbol){
+
+  try{
+    const res = await fetch(
+      "https://api.binance.com/api/v3/ticker/price?symbol=" + symbol
+    );
+
+    const data = await res.json();
+    document.getElementById("price-"+symbol).innerText =
+      parseFloat(data.price).toFixed(3);
+
+  }catch(e){
+    document.getElementById("price-"+symbol).innerText="--";
+  }
+
+}
+
+setInterval(()=>{
+  coins.forEach(fetchPrice);
+},7000);
+
+// 🚀 Init
+loadChart("BTCUSDT");
+loadWatchlist();
+
 </script>
-
-</div>
-
-<footer>
-© 2026 SuperNFT | Black & Gold Edition
-</footer>
 
 </body>
 </html>
