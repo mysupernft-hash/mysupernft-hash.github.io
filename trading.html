@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Trading</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperNFT Trading</title>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 
@@ -13,26 +13,20 @@ body{
   font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
+  overflow:hidden;
 }
 
-/* HEADER */
+/* ===== HEADER ===== */
 header{
   background:#111;
-  padding:12px 15px;
+  padding:12px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  flex-wrap:wrap;
-  border-bottom:1px solid #222;
+  border-bottom:1px solid #333;
 }
 
-.brand{
-  font-size:18px;
-  font-weight:bold;
-  color:#FFD700;
-}
-
-.symbol-section{
+.symbol-box{
   display:flex;
   align-items:center;
   gap:10px;
@@ -49,65 +43,83 @@ header{
 }
 
 .search-box{
-  padding:6px 10px;
+  padding:6px;
   border-radius:6px;
   border:none;
-  outline:none;
+  width:140px;
 }
 
 button{
   padding:6px 10px;
+  background:#FFD700;
   border:none;
   border-radius:6px;
-  background:#FFD700;
   font-weight:bold;
   cursor:pointer;
 }
 
-button:hover{
-  background:#e6c200;
-}
-
-/* CHART */
-#chart{
-  height:75vh;
-}
-
-/* WATCHLIST */
-.watchlist{
-  background:#111;
-  padding:10px;
+.container{
   display:flex;
-  overflow-x:auto;
-  gap:10px;
-  border-top:1px solid #222;
+  height:calc(100vh - 70px);
 }
 
-.coin{
-  padding:6px 12px;
-  background:#1a1a1a;
-  border-radius:6px;
+.chart-area{
+  flex:3;
+}
+
+.watchlist{
+  flex:1;
+  background:#111;
+  border-left:1px solid #333;
+  overflow-y:auto;
+  padding:10px;
+}
+
+.watch-item{
+  padding:8px;
+  border-bottom:1px solid #222;
   cursor:pointer;
-  white-space:nowrap;
+  display:flex;
+  justify-content:space-between;
 }
 
-.coin:hover{
-  background:#333;
+.watch-item:hover{
+  background:#1a1a1a;
+}
+
+@media(max-width:900px){
+  .watchlist{display:none;}
 }
 </style>
 </head>
+
 <body>
 
 <header>
 
-<div>
-  <div class="brand">🚀 SuperNFT Trading</div>
-  <div class="symbol-section">
-    <div id="symbolName">BTCUSDT</div>
-    <div id="livePrice">$0.00</div>
+<!-- LEFT SIDE -->
+<div style="display:flex;flex-direction:column;">
+
+  <!-- 🔥 BRAND -->
+  <div style="
+    font-size:20px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#FFD700,#ffffff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+  ">
+    🚀 SuperNFT Trading
   </div>
+
+  <!-- SYMBOL + PRICE -->
+  <div class="symbol-box" style="margin-top:4px;">
+    <div id="symbolName">BTCUSDT</div>
+    <div id="livePrice">$...</div>
+  </div>
+
 </div>
 
+<!-- RIGHT SIDE -->
 <div>
   <input type="text" id="searchInput" class="search-box" placeholder="Search e.g. ETHUSDT">
   <button onclick="searchSymbol()">Search</button>
@@ -115,17 +127,16 @@ button:hover{
 
 </header>
 
-<div id="chart"></div>
+<div class="container">
 
-<!-- WATCHLIST -->
-<div class="watchlist">
-  <div class="coin" onclick="loadChart('BTCUSDT')">BTCUSDT</div>
-  <div class="coin" onclick="loadChart('ETHUSDT')">ETHUSDT</div>
-  <div class="coin" onclick="loadChart('BNBUSDT')">BNBUSDT</div>
-  <div class="coin" onclick="loadChart('SOLUSDT')">SOLUSDT</div>
-  <div class="coin" onclick="loadChart('XRPUSDT')">XRPUSDT</div>
-  <div class="coin" onclick="loadChart('ADAUSDT')">ADAUSDT</div>
-  <div class="coin" onclick="loadChart('DOGEUSDT')">DOGEUSDT</div>
+<div class="chart-area">
+  <div id="tradingview_chart" style="height:100%;"></div>
+</div>
+
+<div class="watchlist" id="watchlist">
+  <h3>Watchlist</h3>
+</div>
+
 </div>
 
 <script>
@@ -133,60 +144,97 @@ button:hover{
 let currentSymbol = "BTCUSDT";
 let widget;
 
-/* LOAD CHART */
+// ===== LOAD CHART =====
 function loadChart(symbol){
 
-  currentSymbol = symbol.toUpperCase();
-  document.getElementById("symbolName").innerText = currentSymbol;
+  currentSymbol = symbol;
+  document.getElementById("symbolName").innerText = symbol;
 
   if(widget) widget.remove();
 
   widget = new TradingView.widget({
-    container_id: "chart",
-    autosize: true,
-    symbol: "BINANCE:" + currentSymbol,
-    interval: "15",
-    timezone: "Etc/UTC",
-    theme: "dark",
-    style: "1",
-    locale: "en",
-    toolbar_bg: "#111",
-    enable_publishing: false,
-    hide_top_toolbar: false,
-    hide_legend: false,
-    save_image: false
+    "width": "100%",
+    "height": "100%",
+    "symbol": "BINANCE:" + symbol,
+    "interval": "15",
+    "timezone": "Etc/UTC",
+    "theme": "dark",
+    "style": "1",
+    "locale": "en",
+    "toolbar_bg": "#111",
+    "enable_publishing": false,
+    "container_id": "tradingview_chart"
   });
 
-  loadLivePrice();
+  loadPrice();
 }
 
-/* SEARCH FUNCTION */
+// ===== SEARCH =====
 function searchSymbol(){
-  const val = document.getElementById("searchInput").value.trim();
-  if(val){
-    loadChart(val);
+  const input = document.getElementById("searchInput").value.toUpperCase();
+  if(!input) return;
+  loadChart(input);
+}
+
+// ===== LIVE PRICE =====
+async function loadPrice(){
+  try{
+    const res = await fetch(
+      "https://api.binance.com/api/v3/ticker/price?symbol=" + currentSymbol
+    );
+    const data = await res.json();
+    document.getElementById("livePrice").innerText =
+      "$" + parseFloat(data.price).toFixed(4);
+  }catch(e){
+    document.getElementById("livePrice").innerText="N/A";
   }
 }
 
-/* LIVE PRICE */
-function loadLivePrice(){
+setInterval(loadPrice,5000);
 
-  fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${currentSymbol}`)
-  .then(res=>res.json())
-  .then(data=>{
-    const price = parseFloat(data.price).toFixed(4);
-    document.getElementById("livePrice").innerText = "$"+price;
-  })
-  .catch(()=>{});
+// ===== WATCHLIST =====
+const coins = [
+"BTCUSDT","ETHUSDT","BNBUSDT","SOLUSDT",
+"XRPUSDT","DOGEUSDT","ADAUSDT","AVAXUSDT",
+"DOTUSDT","MATICUSDT","TRXUSDT","LINKUSDT"
+];
+
+function loadWatchlist(){
+  const list = document.getElementById("watchlist");
+
+  coins.forEach(symbol=>{
+    const div = document.createElement("div");
+    div.className="watch-item";
+    div.innerHTML = `
+      <span>${symbol}</span>
+      <span id="price-${symbol}">...</span>
+    `;
+    div.onclick = ()=>loadChart(symbol);
+    list.appendChild(div);
+    fetchPrice(symbol);
+  });
 }
 
-/* AUTO UPDATE PRICE */
-setInterval(()=>{
-  loadLivePrice();
-},3000);
+async function fetchPrice(symbol){
+  try{
+    const res = await fetch(
+      "https://api.binance.com/api/v3/ticker/price?symbol=" + symbol
+    );
+    const data = await res.json();
+    document.getElementById("price-"+symbol).innerText =
+      parseFloat(data.price).toFixed(3);
+  }catch(e){
+    document.getElementById("price-"+symbol).innerText="--";
+  }
+}
 
-/* DEFAULT LOAD */
+setInterval(()=>{
+  coins.forEach(fetchPrice);
+},7000);
+
+// ===== INIT =====
 loadChart("BTCUSDT");
+loadWatchlist();
 
 </script>
 
