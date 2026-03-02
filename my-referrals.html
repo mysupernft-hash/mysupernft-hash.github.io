@@ -11,24 +11,32 @@ body{
   font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
-  padding:20px;
+  padding:15px;
 }
+
+h2{
+  text-align:center;
+}
+
 .card{
   background:#1a1a1a;
   padding:15px;
   border-radius:12px;
   margin-bottom:15px;
 }
+
 .user-box{
   background:#111;
   padding:10px;
   border-radius:8px;
   margin-top:10px;
 }
+
 .small{
   font-size:12px;
   color:#ccc;
 }
+
 button{
   padding:8px 12px;
   border:none;
@@ -38,13 +46,23 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
+
 button:hover{
   background:#e6c200;
 }
+
 .link-box{
   word-break:break-all;
   margin-top:8px;
 }
+
+.stat{
+  font-size:20px;
+  font-weight:bold;
+  text-align:center;
+  margin-top:5px;
+}
+
 </style>
 
 <!-- Firebase -->
@@ -70,7 +88,7 @@ button:hover{
 
 <div class="card">
   <b>Total Referrals</b>
-  <div id="count">0</div>
+  <div id="count" class="stat">0</div>
 </div>
 
 <div class="card">
@@ -89,12 +107,18 @@ projectId:"supernft-5b952"
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-auth.onAuthStateChanged(async user=>{
+auth.onAuthStateChanged(user=>{
 
 if(!user){
 location.href="login.html";
 return;
 }
+
+loadReferrals(user);
+
+});
+
+async function loadReferrals(user){
 
 const userDoc = await db.collection("users").doc(user.uid).get();
 if(!userDoc.exists) return;
@@ -102,43 +126,45 @@ if(!userDoc.exists) return;
 const data = userDoc.data();
 const referralCode = data.referralCode;
 
-// Show code
+// Show referral code
 document.getElementById("refCode").innerText = referralCode;
 
-// Full link
-const fullLink =
+// Show full link
+document.getElementById("fullReferralLink").innerText =
 "https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
 
-document.getElementById("fullReferralLink").innerText = fullLink;
 
-// 🔥 MAIN FIX SYSTEM
+// 🔥 Real-time listener for ALL users
+db.collection("users").onSnapshot(snapshot=>{
 
-let allRefs = new Map(); // Prevent duplicates
+let allRefs = new Map();
 
-// 1️⃣ UID Based (New System)
-const uidSnap = await db.collection("users")
-.where("referredByUid","==",user.uid)
-.get();
+snapshot.forEach(doc=>{
 
-uidSnap.forEach(doc=>{
-allRefs.set(doc.id, doc.data());
+const u = doc.data();
+
+// NEW SYSTEM (UID Based)
+if(u.referredByUid === user.uid){
+allRefs.set(doc.id, u);
+}
+
+// OLD SYSTEM (Code Based)
+if(u.referredBy === referralCode){
+allRefs.set(doc.id, u);
+}
+
 });
 
-// 2️⃣ Code Based (Old System)
-const codeSnap = await db.collection("users")
-.where("referredBy","==",referralCode)
-.get();
-
-codeSnap.forEach(doc=>{
-allRefs.set(doc.id, doc.data());
-});
-
-// Convert map to array
 const referrals = Array.from(allRefs.values());
+
+// Sort newest first
+referrals.sort((a,b)=>{
+if(!a.createdAt || !b.createdAt) return 0;
+return b.createdAt.seconds - a.createdAt.seconds;
+});
 
 document.getElementById("count").innerText = referrals.length;
 
-// Build UI
 let html="";
 
 if(referrals.length===0){
@@ -171,7 +197,10 @@ document.getElementById("list").innerHTML = html;
 
 });
 
-// Copy
+}
+
+
+// Copy link
 function copyLink(){
 const text = document.getElementById("fullReferralLink").innerText;
 navigator.clipboard.writeText(text);
