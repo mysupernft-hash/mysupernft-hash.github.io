@@ -14,9 +14,7 @@ body{
   padding:15px;
 }
 
-h2{
-  text-align:center;
-}
+h2{text-align:center;}
 
 .card{
   background:#1a1a1a;
@@ -48,9 +46,7 @@ button{
   margin-top:8px;
 }
 
-button:hover{
-  background:#e6c200;
-}
+button:hover{background:#e6c200;}
 
 .link-box{
   word-break:break-all;
@@ -58,13 +54,15 @@ button:hover{
 }
 
 .stat{
-  font-size:20px;
+  font-size:22px;
   font-weight:bold;
   text-align:center;
-  margin-top:5px;
 }
 
-/* MODAL */
+.clickable{
+  cursor:pointer;
+}
+
 #detailModal{
   display:none;
   position:fixed;
@@ -84,11 +82,6 @@ button:hover{
   border-radius:12px;
   width:90%;
   max-width:350px;
-  color:#FFD700;
-}
-
-.clickable{
-  cursor:pointer;
 }
 
 </style>
@@ -104,42 +97,38 @@ button:hover{
 <h2>👥 My Referrals</h2>
 
 <div class="card">
-  <b>Your Referral Code</b>
-  <div id="refCode">Loading...</div>
+<b>Your Referral Code</b>
+<div id="refCode">Loading...</div>
 </div>
 
 <div class="card">
-  <b>Full Referral Link</b>
-  <div id="fullReferralLink" class="link-box">Loading...</div>
-  <button onclick="copyLink()">Copy</button>
+<b>Full Referral Link</b>
+<div id="fullReferralLink" class="link-box">Loading...</div>
+<button onclick="copyLink()">Copy</button>
 </div>
 
 <div class="card">
-  <b>Total Referrals</b>
-  <div id="count" class="stat">0</div>
+<b>Total Referrals</b>
+<div id="count" class="stat">0</div>
 </div>
 
 <div class="card">
-  <b>Referral Users</b>
-  <div id="list">Loading...</div>
+<b>Referral Users</b>
+<div id="list">Loading...</div>
 </div>
 
 
-<!-- 🔥 DETAIL MODAL -->
+<!-- DETAIL MODAL -->
 <div id="detailModal">
   <div class="modal-box">
-
-    <h3 id="detailName">User Details</h3>
-
+    <h3 id="detailName"></h3>
     <div style="line-height:1.8;margin-top:10px;">
       Daily Income: $<span id="detailDaily">0</span><br>
       Total Deposit: $<span id="detailDeposit">0</span><br>
       Wallet Balance: $<span id="detailWallet">0</span><br>
       Referral Income: $<span id="detailReferral">0</span>
     </div>
-
-    <button onclick="closeModal()" style="width:100%;">Close</button>
-
+    <button style="width:100%;" onclick="closeModal()">Close</button>
   </div>
 </div>
 
@@ -155,15 +144,14 @@ projectId:"supernft-5b952"
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-auth.onAuthStateChanged(user=>{
+let referralCache = {}; // 🔥 RULE SAFE CACHE
 
+auth.onAuthStateChanged(user=>{
 if(!user){
 location.href="login.html";
 return;
 }
-
 loadReferrals(user);
-
 });
 
 async function loadReferrals(user){
@@ -174,15 +162,13 @@ if(!userDoc.exists) return;
 const data = userDoc.data();
 const referralCode = data.referralCode;
 
-// Show code
 document.getElementById("refCode").innerText = referralCode;
 
-// Full link
 document.getElementById("fullReferralLink").innerText =
 "https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
 
 
-// 🔥 Real-time system
+// 🔥 Real-time safe system
 db.collection("users").onSnapshot(snapshot=>{
 
 let allRefs = new Map();
@@ -206,15 +192,10 @@ allRefs.set(doc.id, u);
 const referrals = Array.from(allRefs.entries())
 .map(([id,data])=>({id,...data}));
 
-// Sort newest first
-referrals.sort((a,b)=>{
-if(!a.createdAt || !b.createdAt) return 0;
-return b.createdAt.seconds - a.createdAt.seconds;
-});
-
 document.getElementById("count").innerText = referrals.length;
 
 let html="";
+referralCache = {}; // reset cache
 
 if(referrals.length===0){
 html="No referrals yet.";
@@ -223,9 +204,10 @@ else{
 
 referrals.forEach(u=>{
 
+referralCache[u.id] = u; // 🔥 store locally
+
 const displayName =
-u.name ||
-(u.email ? u.email.split("@")[0] : "User");
+u.name || (u.email ? u.email.split("@")[0] : "User");
 
 const join =
 u.createdAt?.toDate().toLocaleString() || "-";
@@ -239,7 +221,6 @@ ${u.email || ""}<br>
 <div class="small">Joined: ${join}</div>
 </div>
 `;
-
 });
 
 }
@@ -247,25 +228,30 @@ ${u.email || ""}<br>
 document.getElementById("list").innerHTML = html;
 
 });
-
 }
 
 
-// 🔥 SHOW DETAILS
+// 🔥 RULE SAFE DETAIL FUNCTION
 function showDetails(uid){
 
-db.collection("users").doc(uid).get()
-.then(snap=>{
+const d = referralCache[uid];
+if(!d) return;
 
-if(!snap.exists) return;
+const daily =
+(d.dailyIncome && d.dailyIncome > 0)
+? d.dailyIncome
+: (d.liveEarnings || 0);
 
-const d = snap.data();
+const referral =
+(d.referralEarnings && d.referralEarnings > 0)
+? d.referralEarnings
+: (d.totalIncome || 0);
 
 document.getElementById("detailName").innerText =
 d.name || d.email;
 
 document.getElementById("detailDaily").innerText =
-(d.dailyIncome || 0).toFixed(2);
+Number(daily).toFixed(2);
 
 document.getElementById("detailDeposit").innerText =
 (d.totalDeposit || 0).toFixed(2);
@@ -274,19 +260,15 @@ document.getElementById("detailWallet").innerText =
 (d.walletBalance || 0).toFixed(2);
 
 document.getElementById("detailReferral").innerText =
-(d.referralEarnings || 0).toFixed(2);
+Number(referral).toFixed(2);
 
 document.getElementById("detailModal").style.display="flex";
-
-});
-
 }
 
 function closeModal(){
 document.getElementById("detailModal").style.display="none";
 }
 
-// Copy
 function copyLink(){
 const text = document.getElementById("fullReferralLink").innerText;
 navigator.clipboard.writeText(text);
