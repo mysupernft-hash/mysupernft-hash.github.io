@@ -402,7 +402,7 @@ if(data.verified === true){
 let referral = data.referralEarnings || 0;
 
 // 🔥 SAME FORMULA as daily.html
-let dailyIncome = (wallet * 0.025) + referral;
+let dailyIncome = data.dailyIncome || ((wallet * 0.025) + referral);
 
   // ⏳ First time setup
   if(!data.lastIncomeAt){
