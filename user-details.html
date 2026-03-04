@@ -32,6 +32,7 @@ tr{background:#111;}
 <h2>👤 User Details</h2>
 
 <div class="card">
+
 <label>Wallet</label>
 <input id="wallet">
 
@@ -40,6 +41,9 @@ tr{background:#111;}
 
 <label>Referral Earnings</label>
 <input id="referral">
+
+<label>Daily Income</label>
+<input id="daily">
 
 <label>Level</label>
 <input id="level">
@@ -59,6 +63,7 @@ tr{background:#111;}
 <option value="false">No</option>
 <option value="true">Yes</option>
 </select>
+
 </div>
 
 <!-- 💎 NFT SECTION -->
@@ -146,6 +151,7 @@ function loadUserData(){
     wallet.value = u.walletBalance || 0;
     deposit.value = u.totalDeposit || 0;
     referral.value = u.referralEarnings || 0;
+    daily.value = u.dailyIncome || 0;   // ✅ DAILY INCOME LOAD
     level.value = u.level || 0;
     live.value = u.liveEarnings || 0;
     role.value = u.role || "user";
@@ -273,6 +279,7 @@ function saveUser(){
     walletBalance:Number(wallet.value),
     totalDeposit:Number(deposit.value),
     referralEarnings:Number(referral.value),
+    dailyIncome:Number(daily.value),   // ✅ DAILY INCOME SAVE
     level:Number(level.value),
     liveEarnings:Number(live.value),
     role:role.value,
