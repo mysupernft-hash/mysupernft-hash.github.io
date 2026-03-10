@@ -144,7 +144,7 @@ footer div:hover{color:#e0c200;}
   <div style="display:flex;align-items:center;gap:6px;font-weight:bold;">
     👤 Welcome,
     <span id="userEmail" style="color:#FFD700;">User</span>
-    <span id="verifiedTick" class="verified-badge" style="display:inline-flex;">✔</span>
+    <span id="verifiedTick" class="verified-badge" style="display:inline-flex;cursor:pointer;" onclick="openRank()">✔</span>
   </div>
 
   <!-- RIGHT SIDE -->
@@ -268,6 +268,9 @@ overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay
 function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
 
 /* OpenPage */
+  window.openRank = function(){
+  window.location.href = "my-rank.html";
+};
 window.openPage = function(page){
   switch(page){
       case "trading":
