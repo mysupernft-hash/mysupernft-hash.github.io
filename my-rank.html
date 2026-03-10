@@ -19,15 +19,16 @@ color:#FFD700;
 padding:20px;
 }
 
-h2{
-text-align:center;
-}
-
 .card{
 background:#1a1a1a;
 padding:20px;
 border-radius:12px;
 margin-bottom:15px;
+text-align:center;
+}
+
+h2{
+margin-top:0;
 text-align:center;
 }
 
@@ -42,79 +43,30 @@ font-weight:bold;
 display:inline-flex;
 align-items:center;
 justify-content:center;
-width:24px;
-height:24px;
+width:22px;
+height:22px;
 border-radius:50%;
 background:linear-gradient(145deg,#FFD700,#e6c200);
 font-size:14px;
 font-weight:bold;
+box-shadow:0 0 10px #FFD700;
 margin-left:6px;
 }
 
 / LEVEL COLORS /
 
-.level1{color:#ffffff;}
-.level2{color:#000000;}
-.level3{color:#2196F3;}
-.level4{color:#00ff66;}
-.level5{color:#9C27B0;}
+.level1{color:#ffffff;}       / Starter /
+.level2{color:#cd7f32;}       / Bronze /
+.level3{color:#C0C0C0;}       / Silver /
+.level4{color:#FFD700;}       / Gold /
+.level5{color:#e5e4e2;}       / Platinum /
+.level6{color:#00FFFF;}       / Sapphire /
+.level7{color:#00ff66;}       / Emerald /
+.level8{color:#ff0033;}       / Ruby /
+.level9{color:#ff9800;}       / Elite /
+.level10{color:#00ffff;}      / Diamond /
 
-.level6{
-color:#00BCD4;
-animation:glowBlue 2s infinite alternate;
-}
-
-.level7{
-color:#00ff00;
-animation:pulseGreen 2s infinite;
-}
-
-.level8{
-color:#ff0033;
-animation:glowRed 1.5s infinite alternate;
-}
-
-.level9{
-color:#ff9800;
-animation:shine 3s infinite;
-}
-
-.level10{
-color:#00ffff;
-text-shadow:0 0 10px #00ffff;
-animation:diamondGlow 1.5s infinite alternate;
-}
-
-/ ANIMATIONS /
-
-@keyframes glowBlue{
-from{box-shadow:0 0 5px #00BCD4;}
-to{box-shadow:0 0 20px #00BCD4;}
-}
-
-@keyframes pulseGreen{
-0%{transform:scale(1);}
-50%{transform:scale(1.2);}
-100%{transform:scale(1);}
-}
-
-@keyframes glowRed{
-from{box-shadow:0 0 5px #ff0033;}
-to{box-shadow:0 0 20px #ff0033;}
-}
-
-@keyframes shine{
-0%{filter:brightness(1);}
-50%{filter:brightness(1.8);}
-100%{filter:brightness(1);}
-}
-
-@keyframes diamondGlow{
-from{box-shadow:0 0 10px #00ffff;}
-to{box-shadow:0 0 25px #00ffff;}
-}
-
-/ PROGRESS BAR /
+/ PROGRESS /
 
 .progress{
 height:12px;
@@ -131,7 +83,12 @@ width:0%;
 transition:0.5s;
 }
 
-/ ROW /
+/ LEVEL TABLE */
+
+.level-table{
+text-align:left;
+font-size:14px;
+}
 
 .row{
 display:flex;
@@ -155,7 +112,9 @@ Level <span id="userLevel">1</span>
 </div>
 
 <div style="margin-top:10px;">
-Next Level in <b id="nextCount">0</b> Referrals
+Next Level in
+<b id="nextCount">0</b>
+Referrals
 </div>
 
 <div class="progress">
@@ -180,7 +139,7 @@ Next Level in <b id="nextCount">0</b> Referrals
 
 </div>
 
-<div class="card">
+<div class="card level-table">
 
 <h3>Rank System</h3>
 
@@ -223,8 +182,6 @@ const ranks=[
 
 const targets=[0,3,7,15,25,35,50,65,80,100];
 
-/ LEVEL FUNCTION /
-
 function getLevel(ref){
 
 if(ref>=100) return 10;
@@ -240,8 +197,6 @@ if(ref>=3) return 2;
 return 1;
 
 }
-
-/ UPDATE UI */
 
 function updateLevelUI(referrals){
 
@@ -268,14 +223,12 @@ remaining>0 ? remaining : 0;
 const prevTarget = targets[level-1] || 0;
 
 const progress =
-((referrals-prevTarget)/(nextTarget-prevTarget))100;
+((referrals-prevTarget)/(nextTarget-prevTarget))*100;
 
 document.getElementById("levelBar").style.width =
 Math.min(progress,100)+"%";
 
 }
-
-/ FIREBASE LOAD /
 
 auth.onAuthStateChanged(async user=>{
 
@@ -286,15 +239,11 @@ return;
 
 let totalRef=0;
 
-/ UID SYSTEM /
-
 const snap = await db.collection("users")
 .where("referredByUid","==",user.uid)
 .get();
 
 totalRef = snap.size;
-
-/ CODE SYSTEM */
 
 const userDoc =
 await db.collection("users").doc(user.uid).get();
