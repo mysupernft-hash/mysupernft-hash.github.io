@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>My Level | SuperNFT</title>
+<title>My Rank | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -19,6 +19,10 @@ color:#FFD700;
 padding:20px;
 }
 
+h2{
+text-align:center;
+}
+
 .card{
 background:#1a1a1a;
 padding:20px;
@@ -27,49 +31,90 @@ margin-bottom:15px;
 text-align:center;
 }
 
-h2{
-margin-top:0;
-}
-
 .big{
 font-size:28px;
 font-weight:bold;
 }
 
-/* LEVEL BADGE */
+/* BADGE /
 
 .rank-badge{
 display:inline-flex;
 align-items:center;
 justify-content:center;
-width:22px;
-height:22px;
+width:24px;
+height:24px;
 border-radius:50%;
 background:linear-gradient(145deg,#FFD700,#e6c200);
 font-size:14px;
 font-weight:bold;
-box-shadow:0 0 10px #FFD700;
 margin-left:6px;
 }
 
-/* LEVEL COLORS */
+/ LEVEL COLORS /
 
 .level1{color:#ffffff;}
 .level2{color:#000000;}
 .level3{color:#2196F3;}
 .level4{color:#00ff66;}
 .level5{color:#9C27B0;}
-.level6{color:#00BCD4;}
-.level7{color:#00ff00;}
-.level8{color:#ff0033;}
-.level9{color:#ff9800;}
+
+.level6{
+color:#00BCD4;
+animation:glowBlue 2s infinite alternate;
+}
+
+.level7{
+color:#00ff00;
+animation:pulseGreen 2s infinite;
+}
+
+.level8{
+color:#ff0033;
+animation:glowRed 1.5s infinite alternate;
+}
+
+.level9{
+color:#ff9800;
+animation:shine 3s infinite;
+}
 
 .level10{
 color:#00ffff;
-text-shadow:0 0 8px #00ffff;
+text-shadow:0 0 10px #00ffff;
+animation:diamondGlow 1.5s infinite alternate;
 }
 
-/* PROGRESS */
+/ ANIMATIONS /
+
+@keyframes glowBlue{
+from{box-shadow:0 0 5px #00BCD4;}
+to{box-shadow:0 0 20px #00BCD4;}
+}
+
+@keyframes pulseGreen{
+0%{transform:scale(1);}
+50%{transform:scale(1.2);}
+100%{transform:scale(1);}
+}
+
+@keyframes glowRed{
+from{box-shadow:0 0 5px #ff0033;}
+to{box-shadow:0 0 20px #ff0033;}
+}
+
+@keyframes shine{
+0%{filter:brightness(1);}
+50%{filter:brightness(1.8);}
+100%{filter:brightness(1);}
+}
+
+@keyframes diamondGlow{
+from{box-shadow:0 0 10px #00ffff;}
+to{box-shadow:0 0 25px #00ffff;}
+}
+
+/ PROGRESS BAR /
 
 .progress{
 height:12px;
@@ -86,12 +131,7 @@ width:0%;
 transition:0.5s;
 }
 
-/* LEVEL TABLE */
-
-.level-table{
-text-align:left;
-font-size:14px;
-}
+/ ROW /
 
 .row{
 display:flex;
@@ -100,28 +140,22 @@ padding:6px 0;
 border-bottom:1px solid #333;
 }
 
-.green{
-color:#00ff66;
-}
-
 </style>
 </head>
 
 <body>
 
-<h2>🏆 My Level</h2>
+<h2>🏆 My Rank</h2>
 
 <div class="card">
 
 <div class="big">
 Level <span id="userLevel">1</span>
-<span id="rankBadge" class="rank-badge level1">✔</span>
+<span id="rankBadge" class="rank-badge level1">✓</span>
 </div>
 
 <div style="margin-top:10px;">
-Next Level in
-<b id="nextCount">0</b>
-Referrals
+Next Level in <b id="nextCount">0</b> Referrals
 </div>
 
 <div class="progress">
@@ -146,9 +180,9 @@ Referrals
 
 </div>
 
-<div class="card level-table">
+<div class="card">
 
-<h3>Level System</h3>
+<h3>Rank System</h3>
 
 <div class="row"><span>Starter</span><span>0 Referrals</span></div>
 <div class="row"><span>Bronze</span><span>3 Referrals</span></div>
@@ -165,8 +199,6 @@ Referrals
 
 <script>
 
-/* FIREBASE */
-
 firebase.initializeApp({
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
 authDomain:"supernft-5b952.firebaseapp.com",
@@ -175,8 +207,6 @@ projectId:"supernft-5b952"
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-
-/* LEVEL SYSTEM */
 
 const ranks=[
 "Starter",
@@ -193,7 +223,7 @@ const ranks=[
 
 const targets=[0,3,7,15,25,35,50,65,80,100];
 
-/* GET LEVEL */
+/ LEVEL FUNCTION /
 
 function getLevel(ref){
 
@@ -211,7 +241,7 @@ return 1;
 
 }
 
-/* UPDATE UI */
+/ UPDATE UI */
 
 function updateLevelUI(referrals){
 
@@ -228,8 +258,6 @@ ranks[level-1];
 document.getElementById("refCount").innerText =
 referrals;
 
-/* NEXT LEVEL */
-
 const nextTarget = targets[level] || 100;
 
 const remaining = nextTarget - referrals;
@@ -237,19 +265,17 @@ const remaining = nextTarget - referrals;
 document.getElementById("nextCount").innerText =
 remaining>0 ? remaining : 0;
 
-/* PROGRESS */
-
 const prevTarget = targets[level-1] || 0;
 
 const progress =
-((referrals-prevTarget)/(nextTarget-prevTarget))*100;
+((referrals-prevTarget)/(nextTarget-prevTarget))100;
 
 document.getElementById("levelBar").style.width =
 Math.min(progress,100)+"%";
 
 }
 
-/* FIREBASE LOAD */
+/ FIREBASE LOAD /
 
 auth.onAuthStateChanged(async user=>{
 
@@ -260,7 +286,7 @@ return;
 
 let totalRef=0;
 
-/* UID SYSTEM */
+/ UID SYSTEM /
 
 const snap = await db.collection("users")
 .where("referredByUid","==",user.uid)
@@ -268,7 +294,7 @@ const snap = await db.collection("users")
 
 totalRef = snap.size;
 
-/* CODE SYSTEM (backup) */
+/ CODE SYSTEM */
 
 const userDoc =
 await db.collection("users").doc(user.uid).get();
@@ -281,8 +307,6 @@ await db.collection("users")
 .get();
 
 totalRef = Math.max(totalRef, codeSnap.size);
-
-/* UPDATE */
 
 updateLevelUI(totalRef);
 
