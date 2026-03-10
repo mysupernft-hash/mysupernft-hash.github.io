@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My Level | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#0f0f0f;
+color:#FFD700;
+padding:20px;
+}
+
+.card{
+background:#1a1a1a;
+padding:20px;
+border-radius:12px;
+margin-bottom:15px;
+text-align:center;
+}
+
+h2{
+margin-top:0;
+}
+
+.big{
+font-size:28px;
+font-weight:bold;
+}
+
+/* LEVEL BADGE */
+
+.rank-badge{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+width:22px;
+height:22px;
+border-radius:50%;
+background:linear-gradient(145deg,#FFD700,#e6c200);
+font-size:14px;
+font-weight:bold;
+box-shadow:0 0 10px #FFD700;
+margin-left:6px;
+}
+
+/* LEVEL COLORS */
+
+.level1{color:#ffffff;}
+.level2{color:#000000;}
+.level3{color:#2196F3;}
+.level4{color:#00ff66;}
+.level5{color:#9C27B0;}
+.level6{color:#00BCD4;}
+.level7{color:#00ff00;}
+.level8{color:#ff0033;}
+.level9{color:#ff9800;}
+
+.level10{
+color:#00ffff;
+text-shadow:0 0 8px #00ffff;
+}
+
+/* PROGRESS */
+
+.progress{
+height:12px;
+background:#111;
+border-radius:10px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.progress-bar{
+height:100%;
+background:#FFD700;
+width:0%;
+transition:0.5s;
+}
+
+/* LEVEL TABLE */
+
+.level-table{
+text-align:left;
+font-size:14px;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+padding:6px 0;
+border-bottom:1px solid #333;
+}
+
+.green{
+color:#00ff66;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>🏆 My Level</h2>
+
+<div class="card">
+
+<div class="big">
+Level <span id="userLevel">1</span>
+<span id="rankBadge" class="rank-badge level1">✔</span>
+</div>
+
+<div style="margin-top:10px;">
+Next Level in
+<b id="nextCount">0</b>
+Referrals
+</div>
+
+<div class="progress">
+<div class="progress-bar" id="levelBar"></div>
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>Your Stats</h3>
+
+<div class="row">
+<span>Total Referrals</span>
+<span id="refCount">0</span>
+</div>
+
+<div class="row">
+<span>Current Rank</span>
+<span id="rankName">Starter</span>
+</div>
+
+</div>
+
+<div class="card level-table">
+
+<h3>Level System</h3>
+
+<div class="row"><span>Starter</span><span>0 Referrals</span></div>
+<div class="row"><span>Bronze</span><span>3 Referrals</span></div>
+<div class="row"><span>Silver</span><span>7 Referrals</span></div>
+<div class="row"><span>Gold</span><span>15 Referrals</span></div>
+<div class="row"><span>Platinum</span><span>25 Referrals</span></div>
+<div class="row"><span>Sapphire</span><span>35 Referrals</span></div>
+<div class="row"><span>Emerald</span><span>50 Referrals</span></div>
+<div class="row"><span>Ruby</span><span>65 Referrals</span></div>
+<div class="row"><span>Elite</span><span>80 Referrals</span></div>
+<div class="row"><span>Diamond</span><span>100 Referrals</span></div>
+
+</div>
+
+<script>
+
+/* FIREBASE */
+
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* LEVEL SYSTEM */
+
+const ranks=[
+"Starter",
+"Bronze",
+"Silver",
+"Gold",
+"Platinum",
+"Sapphire",
+"Emerald",
+"Ruby",
+"Elite",
+"Diamond"
+];
+
+const targets=[0,3,7,15,25,35,50,65,80,100];
+
+/* GET LEVEL */
+
+function getLevel(ref){
+
+if(ref>=100) return 10;
+if(ref>=80) return 9;
+if(ref>=65) return 8;
+if(ref>=50) return 7;
+if(ref>=35) return 6;
+if(ref>=25) return 5;
+if(ref>=15) return 4;
+if(ref>=7) return 3;
+if(ref>=3) return 2;
+
+return 1;
+
+}
+
+/* UPDATE UI */
+
+function updateLevelUI(referrals){
+
+const level = getLevel(referrals);
+
+document.getElementById("userLevel").innerText = level;
+
+document.getElementById("rankBadge").className =
+"rank-badge level"+level;
+
+document.getElementById("rankName").innerText =
+ranks[level-1];
+
+document.getElementById("refCount").innerText =
+referrals;
+
+/* NEXT LEVEL */
+
+const nextTarget = targets[level] || 100;
+
+const remaining = nextTarget - referrals;
+
+document.getElementById("nextCount").innerText =
+remaining>0 ? remaining : 0;
+
+/* PROGRESS */
+
+const prevTarget = targets[level-1] || 0;
+
+const progress =
+((referrals-prevTarget)/(nextTarget-prevTarget))*100;
+
+document.getElementById("levelBar").style.width =
+Math.min(progress,100)+"%";
+
+}
+
+/* FIREBASE LOAD */
+
+auth.onAuthStateChanged(async user=>{
+
+if(!user){
+location.href="login.html";
+return;
+}
+
+let totalRef=0;
+
+/* UID SYSTEM */
+
+const snap = await db.collection("users")
+.where("referredByUid","==",user.uid)
+.get();
+
+totalRef = snap.size;
+
+/* CODE SYSTEM (backup) */
+
+const userDoc =
+await db.collection("users").doc(user.uid).get();
+
+const code = userDoc.data().referralCode;
+
+const codeSnap =
+await db.collection("users")
+.where("referredBy","==",code)
+.get();
+
+totalRef = Math.max(totalRef, codeSnap.size);
+
+/* UPDATE */
+
+updateLevelUI(totalRef);
+
+});
+
+</script>
+
+</body>
+</html>
