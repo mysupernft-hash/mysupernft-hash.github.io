@@ -19,16 +19,15 @@ color:#FFD700;
 padding:20px;
 }
 
+h2{
+text-align:center;
+}
+
 .card{
 background:#1a1a1a;
 padding:20px;
 border-radius:12px;
 margin-bottom:15px;
-text-align:center;
-}
-
-h2{
-margin-top:0;
 text-align:center;
 }
 
@@ -43,30 +42,65 @@ font-weight:bold;
 display:inline-flex;
 align-items:center;
 justify-content:center;
-width:22px;
-height:22px;
+width:24px;
+height:24px;
 border-radius:50%;
-background:linear-gradient(145deg,#FFD700,#e6c200);
 font-size:14px;
 font-weight:bold;
-box-shadow:0 0 10px #FFD700;
 margin-left:6px;
+color:white;
 }
 
 / LEVEL COLORS /
 
-.level1{color:#ffffff;}       / Starter /
-.level2{color:#cd7f32;}       / Bronze /
-.level3{color:#C0C0C0;}       / Silver /
-.level4{color:#FFD700;}       / Gold /
-.level5{color:#e5e4e2;}       / Platinum /
-.level6{color:#00FFFF;}       / Sapphire /
-.level7{color:#00ff66;}       / Emerald /
-.level8{color:#ff0033;}       / Ruby /
-.level9{color:#ff9800;}       / Elite /
-.level10{color:#00ffff;}      / Diamond /
+.level1{
+background:#444;
+}
 
-/ PROGRESS /
+.level2{
+background:#cd7f32;
+}
+
+.level3{
+background:#C0C0C0;
+color:black;
+}
+
+.level4{
+background:#FFD700;
+color:black;
+}
+
+.level5{
+background:#e5e4e2;
+color:black;
+}
+
+.level6{
+background:#00BCD4;
+}
+
+.level7{
+background:#00ff66;
+color:black;
+}
+
+.level8{
+background:#ff0033;
+}
+
+.level9{
+background:#ff9800;
+color:black;
+}
+
+.level10{
+background:#00ffff;
+color:black;
+box-shadow:0 0 12px #00ffff;
+}
+
+/ PROGRESS BAR /
 
 .progress{
 height:12px;
@@ -83,12 +117,7 @@ width:0%;
 transition:0.5s;
 }
 
-/ LEVEL TABLE */
-
-.level-table{
-text-align:left;
-font-size:14px;
-}
+/ ROW /
 
 .row{
 display:flex;
@@ -112,9 +141,7 @@ Level <span id="userLevel">1</span>
 </div>
 
 <div style="margin-top:10px;">
-Next Level in
-<b id="nextCount">0</b>
-Referrals
+Next Level in <b id="nextCount">0</b> Referrals
 </div>
 
 <div class="progress">
@@ -139,7 +166,7 @@ Referrals
 
 </div>
 
-<div class="card level-table">
+<div class="card">
 
 <h3>Rank System</h3>
 
@@ -181,6 +208,8 @@ const ranks=[
 ];
 
 const targets=[0,3,7,15,25,35,50,65,80,100];
+
+/ LEVEL SYSTEM */
 
 function getLevel(ref){
 
