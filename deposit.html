@@ -155,6 +155,53 @@ auth.onAuthStateChanged(user=>{
   }
 });
 
+  async function approveDeposit(requestId){
+
+const reqRef = db.collection("depositRequests").doc(requestId);
+const reqSnap = await reqRef.get();
+const req = reqSnap.data();
+
+const userRef = db.collection("users").doc(req.userId);
+const userSnap = await userRef.get();
+const user = userSnap.data();
+
+let wallet = user.walletBalance || 0;
+let deposit = user.totalDeposit || 0;
+let bonusGiven = user.welcomeBonusGiven || false;
+
+// deposit add
+wallet += req.amount;
+deposit += req.amount;
+
+// first deposit bonus
+if(!bonusGiven){
+
+wallet += 5;
+
+await userRef.update({
+walletBalance: wallet,
+totalDeposit: deposit,
+welcomeBonusGiven: true
+});
+
+}else{
+
+await userRef.update({
+walletBalance: wallet,
+totalDeposit: deposit
+});
+
+}
+
+// request approved
+await reqRef.update({
+status:"approved"
+});
+
+alert("Deposit Approved Successfully");
+
+}
+
 function copyWallet(){
   const text = document.getElementById("wallet").innerText;
   navigator.clipboard.writeText(text);
