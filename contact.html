@@ -5,23 +5,85 @@
 <title>SuperNFT | Contact Us</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="favicon.ico">
+
 <style>
-body{background:#020617;color:#e5e7eb;font-family:Arial;margin:0;padding:20px;}
-h1{color:#38bdf8;text-align:center;}
-.container{max-width:500px;margin:auto;background:#0f172a;padding:20px;border-radius:12px;}
-input,textarea,button{
-width:100%;padding:10px;margin:8px 0;
-border-radius:8px;border:none;
+body{
+background:#020617;
+color:#e5e7eb;
+font-family:Arial;
+margin:0;
+padding:20px;
 }
-input,textarea{background:#020617;color:white;}
-button{background:#38bdf8;color:#020617;font-weight:bold;cursor:pointer;}
-button:hover{background:#0ea5e9;}
-.info{text-align:center;font-size:14px;color:#94a3b8;margin-top:10px;}
+
+h1{
+color:#38bdf8;
+text-align:center;
+}
+
+.container{
+max-width:500px;
+margin:auto;
+background:#0f172a;
+padding:20px;
+border-radius:12px;
+}
+
+input,textarea,button{
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:8px;
+border:none;
+}
+
+input,textarea{
+background:#020617;
+color:white;
+}
+
+button{
+background:#38bdf8;
+color:#020617;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:#0ea5e9;
+}
+
+.info{
+text-align:center;
+font-size:14px;
+color:#94a3b8;
+margin-top:10px;
+}
+
+.telegram-btn{
+display:block;
+text-align:center;
+background:#229ED9;
+color:white;
+padding:12px;
+border-radius:10px;
+font-weight:bold;
+text-decoration:none;
+margin-top:12px;
+transition:0.3s;
+}
+
+.telegram-btn:hover{
+background:#1d8ec4;
+transform:scale(1.03);
+}
+
 </style>
 </head>
+
 <body>
 
 <div class="container">
+
 <h1>Contact Us</h1>
 
 <form onsubmit="sendMsg(event)">
@@ -32,16 +94,36 @@ button:hover{background:#0ea5e9;}
 </form>
 
 <div class="info">
-📧 Email: <b>mysupernft@gmail.com</b><br>
+
+<h3>📲 SuperNFT Telegram Network</h3>
+
+<a href="https://t.me/Supernftcrypto" target="_blank" class="telegram-btn">
+📢 Join Official Channel
+</a>
+
+<a href="https://t.me/supernftofficialgroup" target="_blank" class="telegram-btn">
+👥 Join Official Group
+</a>
+
+<a href="https://t.me/mysupernft" target="_blank" class="telegram-btn">
+🛠 Contact Website Support
+</a>
+
+<br>
+
 ⏱ Support Time: 24/7
+
 </div>
+
 </div>
 
 <script>
+
 function sendMsg(e){
-  e.preventDefault();
-  alert("✅ Message sent successfully! Our team will contact you soon.");
+e.preventDefault();
+alert("✅ Message sent! Please contact us via Telegram for faster support.");
 }
+
 </script>
 
 </body>
