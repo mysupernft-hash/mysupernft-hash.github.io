@@ -190,6 +190,7 @@ footer div:hover{color:#e0c200;}
   <button onclick="openPage('team')">👥 My Team</button>
   <button onclick="openPage('level')">📊 My Level</button>
   <button onclick="openPage('calculator')">📈 Calculator</button>
+  <button onclick="openPage('contact')">📞 Contact Support</button>
   <button onclick="openPage('settings')">⚙️ Settings</button>
   <button onclick="location.href='logout.html'">🔒 Logout</button>
 </div>
@@ -291,6 +292,9 @@ window.openPage = function(page){
     case "team": window.location.href="my-team.html"; break;
     case "level": window.location.href="my-level.html"; break;
     case "calculator": window.location.href="calculator.html"; break;
+      case "contact":
+  window.location.href="contact.html";
+break;
     case "settings": window.location.href="settings.html"; break;
     default: alert("Page not found");
   }
