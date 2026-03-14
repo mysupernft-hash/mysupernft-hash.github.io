@@ -449,10 +449,12 @@ if(data.verified === true){
   document.getElementById("verifiedTick").style.display = "none";
 }
 
-  let wallet = data.walletBalance || 0;
-  // ❌ Stop mining if no deposit
+  let wallet = data.walletBalance ||
+    // Welcome bonus only after deposit
 if(totalDeposit <= 0){
-
+wallet = 0;
+}
+  
 document.getElementById("dailyIncome").innerText="$0.00";
 document.getElementById("liveEarnings").innerText="$0.00";
 
