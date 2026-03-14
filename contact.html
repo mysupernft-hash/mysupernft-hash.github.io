@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>SuperNFT | Contact Us</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="favicon.ico">
 
 <style>
 body{
@@ -18,6 +17,7 @@ padding:20px;
 h1{
 color:#38bdf8;
 text-align:center;
+margin-bottom:20px;
 }
 
 .container{
@@ -26,6 +26,7 @@ margin:auto;
 background:#0f172a;
 padding:20px;
 border-radius:12px;
+box-shadow:0 0 20px rgba(0,0,0,0.6);
 }
 
 input,textarea,button{
@@ -34,6 +35,7 @@ padding:10px;
 margin:8px 0;
 border-radius:8px;
 border:none;
+font-size:14px;
 }
 
 input,textarea{
@@ -46,6 +48,7 @@ background:#38bdf8;
 color:#020617;
 font-weight:bold;
 cursor:pointer;
+transition:0.2s;
 }
 
 button:hover{
@@ -56,7 +59,7 @@ background:#0ea5e9;
 text-align:center;
 font-size:14px;
 color:#94a3b8;
-margin-top:10px;
+margin-top:20px;
 }
 
 .telegram-btn{
@@ -76,7 +79,6 @@ transition:0.3s;
 background:#1d8ec4;
 transform:scale(1.03);
 }
-
 </style>
 </head>
 
@@ -86,11 +88,20 @@ transform:scale(1.03);
 
 <h1>Contact Us</h1>
 
-<form onsubmit="sendMsg(event)">
-<input type="text" placeholder="Your Name" required>
-<input type="email" placeholder="Your Email" required>
-<textarea rows="4" placeholder="Your Message" required></textarea>
+<form action="https://formsubmit.co/mysuper.nft@protonmail.com" method="POST">
+
+<input type="text" name="name" placeholder="Your Name" required>
+
+<input type="email" name="email" placeholder="Your Email" required>
+
+<textarea name="message" rows="4" placeholder="Your Message" required></textarea>
+
 <button type="submit">Send Message</button>
+
+<p style="text-align:center;font-size:14px;color:#94a3b8;">If the form does not work you can contact us directly at <b>mysuper.nft@protonmail.com</b></p>
+
+<input type="hidden" name="_captcha" value="false">
+
 </form>
 
 <div class="info">
@@ -116,15 +127,6 @@ transform:scale(1.03);
 </div>
 
 </div>
-
-<script>
-
-function sendMsg(e){
-e.preventDefault();
-alert("✅ Message sent! Please contact us via Telegram for faster support.");
-}
-
-</script>
 
 </body>
 </html>
