@@ -450,6 +450,18 @@ if(data.verified === true){
 }
 
   let wallet = data.walletBalance || 0;
+  // ❌ Stop mining if no deposit
+if(totalDeposit <= 0){
+
+document.getElementById("dailyIncome").innerText="$0.00";
+document.getElementById("liveEarnings").innerText="$0.00";
+
+document.getElementById("walletBalanceP").innerText="$"+wallet.toFixed(2);
+document.getElementById("walletBalanceTop").innerText="$"+wallet.toFixed(2);
+
+return;
+
+}
 
 // 🔥 SAME FORMULA as daily.html
 let dailyIncome = data.dailyIncome || (wallet * 0.025);
