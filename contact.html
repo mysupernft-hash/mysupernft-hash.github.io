@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+
 body{
 background:#020617;
 color:#e5e7eb;
@@ -48,18 +49,10 @@ background:#38bdf8;
 color:#020617;
 font-weight:bold;
 cursor:pointer;
-transition:0.2s;
 }
 
 button:hover{
 background:#0ea5e9;
-}
-
-.info{
-text-align:center;
-font-size:14px;
-color:#94a3b8;
-margin-top:20px;
 }
 
 .telegram-btn{
@@ -72,13 +65,12 @@ border-radius:10px;
 font-weight:bold;
 text-decoration:none;
 margin-top:12px;
-transition:0.3s;
 }
 
 .telegram-btn:hover{
 background:#1d8ec4;
-transform:scale(1.03);
 }
+
 </style>
 </head>
 
@@ -88,7 +80,7 @@ transform:scale(1.03);
 
 <h1>Contact Us</h1>
 
-<form action="https://formsubmit.co/mysuper.nft@protonmail.com" method="POST">
+<form id="contactForm">
 
 <input type="text" name="name" placeholder="Your Name" required>
 
@@ -98,15 +90,13 @@ transform:scale(1.03);
 
 <button type="submit">Send Message</button>
 
-<p style="text-align:center;font-size:14px;color:#94a3b8;">If the form does not work you can contact us directly at <b>mysuper.nft@protonmail.com</b></p>
-
-<input type="hidden" name="_captcha" value="false">
+<p style="text-align:center;font-size:14px;color:#94a3b8;">
+If the form does not work contact us at <b>mysuper.nft@protonmail.com</b>
+</p>
 
 </form>
 
-<div class="info">
-
-<h3>📲 SuperNFT Telegram Network</h3>
+<h3 style="text-align:center;margin-top:25px;">📲 SuperNFT Telegram Network</h3>
 
 <a href="https://t.me/Supernftcrypto" target="_blank" class="telegram-btn">
 📢 Join Official Channel
@@ -120,13 +110,32 @@ transform:scale(1.03);
 🛠 Contact Website Support
 </a>
 
-<br>
-
-⏱ Support Time: 24/7
-
 </div>
 
-</div>
+<script>
+
+document.getElementById("contactForm").addEventListener("submit",function(e){
+
+e.preventDefault();
+
+const formData = new FormData(this);
+
+fetch("https://formsubmit.co/ajax/mysuper.nft@protonmail.com",{
+method:"POST",
+body:formData
+})
+.then(response => response.json())
+.then(data=>{
+alert("✅ Message sent successfully!");
+document.getElementById("contactForm").reset();
+})
+.catch(error=>{
+alert("❌ Error sending message.");
+});
+
+});
+
+</script>
 
 </body>
 </html>
