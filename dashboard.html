@@ -450,10 +450,9 @@ if(data.verified === true){
 }
 
   let wallet = data.walletBalance || 0;
-let referral = data.referralEarnings || 0;
 
 // 🔥 SAME FORMULA as daily.html
-let dailyIncome = data.dailyIncome || ((wallet * 0.025) + referral);
+let dailyIncome = data.dailyIncome || (wallet * 0.025);
 
   // ⏳ First time setup
   if(!data.lastIncomeAt){
