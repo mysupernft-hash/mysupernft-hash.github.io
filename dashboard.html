@@ -449,17 +449,18 @@ if(data.verified === true){
   document.getElementById("verifiedTick").style.display = "none";
 }
 
-  let wallet = data.walletBalance ||
-    // Welcome bonus only after deposit
-if(totalDeposit <= 0){
-wallet = 0;
-}
-  
-document.getElementById("dailyIncome").innerText="$0.00";
-document.getElementById("liveEarnings").innerText="$0.00";
+  let wallet = data.walletBalance || 0;
 
-document.getElementById("walletBalanceP").innerText="$"+wallet.toFixed(2);
-document.getElementById("walletBalanceTop").innerText="$"+wallet.toFixed(2);
+// ❌ Deposit se pehle kuch bhi show nahi hoga
+if(totalDeposit <= 0){
+
+wallet = 0;
+
+document.getElementById("dailyIncome").innerText = "$0.00";
+document.getElementById("liveEarnings").innerText = "$0.00";
+
+document.getElementById("walletBalanceP").innerText = "$0.00";
+document.getElementById("walletBalanceTop").innerText = "$0.00";
 
 return;
 
