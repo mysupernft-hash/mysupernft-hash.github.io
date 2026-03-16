@@ -266,7 +266,15 @@ document.querySelector(".menu-toggle").addEventListener("click",()=>{sidebar.cla
 overlay.addEventListener("click",()=>{sidebar.classList.remove("active");overlay.classList.remove("active");});
 
 /* Logout */
-function logout(){signOut(auth).then(()=>window.location.replace("login.html"));}
+function logout(){
+
+localStorage.removeItem("adminPreviewUID");
+
+signOut(auth).then(()=>{
+window.location.replace("login.html");
+});
+
+}
 
 /* OpenPage */
   window.openRank = function(){
@@ -425,7 +433,7 @@ onAuthStateChanged(auth, async (user) => {
 
   // 🔥 Show Name Instead of Email
 
-  const userRef = doc(db,"users",user.uid);
+  const userRef = doc(db,"users", previewUID ? previewUID : user.uid);
   const snap = await getDoc(userRef);
 
   if(!snap.exists()) return;
