@@ -433,7 +433,10 @@ onAuthStateChanged(auth, async (user) => {
 
   // 🔥 Show Name Instead of Email
 
-  const userRef = doc(db,"users", previewUID ? previewUID : user.uid);
+  // Admin preview mode
+let previewUID = localStorage.getItem("adminPreviewUID");
+
+const userRef = doc(db,"users", previewUID ? previewUID : user.uid);
   const snap = await getDoc(userRef);
 
   if(!snap.exists()) return;
