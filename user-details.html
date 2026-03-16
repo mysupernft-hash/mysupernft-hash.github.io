@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <meta charset="UTF-8">
 <title>User Details | SuperNFT Admin</title>
@@ -10,20 +11,78 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;background:#0d0d0d;color:#FFD700;padding:15px;}
-.card{background:#111;padding:15px;border-radius:10px;margin-bottom:15px;}
-input,select{
-width:100%;padding:8px;margin-top:5px;margin-bottom:10px;
-border:none;border-radius:6px;background:#1a1a1a;color:#FFD700;
+
+body{
+margin:0;
+font-family:Arial;
+background:#0d0d0d;
+color:#FFD700;
+padding:15px;
 }
-button{padding:10px 14px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;}
-.saveBtn{background:#FFD700;color:black;width:100%;margin-top:20px;}
-.deleteBtn{background:red;color:white;}
-.addBtn{background:#333;color:#FFD700;margin-top:10px;}
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{padding:8px;text-align:center;}
-th{background:#1a1a1a;}
-tr{background:#111;}
+
+.card{
+background:#111;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+}
+
+input,select{
+width:100%;
+padding:8px;
+margin-top:5px;
+margin-bottom:10px;
+border:none;
+border-radius:6px;
+background:#1a1a1a;
+color:#FFD700;
+}
+
+button{
+padding:10px 14px;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.saveBtn{
+background:#FFD700;
+color:black;
+width:100%;
+margin-top:20px;
+}
+
+.deleteBtn{
+background:red;
+color:white;
+}
+
+.addBtn{
+background:#333;
+color:#FFD700;
+margin-top:10px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th,td{
+padding:8px;
+text-align:center;
+}
+
+th{
+background:#1a1a1a;
+}
+
+tr{
+background:#111;
+}
+
 </style>
 </head>
 
@@ -66,7 +125,6 @@ tr{background:#111;}
 
 </div>
 
-<!-- 👥 REFERRAL INFO -->
 <div class="card">
 
 <h3>👥 Referral Information</h3>
@@ -90,8 +148,8 @@ tr{background:#111;}
 
 </div>
 
-<!-- 💎 NFT SECTION -->
 <div class="card">
+
 <h3>🖼 Purchased NFTs</h3>
 
 <table>
@@ -101,17 +159,21 @@ tr{background:#111;}
 <th>Delete</th>
 </tr>
 </thead>
+
 <tbody id="nftTable"></tbody>
+
 </table>
 
 <button onclick="addNFT()" class="addBtn">Add NFT</button>
+
 </div>
 
-<!-- 💸 WITHDRAW SECTION -->
 <div class="card">
+
 <h3>💸 Withdraw History</h3>
 
 <table>
+
 <thead>
 <tr>
 <th>Requested</th>
@@ -120,10 +182,13 @@ tr{background:#111;}
 <th>Delete</th>
 </tr>
 </thead>
+
 <tbody id="withdrawTable"></tbody>
+
 </table>
 
 <button onclick="addWithdraw()" class="addBtn">Add Withdraw</button>
+
 </div>
 
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
@@ -145,7 +210,11 @@ const uid = params.get("uid");
 let withdrawHistory = [];
 let purchasedNFTs = [];
 
-/* NFT PRICES */
+let walletBase = 0;
+let totalDepositBase = 0;
+let lastIncomeAt = 0;
+let dailyIncomeCalc = 0;
+
 const NFT_PRICES = [
 10,15,20,25,30,35,40,45,50,
 55,60,65,70,75,80,90,100,
@@ -153,14 +222,16 @@ const NFT_PRICES = [
 499,599,699,799,899,999
 ];
 
-/* AUTH */
 auth.onAuthStateChanged(user=>{
+
 if(!user){
 alert("Login required");
 window.location.href="admin-login.html";
 return;
 }
+
 loadUserData();
+
 });
 
 function loadUserData(){
@@ -180,193 +251,54 @@ referral.value = u.referralEarnings || 0;
 daily.value = u.dailyIncome || 0;
 level.value = u.level || 0;
 live.value = u.liveEarnings || 0;
+
 role.value = u.role || "user";
 verified.value = u.verified ? "true" : "false";
+
+walletBase = u.walletBalance || 0;
+totalDepositBase = u.totalDeposit || 0;
+
+dailyIncomeCalc = totalDepositBase * 0.025;
+
+if(u.lastIncomeAt){
+lastIncomeAt = u.lastIncomeAt.toMillis();
+}else{
+lastIncomeAt = Date.now();
+}
 
 withdrawHistory = u.withdrawHistory || [];
 purchasedNFTs = u.purchasedNFTs || [];
 
 renderWithdraw();
 renderNFTs();
+loadReferrals(u);
 
-/* 🔥 Referral Info */
-document.getElementById("referredCode").innerText =
-u.referredBy || "None";
-
-document.getElementById("referredUid").innerText =
-u.referredByUid || "None";
-
-db.collection("users")
-.where("referredByUid","==",uid)
-.get()
-.then(snapshot=>{
-
-const table = document.getElementById("referralUsers");
-
-document.getElementById("refCount").innerText =
-snapshot.size;
-
-if(snapshot.empty){
-table.innerHTML="<tr><td colspan='2'>No referrals</td></tr>";
-return;
-}
-
-let html="";
-
-snapshot.forEach(d=>{
-
-const data = d.data();
-
-html+=`
-<tr>
-<td>${data.email || "-"}</td>
-<td>${d.id}</td>
-</tr>
-`;
-
-});
-
-table.innerHTML = html;
-
-});
+startMining();
 
 });
 
 }
 
-/* NFT RENDER */
-function renderNFTs(){
+function startMining(){
 
-const table = document.getElementById("nftTable");
+function updateMining(){
 
-if(!purchasedNFTs.length){
-table.innerHTML="<tr><td colspan='2'>No NFTs</td></tr>";
-return;
-}
+const now = Date.now();
+const seconds = Math.floor((now - lastIncomeAt)/1000);
 
-let html="";
+const perSecond = dailyIncomeCalc / 86400;
+const liveEarn = perSecond * seconds;
 
-purchasedNFTs.forEach((id,index)=>{
+const finalWallet = walletBase + liveEarn;
 
-html+=`
-<tr>
-<td>
-<select id="nft-${index}">
-${NFT_PRICES.map((price,i)=>`
-<option value="${i}" ${id===i?"selected":""}>
-$${price}
-</option>
-`).join("")}
-</select>
-</td>
-<td>
-<button class="deleteBtn" onclick="deleteNFT(${index})">X</button>
-</td>
-</tr>
-`;
-
-});
-
-table.innerHTML = html;
+wallet.value = finalWallet.toFixed(2);
+daily.value = dailyIncomeCalc.toFixed(2);
+live.value = liveEarn.toFixed(6);
 
 }
 
-function addNFT(){
-purchasedNFTs.push(0);
-renderNFTs();
-}
-
-function deleteNFT(index){
-purchasedNFTs.splice(index,1);
-renderNFTs();
-}
-
-/* WITHDRAW RENDER */
-function renderWithdraw(){
-
-const table = document.getElementById("withdrawTable");
-
-if(!withdrawHistory.length){
-table.innerHTML="<tr><td colspan='4'>No Withdraw History</td></tr>";
-return;
-}
-
-let html="";
-
-withdrawHistory.forEach((w,index)=>{
-
-html+=`
-<tr>
-<td><input type="number" id="req-${index}" value="${w.requestedAmount||0}"></td>
-<td><input type="number" id="app-${index}" value="${w.approvedAmount||0}"></td>
-<td>
-<select id="status-${index}">
-<option value="pending" ${w.status==="pending"?"selected":""}>Pending</option>
-<option value="approved" ${w.status==="approved"?"selected":""}>Approved</option>
-<option value="rejected" ${w.status==="rejected"?"selected":""}>Rejected</option>
-</select>
-</td>
-<td><button class="deleteBtn" onclick="deleteRow(${index})">X</button></td>
-</tr>
-`;
-
-});
-
-table.innerHTML = html;
-
-}
-
-function addWithdraw(){
-withdrawHistory.push({
-requestedAmount:0,
-approvedAmount:0,
-status:"pending",
-message:"",
-createdAt:new Date().toISOString()
-});
-renderWithdraw();
-}
-
-function deleteRow(index){
-withdrawHistory.splice(index,1);
-renderWithdraw();
-}
-
-/* SAVE */
-function saveUser(){
-
-purchasedNFTs = purchasedNFTs.map((_,index)=>
-Number(document.getElementById(`nft-${index}`).value)
-);
-
-withdrawHistory.forEach((w,index)=>{
-
-w.requestedAmount = Number(document.getElementById(`req-${index}`).value);
-w.approvedAmount = Number(document.getElementById(`app-${index}`).value);
-w.status = document.getElementById(`status-${index}`).value;
-
-if(w.status==="approved"){
-w.message = `You received $${w.approvedAmount} in your bank`;
-}else{
-w.message="";
-}
-
-});
-
-db.collection("users").doc(uid).update({
-walletBalance:Number(wallet.value),
-totalDeposit:Number(deposit.value),
-referralEarnings:Number(referral.value),
-dailyIncome:Number(daily.value),
-level:Number(level.value),
-liveEarnings:Number(live.value),
-role:role.value,
-verified:verified.value==="true",
-withdrawHistory:withdrawHistory,
-purchasedNFTs:purchasedNFTs
-}).then(()=>{
-alert("Updated Successfully");
-});
+updateMining();
+setInterval(updateMining,1000);
 
 }
 
