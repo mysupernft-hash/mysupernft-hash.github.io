@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Referral History | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
+  padding:15px;
+}
+
+h2{text-align:center;}
+
+.card{
+  background:#1a1a1a;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
+
+.level{
+  font-weight:bold;
+  color:#00ff66;
+}
+
+.empty{
+  text-align:center;
+  margin-top:30px;
+  color:#ccc;
+}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+</head>
+<body>
+
+<h2>💰 Referral History</h2>
+
+<div id="history"></div>
+
+<script>
+
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(user=>{
+
+if(!user){
+location.href="login.html";
+return;
+}
+
+loadHistory(user);
+
+});
+
+async function loadHistory(user){
+
+const container = document.getElementById("history");
+
+const snap = await db.collection("users").doc(user.uid).get();
+
+if(!snap.exists){
+container.innerHTML="<div class='empty'>No data</div>";
+return;
+}
+
+const data = snap.data();
+const history = data.referralHistory || [];
+
+if(history.length === 0){
+container.innerHTML="<div class='empty'>No referral income yet</div>";
+return;
+}
+
+// 🔥 Latest first
+history.sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt));
+
+let html = "";
+
+history.forEach(item=>{
+
+const date = new Date(item.createdAt).toLocaleString();
+
+html += `
+<div class="card">
+
+<div class="row">
+<span>From:</span>
+<span>${item.fromUser}</span>
+</div>
+
+<div class="row">
+<span>Amount:</span>
+<span>$${item.amount.toFixed(2)}</span>
+</div>
+
+<div class="row">
+<span>Level:</span>
+<span class="level">L${item.level}</span>
+</div>
+
+<div class="row">
+<span>Date:</span>
+<span>${date}</span>
+</div>
+
+</div>
+`;
+
+});
+
+container.innerHTML = html;
+
+}
+
+</script>
+
+</body>
+</html>
