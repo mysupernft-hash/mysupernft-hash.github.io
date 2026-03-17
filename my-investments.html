@@ -6,39 +6,8 @@
 <title>My Investments | SuperNFT</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#000;
-  color:#FFD700;
-}
-
-/* 🔥 GREEN GLOW MINING EFFECT */
-.mining-status{
-  margin-top:10px;
-  padding:6px 10px;
-  border-radius:8px;
-  background:#001a00;
-  color:#00ff66;
-  font-weight:bold;
-  text-align:center;
-  animation:greenGlow 1.5s infinite alternate;
-  box-shadow:0 0 8px #00ff66;
-}
-
-@keyframes greenGlow{
-  from{box-shadow:0 0 5px #00ff66, 0 0 10px #00ff66;}
-  to{box-shadow:0 0 15px #00ff66, 0 0 25px #00ff66;}
-}
-
-header{
-  padding:18px;
-  background:#1a1a1a;
-  text-align:center;
-  font-size:20px;
-  border-bottom:2px solid #FFD700;
-}
-
+body{margin:0;font-family:Arial;background:#000;color:#FFD700;}
+header{padding:18px;background:#1a1a1a;text-align:center;font-size:20px;border-bottom:2px solid #FFD700;}
 .container{padding:15px;}
 
 .card{
@@ -61,11 +30,22 @@ header{
   font-size:14px;
 }
 
-.empty{
+.mining-status{
+  margin-top:10px;
+  padding:6px;
+  background:#001a00;
+  color:#00ff66;
+  border-radius:8px;
   text-align:center;
-  margin-top:40px;
-  font-size:16px;
+  animation:glow 1.5s infinite alternate;
 }
+
+@keyframes glow{
+  from{box-shadow:0 0 5px #00ff66;}
+  to{box-shadow:0 0 20px #00ff66;}
+}
+
+.empty{text-align:center;margin-top:40px;}
 </style>
 </head>
 
@@ -83,18 +63,18 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
+const firebaseConfig={
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
 
-/* 🔥 FULL NFT LIST (MATCH DASHBOARD) */
-const NFTS = [
+/* 🔥 SAME AS DASHBOARD (VERY IMPORTANT) */
+const NFTS=[
 
 {price:1,p:0.01,img:"images/IMG_2629.png"},
 {price:2,p:0.02,img:"images/IMG_2625.png"},
@@ -140,7 +120,7 @@ const NFTS = [
 {price:899,p:45,img:"images/IMG_0499.png"},
 {price:999,p:100,img:"images/IMG_0503.png"},
 
-/* 🔥 ULTRA NFTs */
+/* 🔥 ULTRA */
 {price:1000,p:200,img:"images/IMG_3012.png"},
 {price:2000,p:400,img:"images/IMG_3022.png"},
 {price:3000,p:600,img:"images/IMG_3023.png"},
@@ -154,62 +134,46 @@ const NFTS = [
 
 ];
 
-const container = document.getElementById("investmentContainer");
+const container=document.getElementById("investmentContainer");
 
-onAuthStateChanged(auth, async(user)=>{
+onAuthStateChanged(auth,async(user)=>{
 
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
+if(!user){
+window.location.href="login.html";
+return;
+}
 
-  try{
+const snap=await getDoc(doc(db,"users",user.uid));
+if(!snap.exists()){
+container.innerHTML="<div class='empty'>User not found</div>";
+return;
+}
 
-    const snap = await getDoc(doc(db,"users",user.uid));
+const purchased=snap.data().purchasedNFTs||[];
 
-    if(!snap.exists()){
-      container.innerHTML = `<div class="empty">User data not found</div>`;
-      return;
-    }
+if(purchased.length===0){
+container.innerHTML="<div class='empty'>No NFTs purchased</div>";
+return;
+}
 
-    const purchased = snap.data().purchasedNFTs || [];
+container.innerHTML="";
 
-    if(purchased.length === 0){
-      container.innerHTML = `<div class="empty">You have not purchased any NFT yet.</div>`;
-      return;
-    }
+purchased.forEach(id=>{
 
-    container.innerHTML = "";
+const nft=NFTS[id];
+if(!nft) return;
 
-    purchased.forEach(id => {
+container.innerHTML+=`
+<div class="card">
+<img src="${nft.img}">
+<div class="row"><span>Price</span><span>$${nft.price}</span></div>
+<div class="row"><span>Daily</span><span>$${nft.p}</span></div>
+<div class="row"><span>Yearly</span><span>$${(nft.p*365).toFixed(2)}</span></div>
+<div class="mining-status">🟢 Mining Active</div>
+</div>
+`;
 
-      const nft = NFTS[id];
-      if(!nft) return;
-
-      container.innerHTML += `
-        <div class="card">
-          <img src="${nft.img}" onerror="this.src='images/IMG_0458.png'">
-          <div class="row">
-            <span>Price</span>
-            <span>$${nft.price}</span>
-          </div>
-          <div class="row">
-            <span>Daily Income</span>
-            <span>$${nft.p}</span>
-          </div>
-          <div class="row">
-            <span>Yearly Income</span>
-            <span>$${(nft.p*365).toFixed(2)}</span>
-          </div>
-          <div class="mining-status">🟢 Mining Started</div>
-        </div>
-      `;
-    });
-
-  }catch(err){
-    container.innerHTML = `<div class="empty">Error loading investments</div>`;
-    console.error(err);
-  }
+});
 
 });
 
