@@ -381,10 +381,6 @@ const NFTS=[
 {cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 
-  /* ULTRA NFTs */
-
-/* ULTRA NFTs */
-
 /* ULTRA NFTs 20% DAILY */
 
 {cat:"ultra",price:1000,p:200,img:"images/IMG_3012.png"},
@@ -454,11 +450,10 @@ onAuthStateChanged(auth, async (user) => {
 let previewUID = localStorage.getItem("adminPreviewUID");
 
 const userRef = doc(db,"users", previewUID ? previewUID : user.uid);
-  const snap = await getDoc(userRef);
+  onSnapshot(userRef, async (snap)=>{
+if(!snap.exists()) return;
 
-  if(!snap.exists()) return;
-
-  const data = snap.data();
+const data = snap.data();
 
   // ✅ SHOW NAME (NOT EMAIL)
 document.getElementById("userEmail").textContent =
