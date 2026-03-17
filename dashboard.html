@@ -537,10 +537,10 @@ let dailyIncome = data.dailyIncome || (baseWallet * 0.025);
       "$" + live.toFixed(6);
 
     document.getElementById("walletBalanceP").innerText =
-      "$" + (wallet + live).toFixed(2);
+      "$" + (baseWallet + live).toFixed(2);
 
     document.getElementById("walletBalanceTop").innerText =
-      "$" + (wallet + live).toFixed(2);
+      "$" + (baseWallet + live).toFixed(2);
   }
 
   updateMining();
