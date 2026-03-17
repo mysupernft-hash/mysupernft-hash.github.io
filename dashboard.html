@@ -454,11 +454,13 @@ onAuthStateChanged(auth, async (user) => {
 let previewUID = localStorage.getItem("adminPreviewUID");
 
 const userRef = doc(db,"users", previewUID ? previewUID : user.uid);
-  const snap = await getDoc(userRef);
+  onSnapshot(userRef, (snap)=>{
 
-  if(!snap.exists()) return;
+if(!snap.exists()) return;
 
-  const data = snap.data();
+const data = snap.data();
+
+    });
 
   // ✅ SHOW NAME (NOT EMAIL)
 document.getElementById("userEmail").textContent =
@@ -495,7 +497,7 @@ return;
 }
 
 // 🔥 SAME FORMULA as daily.html
-let dailyIncome = data.dailyIncome || (wallet * 0.025);
+let dailyIncome = wallet * 0.025;
 
   // ⏳ First time setup
   if(!data.lastIncomeAt){
