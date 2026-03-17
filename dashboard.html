@@ -142,7 +142,7 @@ footer div:hover{color:#e0c200;}
 
   <!-- LEFT SIDE -->
   <div style="display:flex;align-items:center;gap:6px;font-weight:bold;">
-  👤Welcome,
+    👤 Welcome,
     <span id="userEmail" style="color:#FFD700;">User</span>
     <span id="verifiedTick" class="verified-badge" style="display:inline-flex;cursor:pointer;" onclick="openRank()">✔</span>
   </div>
@@ -180,7 +180,6 @@ footer div:hover{color:#e0c200;}
   <h2>Menu</h2>
   <button onclick="openPage('account')">👤 My Account</button>
   <button onclick="openPage('referral')">💹 My Referrals</button>
-  <button onclick="openPage('refHistory')">💰 Referral History</button>
   <button onclick="openPage('trading')">📊 Trading</button>
   <button onclick="openPage('useReferral')">🎁 Use Referral Code</button>
   <button onclick="openPage('investments')">📁 My Investments</button>
@@ -291,9 +290,6 @@ window.openPage = function(page){
     case "referral":
   window.location.href = "my-referrals.html";
   break;
-      case "refHistory":
-  window.location.href = "referral-history.html";
-  break;
       case "useReferral":
       window.location.href = "use-referral.html";
       break;
@@ -385,6 +381,10 @@ const NFTS=[
 {cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 
+  /* ULTRA NFTs */
+
+/* ULTRA NFTs */
+
 /* ULTRA NFTs 20% DAILY */
 
 {cat:"ultra",price:1000,p:200,img:"images/IMG_3012.png"},
@@ -454,98 +454,102 @@ onAuthStateChanged(auth, async (user) => {
 let previewUID = localStorage.getItem("adminPreviewUID");
 
 const userRef = doc(db,"users", previewUID ? previewUID : user.uid);
+  const snap = await getDoc(userRef);
 
-// ✅ REAL TIME SYSTEM
-onSnapshot(userRef, async (snap)=>{
+  if(!snap.exists()) return;
 
-if(!snap.exists()) return;
+  const data = snap.data();
 
-const data = snap.data();
-
-// ✅ NAME
+  // ✅ SHOW NAME (NOT EMAIL)
 document.getElementById("userEmail").textContent =
-data.name || user.displayName || user.email.split("@")[0];
+  data.name || user.displayName || user.email.split("@")[0];
 
-// ✅ DEPOSIT
-const totalDeposit = data.totalDeposit || 0;
+  const totalDeposit = data.totalDeposit || 0;
 
+// ✅ Dashboard Total Deposit Update
 document.querySelector("#depositMoney p").innerText =
-"$" + totalDeposit.toFixed(2);
+  "$" + totalDeposit.toFixed(2);
 
-// ✅ VERIFIED
+  // ✅ VERIFIED CHECK
 if(data.verified === true){
-document.getElementById("verifiedTick").style.display = "inline-flex";
-}else{
-document.getElementById("verifiedTick").style.display = "none";
+  document.getElementById("verifiedTick").style.display = "inline-flex";
+} else {
+  document.getElementById("verifiedTick").style.display = "none";
 }
 
-// ✅ WALLET
-let wallet = data.walletBalance || 0;
+  let wallet = data.walletBalance || 0;
 
-// ❌ STOP if no deposit
+// ❌ Deposit se pehle wallet aur mining band
 if(totalDeposit <= 0){
+
+wallet = 0;
+
 document.getElementById("dailyIncome").innerText = "$0.00";
 document.getElementById("liveEarnings").innerText = "$0.00";
+
 document.getElementById("walletBalanceP").innerText = "$0.00";
 document.getElementById("walletBalanceTop").innerText = "$0.00";
+
 return;
-}
-
-// ✅ DAILY
-let dailyIncome = wallet * 0.025;
-
-// ⏳ FIRST TIME
-if(!data.lastIncomeAt){
-await updateDoc(userRef,{ lastIncomeAt:new Date() });
-return;
-}
-
-let lastIncomeAt = data.lastIncomeAt.toMillis();
-
-// REFERRAL
-document.getElementById("referralCode").innerText =
-"Referral: " + (data.referralCode || "N/A");
-
-// 🔥 MINING
-function updateMining(){
-
-const now = Date.now();
-const seconds = Math.floor((now - lastIncomeAt)/1000);
-
-const perSecond = dailyIncome / 86400;
-const live = perSecond * seconds;
-
-// 24h complete
-if(seconds >= 86400){
-
-wallet += dailyIncome;
-
-updateDoc(userRef,{
-walletBalance: wallet,
-lastIncomeAt: new Date()
-});
-
-lastIncomeAt = Date.now();
-return;
-}
-
-// UI UPDATE
-document.getElementById("dailyIncome").innerText =
-"$" + dailyIncome.toFixed(2);
-
-document.getElementById("liveEarnings").innerText =
-"$" + live.toFixed(6);
-
-document.getElementById("walletBalanceP").innerText =
-"$" + (wallet + live).toFixed(2);
-
-document.getElementById("walletBalanceTop").innerText =
-"$" + (wallet + live).toFixed(2);
 
 }
 
-updateMining();
-setInterval(updateMining,1000);
+// 🔥 SAME FORMULA as daily.html
+let dailyIncome = data.dailyIncome || (wallet * 0.025);
+
+  // ⏳ First time setup
+  if(!data.lastIncomeAt){
+    await updateDoc(userRef,{
+      lastIncomeAt:new Date()
+    });
+    return;
+  }
+
+  let lastIncomeAt = data.lastIncomeAt.toMillis();
+
+  // Referral Code
+  document.getElementById("referralCode").innerText =
+    "Referral: " + (data.referralCode || "N/A");
+
+  function updateMining(){
+
+    const now = Date.now();
+    const seconds = Math.floor((now - lastIncomeAt)/1000);
+
+    const perSecond = dailyIncome / 86400;
+    const live = perSecond * seconds;
+
+    // 🔥 24h Complete → Credit Wallet
+    if(seconds >= 86400){
+
+      wallet += dailyIncome;
+
+      updateDoc(userRef,{
+        walletBalance: wallet,
+        lastIncomeAt: new Date()
+      });
+
+      lastIncomeAt = Date.now();
+      return;
+    }
+
+    // 🖥 Update UI
+
+    document.getElementById("dailyIncome").innerText =
+      "$" + dailyIncome.toFixed(2);
+
+    document.getElementById("liveEarnings").innerText =
+      "$" + live.toFixed(6);
+
+    document.getElementById("walletBalanceP").innerText =
+      "$" + (wallet + live).toFixed(2);
+
+    document.getElementById("walletBalanceTop").innerText =
+      "$" + (wallet + live).toFixed(2);
+  }
+
+  updateMining();
+  setInterval(updateMining,1000);
 
 });
 
