@@ -15,7 +15,6 @@ body{
   flex-direction:column;
   min-height:100vh;
 }
-
 header{
   background:#111;
   padding:15px;
@@ -23,26 +22,14 @@ header{
   font-size:20px;
   font-weight:bold;
 }
-
-.main{
-  flex:1;
-  padding:20px;
-  text-align:center;
-}
-
+.main{flex:1;padding:20px;text-align:center;}
 .card{
   background:#1a1a1a;
   padding:15px;
   border-radius:10px;
   margin-bottom:20px;
 }
-
-.qr-img{
-  width:220px;
-  margin:10px auto;
-  display:block;
-}
-
+.qr-img{width:220px;margin:10px auto;display:block;}
 .wallet{
   background:#000;
   padding:10px;
@@ -50,7 +37,6 @@ header{
   word-break:break-all;
   margin:10px 0;
 }
-
 button{
   padding:10px 15px;
   border:none;
@@ -60,9 +46,7 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-
 button:hover{background:#e6c200;}
-
 input{
   width:100%;
   padding:10px;
@@ -70,25 +54,14 @@ input{
   border:none;
   margin-top:8px;
 }
-
 footer{
   display:flex;
   justify-content:space-around;
   background:#1a1a1a;
   padding:12px 0;
-  flex-wrap:wrap;
-}
-
-footer div{
-  cursor:pointer;
-}
-
-footer div:hover{
-  color:#fff;
 }
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -101,7 +74,7 @@ footer div:hover{
 <div class="main">
 
 <div class="card">
-<h3>Send Payment to Binance Wallet</h3>
+<h3>Send Payment</h3>
 
 <img src="images/IMG_0757.jpeg" class="qr-img">
 
@@ -109,152 +82,202 @@ footer div:hover{
 0xaf984e5d8be77dda62cd0cd89107d1a3b1b1038a
 </div>
 
-<button onclick="copyWallet()">Copy Wallet Address</button>
+<button onclick="copyWallet()">Copy Address</button>
 </div>
 
 <div class="card">
-<h3>Submit Deposit Request</h3>
+<h3>Submit Deposit</h3>
 
-<input type="number" id="depositAmount" placeholder="Enter amount ($)">
-<input type="text" id="txid" placeholder="Transaction ID / Hash">
+<input type="number" id="amount" placeholder="Amount ($)">
+<input type="text" id="txid" placeholder="Transaction ID">
 
-<button onclick="makeDeposit()">Submit Deposit</button>
+<button onclick="makeDeposit()">Submit</button>
 
-<h3>Your Balance: $<span id="balance">0</span></h3>
+<h3>Total Deposit: $<span id="balance">0</span></h3>
 </div>
 
 </div>
 
 <footer>
-<div onclick="location.href='dashboard.html'">Investments</div>
+<div onclick="location.href='dashboard.html'">Dashboard</div>
 <div onclick="location.href='wallet.html'">Wallet</div>
 <div onclick="location.href='withdraw.html'">Withdraw</div>
-<div onclick="location.href='live-earnings.html'">Earnings</div>
-<div onclick="location.href='my-account.html'">Account</div>
 </footer>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain: "supernft-5b952.firebaseapp.com",
-  projectId: "supernft-5b952",
-};
 
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+});
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 
 let currentUser;
 
+/* AUTH */
 auth.onAuthStateChanged(user=>{
-  if(!user) location.href="signup.html";
-  else{
-    currentUser = user;
-    loadBalance();
-  }
+if(!user) location.href="login.html";
+else{
+currentUser=user;
+loadBalance();
+}
 });
 
-  async function approveDeposit(requestId){
+/* COPY */
+function copyWallet(){
+navigator.clipboard.writeText(document.getElementById("wallet").innerText);
+alert("Copied!");
+}
+
+/* LOAD BALANCE */
+function loadBalance(){
+db.collection("users").doc(currentUser.uid)
+.onSnapshot(doc=>{
+if(!doc.exists) return;
+document.getElementById("balance").innerText =
+(doc.data().totalDeposit||0).toFixed(2);
+});
+}
+
+/* CREATE REQUEST */
+function makeDeposit(){
+
+const amount = parseFloat(document.getElementById("amount").value);
+const txid = document.getElementById("txid").value;
+
+if(!amount || amount<=0){
+alert("Enter valid amount");
+return;
+}
+if(!txid){
+alert("Enter TXID");
+return;
+}
+
+db.collection("depositRequests").add({
+userId: currentUser.uid,
+email: currentUser.email,
+amount: amount,
+txid: txid,
+status: "pending",
+referralPaid: false,
+createdAt: firebase.firestore.FieldValue.serverTimestamp()
+});
+
+alert("Request Sent");
+
+document.getElementById("amount").value="";
+document.getElementById("txid").value="";
+}
+
+/* ========================================= */
+/* 🔥 ADMIN APPROVE FUNCTION (IMPORTANT) */
+/* ========================================= */
+
+async function approveDeposit(requestId){
 
 const reqRef = db.collection("depositRequests").doc(requestId);
 const reqSnap = await reqRef.get();
+
+if(!reqSnap.exists) return alert("No request");
+
 const req = reqSnap.data();
+
+if(req.status==="approved"){
+alert("Already approved");
+return;
+}
 
 const userRef = db.collection("users").doc(req.userId);
 const userSnap = await userRef.get();
+
 const user = userSnap.data();
 
 let wallet = user.walletBalance || 0;
 let deposit = user.totalDeposit || 0;
-let bonusGiven = user.welcomeBonusGiven || false;
 
-// deposit add
+/* ✅ ADD DEPOSIT */
 wallet += req.amount;
 deposit += req.amount;
-
-// first deposit bonus
-if(!bonusGiven){
-
-wallet += 5;
-
-await userRef.update({
-walletBalance: wallet,
-totalDeposit: deposit,
-welcomeBonusGiven: true
-});
-
-}else{
 
 await userRef.update({
 walletBalance: wallet,
 totalDeposit: deposit
 });
 
-}
+/* 🔥 3 LEVEL REFERRAL */
 
-// request approved
-await reqRef.update({
-status:"approved"
+let level1 = user.referredByUid;
+
+// LEVEL 1 (20%)
+if(level1){
+
+const ref1Ref = db.collection("users").doc(level1);
+const ref1Snap = await ref1Ref.get();
+
+if(ref1Snap.exists){
+
+let bonus1 = req.amount * 0.20;
+
+await ref1Ref.update({
+walletBalance: firebase.firestore.FieldValue.increment(bonus1),
+referralEarnings: firebase.firestore.FieldValue.increment(bonus1)
 });
 
-alert("Deposit Approved Successfully");
+let level2 = ref1Snap.data().referredByUid;
+
+// LEVEL 2 (15%)
+if(level2){
+
+const ref2Ref = db.collection("users").doc(level2);
+const ref2Snap = await ref2Ref.get();
+
+if(ref2Snap.exists){
+
+let bonus2 = req.amount * 0.15;
+
+await ref2Ref.update({
+walletBalance: firebase.firestore.FieldValue.increment(bonus2),
+referralEarnings: firebase.firestore.FieldValue.increment(bonus2)
+});
+
+let level3 = ref2Snap.data().referredByUid;
+
+// LEVEL 3 (10%)
+if(level3){
+
+const ref3Ref = db.collection("users").doc(level3);
+const ref3Snap = await ref3Ref.get();
+
+if(ref3Snap.exists){
+
+let bonus3 = req.amount * 0.10;
+
+await ref3Ref.update({
+walletBalance: firebase.firestore.FieldValue.increment(bonus3),
+referralEarnings: firebase.firestore.FieldValue.increment(bonus3)
+});
+
+}
+}
+}
+}
+}
+}
+
+/* ✅ MARK APPROVED */
+await reqRef.update({
+status:"approved",
+referralPaid:true
+});
+
+alert("✅ Deposit Approved + 3 Level Income Given");
 
 }
 
-function copyWallet(){
-  const text = document.getElementById("wallet").innerText;
-  navigator.clipboard.writeText(text);
-  alert("Wallet copied!");
-}
-
-function loadBalance(){
-
-  db.collection("users")
-  .doc(currentUser.uid)
-  .onSnapshot(doc=>{
-
-    if(!doc.exists) return;
-
-    const data = doc.data();
-
-    // 🔥 Total Deposit show karo
-    const totalDeposit = data.totalDeposit || 0;
-
-    document.getElementById("balance").innerText =
-      totalDeposit.toFixed(2);
-  });
-}
-
-function makeDeposit(){
-  const amount = parseFloat(
-    document.getElementById("depositAmount").value
-  );
-  const txid = document.getElementById("txid").value;
-
-  if(!amount || amount <= 0){
-    alert("Enter valid amount");
-    return;
-  }
-
-  if(!txid){
-    alert("Enter transaction ID");
-    return;
-  }
-
-  db.collection("depositRequests").add({
-    userId: currentUser.uid,
-    email: currentUser.email,
-    amount: amount,
-    txid: txid,
-    status: "pending",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(()=>{
-    alert("Deposit request sent for approval");
-    document.getElementById("depositAmount").value="";
-    document.getElementById("txid").value="";
-  });
-}
 </script>
 
 </body>
