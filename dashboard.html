@@ -472,7 +472,7 @@ if(data.verified === true){
   document.getElementById("verifiedTick").style.display = "none";
 }
 
-  let wallet = data.walletBalance || 0;
+  let baseWallet = data.walletBalance || 0;
 
 // ❌ Deposit se pehle wallet aur mining band
 if(totalDeposit <= 0){
@@ -517,10 +517,10 @@ let dailyIncome = data.dailyIncome || (wallet * 0.025);
     // 🔥 24h Complete → Credit Wallet
     if(seconds >= 86400){
 
-      wallet += dailyIncome;
+      baseWallet += dailyIncome;
 
       updateDoc(userRef,{
-        walletBalance: wallet,
+        (baseWallet + live)
         lastIncomeAt: new Date()
       });
 
