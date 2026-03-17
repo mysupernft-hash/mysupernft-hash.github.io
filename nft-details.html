@@ -56,6 +56,7 @@ header{
 .status{margin-top:15px;font-size:14px;}
 </style>
 </head>
+
 <body>
 
 <header>SuperNFT NFT Details</header>
@@ -81,13 +82,7 @@ header{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  updateDoc, 
-  arrayUnion 
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -99,8 +94,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* NFT LIST SAME AS DASHBOARD */
-const NFTS=[
+/* 🔥 FULL NFT LIST */
+const NFTS = [
 
 {cat:"beginner",price:1,p:0.01,img:"images/IMG_2629.png"},
 {cat:"beginner",price:2,p:0.02,img:"images/IMG_2625.png"},
@@ -108,7 +103,7 @@ const NFTS=[
 {cat:"beginner",price:4,p:0.04,img:"images/IMG_2624.png"},
 {cat:"beginner",price:5,p:0.05,img:"images/IMG_2630.png"},
 {cat:"beginner",price:6,p:0.06,img:"images/IMG_2632.png"},
-{cat:"beginner",price:7,p:0.07,img:"images/IMG_2634.png"},
+{cat:"beginner",price:7,p:0.07,img:"images/IMG_2633.png"},
 {cat:"beginner",price:8,p:0.08,img:"images/IMG_2637.png"},
 {cat:"beginner",price:9,p:0.09,img:"images/IMG_2638.png"},
 
@@ -144,10 +139,9 @@ const NFTS=[
 {cat:"legendary",price:699,p:40,img:"images/IMG_0497.png"},
 {cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
 {cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
-{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"}
+{cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 
-  /* ULTRA NFTs 20% DAILY */
-
+/* 🔥 ULTRA NFTs */
 {cat:"ultra",price:1000,p:200,img:"images/IMG_3012.png"},
 {cat:"ultra",price:2000,p:400,img:"images/IMG_3022.png"},
 {cat:"ultra",price:3000,p:600,img:"images/IMG_3023.png"},
@@ -158,22 +152,24 @@ const NFTS=[
 {cat:"ultra",price:8000,p:1600,img:"images/IMG_3028.png"},
 {cat:"ultra",price:9000,p:1800,img:"images/IMG_3029.png"},
 {cat:"ultra",price:10000,p:2000,img:"images/IMG_3031.png"}
-  
+
 ];
 
-/* GET ID FROM URL */
+/* ✅ GET PARAMS */
 const params = new URLSearchParams(window.location.search);
 const id = parseInt(params.get("id"));
 const cat = params.get("cat");
 
-let filteredNFTs = NFTS;
-
+/* ✅ FILTER */
+let filtered = NFTS;
 if(cat && cat !== "all"){
-  filteredNFTs = NFTS.filter(n => n.cat === cat);
+  filtered = NFTS.filter(n => n.cat === cat);
 }
 
-const nft = filteredNFTs[id] || NFTS[0];
+/* ✅ FINAL NFT */
+const nft = filtered[id] || NFTS[0];
 
+/* ✅ UI SET */
 document.getElementById("nftImage").src = nft.img;
 document.getElementById("price").innerText = "Price: $" + nft.price;
 document.getElementById("daily").innerText = "$" + nft.p.toFixed(2);
@@ -181,57 +177,49 @@ document.getElementById("weekly").innerText = "$" + (nft.p*7).toFixed(2);
 document.getElementById("monthly").innerText = "$" + (nft.p*30).toFixed(2);
 document.getElementById("yearly").innerText = "$" + (nft.p*365).toFixed(2);
 
-let currentUser=null;
-const buyBtn=document.getElementById("buyBtn");
-
-buyBtn.disabled=true;
+/* 🔐 AUTH */
+let currentUser = null;
+const buyBtn = document.getElementById("buyBtn");
+buyBtn.disabled = true;
 
 onAuthStateChanged(auth,(user)=>{
   if(!user){
     window.location.href="login.html";
     return;
   }
-  currentUser=user;
-  buyBtn.disabled=false;
-  buyBtn.innerText="Buy NFT";
+  currentUser = user;
+  buyBtn.disabled = false;
+  buyBtn.innerText = "Buy NFT";
 });
 
+/* 💰 BUY */
 window.buyNFT = async function(){
 
-  const status=document.getElementById("status");
+  const status = document.getElementById("status");
 
-  if(!currentUser){
-    status.innerText="Loading...";
-    return;
-  }
-
-  const userRef=doc(db,"users",currentUser.uid);
-  const snap=await getDoc(userRef);
+  const userRef = doc(db,"users",currentUser.uid);
+  const snap = await getDoc(userRef);
   if(!snap.exists()) return;
 
-  const data=snap.data();
+  const data = snap.data();
 
-  const wallet=data.walletBalance||0;
-  const deposit=data.totalDeposit||0;
-  const daily=data.dailyIncome||0;
-  const purchased=data.purchasedNFTs||[];
+  const wallet = data.walletBalance || 0;
+  const purchased = data.purchasedNFTs || [];
 
-  if(purchased.includes(id)){
+  if(purchased.includes(nft.price)){
     status.innerText="Already Purchased.";
     return;
   }
 
-  const available=wallet+deposit;
-
-  if(available<nft.price){
+  if(wallet < nft.price){
     status.innerText="Insufficient Balance.";
     return;
   }
 
   await updateDoc(userRef,{
-    walletBalance: wallet + nft.p,   // deposit not cut
-    dailyIncome: daily + nft.p,
-    purchasedNFTs: arrayUnion(id)
+    walletBalance: wallet - nft.price,
+    dailyIncome: (data.dailyIncome||0) + nft.p,
+    purchasedNFTs: arrayUnion(nft.price)
   });
 
   status.innerText="🎉 Purchase Successful!";
