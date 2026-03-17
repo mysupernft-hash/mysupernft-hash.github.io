@@ -142,7 +142,7 @@ footer div:hover{color:#e0c200;}
 
   <!-- LEFT SIDE -->
   <div style="display:flex;align-items:center;gap:6px;font-weight:bold;">
-    👤 Welcome,
+  👤Welcome,
     <span id="userEmail" style="color:#FFD700;">User</span>
     <span id="verifiedTick" class="verified-badge" style="display:inline-flex;cursor:pointer;" onclick="openRank()">✔</span>
   </div>
@@ -180,6 +180,7 @@ footer div:hover{color:#e0c200;}
   <h2>Menu</h2>
   <button onclick="openPage('account')">👤 My Account</button>
   <button onclick="openPage('referral')">💹 My Referrals</button>
+  <button onclick="openPage('refHistory')">💰 Referral History</button>
   <button onclick="openPage('trading')">📊 Trading</button>
   <button onclick="openPage('useReferral')">🎁 Use Referral Code</button>
   <button onclick="openPage('investments')">📁 My Investments</button>
@@ -290,6 +291,9 @@ window.openPage = function(page){
     case "referral":
   window.location.href = "my-referrals.html";
   break;
+      case "refHistory":
+  window.location.href = "referral-history.html";
+  break;
       case "useReferral":
       window.location.href = "use-referral.html";
       break;
@@ -380,10 +384,6 @@ const NFTS=[
 {cat:"legendary",price:799,p:30,img:"images/IMG_0498.png"},
 {cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
-
-  /* ULTRA NFTs */
-
-/* ULTRA NFTs */
 
 /* ULTRA NFTs 20% DAILY */
 
