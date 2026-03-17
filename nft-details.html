@@ -163,10 +163,16 @@ const NFTS=[
 
 /* GET ID FROM URL */
 const params = new URLSearchParams(window.location.search);
-let id = parseInt(params.get("id"));
-if(isNaN(id) || id<0 || id>=NFTS.length) id=0;
+const id = parseInt(params.get("id"));
+const cat = params.get("cat");
 
-const nft = NFTS[id];
+let filteredNFTs = NFTS;
+
+if(cat && cat !== "all"){
+  filteredNFTs = NFTS.filter(n => n.cat === cat);
+}
+
+const nft = filteredNFTs[id] || NFTS[0];
 
 document.getElementById("nftImage").src = nft.img;
 document.getElementById("price").innerText = "Price: $" + nft.price;
