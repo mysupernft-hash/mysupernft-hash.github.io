@@ -248,7 +248,7 @@ footer div:hover{color:#e0c200;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",authDomain:"supernft-5b952.firebaseapp.com",projectId:"supernft-5b952"};
 const app=initializeApp(firebaseConfig);
@@ -381,6 +381,10 @@ const NFTS=[
 {cat:"legendary",price:899,p:45,img:"images/IMG_0499.png"},
 {cat:"legendary",price:999,p:100,img:"images/IMG_0503.png"},
 
+  /* ULTRA NFTs */
+
+/* ULTRA NFTs */
+
 /* ULTRA NFTs 20% DAILY */
 
 {cat:"ultra",price:1000,p:200,img:"images/IMG_3012.png"},
@@ -450,10 +454,11 @@ onAuthStateChanged(auth, async (user) => {
 let previewUID = localStorage.getItem("adminPreviewUID");
 
 const userRef = doc(db,"users", previewUID ? previewUID : user.uid);
-  onSnapshot(userRef, async (snap)=>{
-if(!snap.exists()) return;
+  const snap = await getDoc(userRef);
 
-const data = snap.data();
+  if(!snap.exists()) return;
+
+  const data = snap.data();
 
   // ✅ SHOW NAME (NOT EMAIL)
 document.getElementById("userEmail").textContent =
@@ -472,12 +477,12 @@ if(data.verified === true){
   document.getElementById("verifiedTick").style.display = "none";
 }
 
-  let baseWallet = data.walletBalance || 0;
+  let wallet = data.walletBalance || 0;
 
 // ❌ Deposit se pehle wallet aur mining band
 if(totalDeposit <= 0){
 
-baseWallet = 0;
+wallet = 0;
 
 document.getElementById("dailyIncome").innerText = "$0.00";
 document.getElementById("liveEarnings").innerText = "$0.00";
@@ -490,7 +495,7 @@ return;
 }
 
 // 🔥 SAME FORMULA as daily.html
-let dailyIncome = data.dailyIncome || (baseWallet * 0.025);
+let dailyIncome = data.dailyIncome || (wallet * 0.025);
 
   // ⏳ First time setup
   if(!data.lastIncomeAt){
@@ -517,12 +522,12 @@ let dailyIncome = data.dailyIncome || (baseWallet * 0.025);
     // 🔥 24h Complete → Credit Wallet
     if(seconds >= 86400){
 
-      baseWallet += dailyIncome;
+      wallet += dailyIncome;
 
       updateDoc(userRef,{
-  walletBalance: baseWallet,
-  lastIncomeAt: new Date()
-});
+        walletBalance: wallet,
+        lastIncomeAt: new Date()
+      });
 
       lastIncomeAt = Date.now();
       return;
@@ -537,16 +542,14 @@ let dailyIncome = data.dailyIncome || (baseWallet * 0.025);
       "$" + live.toFixed(6);
 
     document.getElementById("walletBalanceP").innerText =
-      "$" + (baseWallet + live).toFixed(2);
+      "$" + (wallet + live).toFixed(2);
 
     document.getElementById("walletBalanceTop").innerText =
-      "$" + (baseWallet + live).toFixed(2);
+      "$" + (wallet + live).toFixed(2);
   }
 
   updateMining();
-  if(!window.miningInterval){
-window.miningInterval = setInterval(updateMining,1000);
-}
+  setInterval(updateMining,1000);
 
 });
 
