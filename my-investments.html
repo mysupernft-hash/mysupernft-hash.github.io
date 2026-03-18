@@ -61,7 +61,7 @@ header{padding:18px;background:#1a1a1a;text-align:center;font-size:20px;border-b
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -73,7 +73,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🔥 SAME AS DASHBOARD (VERY IMPORTANT) */
+/* 🔥 NFT DATA (SAME AS DASHBOARD) */
 const NFTS=[
 
 {price:1,p:0.01,img:"images/IMG_2629.png"},
@@ -120,7 +120,7 @@ const NFTS=[
 {price:899,p:45,img:"images/IMG_0499.png"},
 {price:999,p:100,img:"images/IMG_0503.png"},
 
-/* 🔥 ULTRA */
+/* ULTRA */
 {price:1000,p:200,img:"images/IMG_3012.png"},
 {price:2000,p:400,img:"images/IMG_3022.png"},
 {price:3000,p:600,img:"images/IMG_3023.png"},
@@ -131,25 +131,27 @@ const NFTS=[
 {price:8000,p:1600,img:"images/IMG_3028.png"},
 {price:9000,p:1800,img:"images/IMG_3029.png"},
 {price:10000,p:2000,img:"images/IMG_3031.png"}
-
 ];
 
 const container=document.getElementById("investmentContainer");
 
-onAuthStateChanged(auth,async(user)=>{
+/* 🔥 AUTH */
+onAuthStateChanged(auth,(user)=>{
 
 if(!user){
 window.location.href="login.html";
 return;
 }
 
-const snap=await getDoc(doc(db,"users",user.uid));
+/* 🔥 REALTIME DATA */
+onSnapshot(doc(db,"users",user.uid),(snap)=>{
+
 if(!snap.exists()){
 container.innerHTML="<div class='empty'>User not found</div>";
 return;
 }
 
-const purchased=snap.data().purchasedNFTs||[];
+const purchased=snap.data().purchasedNFTs || [];
 
 if(purchased.length===0){
 container.innerHTML="<div class='empty'>No NFTs purchased</div>";
@@ -158,6 +160,7 @@ return;
 
 container.innerHTML="";
 
+/* 🔥 LOOP */
 purchased.forEach(id=>{
 
 const nft=NFTS[id];
@@ -172,6 +175,8 @@ container.innerHTML+=`
 <div class="mining-status">🟢 Mining Active</div>
 </div>
 `;
+
+});
 
 });
 
