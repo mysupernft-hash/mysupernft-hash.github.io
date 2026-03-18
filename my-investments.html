@@ -73,7 +73,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🔥 NFT DATA (SAME AS DASHBOARD) */
+/* 🔥 SAME NFT DATA AS DASHBOARD */
 const NFTS=[
 
 {price:1,p:0.01,img:"images/IMG_2629.png"},
@@ -135,7 +135,7 @@ const NFTS=[
 
 const container=document.getElementById("investmentContainer");
 
-/* 🔥 AUTH */
+/* 🔐 AUTH */
 onAuthStateChanged(auth,(user)=>{
 
 if(!user){
@@ -143,7 +143,7 @@ window.location.href="login.html";
 return;
 }
 
-/* 🔥 REALTIME DATA */
+/* 🔥 REALTIME LISTENER */
 onSnapshot(doc(db,"users",user.uid),(snap)=>{
 
 if(!snap.exists()){
@@ -151,7 +151,7 @@ container.innerHTML="<div class='empty'>User not found</div>";
 return;
 }
 
-const purchased=snap.data().purchasedNFTs || [];
+const purchased = snap.data().purchasedNFTs || [];
 
 if(purchased.length===0){
 container.innerHTML="<div class='empty'>No NFTs purchased</div>";
@@ -160,13 +160,15 @@ return;
 
 container.innerHTML="";
 
-/* 🔥 LOOP */
+/* 🔥 SHOW ONLY PURCHASED NFTs */
 purchased.forEach(id=>{
 
-const nft=NFTS[id];
+const index = parseInt(id); // safety
+const nft = NFTS[index];
+
 if(!nft) return;
 
-container.innerHTML+=`
+container.innerHTML += `
 <div class="card">
 <img src="${nft.img}">
 <div class="row"><span>Price</span><span>$${nft.price}</span></div>
