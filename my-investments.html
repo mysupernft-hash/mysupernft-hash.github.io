@@ -73,7 +73,9 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* 🔥 SAME NFT DATA AS DASHBOARD */
+const container=document.getElementById("investmentContainer");
+
+/* 🔥 SAME NFT LIST (MATCH DASHBOARD EXACTLY) */
 const NFTS=[
 
 {price:1,p:0.01,img:"images/IMG_2629.png"},
@@ -131,9 +133,8 @@ const NFTS=[
 {price:8000,p:1600,img:"images/IMG_3028.png"},
 {price:9000,p:1800,img:"images/IMG_3029.png"},
 {price:10000,p:2000,img:"images/IMG_3031.png"}
-];
 
-const container=document.getElementById("investmentContainer");
+];
 
 /* 🔐 AUTH */
 onAuthStateChanged(auth,(user)=>{
@@ -143,7 +144,7 @@ window.location.href="login.html";
 return;
 }
 
-/* 🔥 REALTIME LISTENER */
+/* 🔥 REALTIME DATA */
 onSnapshot(doc(db,"users",user.uid),(snap)=>{
 
 if(!snap.exists()){
@@ -151,7 +152,8 @@ container.innerHTML="<div class='empty'>User not found</div>";
 return;
 }
 
-const purchased = snap.data().purchasedNFTs || [];
+const data = snap.data();
+const purchased = data.purchasedNFTs || [];
 
 if(purchased.length===0){
 container.innerHTML="<div class='empty'>No NFTs purchased</div>";
@@ -160,10 +162,10 @@ return;
 
 container.innerHTML="";
 
-/* 🔥 SHOW ONLY PURCHASED NFTs */
-purchased.forEach(id=>{
+/* 🔥 PERFECT MATCH SYSTEM */
+purchased.forEach((id)=>{
 
-const index = parseInt(id); // safety
+const index = Number(id); // 🔥 fix
 const nft = NFTS[index];
 
 if(!nft) return;
