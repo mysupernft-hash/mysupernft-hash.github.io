@@ -37,6 +37,12 @@ header{padding:18px;background:#1a1a1a;text-align:center;font-size:20px;border-b
   color:#00ff66;
   border-radius:8px;
   text-align:center;
+  animation:glow 1.5s infinite alternate;
+}
+
+@keyframes glow{
+  from{box-shadow:0 0 5px #00ff66;}
+  to{box-shadow:0 0 20px #00ff66;}
 }
 
 .empty{text-align:center;margin-top:40px;}
@@ -55,7 +61,7 @@ header{padding:18px;background:#1a1a1a;text-align:center;font-size:20px;border-b
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
@@ -67,10 +73,9 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-const container=document.getElementById("investmentContainer");
-
-/* 🔥 SAME NFT DATA */
+/* 🔥 NFT DATA (SAME AS DASHBOARD) */
 const NFTS=[
+
 {price:1,p:0.01,img:"images/IMG_2629.png"},
 {price:2,p:0.02,img:"images/IMG_2625.png"},
 {price:3,p:0.03,img:"images/IMG_2627.png"},
@@ -115,6 +120,7 @@ const NFTS=[
 {price:899,p:45,img:"images/IMG_0499.png"},
 {price:999,p:100,img:"images/IMG_0503.png"},
 
+/* ULTRA */
 {price:1000,p:200,img:"images/IMG_3012.png"},
 {price:2000,p:400,img:"images/IMG_3022.png"},
 {price:3000,p:600,img:"images/IMG_3023.png"},
@@ -127,22 +133,25 @@ const NFTS=[
 {price:10000,p:2000,img:"images/IMG_3031.png"}
 ];
 
-/* 🔐 AUTH */
-onAuthStateChanged(auth, async (user)=>{
+const container=document.getElementById("investmentContainer");
+
+/* 🔥 AUTH */
+onAuthStateChanged(auth,(user)=>{
 
 if(!user){
 window.location.href="login.html";
 return;
 }
 
-const snap = await getDoc(doc(db,"users",user.uid));
+/* 🔥 REALTIME DATA */
+onSnapshot(doc(db,"users",user.uid),(snap)=>{
 
 if(!snap.exists()){
 container.innerHTML="<div class='empty'>User not found</div>";
 return;
 }
 
-const purchased = snap.data().purchasedNFTs || [];
+const purchased=snap.data().purchasedNFTs || [];
 
 if(purchased.length===0){
 container.innerHTML="<div class='empty'>No NFTs purchased</div>";
@@ -151,15 +160,13 @@ return;
 
 container.innerHTML="";
 
-/* 🔥 SHOW NFTs */
+/* 🔥 LOOP */
 purchased.forEach(id=>{
 
-const index = Number(id);
-const nft = NFTS[index];
-
+const nft=NFTS[id];
 if(!nft) return;
 
-container.innerHTML += `
+container.innerHTML+=`
 <div class="card">
 <img src="${nft.img}">
 <div class="row"><span>Price</span><span>$${nft.price}</span></div>
@@ -168,6 +175,8 @@ container.innerHTML += `
 <div class="mining-status">🟢 Mining Active</div>
 </div>
 `;
+
+});
 
 });
 
