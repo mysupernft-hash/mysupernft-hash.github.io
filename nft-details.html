@@ -219,7 +219,7 @@ window.buyNFT = async function(){
   await updateDoc(userRef,{
     walletBalance: wallet - nft.price,
     dailyIncome: (data.dailyIncome||0) + nft.p,
-    purchasedNFTs: arrayUnion(nft.price)
+    purchasedNFTs: arrayUnion(id)
   });
 
   status.innerText="🎉 Purchase Successful!";
