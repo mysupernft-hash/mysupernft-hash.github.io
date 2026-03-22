@@ -9,7 +9,14 @@
 <link rel="apple-touch-icon" href="images/icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0f0f0f;color:#FFD700;overflow-x:hidden;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0f0f0f;
+  color:#FFD700;
+  overflow-x:hidden;
+  padding-bottom:90px;
+}
 a{text-decoration:none;color:#FFD700;}
 header{position:sticky;top:0;background:#1a1a1a;color:#FFD700;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:1000;}
 header h1{margin:0;font-size:22px;}
@@ -37,9 +44,24 @@ header h1{margin:0;font-size:22px;}
 .nft button{background:#FFD700;border:none;padding:8px 10px;border-radius:6px;color:#000;font-weight:bold;cursor:pointer;transition:0.2s;}
 .nft button:hover{background:#e0c200;}
 #earningsChart{background:#1a1a1a;padding:10px;border-radius:12px;margin:20px auto;display:block;width:95%;}
-footer{background:#1a1a1a;padding:15px;margin-top:20px;border-top:1px solid #272727;display:grid;grid-template-columns:repeat(5,1fr);text-align:center;font-size:14px;color:#FFD700;}
-footer div{padding:5px;cursor:pointer;}
-footer div:hover{color:#e0c200;}
+footer{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+
+  background:#1a1a1a;
+  padding:15px;
+  border-top:1px solid #272727;
+
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  text-align:center;
+  font-size:14px;
+  color:#FFD700;
+
+  z-index:999; /* header se kam rakha */
+}
 
 .verified-badge{
   display:inline-flex;
