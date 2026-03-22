@@ -139,10 +139,44 @@ footer{
   color: #000;
   box-shadow: 0 0 18px #FFD700;
 }
-@media(max-width:480px){.stats{grid-template-columns:repeat(2,1fr)} .nft-grid{grid-template-columns:repeat(2,1fr)} #sidebar{width:200px}}
+<style>
+
+  /* TERA PURA CSS */
+
+  @media(max-width:480px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .nft-grid{grid-template-columns:repeat(2,1fr)}
+    #sidebar{width:200px}
+  }
+
+  /* 👇 YEH YAHAN HONA CHAHIYE */
+  footer div{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    font-size:11px;
+    gap:4px;
+    color:#aaa;
+    cursor:pointer;
+    transition:0.3s;
+  }
+
+  footer div span{
+    font-size:20px;
+  }
+
+  footer div.active{
+    color:#FFD700;
+  }
+
+  footer div:hover{
+    transform: scale(1.1);
+    color:#FFD700;
+  }
+
 </style>
-</head>
-<body>
 
 <div id="overlay"></div>
 
