@@ -46,21 +46,26 @@ header h1{margin:0;font-size:22px;}
 #earningsChart{background:#1a1a1a;padding:10px;border-radius:12px;margin:20px auto;display:block;width:95%;}
 footer{
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 500px;
 
-  background:#1a1a1a;
-  padding:15px;
-  border-top:1px solid #272727;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
 
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  text-align:center;
-  font-size:14px;
-  color:#FFD700;
+  padding: 10px 5px;
 
-  z-index:999; /* header se kam rakha */
+  background: rgba(20,20,20,0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border-radius: 20px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+
+  z-index:999;
 }
 
 .verified-badge{
@@ -164,7 +169,7 @@ footer{
 
   <!-- LEFT SIDE -->
   <div style="display:flex;align-items:center;gap:6px;font-weight:bold;">
-    👤 Welcome,
+  👤Welcome,
     <span id="userEmail" style="color:#FFD700;">User</span>
     <span id="verifiedTick" class="verified-badge" style="display:inline-flex;cursor:pointer;" onclick="openRank()">✔</span>
   </div>
@@ -261,12 +266,23 @@ footer{
   </div>
 
   <footer>
-    <div>📁 Investments</div>
-    <div>💳 Wallet</div>
-    <div>💸 Withdraw</div>
-    <div>💹 Live Earnings</div>
-    <div>👤 My Account</div>
-  </footer>
+  <div id="btnReferral">
+    <span>👥</span>
+    Referral
+  </div>
+  <div id="btnInvestment">
+    <span>📁</span>
+    Invest
+  </div>
+  <div id="btnWithdraw">
+    <span>💸</span>
+    Withdraw
+  </div>
+  <div id="btnAccount">
+    <span>👤</span>
+    Account
+  </div>
+</footer>
   
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -353,13 +369,10 @@ document.getElementById("walletBalanceBox").onclick = () => {
   window.location.href = "wallet.html";
 };
 /* Footer Clicks */
-const footerBtns=document.querySelectorAll("footer div");
-footerBtns[0].addEventListener("click",()=>window.openPage("account")); 
-footerBtns[1].addEventListener("click",()=>window.openPage("investments")); 
-footerBtns[2].addEventListener("click",()=>window.openPage("wallet")); 
-footerBtns[3].addEventListener("click",()=>window.openPage("withdraw")); 
-footerBtns[4].addEventListener("click",()=>window.openPage("live")); 
-
+document.getElementById("btnReferral").onclick = () => openPage("referral");
+document.getElementById("btnInvestment").onclick = () => openPage("investments");
+document.getElementById("btnWithdraw").onclick = () => openPage("withdraw");
+document.getElementById("btnAccount").onclick = () => openPage("account");
 /* NFT Array */
 const NFTS=[
 
