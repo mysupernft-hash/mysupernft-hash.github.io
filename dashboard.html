@@ -116,49 +116,7 @@ footer{
   margin: 20px;
   flex-wrap: wrap;
 }
-/* MINI TRUST BOX */
-.trust-mini{
-  margin:10px 15px;
-  padding:10px;
-  border-radius:12px;
 
-  background:rgba(255,255,255,0.03);
-  backdrop-filter: blur(10px);
-
-  border:1px solid rgba(255,215,0,0.15);
-}
-
-/* top row */
-.trust-row{
-  display:flex;
-  justify-content:space-between;
-  font-size:13px;
-  font-weight:bold;
-  color:#FFD700;
-  margin-bottom:5px;
-}
-
-/* live line */
-.trust-live{
-  font-size:11px;
-  color:#aaa;
-  text-align:center;
-}
-
-  .trust-live{
-  animation: fade 2s infinite;
-}
-
-@keyframes fade{
-  0%{opacity:0.6;}
-  50%{opacity:1;}
-  100%{opacity:0.6;}
-}
-
-.trust-row span{
-  text-shadow:0 0 6px rgba(255,215,0,0.4);
-}
-  
 .tab {
   background: #1a1a1a;
   border: 1px solid #FFD700;
@@ -318,16 +276,6 @@ footer{
 </div>
 
 <div id="referralBox">
-  <div class="trust-mini">
-
-  <div class="trust-row">
-    <span>👥 12.5K+</span>
-    <span>💸 $58K+</span>
-  </div>
-
-  <div class="trust-live" id="liveFeed">
-    🟢 Live earnings updating...
-  </div>
 
 </div>
   <span id="referralCode">Referral: N/A</span>
@@ -722,12 +670,6 @@ document.getElementById("overlay").addEventListener("click", ()=>{
   footer.style.display = "flex";
 });
 
-    setInterval(()=>{
-  const amount = (Math.random()*3+1).toFixed(2);
-
-  document.getElementById("liveFeed").innerText =
-    `🟢 Profit +$${amount} credited`;
-},5000);
     
 </script>
 </body>
