@@ -706,6 +706,13 @@ document.querySelector(".menu-toggle").addEventListener("click", ()=>{
 document.getElementById("overlay").addEventListener("click", ()=>{
   footer.style.display = "flex";
 });
+
+    setInterval(()=>{
+  const amount = (Math.random()*3+1).toFixed(2);
+
+  document.getElementById("liveFeed").innerText =
+    `🟢 Profit +$${amount} credited`;
+},5000);
     
 </script>
 </body>
