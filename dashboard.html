@@ -116,48 +116,33 @@ footer{
   margin: 20px;
   flex-wrap: wrap;
 }
+/* MINI TRUST BOX */
+.trust-mini{
+  margin:10px 15px;
+  padding:10px;
+  border-radius:12px;
 
- /* TRUST PREMIUM UI */
-.trust-box{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:6px;
-  margin:12px;
+  background:rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+
+  border:1px solid rgba(255,215,0,0.15);
 }
 
-.trust-card{
-  background:rgba(255,255,255,0.05);
-  backdrop-filter: blur(15px);
-  border-radius:16px;
-  padding:15px;
-  text-align:center;
-  box-shadow:0 5px 20px rgba(0,0,0,0.4);
-  transition:0.3s;
-}
-
-.trust-card:hover{
-  transform:scale(1.05);
-}
-
-.trust-card span{
-  font-size:22px;
-}
-
-.trust-card h3{
-  margin:5px 0;
+/* top row */
+.trust-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  font-weight:bold;
   color:#FFD700;
+  margin-bottom:5px;
 }
 
-.trust-card p{
-  font-size:12px;
+/* live line */
+.trust-live{
+  font-size:11px;
   color:#aaa;
-}
-
-/* LIVE CARD FULL WIDTH */
-.trust-card.live{
-  grid-column:span 2;
-  background:rgba(0,255,100,0.08);
-  border:1px solid rgba(0,255,100,0.3);
+  text-align:center;
 }
 .tab {
   background: #1a1a1a;
@@ -318,22 +303,15 @@ footer{
 </div>
 
 <div id="referralBox">
-  <div class="trust-box">
+  <div class="trust-mini">
 
-  <div class="trust-card">
-    <span>👥</span>
-    <h3 id="totalUsers">12,540+</h3>
-    <p>Total Users</p>
+  <div class="trust-row">
+    <span>👥 12.5K+</span>
+    <span>💸 $58K+</span>
   </div>
 
-  <div class="trust-card">
-    <span>💸</span>
-    <h3 id="totalPaid">$58,200+</h3>
-    <p>Total Paid</p>
-  </div>
-
-  <div class="trust-card live">
-    <p id="liveFeed">🟢 Someone just earned $2.50</p>
+  <div class="trust-live" id="liveFeed">
+    🟢 Live earnings updating...
   </div>
 
 </div>
