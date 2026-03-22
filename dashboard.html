@@ -654,6 +654,19 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
   .then(() => console.log("Service Worker Registered"));
 }
+
+const footer = document.querySelector("footer");
+
+// menu open
+document.querySelector(".menu-toggle").addEventListener("click", ()=>{
+  footer.style.display = "none";
+});
+
+// menu close
+document.getElementById("overlay").addEventListener("click", ()=>{
+  footer.style.display = "flex";
+});
+    
 </script>
 </body>
 </html>
