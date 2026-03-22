@@ -117,6 +117,35 @@ footer{
   flex-wrap: wrap;
 }
 
+  /* TRUST SECTION */
+.trust-section{
+  margin:15px;
+  padding:15px;
+  background:#1a1a1a;
+  border-radius:12px;
+  box-shadow:0 0 15px rgba(255,215,0,0.1);
+}
+
+.trust-stats{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+  font-size:14px;
+}
+
+.live-feed{
+  background:#111;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:10px;
+  font-size:13px;
+}
+
+.withdraw-list{
+  font-size:13px;
+  color:#aaa;
+}
+
 .tab {
   background: #1a1a1a;
   border: 1px solid #FFD700;
@@ -281,6 +310,23 @@ footer{
 </div>
 
 <div class="nft-tabs">
+  <!-- TRUST SECTION -->
+<div class="trust-section">
+
+  <div class="trust-stats">
+    <div>👥 Users: <span id="totalUsers">0</span></div>
+    <div>💸 Paid: $<span id="totalPaid">0</span></div>
+  </div>
+
+  <div class="live-feed" id="liveFeed">
+    🟢 Loading live activity...
+  </div>
+
+  <div class="withdraw-list" id="withdrawList">
+    Loading withdrawals...
+  </div>
+
+</div>
   <button class="tab active" onclick="setTab(this,'all')">All</button>
   <button class="tab" onclick="setTab(this,'beginner')">Beginner</button>
   <button class="tab" onclick="setTab(this,'starter')">Starter</button>
