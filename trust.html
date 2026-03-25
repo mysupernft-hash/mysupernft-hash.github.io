@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Trust & Transparency | SuperNFT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
+  padding:15px;
+}
+
+h2{text-align:center;margin-bottom:20px;}
+
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+  box-shadow:0 0 10px rgba(255,215,0,0.1);
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  justify-content:space-between;
+  text-align:center;
+}
+
+.stat-box{
+  flex:1;
+}
+
+.stat-box h3{
+  margin:0;
+  font-size:14px;
+  color:#aaa;
+}
+
+.stat-box p{
+  font-size:18px;
+  font-weight:bold;
+  margin:5px 0 0;
+}
+
+/* LIVE FEED */
+.feed{
+  font-size:13px;
+  color:#ccc;
+  line-height:1.8;
+}
+
+/* BADGE */
+.badge{
+  display:inline-block;
+  background:#FFD700;
+  color:#000;
+  padding:2px 8px;
+  border-radius:10px;
+  font-size:10px;
+  margin-left:5px;
+}
+
+/* SUPPORT */
+button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#FFD700;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
+</style>
+
+</head>
+<body>
+
+<h2>🔐 Trust & Transparency</h2>
+
+<!-- STATS -->
+<div class="card">
+  <div class="stats">
+    <div class="stat-box">
+      <h3>Users</h3>
+      <p id="users">12,540+</p>
+    </div>
+    <div class="stat-box">
+      <h3>Total Paid</h3>
+      <p id="paid">$58,230+</p>
+    </div>
+    <div class="stat-box">
+      <h3>Total Invested</h3>
+      <p id="invest">$120,000+</p>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE ACTIVITY -->
+<div class="card">
+  <b>🟢 Live Activity</b>
+  <div class="feed" id="liveFeed">
+    Loading...
+  </div>
+</div>
+
+<!-- WITHDRAW PROOF -->
+<div class="card">
+  <b>💸 Recent Withdrawals</b>
+  <div class="feed" id="withdrawFeed">
+    ✔ a***@gmail.com withdrew $120<br>
+    ✔ s***@yahoo.com withdrew $50
+  </div>
+</div>
+
+<!-- WHY TRUST -->
+<div class="card">
+  <b>⭐ Why Trust SuperNFT?</b>
+  <div class="feed">
+    ✔ Secure blockchain-based system<br>
+    ✔ Real-time earnings tracking<br>
+    ✔ Instant withdrawal processing<br>
+    ✔ Transparent referral system<br>
+    ✔ 24/7 active platform
+  </div>
+</div>
+
+<!-- VERIFIED -->
+<div class="card">
+  <b>🏆 Verified System</b>
+  <div class="feed">
+    All users are verified through our system  
+    <span class="badge">VERIFIED</span><br><br>
+
+    High investors get premium badges  
+    <span class="badge">VIP</span>
+    <span class="badge">PRO</span>
+  </div>
+</div>
+
+<!-- SUPPORT -->
+<div class="card">
+  <b>📞 Need Help?</b><br><br>
+  <button onclick="contactSupport()">Contact Support</button>
+</div>
+
+<script>
+
+/* 🔥 LIVE ACTIVITY AUTO */
+const names = ["Ali","Rahul","Ahmed","John","Sara","Aman"];
+
+setInterval(()=>{
+
+  const name = names[Math.floor(Math.random()*names.length)];
+  const amount = (Math.random()*5+1).toFixed(2);
+
+  const messages = [
+    `🟢 ${name} earned $${amount}`,
+    `💰 ${name} invested $${amount*20}`,
+    `✔ ${name} withdrew $${amount*10}`
+  ];
+
+  const msg = messages[Math.floor(Math.random()*messages.length)];
+
+  const feed = document.getElementById("liveFeed");
+
+  feed.innerHTML = msg + "<br>" + feed.innerHTML;
+
+  if(feed.childNodes.length > 10){
+    feed.removeChild(feed.lastChild);
+  }
+
+},3000);
+
+
+/* SUPPORT */
+function contactSupport(){
+  alert("Support coming soon or connect Telegram!");
+}
+
+</script>
+
+</body>
+</html>
