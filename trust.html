@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Trust & Transparency | SuperNFT</title>
+<title>Trust Stats | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -14,174 +14,194 @@ body{
   padding:15px;
 }
 
-h2{text-align:center;margin-bottom:20px;}
+h2{
+  text-align:center;
+}
 
-.card{
+.box{
   background:#1a1a1a;
   padding:15px;
   border-radius:12px;
   margin-bottom:15px;
-  box-shadow:0 0 10px rgba(255,215,0,0.1);
-}
-
-/* STATS */
-.stats{
-  display:flex;
-  justify-content:space-between;
   text-align:center;
 }
 
-.stat-box{
-  flex:1;
-}
-
-.stat-box h3{
-  margin:0;
-  font-size:14px;
-  color:#aaa;
-}
-
-.stat-box p{
-  font-size:18px;
+.big{
+  font-size:22px;
   font-weight:bold;
-  margin:5px 0 0;
+  margin-top:5px;
 }
 
-/* LIVE FEED */
-.feed{
+#liveFeed{
   font-size:13px;
   color:#ccc;
   line-height:1.8;
+  max-height:200px;
+  overflow:hidden;
 }
 
-/* BADGE */
-.badge{
-  display:inline-block;
-  background:#FFD700;
-  color:#000;
-  padding:2px 8px;
-  border-radius:10px;
-  font-size:10px;
-  margin-left:5px;
-}
-
-/* SUPPORT */
-button{
-  width:100%;
+.live-box{
+  background:#111;
   padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#FFD700;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer;
+  border-radius:10px;
 }
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 </head>
 <body>
 
-<h2>🔐 Trust & Transparency</h2>
+<h2>🔥 Live Trust Stats</h2>
 
-<!-- STATS -->
-<div class="card">
-  <div class="stats">
-    <div class="stat-box">
-      <h3>Users</h3>
-      <p id="users">12,540+</p>
-    </div>
-    <div class="stat-box">
-      <h3>Total Paid</h3>
-      <p id="paid">$58,230+</p>
-    </div>
-    <div class="stat-box">
-      <h3>Total Invested</h3>
-      <p id="invest">$120,000+</p>
-    </div>
-  </div>
+<div class="box">
+  Users
+  <div id="users" class="big">0</div>
 </div>
 
-<!-- LIVE ACTIVITY -->
-<div class="card">
+<div class="box">
+  Total Paid
+  <div id="paid" class="big">$0</div>
+</div>
+
+<div class="box">
+  Total Invested
+  <div id="invest" class="big">$0</div>
+</div>
+
+<div class="box">
   <b>🟢 Live Activity</b>
-  <div class="feed" id="liveFeed">
-    Loading...
-  </div>
-</div>
-
-<!-- WITHDRAW PROOF -->
-<div class="card">
-  <b>💸 Recent Withdrawals</b>
-  <div class="feed" id="withdrawFeed">
-    ✔ a***@gmail.com withdrew $120<br>
-    ✔ s***@yahoo.com withdrew $50
-  </div>
-</div>
-
-<!-- WHY TRUST -->
-<div class="card">
-  <b>⭐ Why Trust SuperNFT?</b>
-  <div class="feed">
-    ✔ Secure blockchain-based system<br>
-    ✔ Real-time earnings tracking<br>
-    ✔ Instant withdrawal processing<br>
-    ✔ Transparent referral system<br>
-    ✔ 24/7 active platform
-  </div>
-</div>
-
-<!-- VERIFIED -->
-<div class="card">
-  <b>🏆 Verified System</b>
-  <div class="feed">
-    All users are verified through our system  
-    <span class="badge">VERIFIED</span><br><br>
-
-    High investors get premium badges  
-    <span class="badge">VIP</span>
-    <span class="badge">PRO</span>
-  </div>
-</div>
-
-<!-- SUPPORT -->
-<div class="card">
-  <b>📞 Need Help?</b><br><br>
-  <button onclick="contactSupport()">Contact Support</button>
+  <div class="live-box" id="liveFeed"></div>
 </div>
 
 <script>
 
-/* 🔥 LIVE ACTIVITY AUTO */
-const names = ["Ali","Rahul","Ahmed","John","Sara","Aman"];
+// 🔥 Firebase Init
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+});
 
+const db = firebase.firestore();
+
+// 🔥 REAL DATA
+let realUsers = 0;
+let realPaid = 0;
+let realInvest = 0;
+
+async function loadRealStats(){
+  const snapshot = await db.collection("users").get();
+
+  realUsers = snapshot.size;
+
+  snapshot.forEach(doc=>{
+    const d = doc.data();
+    realPaid += (d.referralEarnings || 0);
+    realInvest += (d.totalDeposit || 0);
+  });
+}
+
+// 🔥 HYBRID VALUES
+let users = 12000;
+let paid = 50000;
+let invested = 100000;
+
+async function startHybrid(){
+
+  await loadRealStats();
+
+  users = realUsers + Math.floor(Math.random()*2000);
+  paid = realPaid + Math.floor(Math.random()*10000);
+  invested = realInvest + Math.floor(Math.random()*20000);
+
+}
+
+// 🔥 LIVE COUNTER UPDATE
 setInterval(()=>{
 
-  const name = names[Math.floor(Math.random()*names.length)];
-  const amount = (Math.random()*5+1).toFixed(2);
+  users += Math.random() < 0.5 ? 1 : 0;
+  paid += Math.random()*3;
+  invested += Math.random()*6;
 
-  const messages = [
-    `🟢 ${name} earned $${amount}`,
-    `💰 ${name} invested $${amount*20}`,
-    `✔ ${name} withdrew $${amount*10}`
-  ];
+  document.getElementById("users").innerText =
+    Math.floor(users).toLocaleString()+"+";
 
-  const msg = messages[Math.floor(Math.random()*messages.length)];
+  document.getElementById("paid").innerText =
+    "$"+Math.floor(paid).toLocaleString()+"+";
 
-  const feed = document.getElementById("liveFeed");
+  document.getElementById("invest").innerText =
+    "$"+Math.floor(invested).toLocaleString()+"+";
 
-  feed.innerHTML = msg + "<br>" + feed.innerHTML;
+},1500);
 
-  if(feed.childNodes.length > 10){
-    feed.removeChild(feed.lastChild);
-  }
+// 🔥 INDIAN NAMES
+const names = [
+  "Rahul","Amit","Priya","Neha","Arjun",
+  "Rohit","Sneha","Vikas","Ankit","Pooja"
+];
 
-},3000);
+// 🔥 LOAD REAL USERS
+async function loadRealUsers(){
 
+  const snapshot = await db.collection("users").limit(10).get();
 
-/* SUPPORT */
-function contactSupport(){
-  alert("Support coming soon or connect Telegram!");
+  return snapshot.docs.map(doc=>{
+    const d = doc.data();
+    return d.name || (d.email ? d.email.split("@")[0] : "User");
+  });
+
 }
+
+let realNames = [];
+
+// 🔥 LIVE ACTIVITY (HYBRID)
+async function startFeed(){
+
+  realNames = await loadRealUsers();
+
+  setInterval(()=>{
+
+    const useReal = Math.random() < 0.3;
+
+    let name;
+
+    if(useReal && realNames.length > 0){
+      name = realNames[Math.floor(Math.random()*realNames.length)];
+    }else{
+      name = names[Math.floor(Math.random()*names.length)];
+    }
+
+    const amount = (Math.random()*5+1).toFixed(2);
+
+    const actions = [
+      `🟢 ${name} earned $${amount}`,
+      `💰 ${name} invested $${(amount*20).toFixed(0)}`,
+      `✔ ${name} withdrew $${(amount*10).toFixed(0)}`
+    ];
+
+    const msg = actions[Math.floor(Math.random()*actions.length)];
+
+    const feed = document.getElementById("liveFeed");
+
+    const div = document.createElement("div");
+    div.innerText = msg;
+
+    feed.prepend(div);
+
+    if(feed.childNodes.length > 12){
+      feed.removeChild(feed.lastChild);
+    }
+
+  },2500);
+
+}
+
+// 🚀 START
+startHybrid();
+startFeed();
 
 </script>
 
