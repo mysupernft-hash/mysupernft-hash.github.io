@@ -14,51 +14,8 @@ body{
   padding:15px;
 }
 
-h2{
-  text-align:center;
-}
+h2{text-align:center;}
 
-/* TREE */
-#tree{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  margin-top:15px;
-}
-
-.node{
-  background:#111;
-  border:1px solid #FFD700;
-  border-radius:20px;
-  padding:8px 14px;
-  margin:10px;
-  font-size:13px;
-  text-align:center;
-  box-shadow:0 0 10px rgba(255,215,0,0.3);
-  transition:0.3s;
-}
-
-.node:hover{
-  transform:scale(1.1);
-  box-shadow:0 0 20px #FFD700;
-}
-
-.children{
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  margin-top:10px;
-  flex-wrap:wrap;
-}
-
-.line{
-  width:2px;
-  height:20px;
-  background:#FFD700;
-  margin:auto;
-}
-
-/* UI */
 .card{
   background:#1a1a1a;
   padding:15px;
@@ -89,30 +46,54 @@ button{
   margin-top:8px;
 }
 
-button:hover{
-  background:#e6c200;
-}
+button:hover{background:#e6c200;}
 
-.link-box{
-  word-break:break-all;
-  margin-top:8px;
-}
+.link-box{word-break:break-all;margin-top:8px;}
+.stat{text-align:center;font-size:20px;font-weight:bold;}
 
-.stat{
-  font-size:20px;
-  font-weight:bold;
+/* 🌳 TREE */
+#tree{
   text-align:center;
-  margin-top:5px;
+  margin-top:10px;
+}
+
+.node{
+  display:inline-block;
+  background:#111;
+  border:1px solid #FFD700;
+  border-radius:20px;
+  padding:8px 14px;
+  margin:10px;
+  font-size:13px;
+  box-shadow:0 0 10px rgba(255,215,0,0.3);
+  transition:0.3s;
+}
+
+.node:hover{
+  transform:scale(1.1);
+  box-shadow:0 0 20px #FFD700;
+}
+
+.children{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:15px;
+}
+
+.line{
+  width:2px;
+  height:20px;
+  background:#FFD700;
+  margin:auto;
 }
 
 /* MODAL */
 #detailModal{
   display:none;
   position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  top:0;left:0;
+  width:100%;height:100%;
   background:rgba(0,0,0,0.8);
   justify-content:center;
   align-items:center;
@@ -125,12 +106,9 @@ button:hover{
   border-radius:12px;
   width:90%;
   max-width:350px;
-  color:#FFD700;
 }
 
-.clickable{
-  cursor:pointer;
-}
+.clickable{cursor:pointer;}
 </style>
 
 <!-- Firebase -->
@@ -165,21 +143,21 @@ button:hover{
 </div>
 
 <div class="card">
-  <b>🌳 Referral Tree</b>
+  <b>🌳 Referral Tree (Real)</b>
   <div id="tree"></div>
 </div>
 
 <!-- MODAL -->
 <div id="detailModal">
   <div class="modal-box">
-    <h3 id="detailName">User Details</h3>
-    <div style="line-height:1.8;margin-top:10px;">
-      Daily Income: $<span id="detailDaily">0</span><br>
-      Total Deposit: $<span id="detailDeposit">0</span><br>
-      Wallet Balance: $<span id="detailWallet">0</span><br>
-      Referral Income: $<span id="detailReferral">0</span>
+    <h3 id="detailName"></h3>
+    <div>
+      Daily Income: $<span id="detailDaily"></span><br>
+      Deposit: $<span id="detailDeposit"></span><br>
+      Wallet: $<span id="detailWallet"></span><br>
+      Referral Income: $<span id="detailReferral"></span>
     </div>
-    <button onclick="closeModal()" style="width:100%;">Close</button>
+    <button onclick="closeModal()">Close</button>
   </div>
 </div>
 
@@ -199,176 +177,134 @@ if(!user){
 location.href="login.html";
 return;
 }
-loadReferrals(user);
+loadData(user);
 });
 
-async function loadReferrals(user){
+async function loadData(user){
 
-const userDoc = await db.collection("users").doc(user.uid).get();
-if(!userDoc.exists) return;
+const doc = await db.collection("users").doc(user.uid).get();
+const data = doc.data();
 
-const data = userDoc.data();
-const referralCode = data.referralCode;
-
-document.getElementById("refCode").innerText = referralCode || "N/A";
+document.getElementById("refCode").innerText = data.referralCode;
 
 document.getElementById("fullReferralLink").innerText =
-"https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
+"https://mysupernft-hash.github.io/signup.html?ref=" + data.referralCode;
 
 
-// REALTIME
+// 🔥 FULL USERS FETCH
 db.collection("users").onSnapshot(snapshot=>{
 
-let allRefs = new Map();
+let users = [];
 
-snapshot.forEach(doc=>{
-
-const u = doc.data();
-
-if(u.referredByUid === user.uid){
-allRefs.set(doc.id, u);
-}
-else if(u.referredBy === referralCode){
-allRefs.set(doc.id, u);
-}
-
+snapshot.forEach(d=>{
+users.push({id:d.id,...d.data()});
 });
 
-const referrals = Array.from(allRefs.entries())
-.map(([id,data])=>({id,...data}));
-
-// SAFE SORT
-referrals.sort((a,b)=>{
-  return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
-});
+// LIST (same system)
+const referrals = users.filter(u =>
+u.referredByUid === user.uid || u.referredBy === data.referralCode
+);
 
 document.getElementById("count").innerText = referrals.length;
 
 let html="";
-
-if(referrals.length===0){
-html="No referrals yet.";
-}
-else{
-
 referrals.forEach(u=>{
+const name = u.name || u.email?.split("@")[0] || "User";
 
-const displayName =
-u.name ||
-(u.email ? u.email.split("@")[0] : "User");
-
-const join =
-u.createdAt?.toDate().toLocaleString() || "-";
-
-html += `
+html+=`
 <div class="user-box">
-<b class="clickable" onclick="showDetails('${u.id}')">
-${displayName}
-</b><br>
-${u.email || ""}<br>
-<div class="small">Joined: ${join}</div>
-</div>
-`;
-
+<b class="clickable" onclick="showDetails('${u.id}')">${name}</b>
+<div class="small">${u.email||""}</div>
+</div>`;
 });
-
-}
 
 document.getElementById("list").innerHTML = html;
 
-// 🌳 TREE CALL
-buildTree(referrals);
+
+// 🌳 BUILD REAL TREE
+const tree = buildTree(users, user.uid);
+
+// 🌳 RENDER
+renderTree(tree);
 
 });
 
 }
 
 
-// TREE FUNCTION
-function buildTree(referrals){
+// 🔥 TREE LOGIC
+function buildTree(users, rootId){
 
-if(!referrals || referrals.length === 0){
-  document.getElementById("tree").innerHTML = "No tree data";
-  return;
+function getChildren(parentId){
+return users
+.filter(u=>u.referredByUid===parentId)
+.map(u=>({
+...u,
+children:getChildren(u.id)
+}));
 }
 
-let html = `
-  <div class="node">👑 YOU</div>
-  <div class="line"></div>
-  <div class="children">
-`;
+return {
+id:rootId,
+name:"👑 YOU",
+children:getChildren(rootId)
+};
+}
 
-referrals.slice(0,4).forEach(parent=>{
 
-  const name = parent.name || (parent.email ? parent.email.split("@")[0] : "User");
+// 🔥 RENDER TREE
+function renderTree(tree){
 
-  html += `
-    <div>
-      <div class="node clickable" onclick="showDetails('${parent.id}')">
-        ${name}
-      </div>
-      <div class="line"></div>
-      <div class="children">
-        <div class="node">+</div>
-        <div class="node">+</div>
-      </div>
-    </div>
-  `;
+function create(node){
+
+let name = node.name || node.email || "User";
+
+let html = `<div class="node clickable" onclick="showDetails('${node.id}')">${name}</div>`;
+
+if(node.children && node.children.length>0){
+html+=`<div class="line"></div><div class="children">`;
+
+node.children.forEach(c=>{
+html+=`<div>${create(c)}</div>`;
 });
 
-html += `</div>`;
+html+=`</div>`;
+}
 
-document.getElementById("tree").innerHTML = html;
+return html;
+}
+
+document.getElementById("tree").innerHTML = create(tree);
 }
 
 
 // MODAL
 function showDetails(uid){
+db.collection("users").doc(uid).get().then(s=>{
+const d=s.data();
 
-db.collection("users").doc(uid).get()
-.then(snap=>{
+detailName.innerText=d.name||d.email;
+detailDaily.innerText=(d.dailyIncome||0).toFixed(2);
+detailDeposit.innerText=(d.totalDeposit||0).toFixed(2);
+detailWallet.innerText=(d.walletBalance||0).toFixed(2);
+detailReferral.innerText=(d.referralEarnings||0).toFixed(2);
 
-if(!snap.exists) return;
-
-const d = snap.data();
-
-document.getElementById("detailName").innerText =
-d.name || d.email || "User";
-
-document.getElementById("detailDaily").innerText =
-(d.dailyIncome || 0).toFixed(2);
-
-document.getElementById("detailDeposit").innerText =
-(d.totalDeposit || 0).toFixed(2);
-
-document.getElementById("detailWallet").innerText =
-(d.walletBalance || 0).toFixed(2);
-
-document.getElementById("detailReferral").innerText =
-(d.referralEarnings || 0).toFixed(2);
-
-document.getElementById("detailModal").style.display="flex";
-
+detailModal.style.display="flex";
 });
 }
 
 function closeModal(){
-document.getElementById("detailModal").style.display="none";
+detailModal.style.display="none";
 }
 
-// CLICK OUTSIDE CLOSE
-window.onclick = function(e){
-  const modal = document.getElementById("detailModal");
-  if(e.target === modal){
-    modal.style.display = "none";
-  }
+window.onclick = e=>{
+if(e.target===detailModal) closeModal();
 }
 
 // COPY
 function copyLink(){
-const text = document.getElementById("fullReferralLink").innerText;
-navigator.clipboard.writeText(text);
-alert("Referral link copied!");
+navigator.clipboard.writeText(fullReferralLink.innerText);
+alert("Copied!");
 }
 
 </script>
