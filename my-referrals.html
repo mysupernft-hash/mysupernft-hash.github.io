@@ -18,7 +18,8 @@ h2{
   text-align:center;
 }
 
-  #tree{
+/* TREE */
+#tree{
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -47,6 +48,7 @@ h2{
   justify-content:center;
   gap:20px;
   margin-top:10px;
+  flex-wrap:wrap;
 }
 
 .line{
@@ -56,6 +58,7 @@ h2{
   margin:auto;
 }
 
+/* UI */
 .card{
   background:#1a1a1a;
   padding:15px;
@@ -128,7 +131,6 @@ button:hover{
 .clickable{
   cursor:pointer;
 }
-
 </style>
 
 <!-- Firebase -->
@@ -162,30 +164,24 @@ button:hover{
   <div id="list">Loading...</div>
 </div>
 
-  <div class="card">
+<div class="card">
   <b>🌳 Referral Tree</b>
   <div id="tree"></div>
 </div>
 
-
-<!-- 🔥 DETAIL MODAL -->
+<!-- MODAL -->
 <div id="detailModal">
   <div class="modal-box">
-
     <h3 id="detailName">User Details</h3>
-
     <div style="line-height:1.8;margin-top:10px;">
       Daily Income: $<span id="detailDaily">0</span><br>
       Total Deposit: $<span id="detailDeposit">0</span><br>
       Wallet Balance: $<span id="detailWallet">0</span><br>
       Referral Income: $<span id="detailReferral">0</span>
     </div>
-
     <button onclick="closeModal()" style="width:100%;">Close</button>
-
   </div>
 </div>
-
 
 <script>
 
@@ -199,14 +195,11 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 auth.onAuthStateChanged(user=>{
-
 if(!user){
 location.href="login.html";
 return;
 }
-
 loadReferrals(user);
-
 });
 
 async function loadReferrals(user){
@@ -217,15 +210,13 @@ if(!userDoc.exists) return;
 const data = userDoc.data();
 const referralCode = data.referralCode;
 
-// Show code
-document.getElementById("refCode").innerText = referralCode;
+document.getElementById("refCode").innerText = referralCode || "N/A";
 
-// Full link
 document.getElementById("fullReferralLink").innerText =
 "https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
 
 
-// 🔥 Real-time system
+// REALTIME
 db.collection("users").onSnapshot(snapshot=>{
 
 let allRefs = new Map();
@@ -234,13 +225,10 @@ snapshot.forEach(doc=>{
 
 const u = doc.data();
 
-// UID system
 if(u.referredByUid === user.uid){
 allRefs.set(doc.id, u);
 }
-
-// Code system
-if(u.referredBy === referralCode){
+else if(u.referredBy === referralCode){
 allRefs.set(doc.id, u);
 }
 
@@ -249,10 +237,9 @@ allRefs.set(doc.id, u);
 const referrals = Array.from(allRefs.entries())
 .map(([id,data])=>({id,...data}));
 
-// Sort newest first
+// SAFE SORT
 referrals.sort((a,b)=>{
-if(!a.createdAt || !b.createdAt) return 0;
-return b.createdAt.seconds - a.createdAt.seconds;
+  return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
 });
 
 document.getElementById("count").innerText = referrals.length;
@@ -288,13 +275,54 @@ ${u.email || ""}<br>
 }
 
 document.getElementById("list").innerHTML = html;
+
+// 🌳 TREE CALL
 buildTree(referrals);
+
 });
 
 }
 
 
-// 🔥 SHOW DETAILS
+// TREE FUNCTION
+function buildTree(referrals){
+
+if(!referrals || referrals.length === 0){
+  document.getElementById("tree").innerHTML = "No tree data";
+  return;
+}
+
+let html = `
+  <div class="node">👑 YOU</div>
+  <div class="line"></div>
+  <div class="children">
+`;
+
+referrals.slice(0,4).forEach(parent=>{
+
+  const name = parent.name || (parent.email ? parent.email.split("@")[0] : "User");
+
+  html += `
+    <div>
+      <div class="node clickable" onclick="showDetails('${parent.id}')">
+        ${name}
+      </div>
+      <div class="line"></div>
+      <div class="children">
+        <div class="node">+</div>
+        <div class="node">+</div>
+      </div>
+    </div>
+  `;
+});
+
+html += `</div>`;
+
+document.getElementById("tree").innerHTML = html;
+}
+
+
+// MODAL
 function showDetails(uid){
 
 db.collection("users").doc(uid).get()
@@ -305,7 +333,7 @@ if(!snap.exists) return;
 const d = snap.data();
 
 document.getElementById("detailName").innerText =
-d.name || d.email;
+d.name || d.email || "User";
 
 document.getElementById("detailDaily").innerText =
 (d.dailyIncome || 0).toFixed(2);
@@ -322,44 +350,25 @@ document.getElementById("detailReferral").innerText =
 document.getElementById("detailModal").style.display="flex";
 
 });
-
 }
 
 function closeModal(){
 document.getElementById("detailModal").style.display="none";
 }
 
-// Copy
+// CLICK OUTSIDE CLOSE
+window.onclick = function(e){
+  const modal = document.getElementById("detailModal");
+  if(e.target === modal){
+    modal.style.display = "none";
+  }
+}
+
+// COPY
 function copyLink(){
 const text = document.getElementById("fullReferralLink").innerText;
 navigator.clipboard.writeText(text);
 alert("Referral link copied!");
-}
-
-  function buildTree(referrals){
-
-  let html = `
-    <div class="node">👑 YOU</div>
-    <div class="line"></div>
-    <div class="children">
-  `;
-
-  referrals.slice(0,5).forEach(u=>{
-
-    const name = u.name || (u.email ? u.email.split("@")[0] : "User");
-
-    html += `
-      <div>
-        <div class="node clickable" onclick="showDetails('${u.id}')">
-          ${name}
-        </div>
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-
-  document.getElementById("tree").innerHTML = html;
 }
 
 </script>
