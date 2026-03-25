@@ -30,8 +30,6 @@ h2{text-align:center;}
   margin-top:10px;
 }
 
-.small{font-size:12px;color:#ccc;}
-
 button{
   padding:8px 12px;
   border:none;
@@ -41,7 +39,6 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button:hover{background:#e6c200;}
 
 .link-box{word-break:break-all;margin-top:8px;}
 
@@ -127,6 +124,28 @@ button:hover{background:#e6c200;}
   font-weight:bold;
 }
 
+/* MODAL */
+#userModal{
+  display:none;
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.8);
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.modal-box{
+  background:#111;
+  padding:20px;
+  border-radius:12px;
+  width:90%;
+  max-width:300px;
+  text-align:center;
+  box-shadow:0 0 20px #FFD700;
+}
+
 .clickable{cursor:pointer;}
 </style>
 
@@ -162,7 +181,24 @@ button:hover{background:#e6c200;}
 
 <div class="card">
 <b>🌳 Referral Tree</b>
+
+<div style="text-align:center;margin:10px 0;font-weight:bold;">
+Total Users: <span id="totalTreeUsers">0</span>
+</div>
+
 <div id="tree"></div>
+</div>
+
+<!-- MODAL -->
+<div id="userModal">
+  <div class="modal-box">
+    <h3 id="modalName">User</h3>
+    <p>Email: <span id="modalEmail"></span></p>
+    <p>Total Deposit: $<span id="modalDeposit"></span></p>
+    <p>Wallet: $<span id="modalWallet"></span></p>
+    <p>Referral Earnings: $<span id="modalReferral"></span></p>
+    <button onclick="closeModal()">Close</button>
+  </div>
 </div>
 
 <script>
@@ -200,22 +236,24 @@ snapshot.forEach(doc=>{
 allUsers.push({id:doc.id,...doc.data()});
 });
 
-/* LEVEL 1 */
+/* LEVELS */
 let level1 = allUsers.filter(u =>
 u.referredByUid === user.uid || u.referredBy === referralCode
 );
 
-/* LEVEL 2 */
 let level2 = allUsers.filter(u =>
 level1.some(l1 => u.referredByUid === l1.id)
 );
 
-/* LEVEL 3 */
 let level3 = allUsers.filter(u =>
 level2.some(l2 => u.referredByUid === l2.id)
 );
 
-/* LIST (same as before) */
+/* TOTAL USERS */
+const totalUsers = level1.length + level2.length + level3.length;
+document.getElementById("totalTreeUsers").innerText = totalUsers;
+
+/* LIST */
 document.getElementById("count").innerText = level1.length;
 
 let html="";
@@ -230,7 +268,7 @@ ${u.email || ""}
 });
 document.getElementById("list").innerHTML = html;
 
-/* TREE BUILD */
+/* TREE */
 let treeHTML = `<div class="tree"><ul>
 
 <li>
@@ -280,15 +318,32 @@ document.getElementById("tree").innerHTML = treeHTML;
 
 }
 
+/* MODAL */
 function showDetails(uid){
 db.collection("users").doc(uid).get().then(snap=>{
 const d = snap.data();
-alert(
-`Name: ${d.name}
-Deposit: $${d.totalDeposit||0}
-Wallet: $${d.walletBalance||0}`
-);
+
+document.getElementById("modalName").innerText =
+d.name || "User";
+
+document.getElementById("modalEmail").innerText =
+d.email || "N/A";
+
+document.getElementById("modalDeposit").innerText =
+(d.totalDeposit || 0).toFixed(2);
+
+document.getElementById("modalWallet").innerText =
+(d.walletBalance || 0).toFixed(2);
+
+document.getElementById("modalReferral").innerText =
+(d.referralEarnings || 0).toFixed(2);
+
+document.getElementById("userModal").style.display = "flex";
 });
+}
+
+function closeModal(){
+document.getElementById("userModal").style.display = "none";
 }
 
 function copyLink(){
