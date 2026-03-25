@@ -30,10 +30,7 @@ h2{text-align:center;}
   margin-top:10px;
 }
 
-.small{
-  font-size:12px;
-  color:#ccc;
-}
+.small{font-size:12px;color:#ccc;}
 
 button{
   padding:8px 12px;
@@ -43,30 +40,72 @@ button{
   color:#000;
   font-weight:bold;
   cursor:pointer;
-  margin-top:8px;
 }
-
 button:hover{background:#e6c200;}
 
 .link-box{word-break:break-all;margin-top:8px;}
-.stat{text-align:center;font-size:20px;font-weight:bold;}
 
-/* 🌳 TREE */
-#tree{
+.stat{
+  font-size:20px;
+  font-weight:bold;
   text-align:center;
-  margin-top:10px;
 }
+
+/* TREE */
+#tree{overflow-x:auto;}
+
+.tree ul{
+  padding-top:20px;
+  position:relative;
+  display:flex;
+  justify-content:center;
+}
+
+.tree ul::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:50%;
+  border-left:2px solid #FFD700;
+  height:20px;
+}
+
+.tree li{
+  list-style:none;
+  text-align:center;
+  position:relative;
+  padding:20px 10px 0;
+}
+
+.tree li::before, .tree li::after{
+  content:'';
+  position:absolute;
+  top:0;
+  width:50%;
+  height:20px;
+  border-top:2px solid #FFD700;
+}
+
+.tree li::before{right:50%;}
+.tree li::after{
+  left:50%;
+  border-left:2px solid #FFD700;
+}
+
+.tree li:only-child::before,
+.tree li:only-child::after{display:none;}
+
+.tree li:first-child::before{border:none;}
+.tree li:last-child::after{border:none;}
 
 .node{
   display:inline-block;
+  padding:14px 16px 8px;
+  border-radius:25px;
   background:#111;
   border:1px solid #FFD700;
-  border-radius:20px;
-  padding:8px 14px;
-  margin:10px;
+  position:relative;
   font-size:13px;
-  box-shadow:0 0 10px rgba(255,215,0,0.3);
-  transition:0.3s;
 }
 
 .node:hover{
@@ -74,44 +113,23 @@ button:hover{background:#e6c200;}
   box-shadow:0 0 20px #FFD700;
 }
 
-.children{
-  display:flex;
-  justify-content:center;
-  flex-wrap:wrap;
-  gap:15px;
-}
-
-.line{
-  width:2px;
-  height:20px;
+/* LEVEL TAG */
+.level-tag{
+  position:absolute;
+  top:-10px;
+  left:50%;
+  transform:translateX(-50%);
   background:#FFD700;
-  margin:auto;
-}
-
-/* MODAL */
-#detailModal{
-  display:none;
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,0.8);
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-}
-
-.modal-box{
-  background:#111;
-  padding:20px;
-  border-radius:12px;
-  width:90%;
-  max-width:350px;
+  color:#000;
+  font-size:10px;
+  padding:2px 8px;
+  border-radius:10px;
+  font-weight:bold;
 }
 
 .clickable{cursor:pointer;}
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -122,43 +140,29 @@ button:hover{background:#e6c200;}
 <h2>👥 My Referrals</h2>
 
 <div class="card">
-  <b>Your Referral Code</b>
-  <div id="refCode">Loading...</div>
+<b>Your Referral Code</b>
+<div id="refCode">Loading...</div>
 </div>
 
 <div class="card">
-  <b>Full Referral Link</b>
-  <div id="fullReferralLink" class="link-box">Loading...</div>
-  <button onclick="copyLink()">Copy</button>
+<b>Full Referral Link</b>
+<div id="fullReferralLink" class="link-box">Loading...</div>
+<button onclick="copyLink()">Copy</button>
 </div>
 
 <div class="card">
-  <b>Total Referrals</b>
-  <div id="count" class="stat">0</div>
+<b>Total Referrals</b>
+<div id="count" class="stat">0</div>
 </div>
 
 <div class="card">
-  <b>Referral Users</b>
-  <div id="list">Loading...</div>
+<b>Referral Users</b>
+<div id="list">Loading...</div>
 </div>
 
 <div class="card">
-  <b>🌳 Referral Tree (Real)</b>
-  <div id="tree"></div>
-</div>
-
-<!-- MODAL -->
-<div id="detailModal">
-  <div class="modal-box">
-    <h3 id="detailName"></h3>
-    <div>
-      Daily Income: $<span id="detailDaily"></span><br>
-      Deposit: $<span id="detailDeposit"></span><br>
-      Wallet: $<span id="detailWallet"></span><br>
-      Referral Income: $<span id="detailReferral"></span>
-    </div>
-    <button onclick="closeModal()">Close</button>
-  </div>
+<b>🌳 Referral Tree</b>
+<div id="tree"></div>
 </div>
 
 <script>
@@ -173,137 +177,124 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 auth.onAuthStateChanged(user=>{
-if(!user){
-location.href="login.html";
-return;
-}
-loadData(user);
+if(!user){location.href="login.html";return;}
+loadReferrals(user);
 });
 
-async function loadData(user){
+async function loadReferrals(user){
 
-const doc = await db.collection("users").doc(user.uid).get();
-const data = doc.data();
+const userDoc = await db.collection("users").doc(user.uid).get();
+const data = userDoc.data();
+const referralCode = data.referralCode;
 
-document.getElementById("refCode").innerText = data.referralCode;
+document.getElementById("refCode").innerText = referralCode;
 
 document.getElementById("fullReferralLink").innerText =
-"https://mysupernft-hash.github.io/signup.html?ref=" + data.referralCode;
+"https://mysupernft-hash.github.io/signup.html?ref=" + referralCode;
 
-
-// 🔥 FULL USERS FETCH
 db.collection("users").onSnapshot(snapshot=>{
 
-let users = [];
+let allUsers = [];
 
-snapshot.forEach(d=>{
-users.push({id:d.id,...d.data()});
+snapshot.forEach(doc=>{
+allUsers.push({id:doc.id,...doc.data()});
 });
 
-// LIST (same system)
-const referrals = users.filter(u =>
-u.referredByUid === user.uid || u.referredBy === data.referralCode
+/* LEVEL 1 */
+let level1 = allUsers.filter(u =>
+u.referredByUid === user.uid || u.referredBy === referralCode
 );
 
-document.getElementById("count").innerText = referrals.length;
+/* LEVEL 2 */
+let level2 = allUsers.filter(u =>
+level1.some(l1 => u.referredByUid === l1.id)
+);
+
+/* LEVEL 3 */
+let level3 = allUsers.filter(u =>
+level2.some(l2 => u.referredByUid === l2.id)
+);
+
+/* LIST (same as before) */
+document.getElementById("count").innerText = level1.length;
 
 let html="";
-referrals.forEach(u=>{
-const name = u.name || u.email?.split("@")[0] || "User";
-
+level1.forEach(u=>{
 html+=`
 <div class="user-box">
-<b class="clickable" onclick="showDetails('${u.id}')">${name}</b>
-<div class="small">${u.email||""}</div>
+<b class="clickable" onclick="showDetails('${u.id}')">
+${u.name || u.email}
+</b><br>
+${u.email || ""}
 </div>`;
 });
-
 document.getElementById("list").innerHTML = html;
 
+/* TREE BUILD */
+let treeHTML = `<div class="tree"><ul>
 
-// 🌳 BUILD REAL TREE
-const tree = buildTree(users, user.uid);
+<li>
+<div class="node">👑 YOU</div>
 
-// 🌳 RENDER
-renderTree(tree);
+<ul>
+${level1.map(l1=>`
+<li>
+<div class="node clickable" onclick="showDetails('${l1.id}')">
+<div class="level-tag">Level 1</div>
+${l1.name || l1.email}
+</div>
+
+<ul>
+${level2.filter(l2=>l2.referredByUid===l1.id).map(l2=>`
+<li>
+<div class="node clickable" onclick="showDetails('${l2.id}')">
+<div class="level-tag">Level 2</div>
+${l2.name || l2.email}
+</div>
+
+<ul>
+${level3.filter(l3=>l3.referredByUid===l2.id).map(l3=>`
+<li>
+<div class="node clickable" onclick="showDetails('${l3.id}')">
+<div class="level-tag">Level 3</div>
+${l3.name || l3.email}
+</div>
+</li>
+`).join("")}
+</ul>
+
+</li>
+`).join("")}
+</ul>
+
+</li>
+`).join("")}
+</ul>
+
+</li>
+</ul></div>`;
+
+document.getElementById("tree").innerHTML = treeHTML;
 
 });
 
 }
 
-
-// 🔥 TREE LOGIC
-function buildTree(users, rootId){
-
-function getChildren(parentId){
-return users
-.filter(u=>u.referredByUid===parentId)
-.map(u=>({
-...u,
-children:getChildren(u.id)
-}));
-}
-
-return {
-id:rootId,
-name:"👑 YOU",
-children:getChildren(rootId)
-};
-}
-
-
-// 🔥 RENDER TREE
-function renderTree(tree){
-
-function create(node){
-
-let name = node.name || node.email || "User";
-
-let html = `<div class="node clickable" onclick="showDetails('${node.id}')">${name}</div>`;
-
-if(node.children && node.children.length>0){
-html+=`<div class="line"></div><div class="children">`;
-
-node.children.forEach(c=>{
-html+=`<div>${create(c)}</div>`;
-});
-
-html+=`</div>`;
-}
-
-return html;
-}
-
-document.getElementById("tree").innerHTML = create(tree);
-}
-
-
-// MODAL
 function showDetails(uid){
-db.collection("users").doc(uid).get().then(s=>{
-const d=s.data();
-
-detailName.innerText=d.name||d.email;
-detailDaily.innerText=(d.dailyIncome||0).toFixed(2);
-detailDeposit.innerText=(d.totalDeposit||0).toFixed(2);
-detailWallet.innerText=(d.walletBalance||0).toFixed(2);
-detailReferral.innerText=(d.referralEarnings||0).toFixed(2);
-
-detailModal.style.display="flex";
+db.collection("users").doc(uid).get().then(snap=>{
+const d = snap.data();
+alert(
+`Name: ${d.name}
+Deposit: $${d.totalDeposit||0}
+Wallet: $${d.walletBalance||0}`
+);
 });
 }
 
-function closeModal(){
-detailModal.style.display="none";
-}
-
-window.onclick = e=>{
-if(e.target===detailModal) closeModal();
-}
-
-// COPY
 function copyLink(){
-navigator.clipboard.writeText(fullReferralLink.innerText);
+navigator.clipboard.writeText(
+document.getElementById("fullReferralLink").innerText
+);
 alert("Copied!");
 }
 
