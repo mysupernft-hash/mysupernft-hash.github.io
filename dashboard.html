@@ -748,8 +748,20 @@ function showNotification(text){
 // ONLY NAME NOTIFICATION
 // =======================
 function randomNotification(){
+
   const name = getRandomName();
-  showNotification("👤 " + name);
+  const amount = (Math.random()*200+10).toFixed(0);
+
+  const messages = [
+    `👤 ${name} joined`,
+    `💰 ${name} invested $${amount}`,
+    `💸 ${name} withdrew $${amount}`,
+    `🟢 ${name} earned $${(amount/10).toFixed(2)}`
+  ];
+
+  const msg = messages[Math.floor(Math.random()*messages.length)];
+
+  showNotification(msg);
 }
 
 // =======================
