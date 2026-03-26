@@ -2,23 +2,18 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Trust Stats | SuperNFT</title>
+<title>Live Trust System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
-  margin:0;
-  font-family:Arial;
   background:#0f0f0f;
   color:#FFD700;
+  font-family:Arial;
   padding:15px;
 }
 
-h2{
-  text-align:center;
-}
-
-.box{
+.card{
   background:#1a1a1a;
   padding:15px;
   border-radius:12px;
@@ -29,56 +24,45 @@ h2{
 .big{
   font-size:22px;
   font-weight:bold;
-  margin-top:5px;
 }
 
 #liveFeed{
   font-size:13px;
-  color:#ccc;
   line-height:1.8;
-  max-height:200px;
-  overflow:hidden;
-}
-
-.live-box{
-  background:#111;
-  padding:10px;
-  border-radius:10px;
 }
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 </head>
 <body>
 
-<h2>🔥 Live Trust Stats</h2>
+<h2 style="text-align:center;">🔥 Live Platform Stats</h2>
 
-<div class="box">
-  Users
+<div class="card">
+  Users<br>
   <div id="users" class="big">0</div>
 </div>
 
-<div class="box">
-  Total Paid
+<div class="card">
+  Total Paid<br>
   <div id="paid" class="big">$0</div>
 </div>
 
-<div class="box">
-  Total Invested
+<div class="card">
+  Total Invested<br>
   <div id="invest" class="big">$0</div>
 </div>
 
-<div class="box">
+<div class="card">
   <b>🟢 Live Activity</b>
-  <div class="live-box" id="liveFeed"></div>
+  <div id="liveFeed">Loading...</div>
 </div>
 
 <script>
 
-// 🔥 Firebase Init
+// 🔥 FIREBASE CONFIG
 firebase.initializeApp({
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -87,47 +71,47 @@ firebase.initializeApp({
 
 const db = firebase.firestore();
 
-// 🔥 REAL DATA
-let realUsers = 0;
-let realPaid = 0;
-let realInvest = 0;
+// ============================
+// 🔥 BASE VALUES (fallback)
+// ============================
+let users = 12540;
+let paid = 58230;
+let invested = 120000;
 
-async function loadRealStats(){
-  const snapshot = await db.collection("users").get();
+// ============================
+// 🔥 FETCH REAL DATA
+// ============================
+db.collection("users").onSnapshot(snapshot=>{
 
-  realUsers = snapshot.size;
+  let realUsers = snapshot.size;
+  let totalDeposit = 0;
+  let totalWithdraw = 0;
 
   snapshot.forEach(doc=>{
     const d = doc.data();
-    realPaid += (d.referralEarnings || 0);
-    realInvest += (d.totalDeposit || 0);
+
+    totalDeposit += d.totalDeposit || 0;
+    totalWithdraw += d.totalWithdraw || 0;
   });
-}
 
-// 🔥 HYBRID VALUES
-let users = 12000;
-let paid = 50000;
-let invested = 100000;
+  // REAL + BOOST
+  users = realUsers + Math.floor(realUsers * 0.3); // 30% boost
+  invested = totalDeposit * 1.2;
+  paid = totalWithdraw * 1.3;
 
-async function startHybrid(){
+});
 
-  await loadRealStats();
-
-  users = realUsers + Math.floor(Math.random()*2000);
-  paid = realPaid + Math.floor(Math.random()*10000);
-  invested = realInvest + Math.floor(Math.random()*20000);
-
-}
-
-// 🔥 LIVE COUNTER UPDATE
+// ============================
+// 🔥 SMOOTH FAKE GROWTH
+// ============================
 setInterval(()=>{
 
-  users += Math.random() < 0.5 ? 1 : 0;
-  paid += Math.random()*3;
-  invested += Math.random()*6;
+  users += Math.floor(Math.random()*2)+1;
+  paid += Math.random()*10;
+  invested += Math.random()*20;
 
   document.getElementById("users").innerText =
-    Math.floor(users).toLocaleString()+"+";
+    users.toLocaleString()+"+";
 
   document.getElementById("paid").innerText =
     "$"+Math.floor(paid).toLocaleString()+"+";
@@ -135,73 +119,62 @@ setInterval(()=>{
   document.getElementById("invest").innerText =
     "$"+Math.floor(invested).toLocaleString()+"+";
 
-},1500);
+},1000);
 
+// ============================
 // 🔥 INDIAN NAMES
+// ============================
 const names = [
-  "Rahul","Amit","Priya","Neha","Arjun",
-  "Rohit","Sneha","Vikas","Ankit","Pooja"
+"Aarav","Vivaan","Aditya","Arjun","Krishna",
+"Rahul","Rohan","Aman","Karan","Siddharth",
+"Raj","Ankit","Vikas","Deepak","Yash",
+"Priya","Ananya","Sneha","Pooja","Kavya",
+"Neha","Riya","Simran","Aisha","Meera"
 ];
 
-// 🔥 LOAD REAL USERS
-async function loadRealUsers(){
+// ============================
+// 🔥 LIVE ACTIVITY SYSTEM
+// ============================
+setInterval(()=>{
 
-  const snapshot = await db.collection("users").limit(10).get();
+  const name = names[Math.floor(Math.random()*names.length)];
 
-  return snapshot.docs.map(doc=>{
-    const d = doc.data();
-    return d.name || (d.email ? d.email.split("@")[0] : "User");
-  });
+  const earn = (Math.random()*3+1).toFixed(2);
+  const investAmt = (Math.random()*200+20).toFixed(0);
+  const withdrawAmt = (Math.random()*150+10).toFixed(0);
 
-}
+  const msgs = [
+    `🟢 ${name} earned $${earn}`,
+    `💰 ${name} invested $${investAmt}`,
+    `✔ ${name} withdrew $${withdrawAmt}`
+  ];
 
-let realNames = [];
+  const msg = msgs[Math.floor(Math.random()*msgs.length)];
 
-// 🔥 LIVE ACTIVITY (HYBRID)
-async function startFeed(){
+  const feed = document.getElementById("liveFeed");
 
-  realNames = await loadRealUsers();
+  feed.innerHTML = msg + "<br>" + feed.innerHTML;
 
-  setInterval(()=>{
+  if(feed.childNodes.length > 10){
+    feed.removeChild(feed.lastChild);
+  }
 
-    const useReal = Math.random() < 0.3;
+},2500);
 
-    let name;
+// ============================
+// 🔥 BIG REALISTIC JUMP
+// ============================
+setInterval(()=>{
 
-    if(useReal && realNames.length > 0){
-      name = realNames[Math.floor(Math.random()*realNames.length)];
-    }else{
-      name = names[Math.floor(Math.random()*names.length)];
-    }
+  if(Math.random() < 0.3){
 
-    const amount = (Math.random()*5+1).toFixed(2);
+    users += Math.floor(Math.random()*20)+10;
+    paid += Math.random()*200;
+    invested += Math.random()*400;
 
-    const actions = [
-      `🟢 ${name} earned $${amount}`,
-      `💰 ${name} invested $${(amount*20).toFixed(0)}`,
-      `✔ ${name} withdrew $${(amount*10).toFixed(0)}`
-    ];
+  }
 
-    const msg = actions[Math.floor(Math.random()*actions.length)];
-
-    const feed = document.getElementById("liveFeed");
-
-    const div = document.createElement("div");
-    div.innerText = msg;
-
-    feed.prepend(div);
-
-    if(feed.childNodes.length > 12){
-      feed.removeChild(feed.lastChild);
-    }
-
-  },2500);
-
-}
-
-// 🚀 START
-startHybrid();
-startFeed();
+},5000);
 
 </script>
 
