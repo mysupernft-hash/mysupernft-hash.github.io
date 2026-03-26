@@ -152,59 +152,51 @@ const db = firebase.firestore();
 const ref = db.collection("stats").doc("global");
 
 // =======================
-// 🔥 REAL-TIME DISPLAY
+// 🔥 GLOBAL VALUES (SYNC BASE)
+// =======================
+let users = 12540;
+let paid = 58230;
+let invest = 120000;
+
+// =======================
+// ✅ FIREBASE READ (REAL BASE)
 // =======================
 ref.onSnapshot(doc=>{
 
   if(!doc.exists){
-  document.getElementById("users").innerText = "12,540+";
-  document.getElementById("paid").innerText = "$58,230+";
-  document.getElementById("invest").innerText = "$120,000+";
-  return;
-}
+    document.getElementById("users").innerText = "12,540+";
+    document.getElementById("paid").innerText = "$58,230+";
+    document.getElementById("invest").innerText = "$120,000+";
+    return;
+  }
 
   const d = doc.data();
 
-  document.getElementById("users").innerText =
-    Math.floor(d.users).toLocaleString()+"+";
-
-  document.getElementById("paid").innerText =
-    "$"+Math.floor(d.paid).toLocaleString()+"+";
-
-  document.getElementById("invest").innerText =
-    "$"+Math.floor(d.invest).toLocaleString()+"+";
+  users = d.users || users;
+  paid = d.paid || paid;
+  invest = d.invest || invest;
 
 });
 
 // =======================
-// 🔥 AUTO INCREMENT (NO RESET)
+// 🔥 SMOOTH LIVE GROWTH (NO WRITE)
 // =======================
-setInterval(async ()=>{
+setInterval(()=>{
 
-  const snap = await ref.get();
+  users += Math.random()*0.4;
+  paid += Math.random()*2;
+  invest += Math.random()*3;
 
-  let users = 12540;
-  let paid = 58230;
-  let invest = 120000;
+  document.getElementById("users").innerText =
+    Math.floor(users).toLocaleString()+"+";
 
-  if(snap.exists){
-    const d = snap.data();
-    users = d.users || users;
-    paid = d.paid || paid;
-    invest = d.invest || invest;
-  }
+  document.getElementById("paid").innerText =
+    "$"+Math.floor(paid).toLocaleString()+"+";
 
-  users += Math.random()*1.2;
-  paid += Math.random()*6;
-  invest += Math.random()*10;
+  document.getElementById("invest").innerText =
+    "$"+Math.floor(invest).toLocaleString()+"+";
 
-  await ref.set({
-    users,
-    paid,
-    invest
-  });
-
-},2000);
+},1000);
 
 // =======================
 // 🔥 INDIAN NAMES
