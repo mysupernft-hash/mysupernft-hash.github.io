@@ -133,95 +133,66 @@ button{
   <button onclick="alert('Support coming soon')">📞 Contact Support</button>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
 
-// =======================
-// 🔥 BASE VALUES
-// =======================
-const baseUsers = 12540;
-const basePaid = 58230;
-const baseInvest = 120000;
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+});
 
-// ✅ START NEAR CURRENT TIME (VERY IMPORTANT)
-const startTime = Date.now() - 5000;
+const db = firebase.firestore();
+const ref = db.collection("stats").doc("global");
 
-// =======================
-// 🔥 CALCULATION SYSTEM
-// =======================
-function updateStats(){
+// 🔥 REAL-TIME DISPLAY
+ref.onSnapshot(doc=>{
 
-  const now = Date.now();
-  const seconds = (now - startTime) / 1000;
+  if(!doc.exists) return;
 
-  // 🔥 SLOW REALISTIC GROWTH
-  const users = baseUsers + seconds * 0.02;
-  const paid = basePaid + seconds * 0.3;
-  const invest = baseInvest + seconds * 0.5;
+  const d = doc.data();
 
   document.getElementById("users").innerText =
-    Math.floor(users).toLocaleString()+"+";
+    Math.floor(d.users).toLocaleString()+"+";
 
   document.getElementById("paid").innerText =
-    "$"+Math.floor(paid).toLocaleString()+"+";
+    "$"+Math.floor(d.paid).toLocaleString()+"+";
 
   document.getElementById("invest").innerText =
-    "$"+Math.floor(invest).toLocaleString()+"+";
-}
+    "$"+Math.floor(d.invest).toLocaleString()+"+";
 
-updateStats();
-setInterval(updateStats,1000);
+});
 
-// =======================
-// 🔥 INDIAN NAMES
-// =======================
-const names = [
-"Aarav","Vivaan","Aditya","Arjun","Krishna",
-"Rahul","Rohan","Aman","Karan","Siddharth",
-"Raj","Ankit","Vikas","Deepak","Yash",
-"Priya","Ananya","Sneha","Pooja","Kavya"
-];
+// 🔥 AUTO INCREMENT (CONTINUE FOREVER)
+setInterval(async ()=>{
 
-// =======================
-// 🔥 LIVE ACTIVITY
-// =======================
-setInterval(()=>{
+  const snap = await ref.get();
 
-  const name = names[Math.floor(Math.random()*names.length)];
-  const amt = (Math.random()*5+1).toFixed(2);
+  let users = 12540;
+  let paid = 58230;
+  let invest = 120000;
 
-  const msgs = [
-    `🟢 ${name} earned $${amt}`,
-    `💰 ${name} invested $${(amt*20).toFixed(0)}`,
-    `✔ ${name} withdrew $${(amt*10).toFixed(0)}`
-  ];
-
-  const msg = msgs[Math.floor(Math.random()*msgs.length)];
-
-  const feed = document.getElementById("liveFeed");
-
-  feed.innerHTML = msg + "<br>" + feed.innerHTML;
-
-  if(feed.childNodes.length > 10){
-    feed.removeChild(feed.lastChild);
+  // ✅ agar data already hai → wahi use hoga
+  if(snap.exists){
+    const d = snap.data();
+    users = d.users;
+    paid = d.paid;
+    invest = d.invest;
   }
 
-},2500);
+  users += Math.random()*1.5;
+  paid += Math.random()*8;
+  invest += Math.random()*12;
 
-// =======================
-// 🔥 WITHDRAW FEED
-// =======================
-setInterval(()=>{
+  await ref.set({
+    users,
+    paid,
+    invest
+  });
 
-  const name = names[Math.floor(Math.random()*names.length)];
-  const amt = (Math.random()*200+20).toFixed(0);
-
-  const msg = `✔ ${name.toLowerCase()}***@gmail.com withdrew $${amt}`;
-
-  const feed = document.getElementById("withdrawFeed");
-
-  feed.innerHTML = msg + "<br>" + feed.innerHTML;
-
-},4000);
+},2000);
 
 </script>
 </body>
