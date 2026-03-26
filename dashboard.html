@@ -68,6 +68,23 @@ footer{
   z-index:999;
 }
 
+#notifyBox{
+  position:fixed;
+  top:70px;
+  left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  background:#111;
+  color:#FFD700;
+  padding:10px 16px;
+  border-radius:10px;
+  box-shadow:0 0 15px rgba(255,215,0,0.3);
+  font-size:13px;
+  display:none;
+  z-index:9999;
+  opacity:0;
+  transition:0.4s;
+}
+  
 .verified-badge{
   display:inline-flex;
   align-items:center;
@@ -178,6 +195,7 @@ footer{
 </style>
 
 <div id="overlay"></div>
+  
 
 <header>
   <span class="menu-toggle">&#9776;</span>
@@ -190,6 +208,8 @@ footer{
 </div>
 </header>
 
+<div id="notifyBox"></div>
+  
 <div id="userBar" style="
   display:flex;
   justify-content:space-between;
@@ -199,7 +219,7 @@ footer{
   border-bottom:1px solid #272727;
   font-size:14px;
 ">
-
+ 
   <!-- LEFT SIDE -->
   <div style="display:flex;align-items:center;gap:6px;font-weight:bold;">
   👤Welcome,
@@ -668,6 +688,85 @@ document.getElementById("overlay").addEventListener("click", ()=>{
   footer.style.display = "flex";
 });
 
+    // =======================
+// NAME LIST
+// =======================
+const firstNames = [
+"Aarav","Vivaan","Aditya","Arjun","Krishna","Rahul","Rohan","Aman","Karan","Siddharth",
+"Raj","Ankit","Vikas","Deepak","Yash","Mohit","Nikhil","Sumit","Tarun","Varun",
+"Priya","Ananya","Sneha","Pooja","Kavya","Neha","Riya","Simran","Aisha","Meera"
+];
+
+const lastNames = [
+"Sharma","Verma","Gupta","Singh","Kumar","Patel","Yadav","Khan","Ansari","Malik",
+"Choudhary","Mehta","Jain","Agarwal","Bansal","Kapoor","Arora","Reddy","Nair","Das"
+];
+
+// RANDOM NAME
+function getRandomName(){
+  const first = firstNames[Math.floor(Math.random()*firstNames.length)];
+  const last = lastNames[Math.floor(Math.random()*lastNames.length)];
+  return first + " " + last;
+}
+
+// =======================
+// SHOW NOTIFICATION
+// =======================
+const notifyBox = document.getElementById("notifyBox");
+
+function showNotification(text){
+
+  notifyBox.innerText = text;
+  notifyBox.style.display = "block";
+
+  setTimeout(()=>{
+    notifyBox.style.opacity = "1";
+    notifyBox.style.transform = "translateX(-50%) translateY(0)";
+  },50);
+
+  setTimeout(()=>{
+    notifyBox.style.opacity = "0";
+    notifyBox.style.transform = "translateX(-50%) translateY(-20px)";
+    setTimeout(()=>{
+      notifyBox.style.display = "none";
+    },400);
+  },3000);
+}
+
+// =======================
+// RANDOM EVENT
+// =======================
+function randomNotification(){
+
+  const name = getRandomName();
+  const amount = (Math.random()*200+10).toFixed(0);
+
+  const messages = [
+    `🟢 ${name} earned $${(amount/10).toFixed(2)}`,
+    `💰 ${name} invested $${amount}`,
+    `💸 ${name} withdrew $${amount}`,
+    `👤 ${name} joined SuperNFT`
+  ];
+
+  const msg = messages[Math.floor(Math.random()*messages.length)];
+
+  showNotification(msg);
+}
+
+// =======================
+// AUTO LOOP (REAL FEEL)
+// =======================
+function startNotifications(){
+  const delay = Math.random()*4000 + 3000; // 3-7 sec
+
+  setTimeout(()=>{
+    randomNotification();
+    startNotifications();
+  }, delay);
+}
+
+// START
+startNotifications();
     
 </script>
 </body>
