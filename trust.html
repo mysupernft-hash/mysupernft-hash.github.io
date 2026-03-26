@@ -133,11 +133,15 @@ button{
   <button onclick="alert('Support coming soon')">📞 Contact Support</button>
 </div>
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
 
+// =======================
+// 🔥 FIREBASE INIT
+// =======================
 firebase.initializeApp({
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -147,7 +151,9 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const ref = db.collection("stats").doc("global");
 
+// =======================
 // 🔥 REAL-TIME DISPLAY
+// =======================
 ref.onSnapshot(doc=>{
 
   if(!doc.exists) return;
@@ -165,7 +171,9 @@ ref.onSnapshot(doc=>{
 
 });
 
-// 🔥 AUTO INCREMENT (CONTINUE FOREVER)
+// =======================
+// 🔥 AUTO INCREMENT (NO RESET)
+// =======================
 setInterval(async ()=>{
 
   const snap = await ref.get();
@@ -174,17 +182,16 @@ setInterval(async ()=>{
   let paid = 58230;
   let invest = 120000;
 
-  // ✅ agar data already hai → wahi use hoga
   if(snap.exists){
     const d = snap.data();
-    users = d.users;
-    paid = d.paid;
-    invest = d.invest;
+    users = d.users || users;
+    paid = d.paid || paid;
+    invest = d.invest || invest;
   }
 
-  users += Math.random()*1.5;
-  paid += Math.random()*8;
-  invest += Math.random()*12;
+  users += Math.random()*1.2;
+  paid += Math.random()*6;
+  invest += Math.random()*10;
 
   await ref.set({
     users,
@@ -194,6 +201,59 @@ setInterval(async ()=>{
 
 },2000);
 
+// =======================
+// 🔥 INDIAN NAMES
+// =======================
+const names = [
+"Aarav","Vivaan","Aditya","Arjun","Krishna",
+"Rahul","Rohan","Aman","Karan","Siddharth",
+"Raj","Ankit","Vikas","Deepak","Yash",
+"Priya","Ananya","Sneha","Pooja","Kavya"
+];
+
+// =======================
+// 🔥 LIVE ACTIVITY
+// =======================
+setInterval(()=>{
+
+  const name = names[Math.floor(Math.random()*names.length)];
+  const amt = (Math.random()*5+1).toFixed(2);
+
+  const msgs = [
+    `🟢 ${name} earned $${amt}`,
+    `💰 ${name} invested $${(amt*20).toFixed(0)}`,
+    `✔ ${name} withdrew $${(amt*10).toFixed(0)}`
+  ];
+
+  const msg = msgs[Math.floor(Math.random()*msgs.length)];
+
+  const feed = document.getElementById("liveFeed");
+
+  feed.innerHTML = msg + "<br>" + feed.innerHTML;
+
+  if(feed.childNodes.length > 10){
+    feed.removeChild(feed.lastChild);
+  }
+
+},2500);
+
+// =======================
+// 🔥 WITHDRAW FEED
+// =======================
+setInterval(()=>{
+
+  const name = names[Math.floor(Math.random()*names.length)];
+  const amt = (Math.random()*200+20).toFixed(0);
+
+  const msg = `✔ ${name.toLowerCase()}***@gmail.com withdrew $${amt}`;
+
+  const feed = document.getElementById("withdrawFeed");
+
+  feed.innerHTML = msg + "<br>" + feed.innerHTML;
+
+},4000);
+
 </script>
+
 </body>
 </html>
