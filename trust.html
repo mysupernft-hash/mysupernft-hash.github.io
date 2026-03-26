@@ -142,8 +142,9 @@ const baseUsers = 12540;
 const basePaid = 58230;
 const baseInvest = 120000;
 
-// ✅ FIXED TIME (NEVER CHANGES)
-const startTime = 5000;
+// ✅ START NEAR CURRENT TIME (VERY IMPORTANT)
+const startTime = Date.now() - 5000;
+
 // =======================
 // 🔥 CALCULATION SYSTEM
 // =======================
@@ -152,9 +153,10 @@ function updateStats(){
   const now = Date.now();
   const seconds = (now - startTime) / 1000;
 
-  const users = baseUsers + seconds * 0.4;
-  const paid = basePaid + seconds * 1.8;
-  const invest = baseInvest + seconds * 2.5;
+  // 🔥 SLOW REALISTIC GROWTH
+  const users = baseUsers + seconds * 0.02;
+  const paid = basePaid + seconds * 0.3;
+  const invest = baseInvest + seconds * 0.5;
 
   document.getElementById("users").innerText =
     Math.floor(users).toLocaleString()+"+";
@@ -222,6 +224,5 @@ setInterval(()=>{
 },4000);
 
 </script>
-
 </body>
 </html>
