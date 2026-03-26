@@ -82,15 +82,15 @@ button{
   <div class="stats">
     <div class="stat-box">
       <h3>Users</h3>
-      <p id="users"></p>
+      <p id="users">Loading...</p>
     </div>
     <div class="stat-box">
       <h3>Total Paid</h3>
-      <p id="paid"></p>
+      <p id="paid">Loading...</p>
     </div>
     <div class="stat-box">
       <h3>Total Invested</h3>
-      <p id="invest"></p>
+      <p id="invest">Loading...</p>
     </div>
   </div>
 </div>
@@ -104,7 +104,7 @@ button{
 <!-- WITHDRAW -->
 <div class="card">
   <b>💸 Recent Withdrawals</b>
-  <div class="feed" id="withdrawFeed"></div>
+  <div class="feed" id="withdrawFeed">Loading...</div>
 </div>
 
 <!-- TRUST -->
@@ -136,26 +136,27 @@ button{
 <script>
 
 // =======================
-// 🔥 LOAD OR INIT DATA
+// 🔥 BASE VALUES
 // =======================
-let users = localStorage.getItem("users");
-let paid = localStorage.getItem("paid");
-let invest = localStorage.getItem("invest");
+const baseUsers = 12540;
+const basePaid = 58230;
+const baseInvest = 120000;
 
-if(!users){
-  users = 12540;
-  paid = 58230;
-  invest = 120000;
-}else{
-  users = parseFloat(users);
-  paid = parseFloat(paid);
-  invest = parseFloat(invest);
-}
+// 🔥 START TIME (important)
+const startTime = Date.now() - 86400000; // 1 day running feel
 
 // =======================
-// 🔥 UPDATE UI FUNCTION
+// 🔥 CALCULATION SYSTEM
 // =======================
-function updateUI(){
+function updateStats(){
+
+  const now = Date.now();
+  const seconds = (now - startTime) / 1000;
+
+  const users = baseUsers + seconds * 0.4;
+  const paid = basePaid + seconds * 1.8;
+  const invest = baseInvest + seconds * 2.5;
+
   document.getElementById("users").innerText =
     Math.floor(users).toLocaleString()+"+";
 
@@ -166,25 +167,8 @@ function updateUI(){
     "$"+Math.floor(invest).toLocaleString()+"+";
 }
 
-updateUI();
-
-// =======================
-// 🔥 LIVE GROWTH LOOP
-// =======================
-setInterval(()=>{
-
-  users += Math.random()*2;
-  paid += Math.random()*15;
-  invest += Math.random()*25;
-
-  updateUI();
-
-  // SAVE
-  localStorage.setItem("users", users);
-  localStorage.setItem("paid", paid);
-  localStorage.setItem("invest", invest);
-
-},1000);
+updateStats();
+setInterval(updateStats,1000);
 
 // =======================
 // 🔥 INDIAN NAMES
