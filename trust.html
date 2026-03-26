@@ -77,7 +77,6 @@ button{
 
 <h2>🔐 Trust & Transparency</h2>
 
-<!-- STATS -->
 <div class="card">
   <div class="stats">
     <div class="stat-box">
@@ -95,19 +94,16 @@ button{
   </div>
 </div>
 
-<!-- LIVE ACTIVITY -->
 <div class="card">
   <b>🟢 Live Activity</b>
   <div class="feed" id="liveFeed">Loading...</div>
 </div>
 
-<!-- WITHDRAW -->
 <div class="card">
   <b>💸 Recent Withdrawals</b>
   <div class="feed" id="withdrawFeed">Loading...</div>
 </div>
 
-<!-- TRUST -->
 <div class="card">
   <b>⭐ Why Trust SuperNFT?</b>
   <div class="feed">
@@ -118,7 +114,6 @@ button{
   </div>
 </div>
 
-<!-- VERIFIED -->
 <div class="card">
   <b>🏆 Verified System</b>
   <div class="feed">
@@ -128,7 +123,6 @@ button{
   </div>
 </div>
 
-<!-- SUPPORT -->
 <div class="card">
   <button onclick="alert('Support coming soon')">📞 Contact Support</button>
 </div>
@@ -139,9 +133,7 @@ button{
 
 <script>
 
-// =======================
 // 🔥 FIREBASE INIT
-// =======================
 firebase.initializeApp({
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -151,42 +143,33 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const ref = db.collection("stats").doc("global");
 
-// =======================
-// 🔥 GLOBAL VALUES (SYNC BASE)
-// =======================
-let users = 12540;
-let paid = 58230;
-let invest = 120000;
+// 🔥 GLOBAL VALUES
+let users = 0;
+let paid = 0;
+let invest = 0;
 
 // =======================
-// ✅ FIREBASE READ (REAL BASE)
+// ✅ LOAD LAST VALUE
 // =======================
-ref.onSnapshot(doc=>{
+async function loadData(){
 
-  if(!doc.exists){
-    document.getElementById("users").innerText = "12,540+";
-    document.getElementById("paid").innerText = "$58,230+";
-    document.getElementById("invest").innerText = "$120,000+";
-    return;
+  const snap = await ref.get();
+
+  if(snap.exists){
+    const d = snap.data();
+    users = d.users || 12540;
+    paid = d.paid || 58230;
+    invest = d.invest || 120000;
+  }else{
+    users = 12540;
+    paid = 58230;
+    invest = 120000;
   }
 
-  const d = doc.data();
+  updateUI();
+}
 
-  users = d.users || users;
-  paid = d.paid || paid;
-  invest = d.invest || invest;
-
-});
-
-// =======================
-// 🔥 SMOOTH LIVE GROWTH (NO WRITE)
-// =======================
-setInterval(()=>{
-
-  users += Math.random()*0.4;
-  paid += Math.random()*2;
-  invest += Math.random()*3;
-
+function updateUI(){
   document.getElementById("users").innerText =
     Math.floor(users).toLocaleString()+"+";
 
@@ -195,8 +178,29 @@ setInterval(()=>{
 
   document.getElementById("invest").innerText =
     "$"+Math.floor(invest).toLocaleString()+"+";
+}
 
-},1000);
+// =======================
+// 🔥 CONTINUE GROWTH + SAVE
+// =======================
+setInterval(async ()=>{
+
+  users += Math.random()*1.2;
+  paid += Math.random()*6;
+  invest += Math.random()*10;
+
+  updateUI();
+
+  await ref.set({
+    users,
+    paid,
+    invest
+  });
+
+},2000);
+
+// START
+loadData();
 
 // =======================
 // 🔥 INDIAN NAMES
