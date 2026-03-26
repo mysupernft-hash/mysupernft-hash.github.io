@@ -130,7 +130,7 @@ button{
 
 <!-- SUPPORT -->
 <div class="card">
-  <button onclick="alert('Support coming soon')">📞 Contact Support</button>
+  <button onclick="openContact()">📞 Contact Support</button>
 </div>
 
 <script>
@@ -244,6 +244,10 @@ setInterval(()=>{
   feed.innerHTML = msg + "<br>" + feed.innerHTML;
 
 },4000);
+
+  function openContact(){
+  window.location.href = "contact.html";
+}
 
 </script>
 
