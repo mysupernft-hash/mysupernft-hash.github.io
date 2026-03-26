@@ -133,59 +133,29 @@ button{
   <button onclick="alert('Support coming soon')">📞 Contact Support</button>
 </div>
 
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
 
 // =======================
-// 🔥 FIREBASE INIT
+// 🔥 BASE VALUES
 // =======================
-firebase.initializeApp({
-  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-  authDomain:"supernft-5b952.firebaseapp.com",
-  projectId:"supernft-5b952"
-});
+const baseUsers = 12540;
+const basePaid = 58230;
+const baseInvest = 120000;
 
-const db = firebase.firestore();
-const ref = db.collection("stats").doc("global");
+// 🔥 FIXED START TIME (CHANGE NA KARNA)
+const startTime = new Date("2025-01-01T00:00:00Z").getTime();
 
 // =======================
-// 🔥 GLOBAL VALUES (SYNC BASE)
+// 🔥 LIVE STATS SYSTEM
 // =======================
-let users = 12540;
-let paid = 58230;
-let invest = 120000;
+function updateStats(){
 
-// =======================
-// ✅ FIREBASE READ (REAL BASE)
-// =======================
-ref.onSnapshot(doc=>{
+  const now = Date.now();
+  const seconds = (now - startTime) / 1000;
 
-  if(!doc.exists){
-    document.getElementById("users").innerText = "12,540+";
-    document.getElementById("paid").innerText = "$58,230+";
-    document.getElementById("invest").innerText = "$120,000+";
-    return;
-  }
-
-  const d = doc.data();
-
-  users = d.users || users;
-  paid = d.paid || paid;
-  invest = d.invest || invest;
-
-});
-
-// =======================
-// 🔥 SMOOTH LIVE GROWTH (NO WRITE)
-// =======================
-setInterval(()=>{
-
-  users += Math.random()*0.4;
-  paid += Math.random()*2;
-  invest += Math.random()*3;
+  const users = baseUsers + seconds * 0.05;
+  const paid = basePaid + seconds * 0.8;
+  const invest = baseInvest + seconds * 1.2;
 
   document.getElementById("users").innerText =
     Math.floor(users).toLocaleString()+"+";
@@ -195,8 +165,10 @@ setInterval(()=>{
 
   document.getElementById("invest").innerText =
     "$"+Math.floor(invest).toLocaleString()+"+";
+}
 
-},1000);
+updateStats();
+setInterval(updateStats,1000);
 
 // =======================
 // 🔥 INDIAN NAMES
