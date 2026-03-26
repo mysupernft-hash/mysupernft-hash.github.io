@@ -98,13 +98,13 @@ button{
 <!-- LIVE ACTIVITY -->
 <div class="card">
   <b>🟢 Live Activity</b>
-  <div class="feed" id="liveFeed">Loading...</div>
+  <div class="feed" id="liveFeed"></div>
 </div>
 
 <!-- WITHDRAW -->
 <div class="card">
   <b>💸 Recent Withdrawals</b>
-  <div class="feed" id="withdrawFeed">Loading...</div>
+  <div class="feed" id="withdrawFeed"></div>
 </div>
 
 <!-- TRUST -->
@@ -142,11 +142,11 @@ const baseUsers = 12540;
 const basePaid = 58230;
 const baseInvest = 120000;
 
-// 🔥 FIXED START TIME (CHANGE NA KARNA)
+// 🔥 FIXED START TIME
 const startTime = new Date("2025-01-01T00:00:00Z").getTime();
 
 // =======================
-// 🔥 LIVE STATS SYSTEM
+// 🔥 LIVE STATS
 // =======================
 function updateStats(){
 
@@ -171,21 +171,43 @@ updateStats();
 setInterval(updateStats,1000);
 
 // =======================
-// 🔥 INDIAN NAMES
+// 🔥 NAME GENERATOR
 // =======================
-const names = [
-"Aarav","Vivaan","Aditya","Arjun","Krishna",
-"Rahul","Rohan","Aman","Karan","Siddharth",
-"Raj","Ankit","Vikas","Deepak","Yash",
-"Priya","Ananya","Sneha","Pooja","Kavya"
+const firstNames = [
+"Aarav","Vivaan","Aditya","Arjun","Krishna","Rahul","Rohan","Aman","Karan","Siddharth",
+"Raj","Ankit","Vikas","Deepak","Yash","Mohit","Nikhil","Sumit","Tarun","Varun",
+"Priya","Ananya","Sneha","Pooja","Kavya","Neha","Riya","Simran","Aisha","Meera"
 ];
+
+const lastNames = [
+"Sharma","Verma","Gupta","Singh","Kumar","Patel","Yadav","Khan","Ansari","Malik",
+"Choudhary","Mehta","Jain","Agarwal","Bansal","Kapoor","Arora","Reddy","Nair","Das"
+];
+
+function getRandomName(){
+  const first = firstNames[Math.floor(Math.random()*firstNames.length)];
+  const last = lastNames[Math.floor(Math.random()*lastNames.length)];
+  return first + " " + last;
+}
+
+// =======================
+// 🔥 EMAIL GENERATOR
+// =======================
+const domains = ["gmail.com","yahoo.com","outlook.com"];
+
+function getRandomEmail(name){
+  const clean = name.toLowerCase().replace(" ","");
+  const num = Math.floor(Math.random()*999);
+  const domain = domains[Math.floor(Math.random()*domains.length)];
+  return `${clean}${num}@${domain}`;
+}
 
 // =======================
 // 🔥 LIVE ACTIVITY
 // =======================
 setInterval(()=>{
 
-  const name = names[Math.floor(Math.random()*names.length)];
+  const name = getRandomName();
   const amt = (Math.random()*5+1).toFixed(2);
 
   const msgs = [
@@ -211,10 +233,11 @@ setInterval(()=>{
 // =======================
 setInterval(()=>{
 
-  const name = names[Math.floor(Math.random()*names.length)];
+  const name = getRandomName();
+  const email = getRandomEmail(name);
   const amt = (Math.random()*200+20).toFixed(0);
 
-  const msg = `✔ ${name.toLowerCase()}***@gmail.com withdrew $${amt}`;
+  const msg = `✔ ${email} withdrew $${amt}`;
 
   const feed = document.getElementById("withdrawFeed");
 
