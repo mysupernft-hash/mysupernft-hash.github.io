@@ -284,6 +284,7 @@ footer{
   <button onclick="openPage('calculator')">📈 Calculator</button>
   <button onclick="openPage('contact')">📞 Contact Support</button>
   <button onclick="openPage('settings')">⚙️ Settings</button>
+  <button onclick="openPage('trust')">🔐 Trust & Transparency</button>
   <button onclick="location.href='logout.html'">🔒 Logout</button>
 </div>
 
@@ -412,6 +413,9 @@ window.openPage = function(page){
   window.location.href="contact.html";
 break;
     case "settings": window.location.href="settings.html"; break;
+      case "trust":
+  window.location.href = "trust.html";
+  break;
     default: alert("Page not found");
   }
 };
