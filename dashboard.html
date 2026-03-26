@@ -699,7 +699,7 @@ document.getElementById("overlay").addEventListener("click", ()=>{
   footer.style.display = "flex";
 });
 
-    // =======================
+  // =======================
 // NAME LIST
 // =======================
 const firstNames = [
@@ -737,51 +737,36 @@ function showNotification(text){
 
   setTimeout(()=>{
     notifyBox.style.opacity = "0";
-    notifyBox.style.transform = "translateX(-50%) translateY(-20px)";
+    notifyBox.style.transform = "translateX(-50%) translateY(-8px)";
     setTimeout(()=>{
       notifyBox.style.display = "none";
-    },400);
-  },3000);
+    },300);
+  },2500);
 }
 
 // =======================
-// RANDOM EVENT
-// =======================
-function randomNotification(){
-
-  const name = getRandomName();
-  const amount = (Math.random()*200+10).toFixed(0);
-
-  const messages = [
-    `🟢 ${name} earned $${(amount/10).toFixed(2)}`,
-    `💰 ${name} invested $${amount}`,
-    `💸 ${name} withdrew $${amount}`,
-    `👤 ${name} joined SuperNFT`
-  ];
-
-  const msg = messages[Math.floor(Math.random()*messages.length)];
-
-  showNotification(msg);
-}
-
-// =======================
-// AUTO LOOP (REAL FEEL)
+// ONLY NAME NOTIFICATION
 // =======================
 function randomNotification(){
   const name = getRandomName();
   showNotification("👤 " + name);
 }
-  const delay = Math.random()*4000 + 3000; // 3-7 sec
+
+// =======================
+// AUTO LOOP (IMPORTANT)
+// =======================
+function startNotifications(){
+
+  const delay = Math.random()*3000 + 2000; // 2-5 sec
 
   setTimeout(()=>{
     randomNotification();
-    startNotifications();
+    startNotifications(); // loop
   }, delay);
 }
 
 // START
 startNotifications();
-    
-</script>
+    </script>
 </body>
 </html>
