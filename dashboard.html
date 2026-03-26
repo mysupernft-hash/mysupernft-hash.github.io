@@ -76,13 +76,12 @@ footer{
 
   background:rgba(0,0,0,0.25);
   backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
 
   color:#FFD700;
-  padding:4px 10px;   /* 👈 smaller */
-  border-radius:15px;
+  padding:5px 12px;
+  border-radius:20px;
 
-  font-size:11px;     /* 👈 smaller text */
+  font-size:11px;
   font-weight:500;
 
   display:none;
@@ -92,6 +91,9 @@ footer{
   transition:0.25s;
 
   box-shadow:0 0 6px rgba(255,215,0,0.15);
+
+  white-space:nowrap;   /* 👈 ek line */
+  cursor:pointer;       /* 👈 clickable */
 }
   
 .verified-badge{
@@ -217,7 +219,7 @@ footer{
 </div>
 </header>
 
-<div id="notifyBox"></div>
+<div id="notifyBox" onclick="openTrust()"></div>
   
 <div id="userBar" style="
   display:flex;
@@ -765,7 +767,10 @@ function randomNotification(){
 // =======================
 // AUTO LOOP (REAL FEEL)
 // =======================
-function startNotifications(){
+function randomNotification(){
+  const name = getRandomName();
+  showNotification("👤 " + name);
+}
   const delay = Math.random()*4000 + 3000; // 3-7 sec
 
   setTimeout(()=>{
