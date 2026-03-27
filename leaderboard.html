@@ -29,6 +29,33 @@ margin-bottom:10px;
 display:flex;
 justify-content:space-between;
 align-items:center;
+transition:0.3s;
+}
+
+/* 👑 Crown */
+.rank{
+font-weight:bold;
+display:flex;
+align-items:center;
+gap:5px;
+}
+
+/* NAME */
+.name{
+flex:1;
+margin-left:10px;
+}
+
+/* AMOUNT */
+.amount{
+font-weight:bold;
+}
+
+/* 🔥 Glow animation */
+@keyframes glow {
+0%{box-shadow:0 0 5px #FFD700;}
+50%{box-shadow:0 0 25px #FFD700;}
+100%{box-shadow:0 0 5px #FFD700;}
 }
 
 /* TOP 3 */
@@ -36,21 +63,20 @@ align-items:center;
 background:linear-gradient(90deg,#FFD700,#ffcc00);
 color:#000;
 font-weight:bold;
+animation:glow 2s infinite;
 }
+
 .top2{
 background:linear-gradient(90deg,#c0c0c0,#999);
 color:#000;
 font-weight:bold;
 }
+
 .top3{
 background:linear-gradient(90deg,#cd7f32,#a0522d);
 color:#fff;
 font-weight:bold;
 }
-
-.rank{font-weight:bold;}
-.name{flex:1;margin-left:10px;}
-.amount{font-weight:bold;}
 
 </style>
 
@@ -79,16 +105,10 @@ projectId:"supernft-5b952"
 const db = firebase.firestore();
 
 // =======================
-// 🔥 RANDOM NAME SYSTEM
+// 🔥 NAME SYSTEM
 // =======================
-const firstNames = [
-"Aarav","Vivaan","Aditya","Arjun","Rahul","Rohan","Aman","Karan","Raj","Vikas",
-"Priya","Ananya","Sneha","Pooja","Kavya","Neha","Riya","Simran"
-];
-
-const lastNames = [
-"Sharma","Verma","Gupta","Singh","Kumar","Patel","Yadav","Khan","Ansari","Malik"
-];
+const firstNames = ["Aarav","Vivaan","Aditya","Arjun","Rahul","Rohan","Aman","Karan","Raj","Vikas","Priya","Ananya","Sneha","Pooja"];
+const lastNames = ["Sharma","Verma","Gupta","Singh","Kumar","Patel","Yadav","Khan"];
 
 function randomName(){
 return firstNames[Math.floor(Math.random()*firstNames.length)] + " " +
@@ -103,7 +123,7 @@ let arr=[];
 for(let i=0;i<count;i++){
 arr.push({
 name: randomName(),
-totalEarning: Math.random()*10000 + 100
+totalEarning: Math.random()*10000 + 500
 });
 }
 return arr;
@@ -114,48 +134,50 @@ return arr;
 // =======================
 async function loadLeaderboard(){
 
-let users = [];
+let fakeUsers = generateFakeUsers(90);
+let realUsers = [];
 
 try{
-
-// 🔹 REAL USERS (SAFE QUERY)
 const snap = await db.collection("users").limit(10).get();
 
 snap.forEach(doc=>{
 const u = doc.data();
 
-users.push({
+realUsers.push({
 name: u.name || (u.email ? u.email.split("@")[0] : "User"),
-totalEarning: u.totalEarning || Math.random()*500
+totalEarning: u.totalEarning || Math.random()*100
 });
 });
 
 }catch(e){
-console.log("Firebase error:", e);
+console.log(e);
 }
 
-// 🔹 FAKE USERS (90%)
-users = users.concat(generateFakeUsers(90));
+// sort
+fakeUsers.sort((a,b)=>b.totalEarning - a.totalEarning);
+realUsers.sort((a,b)=>b.totalEarning - a.totalEarning);
 
-// 🔹 SORT
-users.sort((a,b)=>b.totalEarning - a.totalEarning);
+// merge (fake first, real last)
+const users = fakeUsers.concat(realUsers);
 
-// 🔹 RENDER
+// render
 let html="";
 let rank=1;
 
 users.slice(0,100).forEach(u=>{
 
 let cls="";
-if(rank===1) cls="top1";
-else if(rank===2) cls="top2";
-else if(rank===3) cls="top3";
+let crown="";
+
+if(rank===1){cls="top1"; crown="👑";}
+else if(rank===2){cls="top2"; crown="🥈";}
+else if(rank===3){cls="top3"; crown="🥉";}
 
 html += `
 <div class="card ${cls}">
-  <div class="rank">#${rank}</div>
+  <div class="rank">${crown} #${rank}</div>
   <div class="name">${u.name}</div>
-  <div class="amount">$${u.totalEarning.toFixed(2)}</div>
+  <div class="amount" data-value="${u.totalEarning}">$0.00</div>
 </div>
 `;
 
@@ -165,8 +187,66 @@ rank++;
 
 document.getElementById("leaderboard").innerHTML = html;
 
+// animate after render
+setTimeout(animateValues,200);
+
 }
 
+// =======================
+// 🔥 COUNT UP ANIMATION
+// =======================
+function animateValues(){
+
+const elements = document.querySelectorAll(".amount");
+
+elements.forEach(el=>{
+
+const target = parseFloat(el.getAttribute("data-value"));
+let current = 0;
+
+const increment = target / 40;
+
+const timer = setInterval(()=>{
+
+current += increment;
+
+if(current >= target){
+current = target;
+clearInterval(timer);
+}
+
+el.innerText = "$" + current.toFixed(2);
+
+},30);
+
+});
+
+}
+
+// =======================
+// 🔥 LIVE UPDATE
+// =======================
+function liveUpdate(){
+
+const cards = document.querySelectorAll(".card");
+
+cards.forEach((card,index)=>{
+
+if(index < 50){
+let amountEl = card.querySelector(".amount");
+let value = parseFloat(amountEl.innerText.replace("$",""));
+value += Math.random()*5;
+amountEl.innerText = "$" + value.toFixed(2);
+}
+
+});
+
+}
+
+// run every second
+setInterval(liveUpdate,1000);
+
+// START
 loadLeaderboard();
 
 </script>
