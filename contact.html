@@ -10,50 +10,116 @@
 body{
 margin:0;
 font-family:Arial;
-background:linear-gradient(180deg,#0a0a0a,#111);
+background:#050505;
 color:#FFD700;
-padding:20px;
+overflow-x:hidden;
 }
 
-/* HEADER /
+/* 🔥 BACKGROUND GLOW /
+body::before{
+content:"";
+position:fixed;
+width:400px;
+height:400px;
+background:radial-gradient(circle,#FFD70033,transparent);
+top:-100px;
+left:-100px;
+filter:blur(100px);
+z-index:0;
+}
+
+body::after{
+content:"";
+position:fixed;
+width:300px;
+height:300px;
+background:radial-gradient(circle,#00ff8833,transparent);
+bottom:-100px;
+right:-100px;
+filter:blur(100px);
+z-index:0;
+}
+
+/ HEADER /
 h1{
 text-align:center;
-margin-bottom:20px;
-font-size:24px;
+margin:25px 0;
+font-size:26px;
 letter-spacing:1px;
+position:relative;
+z-index:1;
 }
 
 / CONTAINER /
 .container{
 max-width:500px;
 margin:auto;
-padding:10px;
+padding:15px;
+position:relative;
+z-index:1;
 }
 
-/ CARD STYLE /
+/ CARD /
 .contact-box{
-background:rgba(255,255,255,0.05);
-backdrop-filter:blur(12px);
-border:1px solid rgba(255,215,0,0.2);
-border-radius:14px;
-padding:16px;
-margin-top:15px;
+background:rgba(255,255,255,0.04);
+backdrop-filter:blur(15px);
+border-radius:16px;
+padding:18px;
+margin-top:18px;
 font-size:14px;
-line-height:1.7;
+line-height:1.8;
+border:1px solid rgba(255,215,0,0.2);
+box-shadow:0 0 25px rgba(255,215,0,0.08);
 transition:0.3s;
-box-shadow:0 0 15px rgba(255,215,0,0.08);
+position:relative;
+overflow:hidden;
 }
 
+/ GLOW BORDER /
+.contact-box::before{
+content:"";
+position:absolute;
+inset:0;
+border-radius:16px;
+padding:1px;
+background:linear-gradient(120deg,#FFD700,transparent,#00ff88);
+-webkit-mask:
+linear-gradient(#000 0 0) content-box,
+linear-gradient(#000 0 0);
+-webkit-mask-composite:xor;
+mask-composite:exclude;
+opacity:0.4;
+}
+
+/ HOVER /
 .contact-box:hover{
-transform:translateY(-3px);
-box-shadow:0 0 20px rgba(255,215,0,0.25);
+transform:translateY(-5px) scale(1.01);
+box-shadow:0 0 40px rgba(255,215,0,0.25);
+}
+
+/ TITLE /
+.title{
+font-size:12px;
+color:#aaa;
+margin-bottom:6px;
+letter-spacing:1px;
+}
+
+/ STATUS BADGE /
+.status{
+display:inline-block;
+background:#00ff6620;
+color:#00ff66;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+margin-left:6px;
 }
 
 / LINKS /
 a{
 color:#FFD700;
 text-decoration:none;
-font-weight:500;
 }
 
 .whatsapp{
@@ -61,28 +127,17 @@ color:#00ff88;
 font-weight:bold;
 }
 
-/ STATUS BADGE /
-.status{
-display:inline-block;
-background:rgba(0,255,100,0.1);
-color:#00ff66;
-padding:3px 8px;
-border-radius:20px;
-font-size:12px;
-margin-left:5px;
-}
-
 / TELEGRAM BUTTON /
 .telegram-btn{
 display:block;
 text-align:center;
-background:rgba(255,215,0,0.08);
+background:linear-gradient(135deg,#FFD70022,#00ff8822);
 color:#FFD700;
-padding:12px;
-border-radius:12px;
+padding:13px;
+border-radius:14px;
 font-weight:bold;
 text-decoration:none;
-margin-top:12px;
+margin-top:14px;
 border:1px solid rgba(255,215,0,0.3);
 transition:0.3s;
 }
@@ -90,22 +145,15 @@ transition:0.3s;
 .telegram-btn:hover{
 background:#FFD700;
 color:#000;
-box-shadow:0 0 15px #FFD700;
+box-shadow:0 0 20px #FFD700;
 }
 
-/ INFO TEXT /
+/ INFO */
 .info{
-margin-top:15px;
+margin-top:18px;
 font-size:13px;
 color:#aaa;
 text-align:center;
-}
-
-/ TITLE SMALL */
-.title{
-font-size:13px;
-color:#aaa;
-margin-bottom:6px;
 }
 
 </style>
@@ -155,14 +203,14 @@ Daniel Joseph 🇦🇪
 <div class="title">SECURITY NOTICE</div>
 
 We never ask for your password or OTP.<br>
-Always contact official support only.
+Only contact official support channels.
 </div>
 
 <!-- TELEGRAM -->
 <div class="info">Join our official community</div>
 
 <a href="https://t.me/Supernftcrypto" target="_blank" class="telegram-btn">
-📢 Channel
+📢 Official Channel
 </a>
 
 <a href="https://t.me/supernftofficialgroup" target="_blank" class="telegram-btn">
@@ -170,7 +218,7 @@ Always contact official support only.
 </a>
 
 <a href="https://t.me/mysupernft" target="_blank" class="telegram-btn">
-🛠 Support Chat
+🛠 Live Support Chat
 </a>
 
 <div class="info">
