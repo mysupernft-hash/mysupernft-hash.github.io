@@ -78,39 +78,40 @@ color:#fff;
 font-weight:bold;
 }
 
-/* REAL USERS HIGHLIGHT */
-.real{
-border:1px solid #00ff66;
-}
-
 </style>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 </head>
 <body>
 
-<h2>🏆 Today Top 100 Earners</h2>
+<h2 id="title">🏆 Loading...</h2>
 
 <div id="leaderboard">Loading...</div>
 
 <script>
 
 // =======================
-// FIREBASE
+// 🔥 DYNAMIC TITLE
 // =======================
-firebase.initializeApp({
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
-});
+function setDynamicTitle(){
 
-const db = firebase.firestore();
+const now = new Date();
+const hours = now.getHours();
+
+let text = "Today";
+
+if(hours < 4){
+text = "Yesterday";
+}
+
+document.getElementById("title").innerText =
+"🏆 " + text + " Top 100 Earners";
+
+}
+
+setDynamicTitle();
 
 // =======================
-// NAME SYSTEM
+// 🔥 NAME SYSTEM
 // =======================
 const firstNames = ["Aarav","Vivaan","Aditya","Arjun","Rahul","Rohan","Aman","Karan","Raj","Vikas","Priya","Ananya","Sneha"];
 const lastNames = ["Sharma","Verma","Gupta","Singh","Kumar","Patel","Yadav","Khan"];
@@ -121,60 +122,39 @@ return firstNames[Math.floor(Math.random()*firstNames.length)] + " " +
 }
 
 // =======================
-// FAKE USERS
+// 🔥 COUNTRY FLAGS
 // =======================
-function generateFakeUsers(count){
-let arr=[];
-for(let i=0;i<count;i++){
-arr.push({
+const countries = [
+  {code:"🇮🇳"},
+  {code:"🇵🇰"},
+  {code:"🇦🇪"}
+];
+
+function randomCountry(){
+return countries[Math.floor(Math.random()*countries.length)];
+}
+
+// =======================
+// 🔥 LOAD LEADERBOARD
+// =======================
+function loadLeaderboard(){
+
+let users = [];
+
+for(let i=0;i<100;i++){
+
+const country = randomCountry();
+
+users.push({
 name: randomName(),
-totalEarning: Math.random()*10000 + 500,
-real:false
-});
-}
-return arr;
-}
-
-// =======================
-// LOAD LEADERBOARD
-// =======================
-async function loadLeaderboard(){
-
-let fakeUsers = generateFakeUsers(90);
-let realUsers = [];
-
-try{
-const snap = await db.collection("users").limit(10).get();
-
-snap.forEach(doc=>{
-const u = doc.data();
-
-realUsers.push({
-name: u.name || (u.email ? u.email.split("@")[0] : "User"),
-totalEarning: u.totalEarning || Math.random()*100,
-real:true
-});
+totalEarning: Math.random()*10000 + 200,
+flag: country.code
 });
 
-}catch(e){
-console.log("Firebase error:", e);
-}
-
-// 🔥 ensure 10 real users
-while(realUsers.length < 10){
-realUsers.push({
-name: "User " + (realUsers.length+1),
-totalEarning: Math.random()*100,
-real:true
-});
 }
 
 // sort
-fakeUsers.sort((a,b)=>b.totalEarning - a.totalEarning);
-realUsers.sort((a,b)=>b.totalEarning - a.totalEarning);
-
-// merge (fake first, real last)
-const users = [...fakeUsers, ...realUsers];
+users.sort((a,b)=>b.totalEarning - a.totalEarning);
 
 // render
 let html="";
@@ -189,13 +169,10 @@ if(rank===1){cls="top1"; crown="👑";}
 else if(rank===2){cls="top2"; crown="🥈";}
 else if(rank===3){cls="top3"; crown="🥉";}
 
-// highlight real users
-let realClass = u.real ? "real" : "";
-
 html += `
-<div class="card ${cls} ${realClass}">
+<div class="card ${cls}">
   <div class="rank">${crown} #${rank}</div>
-  <div class="name">${u.name}</div>
+  <div class="name">${u.flag} ${u.name}</div>
   <div class="amount" data-value="${u.totalEarning}">$0.00</div>
 </div>
 `;
@@ -212,7 +189,7 @@ setTimeout(animateValues,200);
 }
 
 // =======================
-// COUNT ANIMATION
+// 🔥 COUNT ANIMATION
 // =======================
 function animateValues(){
 
@@ -243,7 +220,7 @@ el.innerText = "$" + current.toFixed(2);
 }
 
 // =======================
-// LIVE UPDATE
+// 🔥 LIVE UPDATE
 // =======================
 function liveUpdate(){
 
