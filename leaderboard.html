@@ -20,6 +20,7 @@ text-align:center;
 margin-bottom:20px;
 }
 
+/* CARD */
 .card{
 background:#1a1a1a;
 padding:12px;
@@ -30,9 +31,22 @@ justify-content:space-between;
 align-items:center;
 }
 
-.top1{background:linear-gradient(90deg,#FFD700,#ffcc00);color:#000;font-weight:bold;}
-.top2{background:linear-gradient(90deg,#c0c0c0,#999);color:#000;font-weight:bold;}
-.top3{background:linear-gradient(90deg,#cd7f32,#a0522d);color:#fff;font-weight:bold;}
+/* TOP 3 */
+.top1{
+background:linear-gradient(90deg,#FFD700,#ffcc00);
+color:#000;
+font-weight:bold;
+}
+.top2{
+background:linear-gradient(90deg,#c0c0c0,#999);
+color:#000;
+font-weight:bold;
+}
+.top3{
+background:linear-gradient(90deg,#cd7f32,#a0522d);
+color:#fff;
+font-weight:bold;
+}
 
 .rank{font-weight:bold;}
 .name{flex:1;margin-left:10px;}
@@ -40,6 +54,7 @@ align-items:center;
 
 </style>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -52,7 +67,9 @@ align-items:center;
 
 <script>
 
-// FIREBASE
+// =======================
+// 🔥 FIREBASE INIT
+// =======================
 firebase.initializeApp({
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
 authDomain:"supernft-5b952.firebaseapp.com",
@@ -64,8 +81,14 @@ const db = firebase.firestore();
 // =======================
 // 🔥 RANDOM NAME SYSTEM
 // =======================
-const firstNames = ["Aarav","Vivaan","Aditya","Arjun","Rahul","Rohan","Aman","Karan","Raj","Vikas","Priya","Ananya","Sneha","Pooja","Kavya"];
-const lastNames = ["Sharma","Verma","Gupta","Singh","Kumar","Patel","Yadav","Khan","Ansari","Malik"];
+const firstNames = [
+"Aarav","Vivaan","Aditya","Arjun","Rahul","Rohan","Aman","Karan","Raj","Vikas",
+"Priya","Ananya","Sneha","Pooja","Kavya","Neha","Riya","Simran"
+];
+
+const lastNames = [
+"Sharma","Verma","Gupta","Singh","Kumar","Patel","Yadav","Khan","Ansari","Malik"
+];
 
 function randomName(){
 return firstNames[Math.floor(Math.random()*firstNames.length)] + " " +
@@ -76,18 +99,13 @@ return firstNames[Math.floor(Math.random()*firstNames.length)] + " " +
 // 🔥 FAKE USERS
 // =======================
 function generateFakeUsers(count){
-
-let arr = [];
-
+let arr=[];
 for(let i=0;i<count;i++){
-
 arr.push({
 name: randomName(),
-totalEarning: Math.random()*10000 + 50
+totalEarning: Math.random()*10000 + 100
 });
-
 }
-
 return arr;
 }
 
@@ -96,41 +114,37 @@ return arr;
 // =======================
 async function loadLeaderboard(){
 
-// 🔹 10 real users
-const realSnap = await db.collection("users")
-.orderBy("totalEarning","desc")
-.limit(10)
-.get();
-
 let users = [];
 
-// add real users
-realSnap.forEach(doc=>{
+try{
+
+// 🔹 REAL USERS (SAFE QUERY)
+const snap = await db.collection("users").limit(10).get();
+
+snap.forEach(doc=>{
 const u = doc.data();
 
 users.push({
 name: u.name || (u.email ? u.email.split("@")[0] : "User"),
-totalEarning: u.totalEarning || 0
+totalEarning: u.totalEarning || Math.random()*500
 });
 });
 
-// 🔹 90 fake users
-const fakeUsers = generateFakeUsers(90);
+}catch(e){
+console.log("Firebase error:", e);
+}
 
-// merge
-users = users.concat(fakeUsers);
+// 🔹 FAKE USERS (90%)
+users = users.concat(generateFakeUsers(90));
 
-// sort
+// 🔹 SORT
 users.sort((a,b)=>b.totalEarning - a.totalEarning);
 
-// limit 100
-users = users.slice(0,100);
-
-// render
+// 🔹 RENDER
 let html="";
 let rank=1;
 
-users.forEach(u=>{
+users.slice(0,100).forEach(u=>{
 
 let cls="";
 if(rank===1) cls="top1";
@@ -139,9 +153,9 @@ else if(rank===3) cls="top3";
 
 html += `
 <div class="card ${cls}">
-<div class="rank">#${rank}</div>
-<div class="name">${u.name}</div>
-<div class="amount">$${u.totalEarning.toFixed(2)}</div>
+  <div class="rank">#${rank}</div>
+  <div class="name">${u.name}</div>
+  <div class="amount">$${u.totalEarning.toFixed(2)}</div>
 </div>
 `;
 
