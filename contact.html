@@ -10,78 +10,102 @@
 body{
 margin:0;
 font-family:Arial;
-background:#0f0f0f;
+background:linear-gradient(180deg,#0a0a0a,#111);
 color:#FFD700;
 padding:20px;
 }
 
+/* HEADER /
 h1{
 text-align:center;
 margin-bottom:20px;
+font-size:24px;
+letter-spacing:1px;
 }
 
+/ CONTAINER /
 .container{
 max-width:500px;
 margin:auto;
-background:#1a1a1a;
-padding:25px;
-border-radius:12px;
-box-shadow:0 0 20px #000;
-text-align:center;
+padding:10px;
 }
 
-/* BOX /
+/ CARD STYLE /
 .contact-box{
-background:#0f0f0f;
-border:1px solid #FFD700;
-border-radius:10px;
-padding:15px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(12px);
+border:1px solid rgba(255,215,0,0.2);
+border-radius:14px;
+padding:16px;
 margin-top:15px;
-font-size:15px;
-line-height:1.6;
+font-size:14px;
+line-height:1.7;
+transition:0.3s;
+box-shadow:0 0 15px rgba(255,215,0,0.08);
 }
 
+.contact-box:hover{
+transform:translateY(-3px);
+box-shadow:0 0 20px rgba(255,215,0,0.25);
+}
+
+/ LINKS /
 a{
 color:#FFD700;
 text-decoration:none;
+font-weight:500;
 }
 
 .whatsapp{
-color:#00ff66;
+color:#00ff88;
 font-weight:bold;
+}
+
+/ STATUS BADGE /
+.status{
+display:inline-block;
+background:rgba(0,255,100,0.1);
+color:#00ff66;
+padding:3px 8px;
+border-radius:20px;
+font-size:12px;
+margin-left:5px;
 }
 
 / TELEGRAM BUTTON /
 .telegram-btn{
 display:block;
 text-align:center;
-background:#1a1a1a;
+background:rgba(255,215,0,0.08);
 color:#FFD700;
 padding:12px;
-border-radius:10px;
+border-radius:12px;
 font-weight:bold;
 text-decoration:none;
 margin-top:12px;
-border:1px solid #FFD700;
+border:1px solid rgba(255,215,0,0.3);
 transition:0.3s;
 }
 
 .telegram-btn:hover{
 background:#FFD700;
 color:#000;
-box-shadow:0 0 10px #FFD700;
+box-shadow:0 0 15px #FFD700;
 }
 
-/ SMALL TEXT */
+/ INFO TEXT /
 .info{
 margin-top:15px;
 font-size:13px;
 color:#aaa;
+text-align:center;
 }
 
-.status{
-color:#00ff66;
-font-weight:bold;
+/ TITLE SMALL */
+.title{
+font-size:13px;
+color:#aaa;
+margin-bottom:6px;
 }
 
 </style>
@@ -89,72 +113,71 @@ font-weight:bold;
 
 <body>
 
-<div class="container">
-
 <h1>📞 Contact Support</h1>
+
+<div class="container">
 
 <!-- STATUS -->
 <div class="contact-box">
-🟢 Support Status: <span class="status">Online</span><br>
+<div class="title">SYSTEM STATUS</div>
+🟢 Support is <span class="status">Online</span><br>
 ⚡ Avg Response Time: 2–5 Minutes
 </div>
 
 <!-- EMAIL -->
 <div class="contact-box">
-📧 Email Support<br><br>
-<b>mysuper.nft@protonmail.com</b>
+<div class="title">EMAIL SUPPORT</div>
+📧 mysuper.nft@protonmail.com
 </div>
 
 <!-- HELPLINE -->
 <div class="contact-box">
-📞 24/7 Global Helpline<br><br>
+<div class="title">GLOBAL HELPLINE</div>
 
-🇮🇳 India: <a href="tel:+919876543210">+91 98765 43210</a><br><br>
+🇮🇳 +91 98765 43210<br>
+🇵🇰 +92 300 1234567<br>
+🇦🇪 +971 50 123 4567<br><br>
 
-🇵🇰 Pakistan: <a href="tel:+923001234567">+92 300 1234567</a><br><br>
-
-🇦🇪 Dubai: <a href="tel:+971501234567">+971 50 123 4567</a><br><br>
-
-💬 WhatsApp: <a href="https://wa.me/919876543210" class="whatsapp">Chat Now</a>
+💬 <a href="https://wa.me/919876543210" class="whatsapp">Chat on WhatsApp</a>
 </div>
 
-<!-- AGENTS -->
+<!-- TEAM -->
 <div class="contact-box">
-👨‍💻 Support Team<br><br>
-Rahul Sharma (India)<br>
-Ahmed Khan (Pakistan)<br>
-Daniel Joseph (Dubai)
+<div class="title">SUPPORT TEAM</div>
+
+Rahul Sharma 🇮🇳<br>
+Ahmed Khan 🇵🇰<br>
+Daniel Joseph 🇦🇪
 </div>
 
 <!-- SECURITY -->
 <div class="contact-box">
-🔐 Security Notice<br><br>
+<div class="title">SECURITY NOTICE</div>
+
 We never ask for your password or OTP.<br>
-Only contact official support links.
+Always contact official support only.
 </div>
 
 <!-- TELEGRAM -->
-<div class="info">
-For faster support contact us on Telegram
-</div>
+<div class="info">Join our official community</div>
 
 <a href="https://t.me/Supernftcrypto" target="_blank" class="telegram-btn">
-📢 Join Official Channel
+📢 Channel
 </a>
 
 <a href="https://t.me/supernftofficialgroup" target="_blank" class="telegram-btn">
-👥 Join Official Group
+👥 Community Group
 </a>
 
 <a href="https://t.me/mysupernft" target="_blank" class="telegram-btn">
-🛠 Contact Website Support
+🛠 Support Chat
 </a>
 
 <div class="info">
-⏱ Support Available 24/7 Worldwide
+🌍 24/7 Worldwide Support
 </div>
 
 </div>
 
 </body>
-</h
+</
