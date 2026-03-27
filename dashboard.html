@@ -275,6 +275,7 @@ footer{
   <button onclick="openPage('trading')">📊 Trading</button>
   <button onclick="openPage('useReferral')">🎁 Use Referral Code</button>
   <button onclick="openPage('investments')">📁 My Investments</button>
+  <button onclick="openPage('leaderboard')">🏆 Top Earners</button>
   <button onclick="openPage('wallet')">💳 Wallet</button>
   <button onclick="openPage('withdraw')">💸 Withdraw</button>
   <button onclick="openPage('live')">💹 Live Earnings</button>
@@ -402,6 +403,9 @@ window.openPage = function(page){
       window.location.href = "use-referral.html";
       break;
     case "investments": window.location.href="my-investments.html"; break;
+      case "leaderboard":
+  window.location.href = "leaderboard.html";
+  break;
     case "wallet": window.location.href="wallet.html"; break;
     case "deposit": window.location.href="deposit.html"; break;
     case "withdraw": window.location.href="withdraw.html"; break;
