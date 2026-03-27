@@ -10,150 +10,70 @@
 body{
 margin:0;
 font-family:Arial;
-background:#050505;
+background:#0f0f0f;
 color:#FFD700;
-overflow-x:hidden;
+padding:20px;
 }
 
-/* 🔥 BACKGROUND GLOW /
-body::before{
-content:"";
-position:fixed;
-width:400px;
-height:400px;
-background:radial-gradient(circle,#FFD70033,transparent);
-top:-100px;
-left:-100px;
-filter:blur(100px);
-z-index:0;
-}
-
-body::after{
-content:"";
-position:fixed;
-width:300px;
-height:300px;
-background:radial-gradient(circle,#00ff8833,transparent);
-bottom:-100px;
-right:-100px;
-filter:blur(100px);
-z-index:0;
-}
-
-/ HEADER /
 h1{
 text-align:center;
-margin:25px 0;
-font-size:26px;
-letter-spacing:1px;
-position:relative;
-z-index:1;
+color:#FFD700;
+margin-bottom:20px;
 }
 
-/ CONTAINER /
 .container{
 max-width:500px;
 margin:auto;
-padding:15px;
-position:relative;
-z-index:1;
+background:#1a1a1a;
+padding:25px;
+border-radius:12px;
+box-shadow:0 0 20px #000;
+text-align:center;
 }
 
-/ CARD /
 .contact-box{
-background:rgba(255,255,255,0.04);
-backdrop-filter:blur(15px);
-border-radius:16px;
-padding:18px;
-margin-top:18px;
-font-size:14px;
-line-height:1.8;
-border:1px solid rgba(255,215,0,0.2);
-box-shadow:0 0 25px rgba(255,215,0,0.08);
-transition:0.3s;
-position:relative;
-overflow:hidden;
+background:#0f0f0f;
+border:1px solid #FFD700;
+border-radius:10px;
+padding:15px;
+margin-top:15px;
+font-size:16px;
 }
 
-/ GLOW BORDER /
-.contact-box::before{
-content:"";
-position:absolute;
-inset:0;
-border-radius:16px;
-padding:1px;
-background:linear-gradient(120deg,#FFD700,transparent,#00ff88);
--webkit-mask:
-linear-gradient(#000 0 0) content-box,
-linear-gradient(#000 0 0);
--webkit-mask-composite:xor;
-mask-composite:exclude;
-opacity:0.4;
-}
-
-/ HOVER /
-.contact-box:hover{
-transform:translateY(-5px) scale(1.01);
-box-shadow:0 0 40px rgba(255,215,0,0.25);
-}
-
-/ TITLE /
-.title{
-font-size:12px;
-color:#aaa;
-margin-bottom:6px;
-letter-spacing:1px;
-}
-
-/ STATUS BADGE /
-.status{
-display:inline-block;
-background:#00ff6620;
-color:#00ff66;
-padding:4px 10px;
-border-radius:20px;
-font-size:12px;
-margin-left:6px;
-}
-
-/ LINKS /
 a{
 color:#FFD700;
 text-decoration:none;
 }
 
-.whatsapp{
-color:#00ff88;
-font-weight:bold;
-}
-
-/ TELEGRAM BUTTON /
 .telegram-btn{
 display:block;
 text-align:center;
-background:linear-gradient(135deg,#FFD70022,#00ff8822);
+background:#1a1a1a;
 color:#FFD700;
-padding:13px;
-border-radius:14px;
+padding:12px;
+border-radius:10px;
 font-weight:bold;
 text-decoration:none;
-margin-top:14px;
-border:1px solid rgba(255,215,0,0.3);
+margin-top:12px;
+border:1px solid #FFD700;
 transition:0.3s;
 }
 
 .telegram-btn:hover{
 background:#FFD700;
 color:#000;
-box-shadow:0 0 20px #FFD700;
+box-shadow:0 0 10px #FFD700;
 }
 
-/ INFO */
 .info{
-margin-top:18px;
-font-size:13px;
+margin-top:20px;
+font-size:14px;
 color:#aaa;
-text-align:center;
+}
+
+.whatsapp{
+color:#00ff66;
+font-weight:bold;
 }
 
 </style>
@@ -161,71 +81,58 @@ text-align:center;
 
 <body>
 
-<h1>📞 Contact Support</h1>
-
 <div class="container">
 
-<!-- STATUS -->
-<div class="contact-box">
-<div class="title">SYSTEM STATUS</div>
-🟢 Support is <span class="status">Online</span><br>
-⚡ Avg Response Time: 2–5 Minutes
-</div>
+<h1>📞 Contact Support</h1>
 
 <!-- EMAIL -->
 <div class="contact-box">
-<div class="title">EMAIL SUPPORT</div>
-📧 mysuper.nft@protonmail.com
+📧 Email Support  
+<br><br>
+<b>mysuper.nft@protonmail.com</b>
 </div>
 
 <!-- HELPLINE -->
 <div class="contact-box">
-<div class="title">GLOBAL HELPLINE</div>
+📞 24/7 Global Helpline  
+<br><br>
 
-🇮🇳 +91 98765 43210<br>
-🇵🇰 +92 300 1234567<br>
-🇦🇪 +971 50 123 4567<br><br>
+🇮🇳 India: <a href="tel:+919876543210">+91 98765 43210</a><br><br>
 
-💬 <a href="https://wa.me/919876543210" class="whatsapp">Chat on WhatsApp</a>
+🇵🇰 Pakistan: <a href="tel:+923001234567">+92 300 1234567</a><br><br>
+
+🇦🇪 Dubai: <a href="tel:+971501234567">+971 50 123 4567</a><br><br>
+
+💬 WhatsApp: <a href="https://wa.me/919876543210" class="whatsapp">Chat Now</a>
 </div>
 
-<!-- TEAM -->
-<div class="contact-box">
-<div class="title">SUPPORT TEAM</div>
-
-Rahul Sharma 🇮🇳<br>
-Ahmed Khan 🇵🇰<br>
-Daniel Joseph 🇦🇪
-</div>
-
-<!-- SECURITY -->
-<div class="contact-box">
-<div class="title">SECURITY NOTICE</div>
-
-We never ask for your password or OTP.<br>
-Only contact official support channels.
+<div class="info">
+✔ Verified Global Support Team<br>
+✔ Avg Response Time: 5 Minutes
 </div>
 
 <!-- TELEGRAM -->
-<div class="info">Join our official community</div>
+<div class="info">
+For faster support contact us on Telegram
+</div>
 
 <a href="https://t.me/Supernftcrypto" target="_blank" class="telegram-btn">
-📢 Official Channel
+📢 Join Official Channel
 </a>
 
 <a href="https://t.me/supernftofficialgroup" target="_blank" class="telegram-btn">
-👥 Community Group
+👥 Join Official Group
 </a>
 
 <a href="https://t.me/mysupernft" target="_blank" class="telegram-btn">
-🛠 Live Support Chat
+🛠 Contact Website Support
 </a>
 
 <div class="info">
-🌍 24/7 Worldwide Support
+⏱ Support Time: 24/7
 </div>
 
 </div>
 
 </body>
-</
+</htm
