@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperNFT - Live Earnings</title>
 
-<!-- Chart.js -->
+<!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -47,11 +47,12 @@ header{
 
 <script type="module">
 
-/* ================= FIREBASE ================= */
+/* ================= FIREBASE IMPORT ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* ================= FIREBASE CONFIG ================= */
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
@@ -62,7 +63,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-/* ================= CHART ================= */
+/* ================= INIT CHART FIRST ================= */
 const ctx=document.getElementById("earningsChart").getContext("2d");
 
 const earningsChart=new Chart(ctx,{
@@ -77,13 +78,13 @@ const earningsChart=new Chart(ctx,{
       borderWidth:2,
       tension:0.4,
       fill:true,
-      pointRadius:0
+      pointRadius:3,
+      pointBackgroundColor:"#FFD700"
     }]
   },
   options:{
     responsive:true,
     maintainAspectRatio:false,
-    animation:false,
     plugins:{
       legend:{ labels:{ color:"#FFD700" }}
     },
@@ -100,7 +101,7 @@ const earningsChart=new Chart(ctx,{
   }
 });
 
-/* ================= UPDATE FUNCTION ================= */
+/* ================= UPDATE CHART FUNCTION ================= */
 function updateChart(value){
 
   const time=new Date().toLocaleTimeString();
@@ -108,7 +109,7 @@ function updateChart(value){
   earningsChart.data.labels.push(time);
   earningsChart.data.datasets[0].data.push(value);
 
-  // keep last 20 points
+  // Keep last 20 points
   if(earningsChart.data.labels.length>20){
     earningsChart.data.labels.shift();
     earningsChart.data.datasets[0].data.shift();
@@ -117,41 +118,33 @@ function updateChart(value){
   earningsChart.update();
 }
 
-/* ================= MAIN LOGIC ================= */
-onAuthStateChanged(auth, async (user)=>{
+/* ================= AUTH + FIRESTORE ================= */
+onAuthStateChanged(auth,(user)=>{
 
   if(!user){
     window.location="login.html";
     return;
   }
 
-  const ref=doc(db,"users",user.uid);
-  const snap=await getDoc(ref);
+  const userRef=doc(db,"users",user.uid);
 
-  if(!snap.exists()){
-    console.log("User not found");
-    return;
-  }
+  onSnapshot(userRef,(snap)=>{
 
-  const data=snap.data();
+    if(!snap.exists()){
+      console.log("User document not found");
+      return;
+    }
 
-  let base = data.walletBalance || 0;
+    const data=snap.data();
 
-  // 🔥 daily income logic (same as dashboard)
-  let daily = data.dailyIncome || (base * 0.025);
+    // 🔥 IMPORTANT: Make sure Firestore field name matches
+    const earnings=data.liveEarnings || 0;
 
-  let perSecond = daily / 86400;
+    updateChart(earnings);
 
-  let live = base;
-
-  // 🔥 smooth live growth
-  setInterval(()=>{
-
-    live += perSecond;
-
-    updateChart(live);
-
-  },1000);
+  },(error)=>{
+    console.error("Firestore Error:",error);
+  });
 
 });
 
