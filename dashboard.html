@@ -850,6 +850,12 @@ function update7DaysChart(dailyIncome){
   earningsChart.data.datasets[0].data = data;
   earningsChart.update();
 }
+    // =======================
+// 📊 OPEN FULL CHART PAGE
+// =======================
+document.getElementById("earningsChart").addEventListener("click", ()=>{
+  window.location.href = "chart.html";
+});
     
     </script>
 </body>
