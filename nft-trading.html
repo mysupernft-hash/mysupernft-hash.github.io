@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NFT Trading</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body{
+  margin:0;
+  background:#0f0f0f;
+  color:#FFD700;
+  font-family:Arial;
+}
+
+.container{
+  display:flex;
+}
+
+/* LEFT NFT LIST */
+.sidebar{
+  width:30%;
+  background:#111;
+  padding:10px;
+}
+
+.nft{
+  padding:10px;
+  border-bottom:1px solid #222;
+  cursor:pointer;
+}
+
+.nft:hover{
+  background:#1a1a1a;
+}
+
+/* RIGHT CHART */
+.main{
+  flex:1;
+  padding:20px;
+}
+
+canvas{
+  background:#111;
+  border-radius:10px;
+}
+
+.trade-box{
+  margin-top:15px;
+}
+
+button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:6px;
+  background:#FFD700;
+  color:#000;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2 style="text-align:center;">📊 NFT Trading</h2>
+
+<div class="container">
+
+<!-- NFT LIST -->
+<div class="sidebar" id="nftList"></div>
+
+<!-- CHART -->
+<div class="main">
+  <canvas id="chart"></canvas>
+
+  <div class="trade-box">
+    <button onclick="buy()">Buy</button>
+    <button onclick="sell()">Sell</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+
+const NFTs = [
+  {name:"Gold NFT", price:100},
+  {name:"Diamond NFT", price:300},
+  {name:"Ruby NFT", price:500}
+];
+
+const nftList = document.getElementById("nftList");
+
+NFTs.forEach((n,i)=>{
+  nftList.innerHTML += `
+    <div class="nft" onclick="selectNFT(${i})">
+      ${n.name} - $${n.price}
+    </div>
+  `;
+});
+
+let currentPrice = 100;
+
+// CHART
+const ctx = document.getElementById("chart").getContext("2d");
+
+const chart = new Chart(ctx,{
+  type:"line",
+  data:{
+    labels:[],
+    datasets:[{
+      data:[],
+      borderColor:"#FFD700"
+    }]
+  }
+});
+
+// SELECT NFT
+function selectNFT(i){
+  currentPrice = NFTs[i].price;
+  chart.data.labels=[];
+  chart.data.datasets[0].data=[];
+}
+
+// FAKE LIVE PRICE
+setInterval(()=>{
+  currentPrice += (Math.random()-0.5)*5;
+
+  chart.data.labels.push("");
+  chart.data.datasets[0].data.push(currentPrice);
+
+  if(chart.data.labels.length > 20){
+    chart.data.labels.shift();
+    chart.data.datasets[0].data.shift();
+  }
+
+  chart.update();
+},1000);
+
+// BUY SELL
+function buy(){
+  alert("NFT Bought at $" + currentPrice.toFixed(2));
+}
+
+function sell(){
+  alert("NFT Sold at $" + currentPrice.toFixed(2));
+}
+
+</script>
+
+</body>
+</html>
