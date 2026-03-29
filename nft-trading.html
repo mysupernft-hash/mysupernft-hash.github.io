@@ -2,119 +2,79 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SuperNFT Pro Trading</title>
+<title>SuperNFT Market</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 body{
 margin:0;
 background:#0b0b0f;
-color:#FFD700;
+color:#fff;
 font-family:Arial;
 }
 
 /* HEADER */
-header{
+.header{
+display:flex;
+justify-content:space-between;
 padding:10px;
 background:#111;
-text-align:center;
+font-size:14px;
+}
+
+.tabs{
+display:flex;
+gap:15px;
+padding:10px;
+background:#111;
+overflow-x:auto;
+}
+
+.tab{
+color:#aaa;
+cursor:pointer;
+}
+
+.tab.active{
+color:#FFD700;
 font-weight:bold;
 }
 
-/* LAYOUT */
-.container{
+/* TABLE */
+.table{
+padding:10px;
+}
+
+.row{
 display:flex;
-height:calc(100vh - 50px);
-}
-
-/* LEFT NFT LIST */
-.sidebar{
-width:25%;
-background:#111;
-overflow-y:auto;
-border-right:1px solid #222;
-}
-
-.nft{
+justify-content:space-between;
 padding:12px;
 border-bottom:1px solid #222;
-cursor:pointer;
-display:flex;
-justify-content:space-between;
+align-items:center;
 }
 
-.nft:hover{
-background:#1a1a1a;
-}
-
-/* MAIN */
-.main{
-flex:1;
-display:flex;
-flex-direction:column;
-}
-
-/* PRICE BAR */
-.price-bar{
-padding:10px;
+.row:hover{
 background:#111;
-display:flex;
-justify-content:space-between;
 }
 
+/* NAME */
+.name{
+font-weight:bold;
+}
+
+/* PRICE */
+.price{
+font-weight:bold;
+}
+
+/* GREEN RED */
 .green{color:#00ff66;}
 .red{color:#ff4444;}
 
-/* CHART */
-.chart-box{
-flex:1;
-padding:10px;
-}
-
-canvas{
-background:#0f172a;
-border-radius:10px;
-}
-
-/* TRADE PANEL */
-.trade{
-width:25%;
-background:#111;
-padding:10px;
-border-left:1px solid #222;
-}
-
-input{
-width:100%;
-padding:10px;
-margin:5px 0;
-background:#0f0f0f;
-border:1px solid #333;
-color:#FFD700;
-border-radius:6px;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:8px;
-border:none;
-border-radius:6px;
-font-weight:bold;
-cursor:pointer;
-}
-
-.buy{
-background:#00ff66;
-color:#000;
-}
-
-.sell{
-background:#ff4444;
-color:#fff;
+.small{
+font-size:12px;
+color:#aaa;
 }
 
 </style>
@@ -122,150 +82,88 @@ color:#fff;
 
 <body>
 
-<header>📊 SuperNFT Pro Trading</header>
-
-<div class="container">
-
-<!-- LEFT NFT LIST -->
-<div class="sidebar" id="nftList"></div>
-
-<!-- MAIN -->
-<div class="main">
-
-<div class="price-bar">
-  <div id="pair">Gold NFT / USDT</div>
-  <div id="price">$100</div>
+<!-- HEADER -->
+<div class="header">
+  <div>12:07</div>
+  <div>📶 🔋55%</div>
 </div>
 
-<div class="chart-box">
-  <canvas id="chart"></canvas>
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active">Hot</div>
+  <div class="tab">Gainers</div>
+  <div class="tab">Losers</div>
+  <div class="tab">New</div>
+  <div class="tab">24h Vol</div>
+  <div class="tab">Market Cap</div>
 </div>
 
-</div>
-
-<!-- TRADE PANEL -->
-<div class="trade">
-  <h3>Trade</h3>
-
-  <input type="number" id="amount" placeholder="Amount">
-
-  <button class="buy" onclick="buy()">BUY</button>
-  <button class="sell" onclick="sell()">SELL</button>
-
-</div>
-
-</div>
+<!-- TABLE -->
+<div class="table" id="market"></div>
 
 <script>
 
-// ================= NFT DATA =================
-const NFTs = [
-{name:"Gold NFT", price:100},
-{name:"Diamond NFT", price:300},
-{name:"Ruby NFT", price:500},
-{name:"Elite NFT", price:1000}
+// ================= FAKE NFT MARKET =================
+const coins = [
+"BNBR","BTC O","ETH O","SOL","XRP",
+"DOGE","ADA","LTC","BCH","TRX","FET"
 ];
 
-const nftList = document.getElementById("nftList");
+let market = [];
 
-// RENDER LIST
-NFTs.forEach((n,i)=>{
-nftList.innerHTML += `
-<div class="nft" onclick="selectNFT(${i})">
-  <span>${n.name}</span>
-  <span>$${n.price}</span>
+// INIT DATA
+coins.forEach(c=>{
+market.push({
+name:c,
+price:Math.random()*60000+10,
+change:Math.random()*10-5
+});
+});
+
+// RENDER
+function render(){
+
+let html="";
+
+market.forEach((c,i)=>{
+
+const changeClass = c.change >=0 ? "green":"red";
+
+html += `
+<div class="row">
+  <div>
+    <div class="name">${c.name}</div>
+    <div class="small">NFT / USDT</div>
+  </div>
+
+  <div class="price ${changeClass}">
+    ${c.price.toFixed(2)}
+    <div class="small">$${c.price.toFixed(2)}</div>
+  </div>
 </div>
 `;
+
 });
 
-let currentPrice = 100;
-let selectedNFT = NFTs[0];
+document.getElementById("market").innerHTML = html;
 
-// ================= CHART =================
-const ctx = document.getElementById("chart").getContext("2d");
-
-const chart = new Chart(ctx,{
-type:"line",
-data:{
-labels:[],
-datasets:[{
-data:[],
-borderColor:"#FFD700",
-tension:0.4
-}]
-},
-options:{
-plugins:{legend:{display:false}},
-scales:{
-x:{display:false},
-y:{ticks:{color:"#FFD700"}}
-}
-}
-});
-
-// ================= SELECT NFT =================
-function selectNFT(i){
-
-selectedNFT = NFTs[i];
-currentPrice = selectedNFT.price;
-
-document.getElementById("pair").innerText =
-selectedNFT.name + " / USDT";
-
-chart.data.labels=[];
-chart.data.datasets[0].data=[];
 }
 
-// ================= LIVE PRICE =================
+// LIVE UPDATE
 setInterval(()=>{
 
-let oldPrice = currentPrice;
+market.forEach(c=>{
 
-currentPrice += (Math.random()-0.5)*10;
+c.price += (Math.random()-0.5)*50;
+c.change = Math.random()*10-5;
 
-document.getElementById("price").innerText =
-"$" + currentPrice.toFixed(2);
+});
 
-// COLOR CHANGE
-if(currentPrice > oldPrice){
-document.getElementById("price").className = "green";
-}else{
-document.getElementById("price").className = "red";
-}
-
-// CHART UPDATE
-chart.data.labels.push("");
-chart.data.datasets[0].data.push(currentPrice);
-
-if(chart.data.labels.length > 30){
-chart.data.labels.shift();
-chart.data.datasets[0].data.shift();
-}
-
-chart.update();
+render();
 
 },1000);
 
-// ================= BUY SELL =================
-function buy(){
-
-const amt = document.getElementById("amount").value;
-
-if(!amt) return alert("Enter amount");
-
-alert("Bought " + selectedNFT.name + " at $" + currentPrice.toFixed(2));
-
-}
-
-function sell(){
-
-const amt = document.getElementById("amount").value;
-
-if(!amt) return alert("Enter amount");
-
-alert("Sold " + selectedNFT.name + " at $" + currentPrice.toFixed(2));
-
-}
+render();
 
 </script>
 
