@@ -14,7 +14,6 @@ color:#fff;
 font-family:Arial;
 }
 
-/* HEADER */
 .header{
 display:flex;
 justify-content:space-between;
@@ -41,7 +40,6 @@ color:#FFD700;
 font-weight:bold;
 }
 
-/* TABLE */
 .table{
 padding:10px;
 }
@@ -52,23 +50,21 @@ justify-content:space-between;
 padding:12px;
 border-bottom:1px solid #222;
 align-items:center;
+cursor:pointer;
 }
 
 .row:hover{
 background:#111;
 }
 
-/* NAME */
 .name{
 font-weight:bold;
 }
 
-/* PRICE */
 .price{
 font-weight:bold;
 }
 
-/* GREEN RED */
 .green{color:#00ff66;}
 .red{color:#ff4444;}
 
@@ -82,40 +78,39 @@ color:#aaa;
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div>12:07</div>
-  <div>📶 🔋55%</div>
+  <div>SuperNFT Market</div>
+  <div>🔥 Live</div>
 </div>
 
-<!-- TABS -->
 <div class="tabs">
   <div class="tab active">Hot</div>
   <div class="tab">Gainers</div>
   <div class="tab">Losers</div>
-  <div class="tab">New</div>
-  <div class="tab">24h Vol</div>
-  <div class="tab">Market Cap</div>
 </div>
 
-<!-- TABLE -->
 <div class="table" id="market"></div>
 
 <script>
 
-// ================= FAKE NFT MARKET =================
-const coins = [
-"BNBR","BTC O","ETH O","SOL","XRP",
-"DOGE","ADA","LTC","BCH","TRX","FET"
+// 🔥 ALL NFT PRICE TIERS (YOUR SYSTEM)
+const nftPrices = [
+1,2,3,4,5,6,7,8,9,
+10,15,20,25,30,35,40,45,50,
+55,60,65,70,75,80,90,100,
+150,200,250,300,350,400,450,
+499,599,699,799,899,999,
+1000,2000,3000,4000,5000,6000,7000,8000,9000,10000
 ];
 
 let market = [];
 
-// INIT DATA
-coins.forEach(c=>{
+// INIT
+nftPrices.forEach(price=>{
 market.push({
-name:c,
-price:Math.random()*60000+10,
+name:"SNFT $" + price,
+base:price,
+live:price,
 change:Math.random()*10-5
 });
 });
@@ -125,20 +120,20 @@ function render(){
 
 let html="";
 
-market.forEach((c,i)=>{
+market.forEach(c=>{
 
-const changeClass = c.change >=0 ? "green":"red";
+const color = c.change >=0 ? "green":"red";
 
 html += `
-<div class="row">
+<div class="row" onclick="openNFT(${c.base})">
   <div>
     <div class="name">${c.name}</div>
-    <div class="small">NFT / USDT</div>
+    <div class="small">SuperNFT / USDT</div>
   </div>
 
-  <div class="price ${changeClass}">
-    ${c.price.toFixed(2)}
-    <div class="small">$${c.price.toFixed(2)}</div>
+  <div class="price ${color}">
+    ${c.live.toFixed(2)}
+    <div class="small">$${c.live.toFixed(2)}</div>
   </div>
 </div>
 `;
@@ -149,13 +144,30 @@ document.getElementById("market").innerHTML = html;
 
 }
 
-// LIVE UPDATE
+// 🔥 CLICK → NFT PAGE
+window.openNFT = function(price){
+
+  // redirect example
+  window.location.href = "nft-details.html?price=" + price;
+
+}
+
+// 🔄 LIVE MOVEMENT (REAL FEEL)
 setInterval(()=>{
 
 market.forEach(c=>{
 
-c.price += (Math.random()-0.5)*50;
-c.change = Math.random()*10-5;
+// base ke according movement (real feel)
+let volatility = c.base * 0.01;
+
+// movement
+c.live += (Math.random()-0.5) * volatility;
+
+// limit (negative na ho)
+if(c.live < c.base*0.8) c.live = c.base*0.8;
+if(c.live > c.base*1.5) c.live = c.base*1.5;
+
+c.change = ((c.live - c.base)/c.base)*100;
 
 });
 
