@@ -269,6 +269,7 @@ footer{
 
 <div id="sidebar">
   <h2>Menu</h2>
+  <button onclick="openPage('tutorial')">📘 Tutorial</button>
   <button onclick="openPage('account')">👤 My Account</button>
   <button onclick="openPage('referral')">💹 My Referrals</button>
   <button onclick="openPage('referral-history')">📜 Referral History</button>
@@ -391,6 +392,9 @@ window.openPage = function(page){
   switch(page){
       case "trading":
   window.location.href = "trading.html";
+  break;
+      case "tutorial":
+  window.location.href = "tutorial.html";
   break;
     case "account": window.location.href="account.html"; break;
     case "referral":
