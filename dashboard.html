@@ -862,5 +862,32 @@ document.getElementById("earningsChart").addEventListener("click", ()=>{
 });
     
     </script>
+
+  
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* Firebase Config */
+const firebaseConfig = {
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+/* 🔒 PROTECTION */
+onAuthStateChanged(auth,(user)=>{
+  if(!user){
+    // ❌ Not logged in → redirect
+    window.location.replace("login.html");
+  }
+});
+
+</script>
+
 </body>
 </html>
