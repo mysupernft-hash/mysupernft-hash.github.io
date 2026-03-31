@@ -168,6 +168,39 @@ footer{
   box-shadow: 0 0 18px #FFD700;
 }
 
+  .msg-icon{
+  position:relative;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.msg-icon svg{
+  width:22px;
+  height:22px;
+  filter: drop-shadow(0 0 6px #FFD700);
+  transition:0.3s;
+}
+
+.msg-icon:hover svg{
+  transform:scale(1.15);
+  filter: drop-shadow(0 0 12px #FFD700);
+}
+
+/* badge */
+#msgBadge{
+  position:absolute;
+  top:-6px;
+  right:-10px;
+  background:red;
+  color:white;
+  font-size:10px;
+  padding:2px 6px;
+  border-radius:50%;
+  display:none;
+}
+
   /* TERA PURA CSS */
 
   @media(max-width:480px){
@@ -314,7 +347,18 @@ footer{
     <!-- 💬 Message Icon -->
 <div onclick="openMessages()" 
      style="position:relative;cursor:pointer;font-size:18px;">
-  💬
+  <!-- 💬 Message Icon -->
+<div onclick="openMessages()" class="msg-icon">
+
+  <svg viewBox="0 0 24 24">
+    <path fill="#FFD700"
+      d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+  </svg>
+
+  <span id="msgBadge">0</span>
+
+</div>
+  
   <span id="msgBadge" style="
     position:absolute;
     top:-6px;
