@@ -1,2 +1,136 @@
-<h2>💬 Messages</h2>
-<div id="msgList"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages - SuperNFT</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0f0f0f;
+  color:#FFD700;
+}
+
+header{
+  padding:15px;
+  text-align:center;
+  background:#1a1a1a;
+  font-size:18px;
+  font-weight:bold;
+  border-bottom:1px solid #272727;
+}
+
+#msgList{
+  padding:10px;
+}
+
+.msg{
+  background:#1a1a1a;
+  margin:10px;
+  padding:12px;
+  border-radius:10px;
+  font-size:14px;
+  line-height:1.4;
+  box-shadow:0 0 8px rgba(255,215,0,0.1);
+}
+
+.time{
+  font-size:11px;
+  color:#aaa;
+  margin-top:5px;
+  text-align:right;
+}
+</style>
+</head>
+
+<body>
+
+<header>💬 Messages</header>
+
+<div id="msgList">Loading...</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, onSnapshot, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth,(user)=>{
+
+  if(!user){
+    window.location.replace("login.html");
+    return;
+  }
+
+  const userUID = user.uid;
+
+  // 🔥 LIVE MESSAGES
+  onSnapshot(doc(db,"messages", userUID),(snap)=>{
+
+    if(!snap.exists()){
+      document.getElementById("msgList").innerHTML = "No messages yet";
+      return;
+    }
+
+    const data = snap.data().list || [];
+
+    if(data.length === 0){
+      document.getElementById("msgList").innerHTML = "No messages yet";
+      return;
+    }
+
+    let html = "";
+
+    data.slice().reverse().forEach(m=>{
+
+      let time = new Date(m.time).toLocaleString();
+
+      html += `
+        <div class="msg">
+          ${m.text}
+          <div class="time">${time}</div>
+        </div>
+      `;
+    });
+
+    document.getElementById("msgList").innerHTML = html;
+
+  });
+
+  // ✅ MARK AS READ
+  async function markRead(){
+
+    const ref = doc(db,"messages", userUID);
+    const snap = await getDoc(ref);
+
+    if(!snap.exists()) return;
+
+    const updated = (snap.data().list || []).map(m=>({
+      ...m,
+      read:true
+    }));
+
+    await updateDoc(ref,{ list: updated });
+
+  }
+
+  markRead();
+
+});
+
+</script>
+
+</body>
+</html>
