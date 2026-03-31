@@ -203,6 +203,60 @@ footer{
     color:#FFD700;
   }
 
+  .final-footer{
+  margin:20px;
+  padding:15px;
+  background:#1a1a1a;
+  border-radius:15px;
+  border:1px solid rgba(255,215,0,0.2);
+  text-align:center;
+}
+
+.footer-links{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.footer-links a{
+  font-size:12px;
+  color:#FFD700;
+  opacity:0.8;
+  padding:5px 8px;
+  border-radius:6px;
+  transition:0.2s;
+}
+
+.footer-links a:hover{
+  background:#FFD700;
+  color:#000;
+  box-shadow:0 0 8px #FFD700;
+}
+
+.social-icons{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin-bottom:10px;
+}
+
+.social-icons a{
+  font-size:13px;
+  color:#aaa;
+  transition:0.2s;
+}
+
+.social-icons a:hover{
+  color:#FFD700;
+}
+
+.footer-note{
+  font-size:10px;
+  color:#777;
+}
+
 </style>
 
 <div id="overlay"></div>
@@ -328,6 +382,34 @@ footer{
 
 <h2 style="margin-left:20px;">Earnings (Last 7 Days)</h2>
 <canvas id="earningsChart" width="400" height="200"></canvas>
+
+<div class="final-footer">
+
+  <!-- 🔗 LINKS -->
+  <div class="footer-links">
+    <a href="about.html">About</a>
+    <a href="terms.html">Terms</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="license.html">License</a>
+    <a href="team.html">Team</a>
+    <a href="audit.html">Audit</a>
+    <a href="contact.html">Contact</a>
+  </div>
+
+  <!-- 🌐 SOCIAL -->
+  <div class="social-icons">
+    <a href="#">📢 Telegram</a>
+    <a href="#">📸 Instagram</a>
+  </div>
+
+  <!-- ⚠️ TEXT -->
+  <div class="footer-note">
+    © 2026 SuperNFT. All rights reserved.
+  </div>
+
+</div>
+  
+
 
   <div class="main-content">
     <!-- Your page content goes here -->
