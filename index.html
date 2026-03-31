@@ -1,167 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+<!-- BASIC -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperNFT – Earn Daily From NFTs</title>
+
+<!-- TITLE -->
 <title>SuperNFT Official Website - NFT Earning Platform</title>
-  <!-- ✅ PWA LINKS YAHAN LAGAO -->
+
+<!-- SEO META -->
+<meta name="description" content="SuperNFT is a modern NFT earning platform where users can explore digital earning opportunities through NFTs and crypto technology.">
+<meta name="keywords" content="SuperNFT, NFT earning platform, crypto income, passive income, online earning">
+<meta name="author" content="SuperNFT">
+
+<!-- GOOGLE VERIFY -->
+<meta name="google-site-verification" content="google37415e567bee4749" />
+
+<!-- OPEN GRAPH -->
+<meta property="og:title" content="SuperNFT - NFT Earning Platform">
+<meta property="og:description" content="Explore NFT-based earning opportunities with a simple and modern platform.">
+<meta property="og:image" content="https://mysupernft-hash.github.io/images/IMG_1794.png">
+<meta property="og:url" content="https://mysupernft-hash.github.io">
+<meta property="og:type" content="website">
+
+<!-- TWITTER -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SuperNFT Official">
+<meta name="twitter:description" content="Explore NFT-based earning opportunities with SuperNFT.">
+<meta name="twitter:image" content="https://mysupernft-hash.github.io/images/IMG_1794.png">
+
+<!-- CANONICAL -->
+<link rel="canonical" href="https://mysupernft-hash.github.io/">
+
+<!-- PWA -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#FFD700">
 <link rel="apple-touch-icon" href="/images/IMG_1794.png">
 
-<!-- baaki css ya scripts neeche -->
+<!-- CHART -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- STYLE -->
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{
-  background:#0f0f0f;
-  color:#fff;
-  overflow-x:hidden;
-}
+body{background:#0f0f0f;color:#fff;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 
-/* GOLD THEME */
 .gold{color:#FFD700}
 .btn{
-  background:#FFD700;
-  color:#000;
-  padding:14px 22px;
-  border-radius:10px;
-  font-weight:bold;
-  border:none;
-  cursor:pointer;
+  background:#FFD700;color:#000;padding:14px 22px;
+  border-radius:10px;font-weight:bold;border:none;cursor:pointer;
 }
 .btn.outline{
-  background:transparent;
-  border:1px solid #FFD700;
-  color:#FFD700;
+  background:transparent;border:1px solid #FFD700;color:#FFD700;
 }
 
-/* HEADER */
 header{
-  position:sticky;
-  top:0;
-  z-index:10;
-  background:#0f0f0f;
-  border-bottom:1px solid #222;
-  padding:14px 16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  position:sticky;top:0;z-index:10;background:#0f0f0f;
+  border-bottom:1px solid #222;padding:14px 16px;
+  display:flex;justify-content:space-between;align-items:center;
 }
 header h1{font-size:20px}
 
-/* HERO */
-.hero{
-  padding:40px 16px;
-  text-align:center;
-}
-.hero h2{
-  font-size:30px;
-  line-height:1.2;
-  margin-bottom:12px;
-}
-.hero p{
-  font-size:16px;
-  color:#ccc;
-  margin-bottom:24px;
-}
-.hero .actions{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  flex-wrap:wrap;
-}
+.hero{padding:40px 16px;text-align:center}
+.hero h1{font-size:30px;margin-bottom:12px}
+.hero p{font-size:16px;color:#ccc;margin-bottom:24px}
+.hero img{margin:20px 0;border-radius:12px}
 
-/* TRUST BAR */
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
 .trust{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  padding:20px 16px;
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:12px;padding:20px 16px;
 }
 .trust div{
-  background:#161616;
-  border:1px solid #222;
-  border-radius:12px;
-  padding:16px;
-  text-align:center;
+  background:#161616;border:1px solid #222;
+  border-radius:12px;padding:16px;text-align:center;
 }
 .trust h3{font-size:22px}
 .trust p{font-size:12px;color:#aaa}
 
-/* WHY */
-.section{
-  padding:40px 16px;
-}
-.section h3{
-  font-size:24px;
-  text-align:center;
-  margin-bottom:24px;
-}
+.section{padding:40px 16px}
+.section h2{text-align:center;margin-bottom:24px}
+
 .features{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:14px;
 }
 .feature{
-  background:#161616;
-  border:1px solid #222;
-  border-radius:14px;
-  padding:16px;
+  background:#161616;border:1px solid #222;
+  border-radius:14px;padding:16px;
 }
-.feature h4{margin-bottom:6px}
 
-/* HOW IT WORKS */
-.steps{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:14px;
-}
+.steps{display:grid;gap:14px}
 .step{
-  display:flex;
-  gap:12px;
-  background:#161616;
-  border-radius:14px;
-  padding:16px;
+  display:flex;gap:12px;background:#161616;
+  border-radius:14px;padding:16px;
 }
-.step span{
-  font-size:22px;
-  color:#FFD700;
-}
+.step span{color:#FFD700}
 
-/* CTA */
 .cta{
   background:linear-gradient(180deg,#FFD70022,transparent);
-  text-align:center;
-  padding:40px 16px;
+  text-align:center;padding:40px 16px;
 }
-.cta h3{font-size:26px;margin-bottom:12px}
-.cta p{color:#ccc;margin-bottom:20px}
 
-/* FOOTER */
 footer{
-  border-top:1px solid #222;
-  padding:16px;
-  text-align:center;
-  font-size:12px;
-  color:#888;
-}
-
-/* MOBILE ONLY FOCUS */
-@media(min-width:768px){
-  body::before{
-    content:"Mobile Optimized Experience";
-    position:fixed;
-    bottom:10px;
-    right:10px;
-    font-size:10px;
-    color:#555;
-  }
+  border-top:1px solid #222;padding:16px;
+  text-align:center;font-size:12px;color:#888;
 }
 </style>
+
 </head>
 
 <body>
@@ -171,76 +119,49 @@ footer{
   <a href="login.html" class="btn outline">Login</a>
 </header>
 
-<!-- HERO -->
 <section class="hero">
-  <h2>Earn <span class="gold">Daily Income</span><br>From Premium NFTs</h2>
-  <p>Buy NFTs once. Earn every day. Withdraw anytime.<br>No trading. No stress.</p>
+  <h1>SuperNFT NFT Earning Platform</h1>
+  <p>Explore digital earning opportunities with NFTs in a simple and modern way.</p>
+
+  <img src="images/IMG_1794.png" alt="SuperNFT dashboard preview" width="100%">
 
   <div class="actions">
     <button class="btn" onclick="location.href='signup.html'">Create Free Account</button>
-    <button class="btn outline" onclick="location.href='login.html'">Already Member? Login</button>
+    <button class="btn outline" onclick="location.href='login.html'">Login</button>
   </div>
 </section>
 
-<!-- TRUST -->
 <section class="trust">
-  <div>
-    <h3 class="gold">$10k +</h3>
-    <p>Daily Earnings</p>
-  </div>
-  <div>
-    <h3 class="gold">30+</h3>
-    <p>Premium NFTs</p>
-  </div>
-  <div>
-    <h3 class="gold">24/7</h3>
-    <p>Live Earnings</p>
-  </div>
-  <div>
-    <h3 class="gold">Instant</h3>
-    <p>Withdrawals</p>
-  </div>
+  <div><h3 class="gold">Global</h3><p>Users Worldwide</p></div>
+  <div><h3 class="gold">Secure</h3><p>System Access</p></div>
+  <div><h3 class="gold">24/7</h3><p>Platform Access</p></div>
+  <div><h3 class="gold">Fast</h3><p>Withdrawals</p></div>
 </section>
 
-<!-- WHY -->
 <section class="section">
-  <h3>Why <span class="gold">SuperNFT</span>?</h3>
+  <h2>Why SuperNFT?</h2>
   <div class="features">
-    <div class="feature">
-      <h4>💰 Fixed Daily Income</h4>
-      <p>No market risk. Earn daily.</p>
-    </div>
-    <div class="feature">
-      <h4>🖼 Premium NFTs</h4>
-      <p>Starter to Legendary.</p>
-    </div>
-    <div class="feature">
-      <h4>📈 Live Dashboard</h4>
-      <p>Real-time earnings.</p>
-    </div>
-    <div class="feature">
-      <h4>🔐 Secure System</h4>
-      <p>Login protected access.</p>
-    </div>
+    <div class="feature"><h4>💰 Earning Potential</h4><p>Designed for consistent growth.</p></div>
+    <div class="feature"><h4>🖼 NFT Assets</h4><p>Multiple digital asset options.</p></div>
+    <div class="feature"><h4>📈 Live Dashboard</h4><p>Track activity in real-time.</p></div>
+    <div class="feature"><h4>🔐 Secure Access</h4><p>Protected user system.</p></div>
   </div>
 </section>
 
-<!-- HOW -->
 <section class="section">
-  <h3>How It Works</h3>
+  <h2>How It Works</h2>
   <div class="steps">
-    <div class="step"><span>1</span><div>Create free account</div></div>
-    <div class="step"><span>2</span><div>Buy income NFT</div></div>
-    <div class="step"><span>3</span><div>Earn daily automatically</div></div>
+    <div class="step"><span>1</span><div>Create account</div></div>
+    <div class="step"><span>2</span><div>Explore NFTs</div></div>
+    <div class="step"><span>3</span><div>Track earnings</div></div>
     <div class="step"><span>4</span><div>Withdraw anytime</div></div>
   </div>
 </section>
 
-<!-- CTA -->
 <section class="cta">
-  <h3>Don’t Miss Daily Income</h3>
-  <p>People are already earning from SuperNFT.<br>Login or create account to continue.</p>
-  <button class="btn" onclick="location.href='signup.html'">Start Earning Now</button>
+  <h2>Start Your Journey Today</h2>
+  <p>Join SuperNFT and explore digital earning opportunities.</p>
+  <button class="btn" onclick="location.href='signup.html'">Get Started</button>
 </section>
 
 <footer>
