@@ -126,6 +126,20 @@ tr{background:#111;}
 <button onclick="addWithdraw()" class="addBtn">Add Withdraw</button>
 </div>
 
+<!-- 💬 SEND MESSAGE -->
+<div class="card">
+
+<h3>💬 Send Message to User</h3>
+
+<textarea id="adminMsg" placeholder="Type message..."
+style="width:100%;height:80px;background:#1a1a1a;color:#FFD700;border:none;border-radius:6px;padding:10px;"></textarea>
+
+<button onclick="sendMessage()" class="addBtn">
+Send Message
+</button>
+
+</div>
+  
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
 <button onclick="loginAsUser()" style="background:#00aa00;color:white;width:100%;margin-top:10px;">
 👁 Login As User
@@ -377,6 +391,42 @@ alert("Updated Successfully");
 localStorage.setItem("adminPreviewUID", uid);
 
 window.open("dashboard.html","_blank");
+
+}
+
+  function sendMessage(){
+
+const text = document.getElementById("adminMsg").value.trim();
+
+if(!text){
+alert("Enter message");
+return;
+}
+
+const ref = db.collection("messages").doc(uid);
+
+ref.get().then(doc=>{
+
+let list = [];
+
+if(doc.exists){
+list = doc.data().list || [];
+}
+
+// ➕ NEW MESSAGE
+list.push({
+text:text,
+read:false,
+time:Date.now()
+});
+
+// SAVE
+ref.set({ list:list }, { merge:true }).then(()=>{
+alert("Message Sent ✅");
+document.getElementById("adminMsg").value="";
+});
+
+});
 
 }
 
