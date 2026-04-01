@@ -21,6 +21,16 @@ header{
   font-size:18px;
   font-weight:bold;
   border-bottom:1px solid #272727;
+  position:relative;
+}
+
+/* BACK BTN */
+.back{
+  position:absolute;
+  left:10px;
+  top:10px;
+  cursor:pointer;
+  font-size:18px;
 }
 
 /* MESSAGE BOX */
@@ -71,15 +81,6 @@ header{
   text-align:center;
   margin-top:50px;
   color:#777;
-}
-
-/* BACK BTN */
-.back{
-  position:absolute;
-  left:10px;
-  top:10px;
-  cursor:pointer;
-  font-size:18px;
 }
 </style>
 </head>
@@ -141,7 +142,8 @@ onAuthStateChanged(auth,(user)=>{
 
     box.innerHTML = "";
 
-    data.reverse().forEach(m=>{
+    // ✅ SAFE REVERSE (FIXED)
+    [...data].reverse().forEach(m=>{
 
       box.innerHTML += `
         <div class="message ${m.read ? '' : 'unread'}">
@@ -152,10 +154,11 @@ onAuthStateChanged(auth,(user)=>{
       `;
     });
 
+    // ✅ AUTO MARK READ (FIXED POSITION)
+    markRead(user.uid);
+
   });
 
-  // ✅ AUTO MARK READ
-  markRead(user.uid);
 });
 
 /* MARK READ */
@@ -165,7 +168,12 @@ async function markRead(uid){
 
   if(!snap.exists()) return;
 
-  const updated = snap.data().list.map(m=>({...m, read:true}));
+  const list = snap.data().list || [];
+
+  const updated = list.map(m => ({
+    ...m,
+    read: true
+  }));
 
   await updateDoc(ref,{ list: updated });
 }
