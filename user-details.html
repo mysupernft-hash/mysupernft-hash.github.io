@@ -489,6 +489,21 @@ document.getElementById("adminMsg").value="";
   box.prepend(div); // latest message upar
 }
 
+  // 🔥 LOAD SENT MESSAGES
+db.collection("messages").doc(uid).get().then(doc=>{
+  if(!doc.exists) return;
+
+  const list = doc.data().list || [];
+
+  const box = document.getElementById("sentMessages");
+  box.innerHTML = "";
+
+  // latest upar dikhane ke liye reverse
+  [...list].reverse().forEach(m=>{
+    addSentMessage(m.text);
+  });
+});
+
 </script>
 
 </body>
