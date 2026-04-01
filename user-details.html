@@ -27,6 +27,26 @@ tr{background:#111;}
 </style>
 </head>
 
+  <div id="toast" style="
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%) translateY(-10px);
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(10px);
+  color:#00ff88;
+  padding:8px 14px;
+  border-radius:20px;
+  font-size:12px;
+  display:none;
+  opacity:0;
+  transition:0.3s;
+  z-index:9999;
+  box-shadow:0 0 10px rgba(0,255,136,0.3);
+">
+Message Sent ✅
+</div>
+
 <body>
 
 <h2>👤 User Details</h2>
@@ -422,12 +442,32 @@ time:Date.now()
 
 // SAVE
 ref.set({ list:list }, { merge:true }).then(()=>{
-alert("Message Sent ✅");
+showToast("Message Sent ✅");
 document.getElementById("adminMsg").value="";
 });
 
 });
 
+}
+
+  function showToast(msg){
+
+  const toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.style.display = "block";
+
+  setTimeout(()=>{
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(0)";
+  },50);
+
+  setTimeout(()=>{
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(-50%) translateY(-10px)";
+    setTimeout(()=>{
+      toast.style.display = "none";
+    },300);
+  },2000);
 }
 
 </script>
