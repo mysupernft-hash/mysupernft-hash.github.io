@@ -696,16 +696,19 @@ window.openNFT = function(id){
   const nft = NFTS[id];
 
   if(nft.cat === "millionaire"){
-    window.location.href = "50.html";
+
+    if(nft.price === 10){
+      window.location.href = "50.html";
+    }
+    else if(nft.price === 20){
+      window.location.href = "100$.html";
+    }
+
     return;
   }
-if(nft.cat === "millionaire"){
-    window.location.href = "100.html";
-    return;
-  }
+
   window.location.href = "nft-details.html?id=" + id;
 }
-
 window.renderNFT(NFTS);
   window.setTab = function(el, category){
   document.querySelectorAll('.tab').forEach(btn=>btn.classList.remove('active'));
