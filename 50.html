@@ -5,10 +5,6 @@
 <title>10$ to 50$ Roadmap | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <style>
 body{
   margin:0;
@@ -62,33 +58,6 @@ body{
   margin-top:20px;
   cursor:pointer;
 }
-
-.progress-box{
-  background:#333;
-  border-radius:10px;
-  margin-top:10px;
-  overflow:hidden;
-}
-
-.progress-bar{
-  height:8px;
-  background:#00ff88;
-  width:0%;
-}
-
-.ref-box{
-  background:#111;
-  padding:10px;
-  border-radius:10px;
-  margin-top:20px;
-}
-
-.ref-item{
-  padding:8px;
-  border-bottom:1px solid #333;
-  font-size:13px;
-  cursor:pointer;
-}
 </style>
 </head>
 
@@ -97,166 +66,48 @@ body{
 <div class="title">💸 10$ → 50$ in 30 Days</div>
 
 <div class="card">
-<div class="day">📅 Day 1–3</div>
+<div class="day">📅 Day 1–3 (Start)</div>
 1 Referral = +2$ <br>
-Daily = +0.75$  
+Daily Income = +0.75$  
 <div class="amount">Total ≈ 12.75$</div>
 </div>
 
 <div class="card">
-<div class="day">📅 Day 4–10</div>
+<div class="day">📅 Day 4–10 (Growth)</div>
 2 Referrals = +4$ <br>
-Level Income = +1.5$  
+Level Income = +1.5$ <br>
+Daily = +1.75$  
 <div class="amount">Total ≈ 20$</div>
 </div>
 
 <div class="card">
-<div class="day">📅 Day 11–20</div>
+<div class="day">📅 Day 11–20 (Scaling)</div>
 Team Income = +5$ <br>
-2 Referrals = +4$  
+2 Referrals = +4$ <br>
+Daily = +2.5$  
 <div class="amount">Total ≈ 31.5$</div>
 </div>
 
 <div class="card">
-<div class="day">📅 Day 21–30</div>
+<div class="day">📅 Day 21–30 (Profit)</div>
 Team Passive = +8$ <br>
+Daily = +2.5$ <br>
 Bonus = +6$  
 <div class="amount">Final ≈ 50$+</div>
-
-<div style="margin-top:10px;color:#00ff88;font-size:13px;">
-👥 Required Referrals: <span id="totalRefs">Loading...</span>
-</div>
-
-<div class="progress-box">
-  <div id="progress" class="progress-bar"></div>
-</div>
-
 </div>
 
 <div class="final">
 🔥 Consistency + Referrals = 5X Growth
 </div>
 
-<button class="btn" onclick="joinNow()">🚀 Start Earning Now</button>
-
-<!-- REFERRALS -->
-<div class="title">👥 Your Referrals</div>
-<div class="ref-box" id="refList">Loading...</div>
-
-<!-- MY NETWORK -->
-<div class="title">🔥 My Referral Network</div>
-<div class="ref-box" id="myReferrals">Loading...</div>
+<button class="btn" onclick="joinNow()">
+🚀 Start Earning Now
+</button>
 
 <script>
-
-/* FIREBASE */
-firebase.initializeApp({
-apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
-authDomain:"supernft-5b952.firebaseapp.com",
-projectId:"supernft-5b952"
-});
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-/* JOIN */
 function joinNow(){
   window.location.href="register.html";
 }
-
-/* AUTH */
-auth.onAuthStateChanged(user=>{
-  if(!user){
-    document.getElementById("refList").innerHTML = "⚠️ Login required";
-    document.getElementById("myReferrals").innerHTML = "⚠️ Login required";
-    return;
-  }
-
-  loadRefs(user.uid);
-  loadMyReferrals(user.uid);
-});
-
-/* LOAD MAIN REF */
-async function loadRefs(uid){
-
-const snap = await db.collection("users")
-.where("referredByUid","==",uid)
-.get();
-
-const required = 5;
-
-document.getElementById("totalRefs").innerText =
-snap.size + " / " + required + " Users";
-
-const percent = (snap.size / required) * 100;
-document.getElementById("progress").style.width = percent + "%";
-
-const box = document.getElementById("refList");
-
-if(snap.empty){
-  box.innerHTML = "No referrals yet";
-  return;
-}
-
-box.innerHTML = "";
-
-let totalEarn = 0;
-
-snap.forEach(doc=>{
-const u = doc.data();
-totalEarn += Number(u.earnings || 0);
-
-box.innerHTML += `
-<div class="ref-item">
-📧 ${u.email || "No Email"} <br>
-💰 Earnings: ${u.earnings || 0}$
-</div>
-`;
-});
-
-box.innerHTML += `
-<div style="margin-top:10px;color:#00ff88;">
-💵 Total Referral Earnings: ${totalEarn}$
-</div>
-`;
-
-}
-
-/* LOAD NETWORK */
-async function loadMyReferrals(uid){
-
-const snap = await db.collection("users")
-.where("referredByUid","==",uid)
-.get();
-
-const box = document.getElementById("myReferrals");
-
-if(snap.empty){
-  box.innerHTML = "No referrals yet";
-  return;
-}
-
-box.innerHTML = "";
-
-snap.forEach(doc=>{
-const u = doc.data();
-
-box.innerHTML += `
-<div class="ref-item" onclick="openUser('${doc.id}')">
-👤 ${u.email || "No Email"} <br>
-🆔 UID: ${doc.id} <br>
-💰 Earnings: ${u.earnings || 0}$
-</div>
-`;
-});
-
-}
-
-/* CLICK USER */
-function openUser(id){
-  alert("User UID: " + id);
-}
-
 </script>
 
 </body>
