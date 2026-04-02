@@ -695,6 +695,7 @@ window.openNFT = function(id){
 
   const nft = NFTS[id];
 
+  // 🔥 Millionaire NFTs
   if(nft.cat === "millionaire"){
 
     if(nft.price === 10){
@@ -707,6 +708,7 @@ window.openNFT = function(id){
     return;
   }
 
+  // 🟢 Normal NFTs
   window.location.href = "nft-details.html?id=" + id;
 }
 window.renderNFT(NFTS);
