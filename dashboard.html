@@ -679,6 +679,7 @@ window.renderNFT = function(list){
     ${n.cat === "millionaire" ? `
       <p>💰 Millionaire</p>
       <p>💸 Invest $${n.price} → Get ${n.p.split("→")[1].trim()} in 30 Days 🚀</p>
+    ` : `
       <p>Price $${n.price}</p>
       <p>${typeof n.p === "string" ? n.p : "Daily Income $" + n.p}</p>
       <p>Validity 365 Days</p>
