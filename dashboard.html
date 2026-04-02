@@ -675,7 +675,7 @@ window.renderNFT = function(list){
       <div class="nft">
         <img src="${n.img}" onclick="openNFT(${originalIndex})">
         <p>Price $${n.price}</p>
-        <p>Daily Income $${n.p}</p>
+        <p>${typeof n.p === "string" ? n.p : "Daily Income $" + n.p}</p>
         <p>Validity 365 Days</p>
         <button onclick="openNFT(${originalIndex})">Buy NFT</button>
       </div>
