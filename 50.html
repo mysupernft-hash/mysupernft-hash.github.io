@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
@@ -62,7 +63,21 @@ body{
   cursor:pointer;
 }
 
-/* 🔥 REFERRAL LIST */
+/* PROGRESS */
+.progress-box{
+  background:#333;
+  border-radius:10px;
+  margin-top:10px;
+  overflow:hidden;
+}
+
+.progress-bar{
+  height:8px;
+  background:#00ff88;
+  width:0%;
+}
+
+/* REF LIST */
 .ref-box{
   background:#111;
   padding:10px;
@@ -75,7 +90,6 @@ body{
   border-bottom:1px solid #333;
   font-size:13px;
 }
-
 </style>
 </head>
 
@@ -93,7 +107,7 @@ Daily = +0.75$
 <div class="card">
 <div class="day">📅 Day 4–10</div>
 2 Referrals = +4$ <br>
-Level Income = +1.5$ <br>
+Level Income = +1.5$  
 <div class="amount">Total ≈ 20$</div>
 </div>
 
@@ -110,9 +124,14 @@ Team Passive = +8$ <br>
 Bonus = +6$  
 <div class="amount">Final ≈ 50$+</div>
 
-<!-- 🔥 NEW PART -->
+<!-- REQUIRED -->
 <div style="margin-top:10px;color:#00ff88;font-size:13px;">
 👥 Required Referrals: <span id="totalRefs">Loading...</span>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-box">
+  <div id="progress" class="progress-bar"></div>
 </div>
 
 </div>
@@ -125,7 +144,7 @@ Bonus = +6$
 🚀 Start Earning Now
 </button>
 
-<!-- 🔥 ALL REFERRALS -->
+<!-- REFERRALS -->
 <div class="title">👥 Your Referrals</div>
 
 <div class="ref-box" id="refList">
@@ -134,32 +153,49 @@ Loading...
 
 <script>
 
-/* FIREBASE */
+/* FIREBASE CONFIG */
 firebase.initializeApp({
 apiKey:"AIzaSy...",
 authDomain:"supernft-5b952.firebaseapp.com",
 projectId:"supernft-5b952"
 });
 
+const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* USER UID */
-const uid = new URLSearchParams(window.location.search).get("uid");
-
-/* JOIN */
+/* JOIN BTN */
 function joinNow(){
   window.location.href="register.html";
 }
 
-/* LOAD REFERRALS */
-async function loadRefs(){
+/* AUTO LOGIN */
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    document.getElementById("refList").innerHTML = "⚠️ Login required";
+    return;
+  }
+
+  loadRefs(user.uid);
+});
+
+/* LOAD DATA */
+async function loadRefs(uid){
 
 const snap = await db.collection("users")
 .where("referredByUid","==",uid)
 .get();
 
-document.getElementById("totalRefs").innerText = snap.size + " Users";
+const required = 5;
 
+/* COUNT */
+document.getElementById("totalRefs").innerText =
+snap.size + " / " + required + " Users";
+
+/* PROGRESS */
+const percent = (snap.size / required) * 100;
+document.getElementById("progress").style.width = percent + "%";
+
+/* LIST */
 const box = document.getElementById("refList");
 
 if(snap.empty){
@@ -169,9 +205,12 @@ if(snap.empty){
 
 box.innerHTML = "";
 
+let totalEarn = 0;
+
 snap.forEach(doc=>{
 
 const u = doc.data();
+totalEarn += Number(u.earnings || 0);
 
 box.innerHTML += `
 <div class="ref-item">
@@ -182,11 +221,13 @@ box.innerHTML += `
 
 });
 
-}
+/* TOTAL */
+box.innerHTML += `
+<div style="margin-top:10px;color:#00ff88;">
+💵 Total Referral Earnings: ${totalEarn}$
+</div>
+`;
 
-/* LOAD */
-if(uid){
-  loadRefs();
 }
 
 </script>
