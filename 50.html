@@ -5,6 +5,7 @@
 <title>10$ to 50$ Roadmap | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -63,11 +64,12 @@ body{
   cursor:pointer;
 }
 
-.level-box{
+.required{
   text-align:center;
   margin-top:10px;
-  font-size:14px;
   color:#00ff88;
+  font-size:15px;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -106,8 +108,8 @@ Daily = +2.5$ <br>
 Bonus = +6$  
 <div class="amount">Final ≈ 50$+</div>
 
-<!-- 🔥 LEVEL 1 ONLY -->
-<div class="level-box">
+<!-- 🔥 LIVE REFERRALS -->
+<div class="required">
 👥 Level 1 Required: <span id="count">0</span> / 20 Users
 </div>
 
@@ -123,7 +125,7 @@ Bonus = +6$
 
 <script>
 
-/* 🔥 FIREBASE CONFIG */
+/* FIREBASE CONFIG */
 firebase.initializeApp({
 apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
 authDomain:"supernft-5b952.firebaseapp.com",
@@ -138,7 +140,7 @@ function joinNow(){
   window.location.href="register.html";
 }
 
-/* 🔥 LOAD ONLY LEVEL 1 REFERRALS */
+/* AUTO COUNT */
 auth.onAuthStateChanged(async user=>{
   if(!user){
     document.getElementById("count").innerText = "0";
@@ -146,31 +148,14 @@ auth.onAuthStateChanged(async user=>{
   }
 
   try{
-
     const snap = await db.collection("users")
     .where("referredByUid","==",user.uid)
     .get();
 
-    let level1Count = 0;
-
-    snap.forEach(doc=>{
-      const data = doc.data();
-
-      // ✅ ONLY DIRECT REFERRALS
-      if(data.referredByUid === user.uid){
-        level1Count++;
-      }
-    });
-
-    const max = 20;
-
-    // ✅ LIMIT DISPLAY TO 20
-    const display = level1Count >= max ? max : level1Count;
-
-    document.getElementById("count").innerText = display;
+    document.getElementById("count").innerText = snap.size;
 
   }catch(e){
-    console.log(e);
+    console.error(e);
     document.getElementById("count").innerText = "0";
   }
 });
