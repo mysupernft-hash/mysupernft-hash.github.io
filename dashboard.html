@@ -672,14 +672,21 @@ window.renderNFT = function(list){
     const originalIndex = NFTS.indexOf(n);
 
     nftContainer.innerHTML += `
-      <div class="nft">
-        <img src="${n.img}" onclick="openNFT(${originalIndex})">
-        <p>Price $${n.price}</p>
-        <p>${typeof n.p === "string" ? n.p : "Daily Income $" + n.p}</p>
-        <p>Validity 365 Days</p>
-        <button onclick="openNFT(${originalIndex})">Buy NFT</button>
-      </div>
-    `;
+  <div class="nft">
+    <img src="${n.img}" onclick="openNFT(${originalIndex})">
+
+    ${n.cat === "millionaire" ? `
+      <p>💰 Millionaire</p>
+      <p>💸 Invest $10 → Get 50$ in 30 Days 🚀</p>
+    ` : `
+      <p>Price $${n.price}</p>
+      <p>${typeof n.p === "string" ? n.p : "Daily Income $" + n.p}</p>
+      <p>Validity 365 Days</p>
+    `}
+
+    <button onclick="openNFT(${originalIndex})">Buy NFT</button>
+  </div>
+`;
   });
 }
 
