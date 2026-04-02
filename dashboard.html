@@ -684,7 +684,16 @@ window.renderNFT = function(list){
 }
 
 window.openNFT = function(id){
+
+  const nft = NFTS[id];
+
+  if(nft.cat === "millionaire"){
+    window.location.href = "50.html";
+    return;
+  }
+
   window.location.href = "nft-details.html?id=" + id;
+}
 }
 
 window.renderNFT(NFTS);
