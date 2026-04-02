@@ -5,6 +5,11 @@
 <title>10$ to 50$ Roadmap | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <style>
 body{
   margin:0;
@@ -103,7 +108,7 @@ Daily = +2.5$ <br>
 Bonus = +6$  
 <div class="amount">Final ≈ 50$+</div>
 
-<!-- 🔥 LEVEL 1 REQUIRED -->
+<!-- 🔥 LIVE REFERRALS -->
 <div class="required">
 👥 Level 1 Required: <span id="count">0</span> / 20 Users
 </div>
@@ -120,15 +125,40 @@ Bonus = +6$
 
 <script>
 
-/* DEMO COUNTER (CHANGE MANUALLY OR CONNECT FIREBASE LATER) */
-let currentReferrals = 0; // 👈 yaha apna number daal
+/* FIREBASE CONFIG */
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+});
 
-document.getElementById("count").innerText = currentReferrals;
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-/* BUTTON */
+/* JOIN */
 function joinNow(){
   window.location.href="register.html";
 }
+
+/* AUTO COUNT */
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    document.getElementById("count").innerText = "0";
+    return;
+  }
+
+  try{
+    const snap = await db.collection("users")
+    .where("referredByUid","==",user.uid)
+    .get();
+
+    document.getElementById("count").innerText = snap.size;
+
+  }catch(e){
+    console.error(e);
+    document.getElementById("count").innerText = "0";
+  }
+});
 
 </script>
 
