@@ -5,6 +5,11 @@
 <title>10$ to 50$ Roadmap | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <style>
 body{
   margin:0;
@@ -59,7 +64,6 @@ body{
   cursor:pointer;
 }
 
-/* NEW */
 .required{
   text-align:center;
   margin-top:10px;
@@ -103,9 +107,9 @@ Daily = +2.5$ <br>
 Bonus = +6$  
 <div class="amount">Final ≈ 50$+</div>
 
-<!-- 🔥 NEW LINE -->
+<!-- 🔥 REQUIRED REFERRALS -->
 <div class="required">
-👥 Required Referrals: <b>5 Users</b>
+👥 Required Referrals: <b id="refCount">Loading...</b>
 </div>
 
 </div>
@@ -119,9 +123,42 @@ Bonus = +6$
 </button>
 
 <script>
+
+/* FIREBASE CONFIG */
+firebase.initializeApp({
+apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+authDomain:"supernft-5b952.firebaseapp.com",
+projectId:"supernft-5b952"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* JOIN */
 function joinNow(){
   window.location.href="register.html";
 }
+
+/* REQUIRED TOTAL */
+const REQUIRED = 5;
+
+/* AUTH + LOAD */
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    document.getElementById("refCount").innerText = "Login required";
+    return;
+  }
+
+  const snap = await db.collection("users")
+  .where("referredByUid","==",user.uid)
+  .get();
+
+  const current = snap.size;
+
+  document.getElementById("refCount").innerText =
+  current + " / " + REQUIRED + " Users";
+});
+
 </script>
 
 </body>
