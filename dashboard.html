@@ -699,7 +699,10 @@ window.openNFT = function(id){
     window.location.href = "50.html";
     return;
   }
-
+if(nft.cat === "millionaire"){
+    window.location.href = "100.html";
+    return;
+  }
   window.location.href = "nft-details.html?id=" + id;
 }
 
