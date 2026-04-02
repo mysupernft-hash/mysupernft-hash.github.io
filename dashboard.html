@@ -439,6 +439,31 @@ footer{
   <button class="tab" onclick="setTab(this,'legendary')">Legendary</button>
   <button class="tab" onclick="setTab(this,'ultra')">Ultra</button>
 </div>
+
+<!-- 💰 MILLIONAIRE CATEGORY -->
+<div onclick="openMillionaire()" style="
+margin:10px 20px;
+background:linear-gradient(145deg,#00ff88,#00cc6a);
+color:black;
+padding:14px;
+border-radius:12px;
+font-weight:bold;
+text-align:center;
+cursor:pointer;
+box-shadow:0 0 12px rgba(0,255,136,0.4);
+transition:0.3s;
+"
+onmouseover="this.style.transform='scale(1.05)'"
+onmouseout="this.style.transform='scale(1)'"
+>
+
+💰 Millionaire  
+<div style="font-size:11px;margin-top:5px;">
+💸 10$ → 50$ in 30 Days 🚀
+</div>
+
+</div>
+  
 <div class="nft-grid" id="nfts"></div>
 
 <h2 style="margin-left:20px;">Earnings (Last 7 Days)</h2>
@@ -1056,6 +1081,10 @@ onAuthStateChanged(auth,(user)=>{
     window.location.replace("login.html");
   }
 });
+
+  window.openMillionaire = function(){
+  window.location.href = "50.html";
+}
 
 </script>
 
