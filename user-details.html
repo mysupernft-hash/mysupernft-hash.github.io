@@ -45,7 +45,7 @@ tr{background:#111;}
   z-index:9999;
   box-shadow:0 0 10px rgba(0,255,136,0.3);
 ">
-
+Message Sent ✅
 </div>
 
 <h2>👤 User Details</h2>
@@ -143,6 +143,20 @@ tr{background:#111;}
 </table>
 
 <button onclick="addWithdraw()" class="addBtn">Add Withdraw</button>
+</div>
+
+<!-- 💬 SEND MESSAGE -->
+<div class="card">
+
+<h3>💬 Send Message to User</h3>
+
+<textarea id="adminMsg" placeholder="Type message..."
+style="width:100%;height:80px;background:#1a1a1a;color:#FFD700;border:none;border-radius:6px;padding:10px;"></textarea>
+
+<button onclick="sendMessage()" class="addBtn">
+Send Message
+</button>
+
 </div>
   
 <button class="saveBtn" onclick="saveUser()">Save Changes</button>
@@ -391,6 +405,69 @@ alert("Updated Successfully");
 
 }
 
+  function loginAsUser(){
+
+localStorage.setItem("adminPreviewUID", uid);
+
+window.open("dashboard.html","_blank");
+
+}
+
+  function sendMessage(){
+
+const text = document.getElementById("adminMsg").value.trim();
+
+if(!text){
+alert("Enter message");
+return;
+}
+
+const ref = db.collection("messages").doc(uid);
+
+ref.get().then(doc=>{
+
+let list = [];
+
+if(doc.exists){
+list = doc.data().list || [];
+}
+
+// ➕ NEW MESSAGE
+list.push({
+text:text,
+read:false,
+time:Date.now()
+});
+
+// SAVE
+ref.set({ list:list }, { merge:true }).then(()=>{
+showToast("Message Sent ✅");
+document.getElementById("adminMsg").value="";
+});
+
+});
+
+}
+
+  function showToast(msg){
+
+  const toast = document.getElementById("toast");
+  toast.innerText = msg;
+  toast.style.display = "block";
+
+  setTimeout(()=>{
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(0)";
+  },50);
+
+  setTimeout(()=>{
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(-50%) translateY(-10px)";
+    setTimeout(()=>{
+      toast.style.display = "none";
+    },300);
+  },2000);
+}
 
 </script>
 
