@@ -100,15 +100,16 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 import { getFirestore, doc, onSnapshot, updateDoc, getDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* FIREBASE */
 const firebaseConfig={
   apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
   authDomain:"supernft-5b952.firebaseapp.com",
   projectId:"supernft-5b952"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 const box = document.getElementById("msgBox");
 
@@ -119,21 +120,28 @@ window.goBack = function(){
 
 /* LOAD USER */
 onAuthStateChanged(auth,(user)=>{
+
   if(!user){
     location.href="login.html";
     return;
   }
 
+  console.log("USER UID:", user.uid); // DEBUG
+
   const ref = doc(db,"messages", user.uid);
 
+  /* REAL-TIME LISTENER */
   onSnapshot(ref,(snap)=>{
+
+    console.log("DATA:", snap.data()); // DEBUG
 
     if(!snap.exists()){
       box.innerHTML = `<div class="empty">No messages yet</div>`;
       return;
     }
 
-    const data = snap.data().list || [];
+    const raw = snap.data();
+    const data = raw && raw.list ? raw.list : [];
 
     if(data.length === 0){
       box.innerHTML = `<div class="empty">No messages yet</div>`;
@@ -142,19 +150,25 @@ onAuthStateChanged(auth,(user)=>{
 
     box.innerHTML = "";
 
-    // ✅ SAFE REVERSE (FIXED)
+    /* SHOW MESSAGES */
     [...data].reverse().forEach(m=>{
+
+      const sender = m.sender === "admin" ? "📢 Admin" : "👤 You";
+
+      const time = m.time
+        ? new Date(m.time).toLocaleString()
+        : "Now";
 
       box.innerHTML += `
         <div class="message ${m.read ? '' : 'unread'}">
-          <div class="title">📢 Admin</div>
-          <div class="text">${m.text}</div>
-          <div class="time">${new Date(m.time).toLocaleString()}</div>
+          <div class="title">${sender}</div>
+          <div class="text">${m.text || ""}</div>
+          <div class="time">${time}</div>
         </div>
       `;
     });
 
-    // ✅ AUTO MARK READ (FIXED POSITION)
+    /* AUTO MARK READ */
     markRead(user.uid);
 
   });
@@ -163,20 +177,27 @@ onAuthStateChanged(auth,(user)=>{
 
 /* MARK READ */
 async function markRead(uid){
-  const ref = doc(db,"messages", uid);
-  const snap = await getDoc(ref);
 
-  if(!snap.exists()) return;
+  try{
+    const ref = doc(db,"messages", uid);
+    const snap = await getDoc(ref);
 
-  const list = snap.data().list || [];
+    if(!snap.exists()) return;
 
-  const updated = list.map(m => ({
-    ...m,
-    read: true
-  }));
+    const list = snap.data().list || [];
 
-  await updateDoc(ref,{ list: updated });
+    const updated = list.map(m => ({
+      ...m,
+      read: true
+    }));
+
+    await updateDoc(ref,{ list: updated });
+
+  }catch(e){
+    console.error("Read error:", e);
+  }
 }
+
 </script>
 
 </body>
