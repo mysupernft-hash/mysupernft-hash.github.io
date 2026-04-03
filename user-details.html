@@ -438,11 +438,11 @@ if(doc.exists){
 list = doc.data().list || [];
 }
 
+// ➕ NEW MESSAGE
 list.push({
-  text: text,
-  read: false,
-  time: Date.now(),
-  sender: "admin"   // 🔥 VERY IMPORTANT
+text:text,
+read:false,
+time:Date.now()
 });
 
 // SAVE
