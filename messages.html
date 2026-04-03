@@ -44,11 +44,6 @@ header{
   padding:12px;
   margin-bottom:12px;
   box-shadow:0 0 10px rgba(255,215,0,0.1);
-  transition:0.3s;
-}
-
-.message:hover{
-  transform:scale(1.02);
 }
 
 /* UNREAD */
@@ -126,22 +121,16 @@ onAuthStateChanged(auth,(user)=>{
     return;
   }
 
-  console.log("USER UID:", user.uid); // DEBUG
-
   const ref = doc(db,"messages", user.uid);
 
-  /* REAL-TIME LISTENER */
   onSnapshot(ref,(snap)=>{
-
-    console.log("DATA:", snap.data()); // DEBUG
 
     if(!snap.exists()){
       box.innerHTML = `<div class="empty">No messages yet</div>`;
       return;
     }
 
-    const raw = snap.data();
-    const data = raw && raw.list ? raw.list : [];
+    const data = snap.data().list || [];
 
     if(data.length === 0){
       box.innerHTML = `<div class="empty">No messages yet</div>`;
@@ -150,25 +139,19 @@ onAuthStateChanged(auth,(user)=>{
 
     box.innerHTML = "";
 
-    /* SHOW MESSAGES */
     [...data].reverse().forEach(m=>{
 
       const sender = m.sender === "admin" ? "📢 Admin" : "👤 You";
 
-      const time = m.time
-        ? new Date(m.time).toLocaleString()
-        : "Now";
-
       box.innerHTML += `
         <div class="message ${m.read ? '' : 'unread'}">
           <div class="title">${sender}</div>
-          <div class="text">${m.text || ""}</div>
-          <div class="time">${time}</div>
+          <div class="text">${m.text}</div>
+          <div class="time">${new Date(m.time).toLocaleString()}</div>
         </div>
       `;
     });
 
-    /* AUTO MARK READ */
     markRead(user.uid);
 
   });
@@ -178,26 +161,20 @@ onAuthStateChanged(auth,(user)=>{
 /* MARK READ */
 async function markRead(uid){
 
-  try{
-    const ref = doc(db,"messages", uid);
-    const snap = await getDoc(ref);
+  const ref = doc(db,"messages", uid);
+  const snap = await getDoc(ref);
 
-    if(!snap.exists()) return;
+  if(!snap.exists()) return;
 
-    const list = snap.data().list || [];
+  const list = snap.data().list || [];
 
-    const updated = list.map(m => ({
-      ...m,
-      read: true
-    }));
+  const updated = list.map(m => ({
+    ...m,
+    read: true
+  }));
 
-    await updateDoc(ref,{ list: updated });
-
-  }catch(e){
-    console.error("Read error:", e);
-  }
+  await updateDoc(ref,{ list: updated });
 }
-
 </script>
 
 </body>
