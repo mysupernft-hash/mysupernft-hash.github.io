@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>VIP Investment</title>
+<title>20$ to 100$ Roadmap | SuperNFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body{
@@ -11,49 +16,148 @@ body{
   font-family:Arial;
   background:#000;
   color:#FFD700;
+  padding:15px;
+}
+
+.title{
   text-align:center;
+  font-size:22px;
+  margin-bottom:20px;
 }
 
-.box{
-  margin:50px 20px;
-  padding:20px;
+.card{
   background:#111;
-  border-radius:15px;
-  box-shadow:0 0 20px rgba(255,215,0,0.3);
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
+  box-shadow:0 0 10px rgba(255,215,0,0.1);
 }
 
-h1{
-  margin-bottom:10px;
+.day{
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.amount{
+  color:#00ff88;
+  font-size:14px;
+  margin-top:8px;
+}
+
+.final{
+  text-align:center;
+  font-size:20px;
+  margin-top:20px;
+  color:#00ff88;
 }
 
 .btn{
-  margin-top:20px;
-  padding:12px 20px;
+  width:100%;
+  padding:12px;
   background:#FFD700;
-  color:#000;
+  color:black;
   border:none;
-  border-radius:10px;
+  border-radius:8px;
   font-weight:bold;
+  margin-top:20px;
   cursor:pointer;
+}
+
+.required{
+  text-align:center;
+  margin-top:10px;
+  color:#00ff88;
+  font-size:15px;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h1>👑 VIP Investment</h1>
-  <p>💸 Invest $20 → Get $100 in 30 Days 🚀</p>
-  <p>🔥 High Profit Plan</p>
+<div class="title">💸 Invest 20$ → Get 100$ in 30 Days 🚀</div>
 
-  <button class="btn" onclick="buy()">Invest Now</button>
+<!-- STEP 1 -->
+<div class="card">
+<div class="day">📅 Day 1–10 (Start)</div>
+5 Direct Referrals = +20$ <br>
+Bonus Earnings = +4$  
+<div class="amount">Total ≈ 44$</div>
 </div>
 
+<!-- STEP 2 -->
+<div class="card">
+<div class="day">📅 Day 11–20 (Growth)</div>
+10 Direct Referrals = +40$ <br>
+Bonus Earnings = +6$  
+<div class="amount">Total ≈ 70$</div>
+</div>
+
+<!-- STEP 3 -->
+<div class="card">
+<div class="day">📅 Day 21–30 (Final Push)</div>
+20 Direct Referrals = +80$ <br>
+Extra Bonus = +20$  
+<div class="amount">Final ≈ 100$+</div>
+
+<!-- LIVE COUNT -->
+<div class="required">
+👥 Direct Referrals: <span id="count">0</span> / 20 Users
+</div>
+
+</div>
+
+<!-- FINAL TEXT -->
+<div class="final">
+🔥 20 Direct Referrals = 100$ Income
+</div>
+
+<div class="required">
+⚡ Avg 1 Referral per Day = Target Achieved Easily
+</div>
+
+<button class="btn" onclick="joinNow()">
+🚀 Start Earning Now
+</button>
+
 <script>
-function buy(){
-  localStorage.setItem("price",20);
-  window.location.href="payment.html"; // ya nft-details
+
+/* FIREBASE CONFIG */
+firebase.initializeApp({
+  apiKey:"AIzaSyB4SGtNZL0N4TIoJ1bGbkiAeRWJcQgrF-4",
+  authDomain:"supernft-5b952.firebaseapp.com",
+  projectId:"supernft-5b952"
+});
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+/* JOIN BUTTON */
+function joinNow(){
+  window.location.href="register.html";
 }
+
+/* LIVE REFERRAL COUNT */
+auth.onAuthStateChanged(async user=>{
+  if(!user){
+    document.getElementById("count").innerText = "0";
+    return;
+  }
+
+  try{
+    const snap = await db.collection("users")
+      .where("referredByUid","==",user.uid)
+      .get();
+
+    document.getElementById("count").innerText = snap.size;
+
+  }catch(e){
+    console.error(e);
+    document.getElementById("count").innerText = "0";
+  }
+});
+
 </script>
 
 </body>
